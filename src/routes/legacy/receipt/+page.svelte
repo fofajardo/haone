@@ -19,7 +19,8 @@
 	let isExporting = $state(false);
 
 	onMount(() => {
-		attemptDecryption();
+		// Clear any legacy cached keys for security
+		localStorage.removeItem('receipt_secret_key');
 	});
 
 	async function attemptDecryption() {
@@ -176,7 +177,14 @@
 			<Card.Content class="space-y-4">
 				<div class="space-y-2">
 					<Label for="stno" class="text-xs uppercase tracking-widest text-muted-foreground">Student ID</Label>
-					<Input id="stno" type="text" bind:value={studentNo} placeholder="e.g. 2021-0001" onkeydown={(e) => e.key === 'Enter' && attemptDecryption()} />
+					<Input 
+						id="stno" 
+						type="text" 
+						bind:value={studentNo} 
+						placeholder="e.g. 2021-0001" 
+						autocomplete="off"
+						onkeydown={(e) => e.key === 'Enter' && attemptDecryption()} 
+					/>
 				</div>
 				<Button onclick={attemptDecryption} class="w-full" disabled={isDecrypting || !studentNo}>
 					{isDecrypting ? 'Verifying...' : 'Unlock Receipt'}

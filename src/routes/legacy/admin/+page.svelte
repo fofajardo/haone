@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { encryptJSON } from '$lib/crypto';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
@@ -9,21 +8,11 @@
 	import { Upload, ChevronRight, FileJson, CheckCircle2 } from 'lucide-svelte';
 	import Papa from 'papaparse';
 
-	let secretKey = $state('');
 	let csvData = $state<any[]>([]);
 	let headers = $state<string[]>([]);
 	let isProcessing = $state(false);
 	let status = $state('');
 
-	onMount(() => {
-		const savedKey = localStorage.getItem('receipt_secret_key');
-		if (savedKey) secretKey = savedKey;
-	});
-
-	function saveKey() {
-		localStorage.setItem('receipt_secret_key', secretKey);
-		status = 'Key saved to local storage.';
-	}
 
 	async function handleFileUpload(e: Event) {
 		const file = (e.target as HTMLInputElement).files?.[0];
