@@ -4,6 +4,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
 	import * as Table from '$lib/components/ui/table';
 	import { Lock, CircleAlert, Download, StickyNote, ReceiptText } from 'lucide-svelte';
 	import QRCode from 'qrcode';
@@ -12,14 +13,12 @@
 
 	let data = $state<any>(null);
 	let error = $state('');
-	let secretKey = $state('');
+	let studentNo = $state('');
 	let isDecrypting = $state(false);
 	let qrDataUrl = $state('');
 	let isExporting = $state(false);
 
 	onMount(() => {
-		const savedKey = localStorage.getItem('receipt_secret_key');
-		if (savedKey) secretKey = savedKey;
 		attemptDecryption();
 	});
 
@@ -33,13 +32,12 @@
 			return;
 		}
 
-		if (!secretKey) return;
+		if (!studentNo) return;
 
 		isDecrypting = true;
 		error = '';
 		try {
-			data = await decryptJSON(encryptedData, secretKey);
-			localStorage.setItem('receipt_secret_key', secretKey);
+			data = await decryptJSON(encryptedData, studentNo);
 
 			qrDataUrl = await QRCode.toDataURL(window.location.href, {
 				margin: 1,
@@ -172,15 +170,16 @@
 				<div class="mx-auto mb-4 w-fit rounded-full bg-muted p-2.5">
 					<Lock class="h-5 w-5 text-muted-foreground" />
 				</div>
-				<Card.Title>Security Required</Card.Title>
-				<Card.Description>Enter key to unlock document.</Card.Description>
+				<Card.Title>Receipt Authentication</Card.Title>
+				<Card.Description>Enter Student Number to view document.</Card.Description>
 			</Card.Header>
 			<Card.Content class="space-y-4">
 				<div class="space-y-2">
-					<Input id="key" type="password" bind:value={secretKey} placeholder="Master Key..." />
+					<Label for="stno" class="text-xs uppercase tracking-widest text-muted-foreground">Student ID</Label>
+					<Input id="stno" type="text" bind:value={studentNo} placeholder="e.g. 2021-0001" onkeydown={(e) => e.key === 'Enter' && attemptDecryption()} />
 				</div>
-				<Button onclick={attemptDecryption} class="w-full" disabled={isDecrypting}>
-					{isDecrypting ? 'Processing' : 'Decrypt'}
+				<Button onclick={attemptDecryption} class="w-full" disabled={isDecrypting || !studentNo}>
+					{isDecrypting ? 'Verifying...' : 'Unlock Receipt'}
 				</Button>
 			</Card.Content>
 		</Card.Root>

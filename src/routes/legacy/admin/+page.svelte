@@ -46,8 +46,8 @@
 	}
 
 	async function generateAndExport() {
-		if (!secretKey) {
-			alert('Please enter a Secret Key first!');
+		if (csvData.length === 0) {
+			alert('Please import a CSV first!');
 			return;
 		}
 		isProcessing = true;
@@ -77,7 +77,8 @@
 				].filter((item) => item.amount !== 0)
 			};
 
-			const encrypted = await encryptJSON(receipt, secretKey);
+			const stNo = row.ACCOUNT_STNO ? row.ACCOUNT_STNO.toString().trim() : 'N/A';
+			const encrypted = await encryptJSON(receipt, stNo);
 			const url = `${baseUrl}#data=${encrypted}`;
 
 			exportedData.push({
@@ -119,27 +120,8 @@
 			</div>
 		</header>
 
-		<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-1">
 			<Card.Root>
-				<Card.Header>
-					<Card.Title class="text-lg">Security</Card.Title>
-					<Card.Description>Encryption settings.</Card.Description>
-				</Card.Header>
-				<Card.Content class="space-y-4">
-					<div class="space-y-2">
-						<Label for="secret-key">Passphrase</Label>
-						<Input
-							id="secret-key"
-							type="password"
-							bind:value={secretKey}
-							placeholder="Required for signing..."
-						/>
-					</div>
-					<Button onclick={saveKey} variant="outline" class="w-full">Set Key</Button>
-				</Card.Content>
-			</Card.Root>
-
-			<Card.Root class="md:col-span-2">
 				<Card.Header>
 					<Card.Title class="text-lg">Batch Import</Card.Title>
 					<Card.Description>Select a payment CSV to process.</Card.Description>

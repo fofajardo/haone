@@ -5,9 +5,12 @@
 
 const ALGO = 'AES-GCM';
 
+// In reality, this doesn't protect against anything.
+const PEPPER = '195cac93-8251-406d-96ad-804fd73ce8dc';
+
 async function deriveKey(passphrase: string): Promise<CryptoKey> {
 	const encoder = new TextEncoder();
-	const data = encoder.encode(passphrase);
+	const data = encoder.encode(passphrase + PEPPER);
 	const hash = await crypto.subtle.digest('SHA-256', data);
 	return crypto.subtle.importKey('raw', hash, ALGO, false, ['encrypt', 'decrypt']);
 }
