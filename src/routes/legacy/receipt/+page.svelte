@@ -176,14 +176,16 @@
 			</Card.Header>
 			<Card.Content class="space-y-4">
 				<div class="space-y-2">
-					<Label for="stno" class="text-xs uppercase tracking-widest text-muted-foreground">Student ID</Label>
-					<Input 
-						id="stno" 
-						type="text" 
-						bind:value={studentNo} 
-						placeholder="e.g. 2021-0001" 
+					<Label for="stno" class="text-xs tracking-widest text-muted-foreground uppercase"
+						>Student ID</Label
+					>
+					<Input
+						id="stno"
+						type="text"
+						bind:value={studentNo}
+						placeholder="e.g. 2021-0001"
 						autocomplete="off"
-						onkeydown={(e) => e.key === 'Enter' && attemptDecryption()} 
+						onkeydown={(e) => e.key === 'Enter' && attemptDecryption()}
 					/>
 				</div>
 				<Button onclick={attemptDecryption} class="w-full" disabled={isDecrypting || !studentNo}>

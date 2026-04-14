@@ -13,7 +13,6 @@
 	let isProcessing = $state(false);
 	let status = $state('');
 
-
 	async function handleFileUpload(e: Event) {
 		const file = (e.target as HTMLInputElement).files?.[0];
 		if (!file) return;
