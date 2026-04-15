@@ -1,5 +1,6 @@
 <script lang="ts">
   import { encryptJSON } from "$lib/crypto";
+  import { translatePeriod, parseCSVAmount } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -65,9 +66,9 @@
         transactionType: row.TYPE,
         branding: selectedBranding,
         items: [
-          { name: "Water Fee", amount: parseFloat(row.WATER_FEE) || 0 },
-          { name: "Association Fee", amount: parseFloat(row.ASSOC_FEE) || 0 },
-          { name: "Miscellaneous Fee", amount: parseFloat(row.MISC) || 0 }
+          { name: "Water Fee", amount: parseCSVAmount(row.WATER_FEE) },
+          { name: "Association Fee", amount: parseCSVAmount(row.ASSOC_FEE) },
+          { name: "Miscellaneous", amount: parseCSVAmount(row.MISC) }
         ].filter((item: ReceiptItem) => item.amount !== 0)
       };
 
@@ -184,9 +185,15 @@
                     >{row.ACCOUNT_FULL_NAME || "---"}</Table.Cell
                   >
                   <Table.Cell class="text-muted-foreground">{row.PERIOD || "---"}</Table.Cell>
-                  <Table.Cell class="text-right tabular-nums">{row.WATER_FEE || "0"}</Table.Cell>
-                  <Table.Cell class="text-right tabular-nums">{row.ASSOC_FEE || "0"}</Table.Cell>
-                  <Table.Cell class="text-right tabular-nums">{row.MISC || "0"}</Table.Cell>
+                  <Table.Cell class="text-right tabular-nums"
+                    >{parseCSVAmount(row.WATER_FEE) || "0"}</Table.Cell
+                  >
+                  <Table.Cell class="text-right tabular-nums"
+                    >{parseCSVAmount(row.ASSOC_FEE) || "0"}</Table.Cell
+                  >
+                  <Table.Cell class="text-right tabular-nums"
+                    >{parseCSVAmount(row.MISC) || "0"}</Table.Cell
+                  >
                 </Table.Row>
               {/each}
             </Table.Body>

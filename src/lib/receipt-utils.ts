@@ -59,3 +59,22 @@ export function formatDate(dateStr: string) {
     return dateStr;
   }
 }
+
+export function parseCSVAmount(val: any): number {
+  if (val === undefined || val === null) return 0;
+  const str = String(val).trim().replace(/,/g, "");
+  if (!str) {
+    return 0;
+  }
+
+  // Check for (1,234.56) accounting format
+  const isNegative = str.startsWith("(") && str.endsWith(")");
+  const numericStr = isNegative ? str.slice(1, -1) : str;
+
+  const parsed = parseFloat(numericStr);
+  if (isNaN(parsed)) {
+    return 0;
+  }
+
+  return isNegative ? -parsed : parsed;
+}
