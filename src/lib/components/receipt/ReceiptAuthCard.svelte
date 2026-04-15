@@ -25,18 +25,18 @@
       <Lock class="h-5 w-5 text-muted-foreground" />
     </div>
     <Card.Title>Authentication Required</Card.Title>
-    <Card.Description>Please enter your Student ID to view the receipt.</Card.Description>
+    <Card.Description>Please enter your UP Student Number to access this document.</Card.Description>
   </Card.Header>
   <Card.Content class="space-y-4">
     <div class="space-y-2">
       <Label for="stno" class="text-xs tracking-widest text-muted-foreground uppercase"
-        >Student ID</Label
+        >Student Number</Label
       >
       <Input
         id="stno"
         type="text"
         bind:value={studentNo}
-        placeholder="e.g. 2021-0001"
+        placeholder="e.g., 2021-0001"
         autocomplete="off"
         onkeydown={(e) => e.key === "Enter" && onAuthenticate()}
       />
@@ -51,7 +51,7 @@
       </Label>
     </div>
     <Button onclick={onAuthenticate} class="w-full" disabled={isDecrypting || !studentNo}>
-      {isDecrypting ? "Verifying..." : "Unlock Receipt"}
+      {isDecrypting ? "Verifying..." : "Unlock"}
     </Button>
   </Card.Content>
 </Card.Root>
