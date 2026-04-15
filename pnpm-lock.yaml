@@ -14,6 +14,9 @@ importers:
       lucide-svelte:
         specifier: ^1.0.1
         version: 1.0.1(svelte@5.49.1)
+      mode-watcher:
+        specifier: ^1.1.0
+        version: 1.1.0(svelte@5.49.1)
       papaparse:
         specifier: ^5.5.3
         version: 5.5.3
@@ -1326,6 +1329,11 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  mode-watcher@1.1.0:
+    resolution: {integrity: sha512-mUT9RRGPDYenk59qJauN1rhsIMKBmWA3xMF+uRwE8MW/tjhaDSCCARqkSuDTq8vr4/2KcAxIGVjACxTjdk5C3g==}
+    peerDependencies:
+      svelte: ^5.27.0
+
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -1506,6 +1514,16 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
+  runed@0.23.4:
+    resolution: {integrity: sha512-9q8oUiBYeXIDLWNK5DfCWlkL0EW3oGbk845VdKlPeia28l751VpfesaB/+7pI6rnbx1I6rqoZ2fZxptOJLxILA==}
+    peerDependencies:
+      svelte: ^5.7.0
+
+  runed@0.25.0:
+    resolution: {integrity: sha512-7+ma4AG9FT2sWQEA0Egf6mb7PBT2vHyuHail1ie8ropfSjvZGtEAx8YTmUjv/APCsdRRxEVvArNjALk9zFSOrg==}
+    peerDependencies:
+      svelte: ^5.7.0
+
   runed@0.35.1:
     resolution: {integrity: sha512-2F4Q/FZzbeJTFdIS/PuOoPRSm92sA2LhzTnv6FXhCoENb3huf5+fDuNOg1LNvGOouy3u/225qxmuJvcV3IZK5Q==}
     peerDependencies:
@@ -1580,6 +1598,12 @@ packages:
     engines: {node: '>=18', pnpm: '>=8.7.0'}
     peerDependencies:
       svelte: ^5.30.2
+
+  svelte-toolbelt@0.7.1:
+    resolution: {integrity: sha512-HcBOcR17Vx9bjaOceUvxkY3nGmbBmCBBbuWLLEWO6jtmWH8f/QoWmbyUfQZrpDINH39en1b8mptfPQT9VKQ1xQ==}
+    engines: {node: '>=18', pnpm: '>=8.7.0'}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte@5.49.1:
     resolution: {integrity: sha512-jj95WnbKbXsXXngYj28a4zx8jeZx50CN/J4r0CEeax2pbfdsETv/J1K8V9Hbu3DCXnpHz5qAikICuxEooi7eNQ==}
@@ -2684,6 +2708,12 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  mode-watcher@1.1.0(svelte@5.49.1):
+    dependencies:
+      runed: 0.25.0(svelte@5.49.1)
+      svelte: 5.49.1
+      svelte-toolbelt: 0.7.1(svelte@5.49.1)
+
   mri@1.2.0: {}
 
   mrmime@2.0.1: {}
@@ -2816,6 +2846,16 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.57.1
       fsevents: 2.3.3
 
+  runed@0.23.4(svelte@5.49.1):
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.49.1
+
+  runed@0.25.0(svelte@5.49.1):
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.49.1
+
   runed@0.35.1(@sveltejs/kit@2.50.2(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.49.1)(vite@7.3.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.49.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.49.1):
     dependencies:
       dequal: 2.0.3
@@ -2920,6 +2960,13 @@ snapshots:
       svelte: 5.49.1
     transitivePeerDependencies:
       - '@sveltejs/kit'
+
+  svelte-toolbelt@0.7.1(svelte@5.49.1):
+    dependencies:
+      clsx: 2.1.1
+      runed: 0.23.4(svelte@5.49.1)
+      style-to-object: 1.0.14
+      svelte: 5.49.1
 
   svelte@5.49.1:
     dependencies:

@@ -210,7 +210,3 @@
     {/if}
   </div>
 </div>
-
-<style>
-  /* No custom dark mode overrides here */
-</style>

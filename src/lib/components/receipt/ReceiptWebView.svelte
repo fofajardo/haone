@@ -70,7 +70,12 @@
         <img
           src={activeBranding.logoUrl}
           alt={activeBranding.logoAlt}
-          class="h-14 w-auto object-contain transition-all"
+          class="h-14 w-auto object-contain transition-all dark:hidden"
+        />
+        <img
+          src={activeBranding.logoUrlDark}
+          alt={activeBranding.logoAlt}
+          class="hidden h-14 w-auto object-contain transition-all dark:block"
         />
       </div>
     </Card.Header>
