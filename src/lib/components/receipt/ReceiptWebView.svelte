@@ -2,7 +2,14 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import * as Table from "$lib/components/ui/table";
-  import { Download, StickyNote, ReceiptText, Image as ImageIcon } from "lucide-svelte";
+  import {
+    Download,
+    StickyNote,
+    ReceiptText,
+    Image as ImageIcon,
+    Share2,
+    QrCode
+  } from "lucide-svelte";
   import {
     formatDate,
     translateMop,
@@ -13,12 +20,22 @@
     formatAmount
   } from "$lib/receipt-utils";
 
-  let { receiptData, qrDataUrl, isExporting, onDownloadPDF, onDownloadImage } = $props<{
+  let {
+    receiptData,
+    qrDataUrl,
+    isExporting,
+    onDownloadPDF,
+    onDownloadImage,
+    onShareLink,
+    onShareQR
+  } = $props<{
     receiptData: any;
     qrDataUrl: string;
     isExporting: boolean;
     onDownloadPDF: () => void;
     onDownloadImage: () => void;
+    onShareLink: () => void;
+    onShareQR: () => void;
   }>();
 
   const refInfo = $derived(parseRef(receiptData.referenceNumber));
@@ -172,16 +189,22 @@
       {/if}
     </Card.Footer>
   </Card.Root>
-  <div class="mb-2 flex items-center justify-between px-1">
-    <div class="flex gap-2">
-      <Button onclick={onDownloadPDF} size="sm" variant="secondary" disabled={isExporting}>
-        <Download class="mr-2 h-3.5 w-3.5" />
-        Export PDF
-      </Button>
-      <Button onclick={onDownloadImage} size="sm" variant="secondary" disabled={isExporting}>
-        <ImageIcon class="mr-2 h-3.5 w-3.5" />
-        Save Image
-      </Button>
-    </div>
+  <div class="mb-2 flex flex-wrap gap-2 px-1">
+    <Button onclick={onDownloadPDF} size="sm" variant="secondary" disabled={isExporting}>
+      <Download class="mr-2 h-3.5 w-3.5" />
+      Export PDF
+    </Button>
+    <Button onclick={onDownloadImage} size="sm" variant="secondary" disabled={isExporting}>
+      <ImageIcon class="mr-2 h-3.5 w-3.5" />
+      Save Image
+    </Button>
+    <Button onclick={onShareQR} size="sm" variant="secondary" disabled={isExporting}>
+      <QrCode class="mr-2 h-3.5 w-3.5" />
+      Share QR
+    </Button>
+    <Button onclick={onShareLink} size="sm" variant="secondary" disabled={isExporting}>
+      <Share2 class="mr-2 h-3.5 w-3.5" />
+      Share Link
+    </Button>
   </div>
 </div>

@@ -5,6 +5,7 @@
   import { jsPDF } from "jspdf";
   import html2canvas from "html2canvas";
 
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import ReceiptExportTemplate from "$lib/components/receipt/ReceiptExportTemplate.svelte";
   import ReceiptWebView from "$lib/components/receipt/ReceiptWebView.svelte";
   import ReceiptAuthCard from "$lib/components/receipt/ReceiptAuthCard.svelte";
@@ -19,6 +20,15 @@
   let isDecrypting = $state(false);
   let qrDataUrl = $state("");
   let isExporting = $state(false);
+
+  // AlertDialog State
+  let alertState = $state({ open: false, title: "", description: "" });
+
+  function showAlert(title: string, description: string) {
+    alertState.title = title;
+    alertState.description = description;
+    alertState.open = true;
+  }
 
   onMount(() => {
     // Load saved student number if "Remember Me" was checked
@@ -111,7 +121,7 @@
   async function downloadPDF() {
     const templateElement = document.getElementById("export-template");
     if (!templateElement) {
-      alert("Export content not found.");
+      showAlert("Export Error", "Export template content not found.");
       return;
     }
 
@@ -130,7 +140,7 @@
       pdf.save(`Receipt_${receiptData.seriesNumber}.pdf`);
     } catch (e: any) {
       console.error("Export failed:", e);
-      alert(`Export failed: ${e.message}.`);
+      showAlert("Export Error", `The PDF generation failed: ${e.message}`);
     } finally {
       isExporting = false;
     }
@@ -139,7 +149,7 @@
   async function downloadImage() {
     const templateElement = document.getElementById("export-template");
     if (!templateElement) {
-      alert("Export content not found.");
+      showAlert("Export Error", "Export template content not found.");
       return;
     }
 
@@ -157,9 +167,66 @@
       document.body.removeChild(link);
     } catch (e: any) {
       console.error("Export failed:", e);
-      alert(`Export failed: ${e.message}.`);
+      showAlert("Export Error", `The image generation failed: ${e.message}`);
     } finally {
       isExporting = false;
+    }
+  }
+
+  async function shareLink() {
+    const shareData = {
+      title: "Acknowledgment Receipt",
+      text: `Receipt for ${receiptData.receivedFrom}`,
+      url: window.location.href
+    };
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        showAlert("Link Copied", "The receipt link has been copied to your clipboard.");
+      } catch (err) {
+        console.error("Clipboard copy failed:", err);
+      }
+    }
+  }
+
+  async function shareQRCode() {
+    if (!qrDataUrl) return;
+
+    try {
+      const response = await fetch(qrDataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `QR_${receiptData.seriesNumber}.png`, { type: "image/png" });
+
+      const shareData = {
+        files: [file],
+        title: "Verification QR Code",
+        text: `Scan to verify receipt ${receiptData.seriesNumber}`
+      };
+
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        throw new Error("Sharing not supported");
+      }
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        // Fallback: Download
+        const link = document.createElement("a");
+        link.href = qrDataUrl;
+        link.download = `QR_${receiptData.seriesNumber}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     }
   }
 </script>
@@ -198,7 +265,23 @@
       {isExporting}
       onDownloadPDF={downloadPDF}
       onDownloadImage={downloadImage}
+      onShareLink={shareLink}
+      onShareQR={shareQRCode}
     />
     <ReceiptExportTemplate {receiptData} {qrDataUrl} />
   {/if}
 </main>
+
+<AlertDialog.Root bind:open={alertState.open}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{alertState.title}</AlertDialog.Title>
+      <AlertDialog.Description>
+        {alertState.description}
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Action onclick={() => (alertState.open = false)}>OK</AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
