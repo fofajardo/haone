@@ -19,6 +19,7 @@ export function calculateTotal(items: { amount: number }[]) {
 
 export function translateMop(mop: string) {
   const val = mop?.trim().toUpperCase() || "";
+  if (val === "CASH") return "N/A (CASH)";
   if (val === "GCASH") return "G-XCHANGE/GCASH";
   if (val === "MAYA") return "MAYA PHILIPPINES, INC./MAYA WALLET";
   if (val === "") return "N/A";
