@@ -10,6 +10,7 @@
     Share2,
     StickyNote
   } from "lucide-svelte";
+  import { Spinner } from "$lib/components/ui/spinner";
   import branding from "$lib/branding.json";
   import type { ReceiptData } from "$lib/types";
   import {
@@ -46,6 +47,19 @@
   const activeBranding = $derived(
     branding[receiptData.branding as keyof typeof branding] || branding.default
   );
+
+  let clickedAction = $state<string | null>(null);
+
+  $effect(() => {
+    if (!isExporting) {
+      clickedAction = null;
+    }
+  });
+
+  function handleAction(type: string, callback: () => void) {
+    clickedAction = type;
+    callback();
+  }
 </script>
 
 <div class="w-full max-w-2xl space-y-6 print:hidden">
@@ -201,20 +215,56 @@
     </Card.Footer>
   </Card.Root>
   <div class="mb-2 flex flex-wrap gap-2 px-1">
-    <Button onclick={onDownloadPDF} size="sm" variant="secondary" disabled={isExporting}>
-      <Download class="mr-2 h-3.5 w-3.5" />
+    <Button
+      onclick={() => handleAction("pdf", onDownloadPDF)}
+      size="sm"
+      variant="secondary"
+      disabled={isExporting}
+    >
+      {#if isExporting && clickedAction === "pdf"}
+        <Spinner class="mr-2 h-3.5 w-3.5" />
+      {:else}
+        <Download class="mr-2 h-3.5 w-3.5" />
+      {/if}
       Export PDF
     </Button>
-    <Button onclick={onDownloadImage} size="sm" variant="secondary" disabled={isExporting}>
-      <ImageIcon class="mr-2 h-3.5 w-3.5" />
+    <Button
+      onclick={() => handleAction("image", onDownloadImage)}
+      size="sm"
+      variant="secondary"
+      disabled={isExporting}
+    >
+      {#if isExporting && clickedAction === "image"}
+        <Spinner class="mr-2 h-3.5 w-3.5" />
+      {:else}
+        <ImageIcon class="mr-2 h-3.5 w-3.5" />
+      {/if}
       Save Image
     </Button>
-    <Button onclick={onShareQR} size="sm" variant="secondary" disabled={isExporting}>
-      <QrCode class="mr-2 h-3.5 w-3.5" />
+    <Button
+      onclick={() => handleAction("qr", onShareQR)}
+      size="sm"
+      variant="secondary"
+      disabled={isExporting}
+    >
+      {#if isExporting && clickedAction === "qr"}
+        <Spinner class="mr-2 h-3.5 w-3.5" />
+      {:else}
+        <QrCode class="mr-2 h-3.5 w-3.5" />
+      {/if}
       Share QR
     </Button>
-    <Button onclick={onShareLink} size="sm" variant="secondary" disabled={isExporting}>
-      <Share2 class="mr-2 h-3.5 w-3.5" />
+    <Button
+      onclick={() => handleAction("link", onShareLink)}
+      size="sm"
+      variant="secondary"
+      disabled={isExporting}
+    >
+      {#if isExporting && clickedAction === "link"}
+        <Spinner class="mr-2 h-3.5 w-3.5" />
+      {:else}
+        <Share2 class="mr-2 h-3.5 w-3.5" />
+      {/if}
       Share Link
     </Button>
   </div>
