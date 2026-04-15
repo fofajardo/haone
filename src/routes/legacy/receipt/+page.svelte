@@ -139,6 +139,13 @@
     });
   }
 
+  function formatAmount(amount: number) {
+    return amount.toLocaleString("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
   function getTotal() {
     if (!receiptData?.items) return 0;
     return receiptData.items.reduce((sum: number, item: any) => sum + item.amount, 0);
@@ -344,7 +351,7 @@
                       {/if}
                     </Table.Cell>
                     <Table.Cell class="block pt-0 pb-3 text-right font-medium sm:table-cell sm:py-2.5"
-                      >{formatCurrency(item.amount)}</Table.Cell
+                      >{formatAmount(item.amount)}</Table.Cell
                     >
                   </Table.Row>
                 {/each}
@@ -477,7 +484,7 @@
             <tr class="bg-[#f8fafc]">
               <td class="border-y border-[#000000] px-3 pb-4 text-right font-bold">Total Amount</td>
               <td class="border-y border-[#000000] px-3 pb-4 text-right font-bold tabular-nums"
-                >{getTotal().toLocaleString("en-PH", { minimumFractionDigits: 2 })}</td
+                >{formatCurrency(getTotal())}</td
               >
             </tr>
           </tbody>
