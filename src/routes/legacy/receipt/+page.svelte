@@ -21,11 +21,25 @@
 	onMount(() => {
 		// Clear any legacy cached keys for security
 		localStorage.removeItem('receipt_secret_key');
+
+		// Legacy support: redirect #data=... to ?data=...
+		const hash = window.location.hash.substring(1);
+		if (hash) {
+			const params = new URLSearchParams(hash);
+			const encryptedData = params.get('data');
+			if (encryptedData) {
+				// Remove hash, redirect to query param
+				const url = new URL(window.location.href);
+				url.hash = '';
+				url.searchParams.set('data', encryptedData);
+				window.location.replace(url.toString());
+			}
+		}
 	});
 
 	async function attemptDecryption() {
-		const hash = window.location.hash.substring(1);
-		const params = new URLSearchParams(hash);
+		// Use query param for encrypted data
+		const params = new URLSearchParams(window.location.search);
 		const encryptedData = params.get('data');
 
 		if (!encryptedData) {

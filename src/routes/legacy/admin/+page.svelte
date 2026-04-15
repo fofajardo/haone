@@ -67,7 +67,7 @@
 
 			const stNo = row.ACCOUNT_STNO ? row.ACCOUNT_STNO.toString().trim() : 'N/A';
 			const encrypted = await encryptJSON(receipt, stNo);
-			const url = `${baseUrl}#data=${encrypted}`;
+			const url = `${baseUrl}?data=${encrypted}`;
 
 			exportedData.push({
 				...row,
