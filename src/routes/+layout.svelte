@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import "./layout.css";
   import favicon from "$lib/assets/favicon.svg";
 
-  let { data, children } = $props();
-  const { pageInfo } = $derived(data);
+  let { children } = $props();
+  const pageInfo = $derived(page.data.pageInfo);
 </script>
 
 <svelte:head>

@@ -96,9 +96,7 @@
   }
 </script>
 
-<svelte:head>
-  <title>Receipt Admin | HAONE</title>
-</svelte:head>
+
 
 <div class="min-h-screen bg-background p-6 text-foreground md:p-12">
   <div class="mx-auto max-w-5xl space-y-8">
