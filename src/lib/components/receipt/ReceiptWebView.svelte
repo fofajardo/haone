@@ -3,21 +3,22 @@
   import { Button } from "$lib/components/ui/button";
   import * as Table from "$lib/components/ui/table";
   import {
-    Download,
-    StickyNote,
-    ReceiptText,
     Image as ImageIcon,
+    Download,
+    QrCode,
+    ReceiptText,
     Share2,
-    QrCode
+    StickyNote
   } from "lucide-svelte";
+  import branding from "$lib/branding.json";
   import {
-    formatDate,
-    translateMop,
-    translatePeriod,
-    parseRef,
     calculateTotal,
+    formatAmount,
     formatCurrency,
-    formatAmount
+    formatDate,
+    parseRef,
+    translateMop,
+    translatePeriod
   } from "$lib/receipt-utils";
 
   let {
@@ -39,6 +40,9 @@
   }>();
 
   const refInfo = $derived(parseRef(receiptData.referenceNumber));
+  const activeBranding = $derived(
+    branding[receiptData.branding as keyof typeof branding] || branding.default
+  );
 </script>
 
 <div class="w-full max-w-2xl space-y-6 print:hidden">
@@ -47,8 +51,8 @@
     <Card.Header>
       <div class="flex items-center justify-center">
         <img
-          src="/ati/wordmark-flag-br.png"
-          alt="ATI-NTC RHA Logo"
+          src={activeBranding.logoUrl}
+          alt={activeBranding.logoAlt}
           class="h-14 w-auto object-contain transition-all"
         />
       </div>
@@ -62,6 +66,10 @@
           <h3 class="text-xs font-semibold tracking-widest uppercase">Acknowledgment Receipt</h3>
         </div>
         <div class="space-y-3 px-1">
+          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
+            <span class="text-xs text-muted-foreground uppercase">Issuer</span>
+            <span class="text-sm font-medium">{activeBranding.issuerName}</span>
+          </div>
           <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
             <span class="text-xs text-muted-foreground uppercase">Date Issued</span>
             <span class="text-sm font-medium">{formatDate(receiptData.dateIssued)}</span>

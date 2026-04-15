@@ -1,12 +1,13 @@
 <script lang="ts">
   import {
-    formatDate,
-    translateMop,
-    translatePeriod,
-    parseRef,
     calculateTotal,
-    formatCurrency
+    formatCurrency,
+    formatDate,
+    parseRef,
+    translateMop,
+    translatePeriod
   } from "$lib/receipt-utils";
+  import branding from "$lib/branding.json";
 
   let { receiptData, qrDataUrl } = $props<{
     receiptData: any;
@@ -14,6 +15,9 @@
   }>();
 
   const refInfo = $derived(parseRef(receiptData.referenceNumber));
+  const activeBranding = $derived(
+    branding[receiptData.branding as keyof typeof branding] || branding.default
+  );
 </script>
 
 <div
@@ -22,7 +26,7 @@
 >
   <!-- Letterhead -->
   <div class="w-full">
-    <img src="/ati/letterhead_1in_c.png" alt="Letterhead" class="block h-auto w-full" />
+    <img src={activeBranding.letterheadUrl} alt="Letterhead" class="block h-auto w-full" />
   </div>
 
   <!-- Body Content -->
@@ -37,7 +41,7 @@
     </header>
 
     <div class="mb-8 w-full">
-      {#each [["Date Issued", formatDate(receiptData.dateIssued)], ["Payment Date", formatDate(receiptData.paymentDate)], ["Payment Processor", translateMop(receiptData.processor)], ["Reference Number", refInfo.reference], ...(refInfo.invoice ? [["InstaPay Invoice No.", refInfo.invoice]] : []), ["Period", translatePeriod(receiptData.period)], ["Series Number", receiptData.seriesNumber], ["Received From", receiptData.receivedFrom.toUpperCase()], ["Received By", receiptData.receivedBy.toUpperCase()], ["Notes", receiptData.notes || ""]] as [label, val]}
+      {#each [["Issuer", activeBranding.issuerName], ["Date Issued", formatDate(receiptData.dateIssued)], ["Payment Date", formatDate(receiptData.paymentDate)], ["Payment Processor", translateMop(receiptData.processor)], ["Reference Number", refInfo.reference], ...(refInfo.invoice ? [["InstaPay Invoice No.", refInfo.invoice]] : []), ["Period", translatePeriod(receiptData.period)], ["Series Number", receiptData.seriesNumber], ["Received From", receiptData.receivedFrom.toUpperCase()], ["Received By", receiptData.receivedBy.toUpperCase()], ["Notes", receiptData.notes || ""]] as [label, val]}
         <div class="grid grid-cols-[200px_1fr] items-center">
           <div class="font-bold">
             {label}

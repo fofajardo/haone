@@ -7,11 +7,15 @@
   import * as Table from "$lib/components/ui/table";
   import { Upload, ChevronRight, FileJson, CheckCircle2 } from "lucide-svelte";
   import Papa from "papaparse";
+  import branding from "$lib/branding.json";
+
+  const brandingProfiles = Object.keys(branding);
 
   let csvData = $state<any[]>([]);
   let headers = $state<string[]>([]);
   let isProcessing = $state(false);
   let status = $state("");
+  let selectedBranding = $state<string>("ati");
 
   async function handleFileUpload(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
@@ -58,6 +62,7 @@
         receivedBy: row.CREATOR_FULL_NAME,
         notes: row.NOTES,
         transactionType: row.TYPE,
+        branding: selectedBranding,
         items: [
           { name: "Water Fee", amount: parseFloat(row.WATER_FEE) || 0 },
           { name: "Association Fee", amount: parseFloat(row.ASSOC_FEE) || 0 },
@@ -110,7 +115,21 @@
           <Card.Title class="text-lg">Batch Import</Card.Title>
           <Card.Description>Select a payment CSV to process.</Card.Description>
         </Card.Header>
-        <Card.Content>
+        <Card.Content class="space-y-4">
+          <div class="space-y-2">
+            <Label for="branding" class="text-xs tracking-widest text-muted-foreground uppercase"
+              >Issuer</Label
+            >
+            <select
+              id="branding"
+              bind:value={selectedBranding}
+              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {#each brandingProfiles as profile}
+                <option value={profile}>{branding[profile as keyof typeof branding].name}</option>
+              {/each}
+            </select>
+          </div>
           <div class="group relative">
             <input
               type="file"
