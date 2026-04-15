@@ -5,22 +5,30 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Table from "$lib/components/ui/table";
   import { Lock, CircleAlert, Download, StickyNote, ReceiptText } from "lucide-svelte";
   import QRCode from "qrcode";
   import { jsPDF } from "jspdf";
   import html2canvas from "html2canvas";
 
+  const HALSK_REMEMBER_STUDENT_NO = "halsk.student_number";
+
   let receiptData = $state<any>(null);
   let error = $state("");
   let studentNo = $state("");
+  let rememberMe = $state(false);
   let isDecrypting = $state(false);
   let qrDataUrl = $state("");
   let isExporting = $state(false);
 
   onMount(() => {
-    // Clear any legacy cached keys for security
-    localStorage.removeItem("receipt_secret_key");
+    // Load saved student ID if "Remember Me" was checked
+    const savedId = localStorage.getItem(HALSK_REMEMBER_STUDENT_NO);
+    if (savedId) {
+      studentNo = savedId;
+      rememberMe = true;
+    }
 
     // Legacy support: redirect #data=... to ?data=...
     const hash = window.location.hash.substring(1);
@@ -53,6 +61,13 @@
     error = "";
     try {
       receiptData = await decryptJSON(encryptedData, studentNo);
+
+      // Save or clear student ID based on rememberMe preference
+      if (rememberMe) {
+        localStorage.setItem(HALSK_REMEMBER_STUDENT_NO, studentNo);
+      } else {
+        localStorage.removeItem(HALSK_REMEMBER_STUDENT_NO);
+      }
 
       qrDataUrl = await QRCode.toDataURL(window.location.href, {
         margin: 1,
@@ -206,6 +221,15 @@
             autocomplete="off"
             onkeydown={(e) => e.key === "Enter" && attemptDecryption()}
           />
+        </div>
+        <div class="flex items-center space-x-2">
+          <Checkbox id="remember" bind:checked={rememberMe} />
+          <Label
+            for="remember"
+            class="text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Remember student ID
+          </Label>
         </div>
         <Button onclick={attemptDecryption} class="w-full" disabled={isDecrypting || !studentNo}>
           {isDecrypting ? "Verifying..." : "Unlock Receipt"}
