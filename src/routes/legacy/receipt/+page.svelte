@@ -23,7 +23,7 @@
   let isExporting = $state(false);
 
   onMount(() => {
-    // Load saved student ID if "Remember Me" was checked
+    // Load saved student number if "Remember Me" was checked
     const savedId = localStorage.getItem(HALSK_REMEMBER_STUDENT_NO);
     if (savedId) {
       studentNo = savedId;
@@ -200,13 +200,13 @@
   class="flex min-h-screen items-center justify-center bg-background p-4 text-foreground md:p-8"
 >
   {#if !receiptData && !error}
-    <Card.Root class="w-full max-w-sm">
+    <Card.Root class="w-full max-w-sm ring-0 shadow-none sm:ring-1 sm:shadow-sm">
       <Card.Header class="text-center">
         <div class="mx-auto mb-4 w-fit rounded-full bg-muted p-2.5">
           <Lock class="h-5 w-5 text-muted-foreground" />
         </div>
-        <Card.Title>Receipt Authentication</Card.Title>
-        <Card.Description>Enter Student Number to view document.</Card.Description>
+        <Card.Title>Authentication Required</Card.Title>
+        <Card.Description>Please enter your Student ID to view the receipt.</Card.Description>
       </Card.Header>
       <Card.Content class="space-y-4">
         <div class="space-y-2">
@@ -237,7 +237,7 @@
       </Card.Content>
     </Card.Root>
   {:else if error}
-    <Card.Root class="w-full max-w-sm border-destructive/50">
+    <Card.Root class="w-full max-w-sm ring-0 shadow-none sm:ring-1 sm:ring-destructive/50 sm:shadow-sm">
       <Card.Header class="text-center">
         <CircleAlert class="mx-auto mb-3 h-10 w-10 text-destructive" />
         <Card.Title class="text-destructive">Error</Card.Title>
@@ -260,23 +260,14 @@
     {@const refInfo = parseRef(receiptData.referenceNumber)}
     <div class="w-full max-w-2xl space-y-6 print:hidden">
       <!-- WEB VIEW -->
-      <Card.Root class="overflow-hidden border shadow-lg">
+      <Card.Root class="overflow-hidden ring-0 shadow-none sm:ring-1 sm:shadow-lg">
         <Card.Header>
-          <div class="flex items-start justify-between">
-            <div class="space-y-3">
-              <div class="flex items-center gap-4">
-                <img
-                  src="/ati/wordmark-flag-br.png"
-                  alt="ATI Logo"
-                  class="h-14 w-auto object-contain transition-all"
-                />
-              </div>
-            </div>
-            {#if qrDataUrl}
-              <div class="rounded border bg-white p-1 shadow-sm">
-                <img src={qrDataUrl} alt="Verification QR" class="h-16 w-16" />
-              </div>
-            {/if}
+          <div class="flex items-center justify-center">
+            <img
+              src="/ati/wordmark-flag-br.png"
+              alt="ATI-NTC RHA Logo"
+              class="h-14 w-auto object-contain transition-all"
+            />
           </div>
         </Card.Header>
 
@@ -290,40 +281,40 @@
               </h3>
             </div>
             <div class="space-y-3 px-1">
-              <div class="flex justify-between">
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                 <span class="text-xs text-muted-foreground uppercase">Date Issued</span>
                 <span class="text-sm font-medium">{formatDate(receiptData.dateIssued)}</span>
               </div>
-              <div class="flex justify-between">
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                 <span class="text-xs text-muted-foreground uppercase">Payment Date</span>
                 <span class="text-sm font-medium">{formatDate(receiptData.paymentDate)}</span>
               </div>
-              <div class="flex justify-between">
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                 <span class="text-xs text-muted-foreground uppercase">Period</span>
                 <span class="text-sm font-medium">{translatePeriod(receiptData.period)}</span>
               </div>
-              <div class="flex justify-between">
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                 <span class="text-xs text-muted-foreground uppercase">Series Number</span>
                 <span class="font-mono text-sm">{receiptData.seriesNumber}</span>
               </div>
-              <div class="flex justify-between">
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                 <span class="text-xs text-muted-foreground uppercase">Received From</span>
                 <span class="text-sm font-medium">{receiptData.receivedFrom}</span>
               </div>
-              <div class="flex justify-between">
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                 <span class="text-xs text-muted-foreground uppercase">Received By</span>
                 <span class="text-sm font-medium">{receiptData.receivedBy}</span>
               </div>
-              <div class="flex justify-between">
-                <span class="text-xs text-muted-foreground uppercase">Processor</span>
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
+                <span class="text-xs text-muted-foreground uppercase">Payment Processor</span>
                 <span class="text-sm font-medium">{translateMop(receiptData.processor)}</span>
               </div>
-              <div class="flex justify-between">
+              <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                 <span class="text-xs text-muted-foreground uppercase">Reference Number</span>
                 <span class="font-mono text-sm">{refInfo.reference}</span>
               </div>
               {#if refInfo.invoice}
-                <div class="flex justify-between">
+                <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
                   <span class="text-xs text-muted-foreground uppercase">InstaPay Invoice No.</span>
                   <span class="font-mono text-sm">{refInfo.invoice}</span>
                 </div>
@@ -334,7 +325,7 @@
           <!-- Line Items Table -->
           <div class="rounded-md border">
             <Table.Root>
-              <Table.Header class="bg-muted/50">
+              <Table.Header class="hidden bg-muted/50 sm:table-header-group">
                 <Table.Row>
                   <Table.Head class="h-9">Description</Table.Head>
                   <Table.Head class="h-9 text-right">Amount</Table.Head>
@@ -342,8 +333,8 @@
               </Table.Header>
               <Table.Body>
                 {#each receiptData.items as item}
-                  <Table.Row>
-                    <Table.Cell class="py-2.5">
+                  <Table.Row class="grid grid-cols-1 border-b last:border-0 sm:table-row">
+                    <Table.Cell class="block py-2 sm:table-cell sm:py-2.5">
                       {item.name}
                       {#if item.amount < 0}
                         <span
@@ -352,16 +343,16 @@
                         >
                       {/if}
                     </Table.Cell>
-                    <Table.Cell class="py-2.5 text-right font-medium"
+                    <Table.Cell class="block pt-0 pb-3 text-right font-medium sm:table-cell sm:py-2.5"
                       >{formatCurrency(item.amount)}</Table.Cell
                     >
                   </Table.Row>
                 {/each}
-                <Table.Row class="border-t bg-muted/20 font-semibold">
-                  <Table.Cell class="py-3 text-xs tracking-widest uppercase"
+                <Table.Row class="grid grid-cols-1 border-t bg-muted/20 font-semibold sm:table-row">
+                  <Table.Cell class="block py-3 text-xs tracking-widest uppercase sm:table-cell"
                     >Total Amount</Table.Cell
                   >
-                  <Table.Cell class="py-3 text-right text-lg"
+                  <Table.Cell class="block pt-0 pb-3 text-right text-lg sm:table-cell sm:py-3"
                     >{formatCurrency(getTotal())}</Table.Cell
                   >
                 </Table.Row>
@@ -399,7 +390,7 @@
           </div>
         </Card.Content>
 
-        <Card.Footer class="flex flex-col items-center gap-2 border-t bg-muted/10 py-8 text-center">
+        <Card.Footer class="flex flex-col items-center gap-2 border-t bg-muted/10 pt-8 text-center">
           <div class="flex flex-col items-center gap-2">
             <span class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
               >Generated by</span
@@ -414,6 +405,11 @@
             This document is electronically generated, does not require a signature, and is not
             valid for claim of input tax.
           </p>
+          {#if qrDataUrl}
+            <div class="rounded border bg-white p-1 shadow-sm">
+              <img src={qrDataUrl} alt="Verification QR" class="h-16 w-16" />
+            </div>
+          {/if}
         </Card.Footer>
       </Card.Root>
       <div class="mb-2 flex items-center justify-between px-1">
