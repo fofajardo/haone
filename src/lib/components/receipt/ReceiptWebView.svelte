@@ -150,8 +150,9 @@
                   {#if item.amount < 0}
                     <span
                       class="ml-2 rounded border px-1.5 py-0.5 text-[8px] font-medium tracking-tighter text-destructive uppercase"
-                      >Refund</span
                     >
+                      {receiptData.transactionType === "RECLASSIFY" ? "Reclassified" : "Refund"}
+                    </span>
                   {/if}
                 </Table.Cell>
                 <Table.Cell class="block pt-0 pb-3 text-right font-medium sm:table-cell sm:py-2.5"

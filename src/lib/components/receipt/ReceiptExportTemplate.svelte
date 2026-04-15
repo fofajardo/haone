@@ -61,7 +61,14 @@
       <tbody>
         {#each receiptData.items as item}
           <tr>
-            <td class="border-y border-[#000000] px-3 pb-4">{item.name}</td>
+            <td class="border-y border-[#000000] px-3 pb-4">
+              {item.name}
+              {#if item.amount < 0}
+                <span class="ml-1 text-[10pt] font-bold text-[#dc2626] uppercase">
+                  ({receiptData.transactionType === "RECLASSIFY" ? "Reclassified" : "Refund"})
+                </span>
+              {/if}
+            </td>
             <td class="border-y border-[#000000] px-3 pb-4 text-right tabular-nums"
               >{item.amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</td
             >

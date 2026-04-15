@@ -150,7 +150,22 @@ export async function exportReceiptPDF(receiptData: ReceiptData, qrDataUrl: stri
             ...receiptData.items.map(
               (item) =>
                 [
-                  { text: item.name, margin: [0, 5, 0, 5] as Margins },
+                  {
+                    text: [
+                      { text: item.name },
+                      ...(item.amount < 0
+                        ? [
+                            {
+                              text: ` (${receiptData.transactionType === "RECLASSIFY" ? "RECLASSIFIED" : "REFUND"})`,
+                              color: "#dc2626",
+                              bold: true,
+                              fontSize: 9
+                            }
+                          ]
+                        : [])
+                    ],
+                    margin: [0, 5, 0, 5] as Margins
+                  },
                   {
                     text: formatAmount(item.amount),
                     alignment: "right" as Alignment,
