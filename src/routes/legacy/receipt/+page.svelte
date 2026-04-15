@@ -11,7 +11,7 @@
 	import { jsPDF } from 'jspdf';
 	import html2canvas from 'html2canvas';
 
-	let data = $state<any>(null);
+	let receiptData = $state<any>(null);
 	let error = $state('');
 	let studentNo = $state('');
 	let isDecrypting = $state(false);
@@ -52,7 +52,7 @@
 		isDecrypting = true;
 		error = '';
 		try {
-			data = await decryptJSON(encryptedData, studentNo);
+			receiptData = await decryptJSON(encryptedData, studentNo);
 
 			qrDataUrl = await QRCode.toDataURL(window.location.href, {
 				margin: 1,
@@ -61,7 +61,7 @@
 			});
 		} catch (e: any) {
 			error = e.message;
-			data = null;
+			receiptData = null;
 		} finally {
 			isDecrypting = false;
 		}
@@ -108,7 +108,7 @@
 			const imgHeight = (props.height * pageWidth) / props.width;
 
 			pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
-			pdf.save(`Receipt_${data.seriesNumber}.pdf`);
+			pdf.save(`Receipt_${receiptData.seriesNumber}.pdf`);
 		} catch (e: any) {
 			console.error('Export failed:', e);
 			alert(`Export failed: ${e.message}.`);
@@ -125,8 +125,8 @@
 	}
 
 	function getTotal() {
-		if (!data?.items) return 0;
-		return data.items.reduce((sum: number, item: any) => sum + item.amount, 0);
+		if (!receiptData?.items) return 0;
+		return receiptData.items.reduce((sum: number, item: any) => sum + item.amount, 0);
 	}
 
 	function translateMop(mop: string) {
@@ -182,7 +182,7 @@
 <main
 	class="flex min-h-screen items-center justify-center bg-background p-4 text-foreground md:p-8"
 >
-	{#if !data && !error}
+	{#if !receiptData && !error}
 		<Card.Root class="w-full max-w-sm">
 			<Card.Header class="text-center">
 				<div class="mx-auto mb-4 w-fit rounded-full bg-muted p-2.5">
@@ -221,7 +221,7 @@
 				<Button
 					onclick={() => {
 						error = '';
-						data = null;
+						receiptData = null;
 					}}
 					variant="outline"
 					class="w-full"
@@ -230,8 +230,8 @@
 				</Button>
 			</Card.Footer>
 		</Card.Root>
-	{:else if data}
-		{@const refInfo = parseRef(data.referenceNumber)}
+	{:else if receiptData}
+		{@const refInfo = parseRef(receiptData.referenceNumber)}
 		<div class="w-full max-w-2xl space-y-6 print:hidden">
 			<!-- WEB VIEW -->
 			<Card.Root class="overflow-hidden border shadow-lg">
@@ -266,31 +266,31 @@
 						<div class="space-y-3 px-1">
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Date Issued</span>
-								<span class="text-sm font-medium">{formatDate(data.dateIssued)}</span>
+								<span class="text-sm font-medium">{formatDate(receiptData.dateIssued)}</span>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Payment Date</span>
-								<span class="text-sm font-medium">{formatDate(data.paymentDate)}</span>
+								<span class="text-sm font-medium">{formatDate(receiptData.paymentDate)}</span>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Period</span>
-								<span class="text-sm font-medium">{translatePeriod(data.period)}</span>
+								<span class="text-sm font-medium">{translatePeriod(receiptData.period)}</span>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Series Number</span>
-								<span class="font-mono text-sm">{data.seriesNumber}</span>
+								<span class="font-mono text-sm">{receiptData.seriesNumber}</span>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Received From</span>
-								<span class="text-sm font-medium">{data.receivedFrom}</span>
+								<span class="text-sm font-medium">{receiptData.receivedFrom}</span>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Received By</span>
-								<span class="text-sm font-medium">{data.receivedBy}</span>
+								<span class="text-sm font-medium">{receiptData.receivedBy}</span>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Processor</span>
-								<span class="text-sm font-medium">{translateMop(data.processor)}</span>
+								<span class="text-sm font-medium">{translateMop(receiptData.processor)}</span>
 							</div>
 							<div class="flex justify-between">
 								<span class="text-xs text-muted-foreground uppercase">Reference Number</span>
@@ -315,7 +315,7 @@
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
-								{#each data.items as item}
+								{#each receiptData.items as item}
 									<Table.Row>
 										<Table.Cell class="py-2.5">
 											{item.name}
@@ -343,7 +343,7 @@
 						</Table.Root>
 					</div>
 					<div>
-						{#if data.transactionType === 'WAIVED'}
+						{#if receiptData.transactionType === 'WAIVED'}
 							<p class="text-[11px] leading-relaxed font-medium text-primary">
 								Acknowledgment of Waiver of Amount
 							</p>
@@ -355,16 +355,16 @@
 					</div>
 					<!-- Remarks -->
 					<div class="space-y-6">
-						{#if data.notes || data.transactionType === 'WAIVED'}
+						{#if receiptData.notes || receiptData.transactionType === 'WAIVED'}
 							<section class="space-y-2">
 								<div class="flex items-center gap-2 border-b pb-2 text-muted-foreground">
 									<StickyNote class="h-3 w-3" />
 									<h3 class="text-[10px] font-semibold tracking-widest uppercase">Remarks</h3>
 								</div>
 								<div class="space-y-4 px-1">
-									{#if data.notes}
+									{#if receiptData.notes}
 										<p class="text-[11px] leading-relaxed text-muted-foreground">
-											{data.notes}
+											{receiptData.notes}
 										</p>
 									{/if}
 								</div>
@@ -422,7 +422,7 @@
 				</header>
 
 				<div class="mb-8 w-full">
-					{#each [['Date Issued', formatDate(data.dateIssued)], ['Payment Date', formatDate(data.paymentDate)], ['Payment Processor', translateMop(data.processor)], ['Reference Number', refInfo.reference], ...(refInfo.invoice ? [['InstaPay Invoice No.', refInfo.invoice]] : []), ['Period', translatePeriod(data.period)], ['Series Number', data.seriesNumber], ['Received From', data.receivedFrom.toUpperCase()], ['Received By', data.receivedBy.toUpperCase()], ['Notes', data.notes || '']] as [label, val]}
+					{#each [['Date Issued', formatDate(receiptData.dateIssued)], ['Payment Date', formatDate(receiptData.paymentDate)], ['Payment Processor', translateMop(receiptData.processor)], ['Reference Number', refInfo.reference], ...(refInfo.invoice ? [['InstaPay Invoice No.', refInfo.invoice]] : []), ['Period', translatePeriod(receiptData.period)], ['Series Number', receiptData.seriesNumber], ['Received From', receiptData.receivedFrom.toUpperCase()], ['Received By', receiptData.receivedBy.toUpperCase()], ['Notes', receiptData.notes || '']] as [label, val]}
 						<div class="grid grid-cols-[200px_1fr] items-center">
 							<div class="font-bold">
 								{label}
@@ -444,7 +444,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each data.items as item}
+						{#each receiptData.items as item}
 							<tr>
 								<td class="border-y border-[#000000] px-3 pb-4">{item.name}</td>
 								<td class="border-y border-[#000000] px-3 pb-4 text-right tabular-nums"
@@ -461,7 +461,7 @@
 					</tbody>
 				</table>
 
-				{#if data.transactionType === 'WAIVED'}
+				{#if receiptData.transactionType === 'WAIVED'}
 					<div class="mt-8 space-y-1 text-left text-[#000000]">
 						<h4 class="font-bold italic">Acknowledgment of Waiver of Amount</h4>
 						<p>
