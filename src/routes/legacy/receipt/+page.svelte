@@ -7,7 +7,14 @@
   import { Label } from "$lib/components/ui/label";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import * as Table from "$lib/components/ui/table";
-  import { Lock, CircleAlert, Download, StickyNote, ReceiptText } from "lucide-svelte";
+  import {
+    Lock,
+    CircleAlert,
+    Download,
+    StickyNote,
+    ReceiptText,
+    Image as ImageIcon
+  } from "lucide-svelte";
   import QRCode from "qrcode";
   import { jsPDF } from "jspdf";
   import html2canvas from "html2canvas";
@@ -82,6 +89,34 @@
     }
   }
 
+  async function generateCanvas(element: HTMLElement) {
+    const images = Array.from(element.querySelectorAll("img"));
+    await Promise.all(
+      images.map(
+        (i) =>
+          new Promise((r) => {
+            if (i.complete) {
+              r(null);
+            } else {
+              i.onload = r;
+              i.onerror = r;
+            }
+          })
+      )
+    );
+
+    await tick();
+    await new Promise((r) => setTimeout(r, 400));
+
+    return await html2canvas(element, {
+      scale: 3,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+      windowWidth: 210 * 3.7795275591
+    });
+  }
+
   async function downloadPDF() {
     const templateElement = document.getElementById("export-template");
     if (!templateElement) {
@@ -92,31 +127,9 @@
     isExporting = true;
 
     try {
+      const canvas = await generateCanvas(templateElement);
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
-
-      const images = Array.from(templateElement.querySelectorAll("img"));
-      await Promise.all(
-        images.map((i) =>
-          i.complete
-            ? Promise.resolve()
-            : new Promise((r) => {
-                i.onload = r;
-                i.onerror = r;
-              })
-        )
-      );
-
-      await tick();
-      await new Promise((r) => setTimeout(r, 400));
-
-      const canvas = await html2canvas(templateElement, {
-        scale: 3,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: 210 * 3.7795275591
-      });
 
       const imgData = canvas.toDataURL("image/png");
       const props = pdf.getImageProperties(imgData);
@@ -124,6 +137,33 @@
 
       pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
       pdf.save(`Receipt_${receiptData.seriesNumber}.pdf`);
+    } catch (e: any) {
+      console.error("Export failed:", e);
+      alert(`Export failed: ${e.message}.`);
+    } finally {
+      isExporting = false;
+    }
+  }
+
+  async function downloadImage() {
+    const templateElement = document.getElementById("export-template");
+    if (!templateElement) {
+      alert("Export content not found.");
+      return;
+    }
+
+    isExporting = true;
+
+    try {
+      const canvas = await generateCanvas(templateElement);
+      const imgData = canvas.toDataURL("image/png");
+
+      const link = document.createElement("a");
+      link.href = imgData;
+      link.download = `Receipt_${receiptData.seriesNumber}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (e: any) {
       console.error("Export failed:", e);
       alert(`Export failed: ${e.message}.`);
@@ -423,7 +463,11 @@
         <div class="flex gap-2">
           <Button onclick={downloadPDF} size="sm" variant="secondary" disabled={isExporting}>
             <Download class="mr-2 h-3.5 w-3.5" />
-            Export to PDF
+            Export PDF
+          </Button>
+          <Button onclick={downloadImage} size="sm" variant="secondary" disabled={isExporting}>
+            <ImageIcon class="mr-2 h-3.5 w-3.5" />
+            Save Image
           </Button>
         </div>
       </div>
