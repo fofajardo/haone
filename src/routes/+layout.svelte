@@ -1,14 +1,20 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { pageState } from "$lib/page-info.svelte";
   import "./layout.css";
   import favicon from "$lib/assets/favicon.svg";
 
   let { children } = $props();
-  const pageInfo = $derived(page.data.pageInfo);
+
+  $effect(() => {
+    if (page.data.pageInfo?.title) {
+      pageState.title = page.data.pageInfo.title;
+    }
+  });
 </script>
 
 <svelte:head>
-  <title>{pageInfo?.title ? pageInfo.title + " - HAOne" : "HAOne"}</title>
+  <title>{pageState.title ? pageState.title + " - HAOne" : "HAOne"}</title>
   <link rel="icon" href={favicon} />
 </svelte:head>
 

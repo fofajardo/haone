@@ -4,6 +4,7 @@
   import QRCode from "qrcode";
   import { jsPDF } from "jspdf";
   import html2canvas from "html2canvas";
+  import branding from "$lib/branding.json";
 
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import ReceiptExportTemplate from "$lib/components/receipt/ReceiptExportTemplate.svelte";
@@ -12,6 +13,8 @@
   import ReceiptErrorCard from "$lib/components/receipt/ReceiptErrorCard.svelte";
 
   const HALSK_REMEMBER_STUDENT_NO = "halsk.student_number";
+
+  import { pageState } from "$lib/page-info.svelte";
 
   let receiptData = $state<any>(null);
   let error = $state("");
@@ -23,6 +26,13 @@
 
   // AlertDialog State
   let alertState = $state({ open: false, title: "", description: "" });
+
+  $effect(() => {
+    if (receiptData) {
+      const profile = branding[receiptData.branding as keyof typeof branding] || branding.default;
+      pageState.title = `${profile.issuerName} - Acknowledgment Receipt`;
+    }
+  });
 
   function showAlert(title: string, description: string) {
     alertState.title = title;
