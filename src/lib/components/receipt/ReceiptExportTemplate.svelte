@@ -8,11 +8,9 @@
     translatePeriod
   } from "$lib/receipt-utils";
   import branding from "$lib/branding.json";
+  import type { ReceiptData } from "$lib/types";
 
-  let { receiptData, qrDataUrl } = $props<{
-    receiptData: any;
-    qrDataUrl: string;
-  }>();
+  let { receiptData, qrDataUrl }: { receiptData: ReceiptData; qrDataUrl: string } = $props();
 
   const refInfo = $derived(parseRef(receiptData.referenceNumber));
   const activeBranding = $derived(

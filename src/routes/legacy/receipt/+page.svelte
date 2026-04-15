@@ -15,8 +15,9 @@
   const HALSK_REMEMBER_STUDENT_NO = "halsk.student_number";
 
   import { pageState } from "$lib/page-info.svelte";
+  import type { ReceiptData } from "$lib/types";
 
-  let receiptData = $state<any>(null);
+  let receiptData = $state<ReceiptData | null>(null);
   let error = $state("");
   let studentNo = $state("");
   let rememberMe = $state(false);
@@ -138,6 +139,9 @@
     isExporting = true;
 
     try {
+      if (!receiptData) {
+        throw new Error("Receipt data missing");
+      }
       const canvas = await generateCanvas(templateElement);
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -166,6 +170,9 @@
     isExporting = true;
 
     try {
+      if (!receiptData) {
+        throw new Error("Receipt data missing");
+      }
       const canvas = await generateCanvas(templateElement);
       const imgData = canvas.toDataURL("image/png");
 
@@ -184,6 +191,9 @@
   }
 
   async function shareLink() {
+    if (!receiptData) {
+      return;
+    }
     const shareData = {
       title: "Acknowledgment Receipt",
       text: `Receipt for ${receiptData.receivedFrom}`,
@@ -209,7 +219,9 @@
   }
 
   async function shareQRCode() {
-    if (!qrDataUrl) return;
+    if (!qrDataUrl || !receiptData) {
+      return;
+    }
 
     try {
       const response = await fetch(qrDataUrl);

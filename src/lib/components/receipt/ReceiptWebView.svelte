@@ -11,6 +11,7 @@
     StickyNote
   } from "lucide-svelte";
   import branding from "$lib/branding.json";
+  import type { ReceiptData } from "$lib/types";
   import {
     calculateTotal,
     formatAmount,
@@ -21,6 +22,16 @@
     translatePeriod
   } from "$lib/receipt-utils";
 
+  interface Props {
+    receiptData: ReceiptData;
+    qrDataUrl: string;
+    isExporting: boolean;
+    onDownloadPDF: () => void;
+    onDownloadImage: () => void;
+    onShareLink: () => void;
+    onShareQR: () => void;
+  }
+
   let {
     receiptData,
     qrDataUrl,
@@ -29,15 +40,7 @@
     onDownloadImage,
     onShareLink,
     onShareQR
-  } = $props<{
-    receiptData: any;
-    qrDataUrl: string;
-    isExporting: boolean;
-    onDownloadPDF: () => void;
-    onDownloadImage: () => void;
-    onShareLink: () => void;
-    onShareQR: () => void;
-  }>();
+  }: Props = $props();
 
   const refInfo = $derived(parseRef(receiptData.referenceNumber));
   const activeBranding = $derived(

@@ -8,6 +8,7 @@
   import { Upload, ChevronRight, FileJson, CheckCircle2 } from "lucide-svelte";
   import Papa from "papaparse";
   import branding from "$lib/branding.json";
+  import type { ReceiptData, ReceiptItem } from "$lib/types";
 
   const brandingProfiles = Object.keys(branding);
 
@@ -31,7 +32,7 @@
         csvData = results.data;
         status = `Imported ${csvData.length} records.`;
       },
-      error: (err) => {
+      error: (err: any) => {
         status = `Error parsing CSV: ${err.message}`;
       }
     });
@@ -51,7 +52,7 @@
     for (const row of csvData) {
       const prRefNo = row.PR_REFNO || crypto.randomUUID();
 
-      const receipt = {
+      const receipt: ReceiptData = {
         dateIssued: row.PR_DATE_ISSUED || new Date().toISOString().split("T")[0],
         paymentDate: row.DATE,
         processor: row.MOP,
@@ -67,7 +68,7 @@
           { name: "Water Fee", amount: parseFloat(row.WATER_FEE) || 0 },
           { name: "Association Fee", amount: parseFloat(row.ASSOC_FEE) || 0 },
           { name: "Miscellaneous Fee", amount: parseFloat(row.MISC) || 0 }
-        ].filter((item) => item.amount !== 0)
+        ].filter((item: ReceiptItem) => item.amount !== 0)
       };
 
       const stNo = row.ACCOUNT_STNO ? row.ACCOUNT_STNO.toString().trim() : "N/A";
