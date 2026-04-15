@@ -2,7 +2,6 @@
   import { onMount, tick } from "svelte";
   import { decryptJSON } from "$lib/crypto";
   import QRCode from "qrcode";
-  import { jsPDF } from "jspdf";
   import html2canvas from "html2canvas";
   import branding from "$lib/branding.json";
 
@@ -129,31 +128,19 @@
     });
   }
 
+  import { exportReceiptPDF } from "$lib/receipt-pdf";
+
   async function downloadPDF() {
-    const templateElement = document.getElementById("export-template");
-    if (!templateElement) {
-      showAlert("Export Error", "Export template content not found.");
+    if (!receiptData) {
       return;
     }
 
     isExporting = true;
 
     try {
-      if (!receiptData) {
-        throw new Error("Receipt data missing");
-      }
-      const canvas = await generateCanvas(templateElement);
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-
-      const imgData = canvas.toDataURL("image/png");
-      const props = pdf.getImageProperties(imgData);
-      const imgHeight = (props.height * pageWidth) / props.width;
-
-      pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
-      pdf.save(`Receipt_${receiptData.seriesNumber}.pdf`);
+      await exportReceiptPDF(receiptData, qrDataUrl);
     } catch (e: any) {
-      console.error("Export failed:", e);
+      console.error("pdfmake export failed:", e);
       showAlert("Export Error", `The PDF generation failed: ${e.message}`);
     } finally {
       isExporting = false;

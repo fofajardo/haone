@@ -55,9 +55,7 @@
       <thead>
         <tr class="bg-[#f8fafc]">
           <th class="border-y border-[#000000] px-3 pb-4 text-left font-bold">Description</th>
-          <th class="w-[180px] border-y border-[#000000] px-3 pb-4 text-right font-bold"
-            >Amount (PHP)</th
-          >
+          <th class="w-[180px] border-y border-[#000000] px-3 pb-4 text-right font-bold">Amount</th>
         </tr>
       </thead>
       <tbody>
