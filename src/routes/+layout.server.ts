@@ -1,7 +1,7 @@
 export function load() {
-    return {
-        pageInfo: {
-            title: null,
-        }
-    };
+  return {
+    pageInfo: {
+      title: null
+    }
+  };
 }
