@@ -25,7 +25,6 @@
   import { Checkbox } from "$lib/components/ui/checkbox";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import {
-    Loader2,
     RefreshCcw,
     FileCheck,
     AlertCircle,
@@ -42,6 +41,8 @@
     BarChart3,
     Plus
   } from "lucide-svelte";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
   import { encryptJSON } from "$lib/crypto";
   import type { ReceiptData, ReceiptItem } from "$lib/types";
 
@@ -381,12 +382,8 @@
 <div class="space-y-6">
   {#if !isDispatchMode}
     <!-- LEDGER VIEW -->
-    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div class="space-y-1">
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Pending Receipts</h1>
-      </div>
-
-      <div class="flex items-end gap-3">
+    <SubpageHeader title="Pending Receipts">
+      {#snippet actions()}
         <TermFilter onSelect={() => loadData()} />
         <div class="flex gap-2">
           <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
@@ -421,8 +418,8 @@
             </AlertDialog.Content>
           </AlertDialog.Root>
         </div>
-      </div>
-    </header>
+      {/snippet}
+    </SubpageHeader>
 
     {#if error}
       <div
@@ -434,10 +431,7 @@
     {/if}
 
     {#if isLoading}
-      <div class="flex h-64 flex-col items-center justify-center gap-2">
-        <Loader2 class="h-8 w-8 animate-spin" />
-        <p>Loading records...</p>
-      </div>
+      <LoadingView text="Loading records..." />
     {:else if queue.length > 0}
       <Card.Root class="overflow-hidden">
         <Card.Content class="p-0">

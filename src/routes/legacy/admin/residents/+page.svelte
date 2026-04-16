@@ -17,7 +17,6 @@
   import RichEditor from "$lib/components/RichEditor.svelte";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import {
-    Loader2,
     RefreshCcw,
     Users,
     Search,
@@ -31,6 +30,8 @@
     ArrowUpDown,
     FilterX
   } from "lucide-svelte";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
 
   // Account Sheet Column Indices
   const COL = {
@@ -284,12 +285,8 @@
 
 <div class="space-y-6">
   {#if !isDispatchMode}
-    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div class="space-y-1">
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Residents</h1>
-      </div>
-
-      <div class="flex items-end gap-3">
+    <SubpageHeader title="Residents">
+      {#snippet actions()}
         <TermFilter onSelect={loadData} />
         <div class="flex gap-2">
           <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
@@ -305,8 +302,8 @@
             Batch Status ({selectedIndices.size})
           </Button>
         </div>
-      </div>
-    </header>
+      {/snippet}
+    </SubpageHeader>
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       <div class="space-y-1.5 lg:col-span-2">
@@ -368,10 +365,7 @@
     </div>
 
     {#if isLoading}
-      <div class="flex h-64 flex-col items-center justify-center gap-2">
-        <Loader2 class="h-8 w-8 animate-spin" />
-        <p>Loading resident directory...</p>
-      </div>
+      <LoadingView text="Loading resident directory..." />
     {:else if error}
       <div
         class="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm font-medium text-destructive"

@@ -29,6 +29,8 @@
     ArrowUpRight,
     ExternalLink
   } from "lucide-svelte";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
 
   const id = $derived(page.params.id);
 
@@ -115,27 +117,18 @@
 </script>
 
 <div class="space-y-6">
-  <header class="flex items-center gap-4">
-    <Button variant="ghost" size="icon" href="/legacy/admin/transactions">
-      <ChevronLeft class="h-5 w-5" />
-    </Button>
-    <div class="space-y-1">
-      <div class="flex items-center gap-2">
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">View Transaction</h1>
-        {#if transaction && transaction[COL.WAS_AUDITED] === "TRUE"}
-          <Badge class="border-transparent bg-primary px-2 py-0 text-[10px] font-black text-white"
-            >AUDITED</Badge
-          >
-        {/if}
-      </div>
-    </div>
-  </header>
+  <SubpageHeader title="View Transaction" href="/legacy/admin/transactions">
+    {#snippet titleExtra()}
+      {#if transaction && transaction[COL.WAS_AUDITED] === "TRUE"}
+        <Badge class="border-transparent bg-primary px-2 py-0 text-[10px] font-black text-white"
+          >AUDITED</Badge
+        >
+      {/if}
+    {/snippet}
+  </SubpageHeader>
 
   {#if isLoading}
-    <div class="flex h-64 flex-col items-center justify-center gap-3 py-12">
-      <Loader2 class="h-8 w-8 animate-spin text-primary opacity-20" />
-      <p>Loading transaction...</p>
-    </div>
+    <LoadingView text="Loading transaction..." />
   {:else if error}
     <Card.Root class="border-destructive/20 bg-destructive/5">
       <Card.Content class="flex flex-col items-center justify-center p-12 text-center">

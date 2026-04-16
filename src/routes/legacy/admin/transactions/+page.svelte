@@ -23,7 +23,6 @@
   import { Label } from "$lib/components/ui/label";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import {
-    Loader2,
     RefreshCcw,
     ListFilter,
     Plus,
@@ -34,6 +33,8 @@
     ChevronRight
   } from "lucide-svelte";
   import type { ReceiptItem } from "$lib/types";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
 
   interface TransactionRecord {
     raw: string[];
@@ -205,12 +206,8 @@
 </script>
 
 <div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div class="space-y-1">
-      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Transactions</h1>
-    </div>
-
-    <div class="flex items-end gap-3">
+  <SubpageHeader title="Transactions">
+    {#snippet actions()}
       <TermFilter onSelect={() => loadData()} />
       <div class="flex gap-2">
         <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
@@ -222,8 +219,8 @@
           Add
         </Button>
       </div>
-    </div>
-  </header>
+    {/snippet}
+  </SubpageHeader>
 
   <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
     <div class="space-y-1.5">
@@ -281,10 +278,7 @@
   </div>
 
   {#if isLoading}
-    <div class="flex h-64 flex-col items-center justify-center gap-2">
-      <Loader2 class="h-8 w-8 animate-spin" />
-      <p>Loading transactions...</p>
-    </div>
+    <LoadingView text="Loading transactions..." />
   {:else if error}
     <div
       class="flex h-64 flex-col items-center justify-center gap-2 rounded-xl border border-destructive/10 bg-destructive/5"

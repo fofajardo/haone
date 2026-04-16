@@ -21,6 +21,7 @@
   import TermFilter from "$lib/components/TermFilter.svelte";
   import {
     Loader2,
+    RefreshCcw,
     ChevronLeft,
     User,
     ShieldCheck,
@@ -32,12 +33,13 @@
     MapPin,
     GraduationCap,
     Clock,
-    RefreshCcw,
     Mail,
     Send,
     IdCard,
     Bed as BedIcon
   } from "lucide-svelte";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
 
   const stno = $derived(page.params.stno);
 
@@ -220,55 +222,39 @@
 </script>
 
 <div class="space-y-6">
-  <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div class="space-y-1">
-      <Button
-        variant="ghost"
-        size="sm"
-        href="/legacy/admin/residents"
-        class="-ml-2 h-7 text-xs font-bold text-muted-foreground hover:text-slate-900"
-      >
-        <ChevronLeft class="mr-1 h-3 w-3" /> Back to Directory
-      </Button>
-      <div class="flex flex-wrap items-center gap-3">
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-          {account?.name || "Resident Profile"}
-        </h1>
-        {#if account}
-          <div class="flex flex-wrap gap-2">
-            {#if account.bal < 0}
-              <Badge
-                variant="outline"
-                class="border-primary/20 bg-primary/5 text-[10px] font-black tracking-tighter text-primary uppercase"
-                >Overpaid</Badge
-              >
-            {/if}
-            {#if account.bal === 0 && (account.waterBal < 0 || account.assocBal < 0)}
-              <Badge
-                variant="outline"
-                class="border-amber-200 bg-amber-100 text-[10px] font-black tracking-tighter text-amber-700 uppercase"
-                >Potential Misassignment</Badge
-              >
-            {/if}
-          </div>
-        {/if}
-      </div>
-    </div>
+  <SubpageHeader title={account?.name || "Resident Profile"} href="/legacy/admin/residents">
+    {#snippet titleExtra()}
+      {#if account}
+        <div class="flex flex-wrap gap-2">
+          {#if account.bal < 0}
+            <Badge
+              variant="outline"
+              class="border-primary/20 bg-primary/5 text-[10px] font-black tracking-tighter text-primary uppercase"
+              >Overpaid</Badge
+            >
+          {/if}
+          {#if account.bal === 0 && (account.waterBal < 0 || account.assocBal < 0)}
+            <Badge
+              variant="outline"
+              class="border-amber-200 bg-amber-100 text-[10px] font-black tracking-tighter text-amber-700 uppercase"
+              >Potential Misassignment</Badge
+            >
+          {/if}
+        </div>
+      {/if}
+    {/snippet}
 
-    <div class="flex items-center gap-2">
+    {#snippet actions()}
       <TermFilter onSelect={loadResidentProfile} />
       <Button variant="outline" size="sm" onclick={loadResidentProfile} disabled={isLoading}>
         <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
         <span class="hidden sm:inline">Refresh Data</span>
       </Button>
-    </div>
-  </header>
+    {/snippet}
+  </SubpageHeader>
 
   {#if isLoading}
-    <div class="flex h-96 flex-col items-center justify-center gap-4">
-      <Loader2 class="h-8 w-8 animate-spin" />
-      <p>Loading profile...</p>
-    </div>
+    <LoadingView text="Loading profile..." />
   {:else if error}
     <Card.Root class="border-destructive/20 bg-destructive/5">
       <Card.Content class="flex flex-col items-center justify-center p-12 text-center">

@@ -12,6 +12,8 @@
   import RichEditor from "$lib/components/RichEditor.svelte";
   import * as Select from "$lib/components/ui/select";
   import { Loader2, ChevronLeft, Search, User, UserCircle } from "lucide-svelte";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
 
   // Account Sheet Indices
   const ACC = {
@@ -233,15 +235,11 @@
 </script>
 
 <div class="mx-auto max-w-3xl space-y-6">
-  <header class="flex items-center gap-4">
-    <Button variant="ghost" size="icon" href="/legacy/admin/transactions">
-      <ChevronLeft class="h-5 w-5" />
-    </Button>
-    <div class="space-y-1">
-      <h1 class="text-3xl font-bold tracking-tight text-slate-900">Add Transaction</h1>
-      <p class="text-sm text-muted-foreground">Create a new entry in the general journal.</p>
-    </div>
-  </header>
+  <SubpageHeader
+    title="Add Transaction"
+    subtitle="Create a new entry in the general journal."
+    href="/legacy/admin/transactions"
+  />
 
   {#if error}
     <div
