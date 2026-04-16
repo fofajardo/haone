@@ -1,10 +1,8 @@
 import { formatAccounting, formatAmount } from "$lib/receipt-utils";
 import { wrapEmailHtml } from "./base";
+import type { BrandingProfile, EmailTemplate } from "./types";
 
-/**
- * Generates HTML for a Payment Status Update email.
- */
-export function generatePaymentStatusHtml(data: {
+export interface PaymentStatusData {
   accountName: string;
   room: string;
   bed: string;
@@ -22,9 +20,12 @@ export function generatePaymentStatusHtml(data: {
   bal: number;
   isFullyPaid: boolean;
   reminders: string;
-  headerImageUrl: string;
-  replyTo: string;
-}) {
+}
+
+/**
+ * Generates HTML for a Payment Status Update email.
+ */
+export function generatePaymentStatusHtml(data: PaymentStatusData, branding: BrandingProfile) {
   const dateStr = new Date()
     .toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     .toUpperCase();
@@ -235,10 +236,15 @@ export function generatePaymentStatusHtml(data: {
     </ul>
 
     <p class="em-p" style="margin-top: 35px;">
-      For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${data.replyTo}" class="em-link-inline">${data.replyTo}</a>.
+      For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${branding.replyTo}" class="em-link-inline">${branding.replyTo}</a>.
     </p>
   </div>
   `;
 
-  return wrapEmailHtml(content, data.headerImageUrl, data.replyTo);
+  return wrapEmailHtml(content, branding.emailHeaderUrl, branding.replyTo);
 }
+
+export const PaymentStatusTemplate: EmailTemplate<PaymentStatusData> = {
+  subject: (data) => `Payment Status Update: ${data.accountName}`,
+  generateHtml: generatePaymentStatusHtml
+};

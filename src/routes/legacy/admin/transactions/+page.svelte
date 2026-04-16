@@ -43,7 +43,7 @@
     total: number;
   }
 
-  let journal = $state<TransactionRecord[]>([]);
+  let journal = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(false);
@@ -58,31 +58,8 @@
   let sortKey = $state("DATE");
   let sortOrder = $state<"asc" | "desc">("desc");
 
-  const COL = {
-    DATE: 0,
-    CREATOR_EMAIL: 1,
-    ACCOUNT: 2,
-    WATER_FEE: 3,
-    ASSOC_FEE: 4,
-    MISC: 5,
-    MOP: 6,
-    PERIOD: 7,
-    TYPE: 8,
-    NOTES: 9,
-    NOTES_PRIVATE: 10,
-    MOP_REFNO: 11,
-    PR_DATE_ISSUED: 12,
-    PR_REFNO: 13,
-    CREATOR_NAME: 14,
-    ACCOUNT_NAME: 15,
-    ST_NO: 16,
-    INCOMING: 17,
-    OUTGOING: 18,
-    BALANCE: 19,
-    WAS_AUDITED: 20,
-    LEGACY_RECEIPT_URL: 21,
-    ID: 22
-  };
+  import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/schemas";
+  import { mapRowToJournal, parseAmount } from "$lib/resident-logic";
 
   async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
@@ -124,17 +101,16 @@
           }))
       ];
 
-      journal = rows.slice(1).map((row, idx) => {
-        const water = parseCSVAmount(row[COL.WATER_FEE]);
-        const assoc = parseCSVAmount(row[COL.ASSOC_FEE]);
-        const misc = parseCSVAmount(row[COL.MISC]);
-        return {
-          raw: row,
-          index: idx + 2,
-          dateWeight: parseDateWeight(row[COL.DATE]),
-          total: water + assoc + misc
-        };
-      });
+      journal = rows
+        .slice(1)
+        .map((row, idx) => {
+          const res = mapRowToJournal(row, idx);
+          return {
+            ...res,
+            dateWeight: parseDateWeight(res.date)
+          };
+        })
+        .filter((r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -146,41 +122,34 @@
 
   const filteredJournal = $derived.by(() => {
     return journal
-      .filter((record) => {
-        const row = record.raw;
+      .filter((r) => {
         const searchStr = (
-          row[COL.ACCOUNT_NAME] +
-          row[COL.ACCOUNT] +
-          row[COL.CREATOR_NAME] +
-          row[COL.NOTES]
+          (r.name || "") +
+          (r.account || "") +
+          (r.creatorName || "") +
+          (r.notes || "")
         ).toLowerCase();
 
         const matchSearch = filterSearch === "" || searchStr.includes(filterSearch.toLowerCase());
         const matchSemester =
-          !uiSettings.currentSemester || row[COL.PERIOD] === uiSettings.currentSemester;
-        const matchType = filterType === "ALL" || row[COL.TYPE] === filterType;
-        const matchMop = filterMop === "ALL" || row[COL.MOP] === filterMop;
+          !uiSettings.currentSemester || r.period === uiSettings.currentSemester;
+        const matchType = filterType === "ALL" || r.type === filterType;
+        const matchMop = filterMop === "ALL" || r.mop === filterMop;
 
         return matchSearch && matchSemester && matchType && matchMop;
       })
       .sort((a, b) => {
         const order = sortOrder === "asc" ? 1 : -1;
         if (sortKey === "DATE") {
-          const wA = a.dateWeight;
-          const wB = b.dateWeight;
-          return (wA - wB) * order || (a.index - b.index) * order;
+          return (
+            (a.dateWeight! - b.dateWeight!) * order || (a.ledgerIndex! - b.ledgerIndex!) * order
+          );
         }
-        if (sortKey === "TOTAL") return (a.total - b.total) * order;
-        if (sortKey === "ACCOUNT")
-          return (
-            (a.raw[COL.ACCOUNT_NAME] || "").localeCompare(b.raw[COL.ACCOUNT_NAME] || "") * order
-          );
+        if (sortKey === "TOTAL") return (a.amount - b.amount) * order;
+        if (sortKey === "ACCOUNT") return (a.name || "").localeCompare(b.name || "") * order;
         if (sortKey === "CREATOR")
-          return (
-            (a.raw[COL.CREATOR_NAME] || "").localeCompare(b.raw[COL.CREATOR_NAME] || "") * order
-          );
-        if (sortKey === "TYPE")
-          return (a.raw[COL.TYPE] || "").localeCompare(b.raw[COL.TYPE] || "") * order;
+          return (a.creatorName || "").localeCompare(b.creatorName || "") * order;
+        if (sortKey === "TYPE") return (a.type || "").localeCompare(b.type || "") * order;
         return 0;
       });
   });
@@ -204,11 +173,11 @@
     return type ? type.label : val;
   }
 
-  function getActiveItems(row: string[]) {
+  function getActiveItems(r: JournalRecord) {
     return [
-      { name: "Water Fee", amount: parseCSVAmount(row[COL.WATER_FEE]) },
-      { name: "Association Fee", amount: parseCSVAmount(row[COL.ASSOC_FEE]) },
-      { name: "Misc Fee", amount: parseCSVAmount(row[COL.MISC]) }
+      { name: "Water Fee", amount: r.water },
+      { name: "Association Fee", amount: r.assoc },
+      { name: "Misc Fee", amount: r.misc }
     ].filter((i) => i.amount !== 0);
   }
 </script>
@@ -356,48 +325,48 @@
               {#each filteredJournal as record}
                 <Table.Row
                   class="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/5"
-                  onclick={() => goto(`/legacy/admin/transactions/${record.raw[COL.ID] || ""}`)}
+                  onclick={() => goto(`/legacy/admin/transactions/${record.id || ""}`)}
                 >
                   <Table.Cell class="px-4 py-2 align-top text-xs text-slate-500 tabular-nums"
-                    >{formatDate(record.raw[COL.DATE])}</Table.Cell
+                    >{formatDate(record.date)}</Table.Cell
                   >
                   <Table.Cell class="px-4 py-2 align-top">
                     <div class="flex flex-col">
                       <span class="text-[11px] leading-tight font-bold text-slate-900"
-                        >{record.raw[COL.CREATOR_NAME]}</span
+                        >{record.creatorName}</span
                       >
                       <span class="text-[9px] font-medium text-muted-foreground"
-                        >{record.raw[COL.CREATOR_EMAIL]}</span
+                        >{record.creator}</span
                       >
                     </div>
                   </Table.Cell>
                   <Table.Cell class="w-64 px-4 py-2 align-top">
                     <div class="flex flex-col">
                       <span class="text-[11px] leading-tight font-bold text-slate-900"
-                        >{record.raw[COL.ACCOUNT_NAME]}</span
+                        >{record.name}</span
                       >
                       <span class="text-[9px] font-medium text-muted-foreground"
-                        >{record.raw[COL.ACCOUNT]}</span
+                        >{record.account}</span
                       >
                     </div>
                   </Table.Cell>
                   <Table.Cell class="px-4 py-2 align-top">
                     <div class="flex flex-col">
                       <span class="text-[10px] font-bold tracking-tight text-slate-600 uppercase"
-                        >{translateType(record.raw[COL.TYPE])}</span
+                        >{translateType(record.type)}</span
                       >
                       <span class="text-[9px] text-muted-foreground"
-                        >{translateMop(record.raw[COL.MOP])}</span
+                        >{translateMop(record.mop)}</span
                       >
                     </div>
                   </Table.Cell>
                   <Table.Cell class="max-w-[200px] truncate px-4 py-2 align-top"
-                    ><span class="text-[10px] text-slate-600">{record.raw[COL.NOTES] || "—"}</span
+                    ><span class="text-[10px] text-slate-600">{record.notes || "—"}</span
                     ></Table.Cell
                   >
                   <Table.Cell class="px-4 py-2 text-right align-top"
                     ><span class="font-mono text-xs font-bold text-slate-900"
-                      >{formatAccounting(record.total)}</span
+                      >{formatAccounting(record.amount)}</span
                     ></Table.Cell
                   >
                 </Table.Row>

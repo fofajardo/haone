@@ -1,19 +1,23 @@
 import { wrapEmailHtml } from "./base";
 import { formatDate } from "$lib/receipt-utils";
+import type { BrandingProfile, EmailTemplate } from "./types";
 
 export interface AcknowledgmentData {
   accountFullName: string;
   date: string;
   type: string;
   receiptUrl: string;
-  replyTo: string;
-  headerImageUrl: string;
+  seriesNumber: string;
+  items?: { name: string; amount: number }[];
 }
 
 /**
  * Generates HTML for an Acknowledgment Receipt email.
  */
-export function generateAcknowledgmentReceiptHtml(data: AcknowledgmentData) {
+export function generateAcknowledgmentReceiptHtml(
+  data: AcknowledgmentData,
+  branding: BrandingProfile
+) {
   let typeSpecificText = "";
   const formattedDate = formatDate(data.date);
 
@@ -46,9 +50,14 @@ export function generateAcknowledgmentReceiptHtml(data: AcknowledgmentData) {
   </p>
 
   <p class="em-p">
-    For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${data.replyTo}" class="em-link-inline">${data.replyTo}</a>.
+    For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${branding.replyTo}" class="em-link-inline">${branding.replyTo}</a>.
   </p>
   `;
 
-  return wrapEmailHtml(content, data.headerImageUrl, data.replyTo);
+  return wrapEmailHtml(content, branding.emailHeaderUrl, branding.replyTo);
 }
+
+export const AcknowledgmentTemplate: EmailTemplate<AcknowledgmentData> = {
+  subject: (data, branding) => `Your ${branding.shortName} Receipt PMT-${data.seriesNumber}`,
+  generateHtml: generateAcknowledgmentReceiptHtml
+};

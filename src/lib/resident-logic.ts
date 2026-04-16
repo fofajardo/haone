@@ -1,0 +1,177 @@
+import { emailDispatcher } from "./dispatcher.svelte";
+import { PaymentStatusTemplate } from "./templates/payment-status";
+import type { BrandingProfile } from "./templates/types";
+import { goto } from "$app/navigation";
+import { ACCOUNT_COL, JOURNAL_COL, type ResidentRecord, type JournalRecord } from "./schemas";
+import { formatCurrency, formatAmount, formatDate } from "./receipt-utils";
+
+/**
+ * Robust financial parsing for spreadsheet values.
+ * Handles currency symbols (₱), separators (,), and nulls.
+ */
+export function parseAmount(val: any): number {
+  if (!val) return 0;
+  const clean = val.toString().replace(/[₱,]/g, "").trim();
+  return parseFloat(clean) || 0;
+}
+
+/**
+ * Maps a raw Google Sheets row to a typed ResidentRecord.
+ */
+export function mapRowToResident(row: string[]): ResidentRecord {
+  return {
+    raw: row,
+    email: (row[ACCOUNT_COL.EMAIL] || "").trim(),
+    period: (row[ACCOUNT_COL.PERIOD] || "").trim(),
+    room: (row[ACCOUNT_COL.ROOM] || "").trim(),
+    bed: (row[ACCOUNT_COL.BED] || "").trim(),
+    name: (row[ACCOUNT_COL.NAME] || "").trim(),
+    stno: (row[ACCOUNT_COL.STNO] || "").trim(),
+    waterBase: parseAmount(row[ACCOUNT_COL.WATER_BASE]),
+    waterPaid: parseAmount(row[ACCOUNT_COL.WATER_PAID]),
+    waterWaived: parseAmount(row[ACCOUNT_COL.WATER_WAIVED]),
+    waterBal: parseAmount(row[ACCOUNT_COL.WATER_BAL]),
+    assocBase: parseAmount(row[ACCOUNT_COL.ASSOC_BASE]),
+    assocPaid: parseAmount(row[ACCOUNT_COL.ASSOC_PAID]),
+    assocWaived: parseAmount(row[ACCOUNT_COL.ASSOC_WAIVED]),
+    assocBal: parseAmount(row[ACCOUNT_COL.ASSOC_BAL]),
+    totalBase: parseAmount(row[ACCOUNT_COL.BASE]),
+    paid: parseAmount(row[ACCOUNT_COL.PAID]),
+    waived: parseAmount(row[ACCOUNT_COL.WAIVED]),
+    bal: parseAmount(row[ACCOUNT_COL.BAL]),
+    isFullyPaid: (row[ACCOUNT_COL.IS_FULLY_PAID] || "").toString().toUpperCase() === "YES",
+    ceRefNo: (row[ACCOUNT_COL.CE_REFNO] || "").trim(),
+    ceIssued: (row[ACCOUNT_COL.CE_ISSUED] || "").trim(),
+    ceLink: (row[ACCOUNT_COL.CE_LINK] || "").trim(),
+    notes: (row[ACCOUNT_COL.NOTES] || "").trim(),
+    college: (row[ACCOUNT_COL.COLLEGE] || "").trim(),
+    program: (row[ACCOUNT_COL.PROGRAM] || "").trim()
+  };
+}
+
+/**
+ * Maps a raw Journal sheet row to a typed JournalRecord.
+ */
+export function mapRowToJournal(row: string[], index?: number): JournalRecord {
+  const water = parseAmount(row[JOURNAL_COL.WATER]);
+  const assoc = parseAmount(row[JOURNAL_COL.ASSOC]);
+  const misc = parseAmount(row[JOURNAL_COL.MISC]);
+
+  return {
+    raw: row,
+    date: (row[JOURNAL_COL.DATE] || "").trim(),
+    creator: (row[JOURNAL_COL.CREATOR] || "").trim(),
+    account: (row[JOURNAL_COL.ACCOUNT] || "").trim(),
+    water,
+    assoc,
+    misc,
+    amount: water + assoc + misc,
+    mop: (row[JOURNAL_COL.MOP] || "").trim(),
+    period: (row[JOURNAL_COL.PERIOD] || "").trim(),
+    type: (row[JOURNAL_COL.TYPE] || "").trim(),
+    notes: (row[JOURNAL_COL.NOTES] || "").trim(),
+    notesPrivate: (row[JOURNAL_COL.NOTES_PRIVATE] || "").trim(),
+    mopRefNo: (row[JOURNAL_COL.MOP_REFNO] || "").trim(),
+    prDateIssued: (row[JOURNAL_COL.PR_DATE_ISSUED] || "").trim(),
+    prRefNo: (row[JOURNAL_COL.PR_REFNO] || "").trim(),
+    creatorName: (row[JOURNAL_COL.CREATOR_NAME] || "").trim(),
+    name: (row[JOURNAL_COL.NAME] || "").trim(),
+    stno: (row[JOURNAL_COL.STNO] || "").trim(),
+    wasAudited: (row[JOURNAL_COL.WAS_AUDITED] || "").toString().toUpperCase() === "TRUE",
+    legacyReceiptUrl: (row[JOURNAL_COL.LEGACY_RECEIPT_URL] || "").trim(),
+    id: (row[JOURNAL_COL.ID] || "").trim(),
+    ledgerIndex: index
+  };
+}
+
+/**
+ * Stages a single status reminder email in the dispatcher.
+ */
+export function stageStatusEmail(
+  resident: ResidentRecord,
+  branding: BrandingProfile,
+  options: {
+    clearQueue?: boolean;
+    customReminders?: string;
+    redirect?: boolean;
+  } = {}
+) {
+  if (options.clearQueue) {
+    emailDispatcher.clear();
+  }
+
+  emailDispatcher.configType = "reminders";
+  emailDispatcher.batchType = "REMINDER";
+
+  emailDispatcher.push(mapResidentToStagedEmail(resident, branding, options.customReminders));
+
+  if (options.redirect) {
+    goto("/legacy/admin/email-dispatcher");
+  }
+}
+
+/**
+ * Stages multiple status reminder emails.
+ */
+export function stageStatusEmailBatch(
+  residents: ResidentRecord[],
+  branding: BrandingProfile,
+  options: {
+    clearQueue?: boolean;
+    customReminders?: string;
+    redirect?: boolean;
+  } = {}
+) {
+  if (options.clearQueue) {
+    emailDispatcher.clear();
+  }
+
+  emailDispatcher.configType = "reminders";
+  emailDispatcher.batchType = "REMINDER";
+
+  for (const r of residents) {
+    emailDispatcher.push(mapResidentToStagedEmail(r, branding, options.customReminders));
+  }
+
+  if (options.redirect) {
+    goto("/legacy/admin/email-dispatcher");
+  }
+}
+
+/**
+ * Private mapper from record to staged email.
+ */
+function mapResidentToStagedEmail(
+  resident: ResidentRecord,
+  branding: BrandingProfile,
+  customReminders?: string
+) {
+  return {
+    id: resident.stno,
+    to: resident.email,
+    recipientName: resident.name,
+    template: PaymentStatusTemplate as any,
+    data: {
+      accountName: resident.name,
+      room: resident.room,
+      bed: resident.bed,
+      waterBase: resident.waterBase,
+      waterPaid: resident.waterPaid,
+      waterWaived: resident.waterWaived,
+      waterBal: resident.waterBal,
+      assocBase: resident.assocBase,
+      assocPaid: resident.assocPaid,
+      assocWaived: resident.assocWaived,
+      assocBal: resident.assocBal,
+      totalBase: resident.totalBase,
+      paid: resident.paid,
+      waived: resident.waived,
+      bal: resident.bal,
+      isFullyPaid: resident.isFullyPaid,
+      reminders: customReminders || "",
+      headerImageUrl: branding.emailHeaderUrl,
+      replyTo: branding.replyTo
+    },
+    branding: branding
+  };
+}

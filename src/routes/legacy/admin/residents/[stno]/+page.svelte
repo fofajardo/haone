@@ -36,92 +36,28 @@
     Mail,
     Send,
     IdCard,
-    Bed as BedIcon
+    Bed as BedIcon,
+    ArrowRight
   } from "lucide-svelte";
+  import {
+    ACCOUNT_COL as ACC,
+    JOURNAL_COL as JOR,
+    type ResidentRecord as AccountRecord,
+    type JournalRecord
+  } from "$lib/schemas";
+  import {
+    stageStatusEmail,
+    parseAmount,
+    mapRowToResident,
+    mapRowToJournal
+  } from "$lib/resident-logic";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
 
   const stno = $derived(page.params.stno);
 
-  // Mapping based on provided indices
-  const ACC = {
-    EMAIL: 0,
-    PERIOD: 1,
-    ROOM: 2,
-    BED: 3,
-    WATER_BASE: 4,
-    WATER_PAID: 5,
-    WATER_WAIVED: 6,
-    WATER_BAL: 7,
-    ASSOC_BASE: 8,
-    ASSOC_PAID: 9,
-    ASSOC_WAIVED: 10,
-    ASSOC_BAL: 11,
-    BASE: 12,
-    PAID: 13,
-    WAIVED: 14,
-    BAL: 15,
-    CE_REFNO: 16,
-    CE_ISSUED: 17,
-    IS_FULLY_PAID: 18,
-    NAME: 19,
-    STNO: 24, // CE_STNO
-    CE_LINK: 26,
-    COLLEGE: 28,
-    PROGRAM: 29,
-    NOTES: 27 // ACCOUNT_NOTES
-  };
-
-  const JOR = {
-    DATE: 0,
-    CREATOR: 1,
-    ACCOUNT: 2,
-    WATER: 3,
-    ASSOC: 4,
-    MISC: 5,
-    MOP: 6,
-    PERIOD: 7,
-    TYPE: 8,
-    NOTES: 9,
-    NOTES_PRIVATE: 10,
-    MOP_REFNO: 11,
-    PR_DATE_ISSUED: 12,
-    PR_REFNO: 13,
-    STNO: 16,
-    ID: 22
-  };
-
-  interface AccountRecord {
-    raw: string[];
-    name: string;
-    email: string;
-    stno: string;
-    room: string;
-    bed: string;
-    college: string;
-    program: string;
-    waterBal: number;
-    assocBal: number;
-    bal: number;
-    isFullyPaid: boolean;
-    ceIssued: string;
-    ceRefNo: string;
-    ceLink: string;
-  }
-
-  interface JournalEntry {
-    date: string;
-    type: string;
-    amount: number;
-    mop: string;
-    notes: string;
-    creator: string;
-    id: string;
-    raw: string[];
-  }
-
   let account = $state<AccountRecord | null>(null);
-  let history = $state<JournalEntry[]>([]);
+  let history = $state<JournalRecord[]>([]);
   let semesterCount = $state(0);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -137,12 +73,6 @@
         })
       : []
   );
-
-  function parseAmount(val: any) {
-    if (!val) return 0;
-    const clean = val.toString().replace(/[₱,]/g, "").trim();
-    return parseFloat(clean) || 0;
-  }
 
   async function loadResidentProfile(forceRefresh = false) {
     if (!brandingState.spreadsheetId || !stno) return;
@@ -174,23 +104,7 @@
         return;
       }
 
-      account = {
-        raw: matchedRow,
-        name: matchedRow[ACC.NAME] || "Unknown Resident",
-        email: matchedRow[ACC.EMAIL] || "N/A",
-        stno: matchedRow[ACC.STNO] || "N/A",
-        room: matchedRow[ACC.ROOM] || "—",
-        bed: matchedRow[ACC.BED] || "—",
-        college: matchedRow[ACC.COLLEGE] || "—",
-        program: matchedRow[ACC.PROGRAM] || "—",
-        waterBal: parseAmount(matchedRow[ACC.WATER_BAL]),
-        assocBal: parseAmount(matchedRow[ACC.ASSOC_BAL]),
-        bal: parseAmount(matchedRow[ACC.BAL]),
-        isFullyPaid: (matchedRow[ACC.IS_FULLY_PAID] || "").toString().toUpperCase() === "YES",
-        ceIssued: matchedRow[ACC.CE_ISSUED] || "",
-        ceRefNo: matchedRow[ACC.CE_REFNO] || "",
-        ceLink: matchedRow[ACC.CE_LINK] || ""
-      };
+      account = mapRowToResident(matchedRow);
 
       // 2. Fetch Transaction History
       const jorRows = await fetchSheetRowsRaw(
@@ -206,19 +120,14 @@
             r[JOR.STNO]?.trim() === stno &&
             (!uiSettings.currentSemester || r[JOR.PERIOD] === uiSettings.currentSemester)
         )
-        .map((r, idx) => ({
-          date: r[JOR.DATE],
-          type: r[JOR.TYPE],
-          amount: parseAmount(r[JOR.WATER]) + parseAmount(r[JOR.ASSOC]) + parseAmount(r[JOR.MISC]),
-          mop: r[JOR.MOP],
-          notes: r[JOR.NOTES],
-          creator: r[JOR.CREATOR],
-          id: r[JOR.ID] || "",
-          dateWeight: parseDateWeight(r[JOR.DATE]),
-          ledgerIndex: idx,
-          raw: r
-        }))
-        .sort((a, b) => b.dateWeight - a.dateWeight || b.ledgerIndex - a.ledgerIndex);
+        .map((r, idx) => {
+          const journal = mapRowToJournal(r, idx);
+          return {
+            ...journal,
+            dateWeight: parseDateWeight(journal.date)
+          };
+        })
+        .sort((a, b) => b.dateWeight - a.dateWeight || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0));
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -227,6 +136,14 @@
   }
 
   onMount(loadResidentProfile);
+
+  function sendStatusEmail() {
+    if (!account) return;
+    stageStatusEmail(account, brandingState.profile, {
+      clearQueue: true,
+      redirect: true
+    });
+  }
 </script>
 
 <div class="space-y-6">
@@ -293,6 +210,14 @@
             class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
           >
             <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" /> Add Transaction
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={sendStatusEmail}
+            class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
+          >
+            <Mail class="mr-1.5 h-3.5 w-3.5" /> Send Status Update
           </Button>
           <Button
             variant="outline"

@@ -26,7 +26,7 @@ export function wrapEmailHtml(content: string, headerImageUrl: string, replyTo: 
     #${SCOPE_ID} .em-container { max-width: 600px !important; margin: 0 auto !important; padding: 20px 0 !important; }
     #${SCOPE_ID} .em-header-img { display: block !important; width: 100% !important; height: auto !important; border: none !important; margin-bottom: 25px !important; }
     
-    /* Typography Scoped to #${SCOPE_ID} */
+    /* Typography */
     #${SCOPE_ID} .em-h2 { font-size: 20px !important; font-weight: bold !important; text-transform: uppercase !important; margin-bottom: 25px !important; color: #000 !important; display: block !important; }
     #${SCOPE_ID} .em-h3 { background-color: #000 !important; color: #ffffff !important; text-align: center !important; padding: 10px !important; font-size: 14px !important; letter-spacing: 1px !important; margin: 0 !important; display: block !important; visibility: visible !important; }
     #${SCOPE_ID} .em-h4 { font-size: 14px !important; font-weight: bold !important; margin-bottom: 12px !important; color: #000 !important; display: block !important; }
@@ -38,7 +38,7 @@ export function wrapEmailHtml(content: string, headerImageUrl: string, replyTo: 
     #${SCOPE_ID} .em-hi { font-size: 16px !important; margin-bottom: 5px !important; font-weight: normal !important; display: block !important; }
     #${SCOPE_ID} .em-hi strong { font-weight: bold !important; }
 
-    /* Rich Text Elements Scoped to #${SCOPE_ID} */
+    /* Rich Text Elements */
     #${SCOPE_ID} strong, #${SCOPE_ID} b { font-weight: bold !important; }
     #${SCOPE_ID} em, #${SCOPE_ID} i { font-style: italic !important; }
     #${SCOPE_ID} ul, #${SCOPE_ID} ol { 

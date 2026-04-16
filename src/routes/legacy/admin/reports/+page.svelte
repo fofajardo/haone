@@ -14,16 +14,8 @@
   import ChartPie from "lucide-svelte/icons/chart-pie";
   import { translateCollege, translateProgram, parseCSVAmount } from "$lib/receipt-utils";
 
-  // Account Sheet Column Indices
-  const COL = {
-    EMAIL: 0,
-    STNO: 24,
-    COLLEGE: 28,
-    DEGREE: 29,
-    PERIOD: 1,
-    IS_FULLY_PAID: 18,
-    PAID: 13
-  };
+  import { ACCOUNT_COL as ACC } from "$lib/schemas";
+  import { mapRowToResident } from "$lib/resident-logic";
 
   interface DataItem {
     label: string;
@@ -68,14 +60,15 @@
         "accounts!A:AD",
         forceRefresh
       );
-      const accounts = rows.slice(1).filter((row) => {
-        const email = (row[COL.EMAIL] || "").trim();
-        const period = (row[COL.PERIOD] || "").trim();
-        return (
-          email !== "_vacant" &&
-          (!uiSettings.currentSemester || period === uiSettings.currentSemester)
+      const accounts = rows
+        .slice(1)
+        .map((row) => mapRowToResident(row))
+        .filter(
+          (r) =>
+            r.email &&
+            r.email !== "_vacant" &&
+            (!uiSettings.currentSemester || r.period === uiSettings.currentSemester)
         );
-      });
 
       const totalResidents = accounts.length;
       if (totalResidents === 0) {
@@ -92,21 +85,19 @@
         "No Payment": 0
       };
 
-      accounts.forEach((row) => {
+      accounts.forEach((res) => {
         // College translation & merging
-        const collegeRaw = (row[COL.COLLEGE] || "").trim();
-        const translatedColleges = translateCollege(collegeRaw);
+        const translatedColleges = translateCollege(res.college);
         const college = translatedColleges[translatedColleges.length - 1]; // Take last
         collegesMap[college] = (collegesMap[college] || 0) + 1;
 
         // Degree translation & merging
-        const degreeRaw = (row[COL.DEGREE] || "").trim();
-        const translatedDegrees = translateProgram(degreeRaw);
+        const translatedDegrees = translateProgram(res.program);
         const degree = translatedDegrees[translatedDegrees.length - 1]; // Take last
         degreesMap[degree] = (degreesMap[degree] || 0) + 1;
 
         // Batch processing
-        const stno = (row[COL.STNO] || "").trim();
+        const stno = res.stno.trim();
         if (stno && stno.length >= 4) {
           const batch = stno.substring(0, 4);
           if (/^\d{4}$/.test(batch)) {
@@ -115,14 +106,10 @@
         }
 
         // Payment status processing
-        const isFullyPaid =
-          (row[COL.IS_FULLY_PAID] || "").toString().trim().toUpperCase() === "YES";
-        const paidAmount = parseCSVAmount(row[COL.PAID]);
-
         let status = "No Payment";
-        if (isFullyPaid) {
+        if (res.isFullyPaid) {
           status = "Fully Paid";
-        } else if (paidAmount > 0) {
+        } else if (res.paid > 0) {
           status = "Partial Payment";
         }
         paidMap[status]++;
