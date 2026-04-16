@@ -574,19 +574,11 @@
     {/if}
   {:else}
     <!-- DISPATCH VIEW -->
-    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div class="space-y-1">
-        <button
-          onclick={() => (isDispatchMode = false)}
-          disabled={isSending || isSuccess}
-          class="mb-2 flex items-center gap-1 text-xs font-bold text-muted-foreground transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <ChevronLeft class="h-3 w-3" /> Back to Queue
-        </button>
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Email Dispatcher</h1>
-      </div>
-
-      <div class="flex gap-2">
+    <SubpageHeader
+      title="Email Dispatcher"
+      onBack={isSending || isSuccess ? undefined : () => (isDispatchMode = false)}
+    >
+      {#snippet actions()}
         <Button
           onclick={runBatchDispatch}
           disabled={isSending || isSuccess || !auth.accessToken}
@@ -601,8 +593,8 @@
             <Play class="mr-2 h-4 w-4" /> Run
           {/if}
         </Button>
-      </div>
-    </header>
+      {/snippet}
+    </SubpageHeader>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Status & Stats -->

@@ -307,7 +307,7 @@
             onclick={() => (isDispatchMode = true)}
           >
             <Mail class="mr-2 h-4 w-4" />
-            Batch Status ({selectedIndices.size})
+            Send Reminder ({selectedIndices.size})
           </Button>
         </div>
       {/snippet}
@@ -543,41 +543,33 @@
     {/if}
   {:else}
     <!-- DISPATCH MODE -->
-    <header class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div class="space-y-1">
-        <button
-          onclick={() => (isDispatchMode = false)}
-          disabled={isSending}
-          class="mb-2 flex items-center gap-1 text-xs font-bold text-muted-foreground hover:text-slate-900 disabled:opacity-50"
+    <SubpageHeader
+      title="Email Dispatcher"
+      onBack={isSending ? undefined : () => (isDispatchMode = false)}
+    >
+      {#snippet actions()}
+        <Button
+          onclick={runBatchDispatch}
+          disabled={isSending || isSuccess}
+          size="sm"
+          class="min-w-[120px]"
         >
-          <ChevronLeft class="h-3 w-3" /> Back to Directory
-        </button>
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900">Status Broadcaster</h1>
-      </div>
-      <Button
-        onclick={runBatchDispatch}
-        disabled={isSending || isSuccess}
-        size="sm"
-        class="min-w-[120px]"
-      >
-        {#if isSending}
-          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Sending...
-        {:else if isSuccess}
-          <CircleCheckBig class="mr-2 h-4 w-4" /> Finished
-        {:else}
-          <Play class="mr-2 h-4 w-4" /> Start Broadcast
-        {/if}
-      </Button>
-    </header>
+          {#if isSending}
+            <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Sending...
+          {:else if isSuccess}
+            <CircleCheckBig class="mr-2 h-4 w-4" /> Finished
+          {:else}
+            <Play class="mr-2 h-4 w-4" /> Run
+          {/if}
+        </Button>
+      {/snippet}
+    </SubpageHeader>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <div class="space-y-6 lg:col-span-1">
         <Card.Root>
           <Card.Header><Card.Title class="text-lg">Edit Reminders</Card.Title></Card.Header>
           <Card.Content>
-            <Label class="mb-4 block text-[10px] font-bold text-muted-foreground uppercase"
-              >Batch Reminders (Rich Text Designer)</Label
-            >
             <RichEditor bind:content={customReminders} />
             <p class="mt-4 text-[10px] leading-relaxed text-muted-foreground italic">
               <strong>Tip</strong>: Use the toolbar to add links, bold text, or lists. These will be
@@ -591,7 +583,7 @@
         <Card.Root>
           <Card.Header class="flex flex-row items-center justify-between">
             <Card.Title class="flex items-center gap-2 text-lg"
-              ><Eye class="h-5 w-5" /> Live Preview</Card.Title
+              ><Eye class="h-5 w-5" /> Email Preview</Card.Title
             >
             <div class="flex items-center gap-2">
               <Button
