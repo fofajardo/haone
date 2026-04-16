@@ -195,7 +195,7 @@
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <p class="text-xs font-bold tracking-wider text-slate-500 uppercase">
-              Pending Settlements
+              Pending Receipts
             </p>
             <h3 class="text-3xl font-black text-slate-900">{stats.pendingSettlements}</h3>
           </div>
