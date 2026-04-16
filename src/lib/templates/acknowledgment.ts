@@ -58,6 +58,6 @@ export function generateAcknowledgmentReceiptHtml(
 }
 
 export const AcknowledgmentTemplate: EmailTemplate<AcknowledgmentData> = {
-  subject: (data, branding) => `Your ${branding.shortName} Receipt PMT-${data.seriesNumber}`,
+  subject: (data, branding) => `[${branding.shortName}] Receipt PMT-${data.seriesNumber}`,
   generateHtml: generateAcknowledgmentReceiptHtml
 };

@@ -218,6 +218,13 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
 }
 
 export const PaymentStatusTemplate: EmailTemplate<PaymentStatusData> = {
-  subject: (data) => `Payment Status Update: ${data.accountName}`,
+  subject: (_data, branding) => {
+    const dateStr = new Date().toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
+    return `[${branding.shortName}] Payment Status as of ${dateStr}`;
+  },
   generateHtml: generatePaymentStatusHtml
 };
