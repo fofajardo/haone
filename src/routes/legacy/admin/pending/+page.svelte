@@ -240,14 +240,14 @@
     </div>
   {/if}
 
-  <div class="mb-2 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+  <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
     <TermFilter onSelect={() => loadData()} />
   </div>
 
   {#if isLoading}
     <LoadingView text="Loading records..." />
   {:else if queue.length > 0}
-    <Card.Root class="overflow-hidden">
+    <Card.Root class="overflow-hidden p-0">
       <Card.Content class="p-0">
         <Table.Root>
           <Table.Header>

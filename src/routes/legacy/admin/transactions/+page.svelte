@@ -265,7 +265,7 @@
       <Button variant="outline" size="sm" onclick={() => loadData()}>Try Again</Button>
     </div>
   {:else if filteredJournal.length > 0}
-    <Card.Root class="overflow-hidden">
+    <Card.Root class="overflow-hidden p-0">
       <Card.Content class="p-0">
         <div class="overflow-x-auto">
           <Table.Root>

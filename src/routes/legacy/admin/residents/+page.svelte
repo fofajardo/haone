@@ -234,7 +234,7 @@
       {error}
     </div>
   {:else if filteredResidents.length > 0}
-    <Card.Root class="overflow-hidden">
+    <Card.Root class="overflow-hidden p-0">
       <Card.Content class="p-0">
         <Table.Root>
           <Table.Header>
