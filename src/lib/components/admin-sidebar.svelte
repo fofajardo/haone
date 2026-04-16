@@ -7,7 +7,8 @@
     ChevronRight,
     User,
     LayoutDashboard,
-    Settings
+    Settings,
+    Receipt
   } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
@@ -22,6 +23,11 @@
       title: "Receipts",
       url: "/legacy/admin/receipts",
       icon: FileText
+    },
+    {
+      title: "Pending Receipts",
+      url: "/legacy/admin/pending",
+      icon: Receipt
     },
     {
       title: "Emails",

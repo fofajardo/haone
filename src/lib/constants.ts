@@ -9,5 +9,6 @@ export const LS_KEYS = {
   BRANDING_PROFILE: "halsk.branding_profile",
   UI_FONT: "halsk.ui_font",
   ACC_REDUCED_MOTION: "halsk.acc.reduced_motion",
-  ACC_SPACIOUS_LAYOUT: "halsk.acc.spacious_layout"
+  ACC_SPACIOUS_LAYOUT: "halsk.acc.spacious_layout",
+  SPREADSHEET_ID: "halsk.branding.spreadsheet_id"
 } as const;

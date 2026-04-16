@@ -4,7 +4,8 @@
   import { Label } from "$lib/components/ui/label";
   import * as Select from "$lib/components/ui/select";
   import { Switch } from "$lib/components/ui/switch";
-  import { CheckCircle2, Sun, Moon, Monitor } from "lucide-svelte";
+  import { Input } from "$lib/components/ui/input";
+  import { Monitor, Sun, Moon, CheckCircle2, AlertTriangle } from "lucide-svelte";
   import branding from "$lib/branding.json";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
@@ -141,20 +142,43 @@
           <Card.Description>Select the active profile for tools and reports.</Card.Description>
         </Card.Header>
         <Card.Content>
-          <div class="space-y-2">
-            <Label for="branding">Active Profile</Label>
-            <Select.Root type="single" bind:value={brandingState.selectedKey}>
-              <Select.Trigger class="w-full">
-                {brandingState.profile.name}
-              </Select.Trigger>
-              <Select.Content>
-                {#each brandingProfiles as key}
-                  <Select.Item value={key} label={(branding as any)[key].name}>
-                    {(branding as any)[key].name}
-                  </Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <Label for="branding">Active Profile</Label>
+              <Select.Root type="single" bind:value={brandingState.selectedKey}>
+                <Select.Trigger class="w-full">
+                  {brandingState.profile.name}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each brandingProfiles as key}
+                    <Select.Item value={key} label={(branding as any)[key].name}>
+                      {(branding as any)[key].name}
+                    </Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            </div>
+            <div class="space-y-2">
+              <Label>Google Spreadsheet ID</Label>
+              <Input
+                placeholder="Enter Spreadsheet ID (from URL)"
+                bind:value={brandingState.spreadsheetId}
+              />
+              {#if brandingState.spreadsheetId && brandingState.spreadsheetId !== (branding as any)[brandingState.selectedKey].spreadsheetId}
+                <div
+                  class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] text-amber-600"
+                >
+                  <AlertTriangle class="h-3.5 w-3.5" />
+                  <span
+                    >Manual override active. This will target a different sheet than the
+                    organization default.</span
+                  >
+                </div>
+              {/if}
+              <p class="text-[10px] text-muted-foreground italic">
+                Found in the sheet URL: docs.google.com/spreadsheets/d/<b>ID_HERE</b>/edit
+              </p>
+            </div>
           </div>
         </Card.Content>
       </Card.Root>

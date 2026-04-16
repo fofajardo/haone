@@ -29,10 +29,16 @@ export function translateMop(mop: string) {
 export function translatePeriod(period: string) {
   if (!period) return "N/A";
   const p = period.trim();
-  const match = p.match(/^(\d{2})(\d{2})_(\d)S$/);
+  const match = p.match(/^(\d{2})(\d{2})_(MY|[1-3]S)$/);
   if (!match) return p;
-  const [_, year1, year2, sem] = match;
-  const ordinal = sem === "1" ? "1st" : sem === "2" ? "2nd" : sem === "3" ? "3rd" : `${sem}th`;
+  const [_, year1, year2, term] = match;
+
+  if (term === "MY") {
+    return `AY 20${year1}-20${year2} Midyear Term`;
+  }
+
+  const sem = term.charAt(0);
+  const ordinal = sem === "1" ? "1st" : "2nd";
   return `AY 20${year1}-20${year2} ${ordinal} Semester`;
 }
 

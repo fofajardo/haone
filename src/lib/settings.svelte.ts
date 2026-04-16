@@ -1,21 +1,32 @@
 import { browser } from "$app/environment";
 import { LS_KEYS } from "./constants";
+import branding from "./branding.json";
 
 export type UIFont = "inter" | "archivo" | "shantell";
-export type DisplayDensity = "compact" | "default" | "comfortable";
+export type DisplayDensity = "default" | "compact" | "comfortable";
 
 class UISettings {
   #fontFamily = $state<UIFont>("inter");
   #reducedMotion = $state(false);
   #displayDensity = $state<DisplayDensity>("default");
+  #currentSemester = $state<string>("");
 
   constructor() {
     if (browser) {
       this.#fontFamily = (localStorage.getItem(LS_KEYS.UI_FONT) as UIFont) || "inter";
       this.#reducedMotion = localStorage.getItem(LS_KEYS.ACC_REDUCED_MOTION) === "true";
+      this.#currentSemester = localStorage.getItem("halsk.ui.current_semester") || "";
       this.#displayDensity =
-        (localStorage.getItem("halsk.acc.display_density") as DisplayDensity) || "default";
+        (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
     }
+  }
+
+  get currentSemester() {
+    return this.#currentSemester;
+  }
+  set currentSemester(v: string) {
+    this.#currentSemester = v;
+    if (browser) localStorage.setItem("halsk.ui.current_semester", v);
   }
 
   get fontFamily() {
@@ -31,7 +42,7 @@ class UISettings {
   }
   set reducedMotion(v: boolean) {
     this.#reducedMotion = v;
-    if (browser) localStorage.setItem(LS_KEYS.ACC_REDUCED_MOTION, String(v));
+    if (browser) localStorage.setItem(LS_KEYS.ACC_REDUCED_MOTION, v ? "true" : "false");
   }
 
   get displayDensity() {
@@ -39,7 +50,7 @@ class UISettings {
   }
   set displayDensity(v: DisplayDensity) {
     this.#displayDensity = v;
-    if (browser) localStorage.setItem("halsk.acc.display_density", v);
+    if (browser) localStorage.setItem(LS_KEYS.ACC_SPACIOUS_LAYOUT, v);
   }
 }
 

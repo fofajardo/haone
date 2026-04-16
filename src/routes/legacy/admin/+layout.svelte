@@ -44,7 +44,8 @@
     try {
       const tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
         client_id: (branding.default as any).googleClientId,
-        scope: "openid profile email https://www.googleapis.com/auth/gmail.send",
+        scope:
+          "openid profile email https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/spreadsheets",
         callback: async (response: any) => {
           if (response.error) {
             showError("Sign-in Failed", response.error_description || response.error);
