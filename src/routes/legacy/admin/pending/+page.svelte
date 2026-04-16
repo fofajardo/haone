@@ -374,7 +374,7 @@
     >
       <CircleCheckBig class="h-8 w-8" />
       <div class="text-center">
-        <p>No pending entries</p>
+        <p class="font-semibold text-slate-900">No pending entries.</p>
       </div>
     </div>
   {/if}
