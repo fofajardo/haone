@@ -11,7 +11,7 @@
   import ReceiptAuthCard from "$lib/components/receipt/ReceiptAuthCard.svelte";
   import ReceiptErrorCard from "$lib/components/receipt/ReceiptErrorCard.svelte";
 
-  const HALSK_REMEMBER_STUDENT_NO = "halsk.student_number";
+  import { LS_KEYS } from "$lib/constants";
 
   import { pageState } from "$lib/page-info.svelte";
   import type { ReceiptData } from "$lib/types";
@@ -42,7 +42,7 @@
 
   onMount(() => {
     // Load saved student number if "Remember Me" was checked
-    const savedId = localStorage.getItem(HALSK_REMEMBER_STUDENT_NO);
+    const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
     if (savedId) {
       studentNo = savedId;
       rememberMe = true;
@@ -82,9 +82,9 @@
 
       // Save or clear student ID based on rememberMe preference
       if (rememberMe) {
-        localStorage.setItem(HALSK_REMEMBER_STUDENT_NO, studentNo);
+        localStorage.setItem(LS_KEYS.STUDENT_NUMBER, studentNo);
       } else {
-        localStorage.removeItem(HALSK_REMEMBER_STUDENT_NO);
+        localStorage.removeItem(LS_KEYS.STUDENT_NUMBER);
       }
 
       qrDataUrl = await QRCode.toDataURL(window.location.href, {
