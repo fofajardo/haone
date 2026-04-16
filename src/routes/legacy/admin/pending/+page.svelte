@@ -28,7 +28,7 @@
     CircleAlert,
     CircleCheckBig,
     ArrowUpDown,
-    Plus
+    Trash2
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -38,7 +38,7 @@
   let queue = $state<JournalRecord[]>([]);
   let selectedIndices = $state<Set<number>>(new Set()); // Stores rowIndex
   let isLoading = $state(false);
-  let isConfirming = $state(false);
+  let isDeleting = $state(false);
   let error = $state<string | null>(null);
 
   // Sort State
@@ -120,7 +120,6 @@
 
   async function prepareDispatch() {
     if (selectedIndices.size === 0) return;
-    isConfirming = false;
     const baseUrl = window.location.origin + "/legacy/receipt";
     const stagedEmails = [];
 
@@ -180,10 +179,31 @@
       });
     }
 
-    emailDispatcher.clear();
-    emailDispatcher.batchType = "ACKNOWLEDGMENT";
     emailDispatcher.pushBatch(stagedEmails);
     goto("/legacy/admin/email-dispatcher");
+  }
+
+  async function deleteSelected() {
+    if (selectedIndices.size === 0) return;
+    isDeleting = false;
+    isLoading = true;
+    error = null;
+
+    try {
+      const updates = Array.from(selectedIndices).map((idx) => ({
+        range: `journal_general!A${idx}:W${idx}`,
+        values: [new Array(23).fill("")]
+      }));
+
+      await batchUpdateValues(brandingState.spreadsheetId, updates);
+      invalidateCache();
+      await loadData(true);
+    } catch (e: any) {
+      error = `Deletion failed: ${e.message}`;
+    } finally {
+      isDeleting = false;
+      isLoading = false;
+    }
   }
 
   function getActiveItems(r: JournalRecord) {
@@ -204,26 +224,41 @@
           Refresh
         </Button>
 
-        <AlertDialog.Root bind:open={isConfirming}>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={prepareDispatch}
+          disabled={isLoading || selectedIndices.size === 0}
+        >
+          <FileCheck class="mr-2 h-4 w-4" />
+          Settle
+        </Button>
+
+        <AlertDialog.Root bind:open={isDeleting}>
           <AlertDialog.Trigger>
             {#snippet child({ props })}
-              <Button {...props} size="sm" disabled={isLoading || selectedIndices.size === 0}>
-                <FileCheck class="mr-2 h-4 w-4" />
-                Settle
+              <Button
+                {...props}
+                variant="outline"
+                size="sm"
+                disabled={isLoading || selectedIndices.size === 0}
+              >
+                <Trash2 class="mr-2 h-4 w-4" />
+                Delete
               </Button>
             {/snippet}
           </AlertDialog.Trigger>
           <AlertDialog.Content>
             <AlertDialog.Header>
-              <AlertDialog.Title>Confirm Settlement</AlertDialog.Title>
+              <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
               <AlertDialog.Description>
-                You are about to generate {pluralize(selectedIndices.size, "receipt", "receipts")}.
-                You will be redirected to the Email Dispatcher to review and send them.
+                You are about to delete {pluralize(selectedIndices.size, "entry", "entries")}. This
+                will permanently clear the record from the journal. This action cannot be undone.
               </AlertDialog.Description>
             </AlertDialog.Header>
             <AlertDialog.Footer>
               <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-              <AlertDialog.Action onclick={prepareDispatch}>Proceed</AlertDialog.Action>
+              <AlertDialog.Action onclick={deleteSelected}>Proceed</AlertDialog.Action>
             </AlertDialog.Footer>
           </AlertDialog.Content>
         </AlertDialog.Root>
