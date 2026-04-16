@@ -11,7 +11,8 @@
     translateMop,
     translatePeriod,
     parseCSVAmount,
-    parseRef
+    parseRef,
+    translateType
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -39,6 +40,7 @@
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorStNo = $state<string | null>(null);
+  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
@@ -69,6 +71,16 @@
         } catch (e) {
           console.warn("Could not resolve creator student number:", e);
         }
+
+        // 3. Fetch Transaction Types
+        const constRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C");
+        transactionTypes = constRows
+          .slice(1)
+          .filter((r) => (r[0] || "").startsWith("PMT_"))
+          .map((r) => ({
+            value: r[1] || r[0],
+            label: r[2] || r[1] || r[0]
+          }));
       }
     } catch (e: any) {
       error = `Failed to retrieve audit data: ${e.message}`;
@@ -136,7 +148,7 @@
         <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div class="space-y-1">
             <span class="text-[10px] font-black tracking-widest text-primary uppercase"
-              >{transaction.type}</span
+              >{translateType(transaction.type, transactionTypes)}</span
             >
             <div class="flex items-center gap-3">
               <h2 class="text-3xl font-black tracking-tight text-slate-900">

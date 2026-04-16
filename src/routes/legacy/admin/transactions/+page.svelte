@@ -13,7 +13,8 @@
     formatAccounting,
     formatDate,
     parseDateWeight,
-    parseCSVAmount
+    parseCSVAmount,
+    translateType
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import * as Table from "$lib/components/ui/table";
@@ -166,11 +167,6 @@
     filterSearch = "";
     filterType = "ALL";
     filterMop = "ALL";
-  }
-
-  function translateType(val: string) {
-    const type = transactionTypes.find((t) => t.value === val);
-    return type ? type.label : val;
   }
 
   function getActiveItems(r: JournalRecord) {
@@ -339,7 +335,7 @@
                   <Table.Cell class="px-4 py-2 align-top">
                     <div class="flex flex-col">
                       <span class="text-[10px] font-bold tracking-tight text-slate-600 uppercase"
-                        >{translateType(record.type)}</span
+                        >{translateType(record.type, transactionTypes)}</span
                       >
                       <span class="text-[9px] text-muted-foreground"
                         >{translateMop(record.mop)}</span

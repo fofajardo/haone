@@ -121,14 +121,14 @@ export function translateProgram(program: string): string[] {
 
 export function parseCSVAmount(val: any): number {
   if (val === undefined || val === null) return 0;
-  const str = String(val).trim().replace(/,/g, "");
+  const str = String(val).trim().replace(/[₱,]/g, "").replace(/,/g, "");
   if (!str) {
     return 0;
   }
 
   // Check for (1,234.56) accounting format
-  const isNegative = str.startsWith("(") && str.endsWith(")");
-  const numericStr = isNegative ? str.slice(1, -1) : str;
+  const isNegative = (str.startsWith("(") && str.endsWith(")")) || str.startsWith("-");
+  const numericStr = isNegative ? (str.startsWith("-") ? str.slice(1) : str.slice(1, -1)) : str;
 
   const parsed = parseFloat(numericStr);
   if (isNaN(parsed)) {
@@ -136,4 +136,9 @@ export function parseCSVAmount(val: any): number {
   }
 
   return isNegative ? -parsed : parsed;
+}
+
+export function translateType(val: string, types: { value: string; label: string }[]) {
+  const type = types.find((t) => t.value === val);
+  return type ? type.label : val;
 }

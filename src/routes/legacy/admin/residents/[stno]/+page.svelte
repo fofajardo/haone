@@ -11,7 +11,8 @@
     translateMop,
     translateCollege,
     translateProgram,
-    parseDateWeight
+    parseDateWeight,
+    translateType
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import * as Table from "$lib/components/ui/table";
@@ -59,6 +60,7 @@
   let account = $state<AccountRecord | null>(null);
   let history = $state<JournalRecord[]>([]);
   let semesterCount = $state(0);
+  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
@@ -128,6 +130,20 @@
           };
         })
         .sort((a, b) => b.dateWeight - a.dateWeight || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0));
+
+      // 3. Fetch Transaction Types
+      const constRows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "constants!A:C",
+        forceRefresh
+      );
+      transactionTypes = constRows
+        .slice(1)
+        .filter((r) => (r[0] || "").startsWith("PMT_"))
+        .map((r) => ({
+          value: r[1] || r[0],
+          label: r[2] || r[1] || r[0]
+        }));
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -472,7 +488,7 @@
                           <div class="flex flex-col">
                             <span
                               class="text-[10px] font-black tracking-tight text-slate-800 uppercase"
-                              >{entry.type}</span
+                              >{translateType(entry.type, transactionTypes)}</span
                             >
                             <span class="text-[9px] text-muted-foreground"
                               >{translateMop(entry.mop)}</span

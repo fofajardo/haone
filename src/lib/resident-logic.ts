@@ -10,9 +10,24 @@ import { formatCurrency, formatAmount, formatDate } from "./receipt-utils";
  * Handles currency symbols (₱), separators (,), and nulls.
  */
 export function parseAmount(val: any): number {
-  if (!val) return 0;
-  const clean = val.toString().replace(/[₱,]/g, "").trim();
-  return parseFloat(clean) || 0;
+  if (val === undefined || val === null) {
+    return 0;
+  }
+  const str = String(val).trim().replace(/[₱,]/g, "");
+  if (!str) {
+    return 0;
+  }
+
+  // Check for (1,234.56) accounting format
+  const isParenNegative = str.startsWith("(") && str.endsWith(")");
+  const numericStr = isParenNegative ? str.slice(1, -1) : str;
+
+  const parsed = parseFloat(numericStr);
+  if (isNaN(parsed)) {
+    return 0;
+  }
+
+  return isParenNegative ? -parsed : parsed;
 }
 
 /**
