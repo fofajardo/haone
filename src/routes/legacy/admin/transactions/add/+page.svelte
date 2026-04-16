@@ -156,12 +156,14 @@
         }
       }
 
-      // Populate current user stNo if matching
+      // Populate current user stNo and official name if matching
       const userMail = auth.user?.email;
       if (userMail) {
         const myAcc = accounts.find((a) => a.email.toLowerCase() === userMail.toLowerCase());
         if (myAcc) {
           formData.creatorStNo = myAcc.stNo;
+          formData.creatorName = myAcc.name;
+          creatorSearch = myAcc.email;
         }
       }
     }
