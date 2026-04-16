@@ -3,9 +3,12 @@
   import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";
   import * as Select from "$lib/components/ui/select";
-  import { CheckCircle2 } from "lucide-svelte";
+  import { Switch } from "$lib/components/ui/switch";
+  import { CheckCircle2, Sun, Moon, Monitor } from "lucide-svelte";
   import branding from "$lib/branding.json";
-  import { brandingState, type BrandingKey } from "$lib/branding.svelte";
+  import { brandingState } from "$lib/branding.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
+  import { setMode, resetMode, userPrefersMode } from "mode-watcher";
 
   const brandingProfiles = Object.keys(branding);
 </script>
@@ -15,54 +18,205 @@
     <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
   </div>
 
-  <div class="grid gap-6 md:grid-cols-2">
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Application Branding</Card.Title>
-        <Card.Description>
-          Select the active branding profile for all management tools.
-        </Card.Description>
-      </Card.Header>
-      <Card.Content class="space-y-6">
-        <div class="space-y-2">
-          <Label for="branding">Active Profile</Label>
-          <Select.Root type="single" bind:value={brandingState.selectedKey}>
-            <Select.Trigger class="w-full">
-              {brandingState.profile.name}
-            </Select.Trigger>
-            <Select.Content>
-              {#each brandingProfiles as key}
-                <Select.Item value={key} label={(branding as any)[key].name}>
-                  {(branding as any)[key].name}
-                </Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
+  <div class="flex flex-col gap-8 lg:flex-row">
+    <!-- Left Column: Settings -->
+    <div class="flex-1 space-y-8">
+      <!-- Appearance Section -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Appearance</Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-6">
+          <!-- Density -->
+          <div class="space-y-3">
+            <Label>Density</Label>
+            <div class="grid grid-cols-3 gap-2">
+              <Button
+                variant={uiSettings.displayDensity === "compact" ? "default" : "outline"}
+                class="flex h-14 flex-col gap-1"
+                onclick={() => (uiSettings.displayDensity = "compact")}
+              >
+                <span class="text-sm font-bold">Compact</span>
+                <span class="text-[9px] opacity-60">Tight</span>
+              </Button>
+              <Button
+                variant={uiSettings.displayDensity === "default" ? "default" : "outline"}
+                class="flex h-14 flex-col gap-1"
+                onclick={() => (uiSettings.displayDensity = "default")}
+              >
+                <span class="text-sm font-bold">Default</span>
+                <span class="text-[9px] opacity-60">Balanced</span>
+              </Button>
+              <Button
+                variant={uiSettings.displayDensity === "comfortable" ? "default" : "outline"}
+                class="flex h-14 flex-col gap-1"
+                onclick={() => (uiSettings.displayDensity = "comfortable")}
+              >
+                <span class="text-sm font-bold">Comfortable</span>
+                <span class="text-[9px] opacity-60">Open</span>
+              </Button>
+            </div>
+          </div>
 
-        <div class="space-y-4 rounded-xl border bg-muted/30 p-6">
-          <p class="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-            Preview
-          </p>
-          <div class="flex flex-col items-center gap-4 text-center">
-            <img
-              src={brandingState.profile.logoUrl}
-              alt="Logo Preview"
-              class="h-20 w-auto object-contain"
-            />
-            <div class="space-y-1">
-              <p class="text-sm font-bold text-slate-800">{brandingState.profile.issuerName}</p>
-              <p class="text-xs text-muted-foreground italic">{brandingState.profile.replyTo}</p>
+          <div class="h-px bg-border/50"></div>
+
+          <!-- Typography -->
+          <div class="space-y-3">
+            <Label>Typography</Label>
+            <div class="grid grid-cols-3 gap-2">
+              <Button
+                variant={uiSettings.fontFamily === "inter" ? "default" : "outline"}
+                class="flex h-14 flex-col gap-1"
+                onclick={() => (uiSettings.fontFamily = "inter")}
+              >
+                <span class="text-sm font-bold">Default</span>
+                <span class="text-[9px] opacity-60">Inter Sans</span>
+              </Button>
+              <Button
+                variant={uiSettings.fontFamily === "archivo" ? "default" : "outline"}
+                class="font-archivo flex h-14 flex-col gap-1"
+                onclick={() => (uiSettings.fontFamily = "archivo")}
+              >
+                <span class="text-sm font-bold">Standard</span>
+                <span class="font-sans text-[9px] opacity-60">Archivo</span>
+              </Button>
+              <Button
+                variant={uiSettings.fontFamily === "shantell" ? "default" : "outline"}
+                class="font-shantell flex h-14 flex-col gap-1"
+                onclick={() => (uiSettings.fontFamily = "shantell")}
+              >
+                <span class="text-sm font-bold">Friendly</span>
+                <span class="font-sans text-[9px] opacity-60">Shantell</span>
+              </Button>
+            </div>
+          </div>
+
+          <div class="h-px bg-border/50"></div>
+
+          <!-- Theme -->
+          <div class="space-y-3">
+            <Label>Theme</Label>
+            <div class="grid grid-cols-3 gap-2">
+              <Button
+                variant={userPrefersMode.current === "light" ? "default" : "outline"}
+                class="h-10 gap-2"
+                onclick={() => setMode("light")}
+              >
+                <Sun class="h-4 w-4" />
+                <span class="text-xs">Light</span>
+              </Button>
+              <Button
+                variant={userPrefersMode.current === "dark" ? "default" : "outline"}
+                class="h-10 gap-2"
+                onclick={() => setMode("dark")}
+              >
+                <Moon class="h-4 w-4" />
+                <span class="text-xs">Dark</span>
+              </Button>
+              <Button
+                variant={userPrefersMode.current === "system" ? "default" : "outline"}
+                class="h-10 gap-2"
+                onclick={() => resetMode()}
+              >
+                <Monitor class="h-4 w-4" />
+                <span class="text-xs">System</span>
+              </Button>
+            </div>
+          </div>
+
+          <div class="h-px bg-border/50"></div>
+
+          <!-- Motion -->
+          <div class="flex items-center justify-between">
+            <Label>Reduced Motion</Label>
+            <Switch bind:checked={uiSettings.reducedMotion} />
+          </div>
+        </Card.Content>
+      </Card.Root>
+
+      <!-- Branding Section -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Application Branding</Card.Title>
+          <Card.Description>Select the active profile for tools and reports.</Card.Description>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            <Label for="branding">Active Profile</Label>
+            <Select.Root type="single" bind:value={brandingState.selectedKey}>
+              <Select.Trigger class="w-full">
+                {brandingState.profile.name}
+              </Select.Trigger>
+              <Select.Content>
+                {#each brandingProfiles as key}
+                  <Select.Item value={key} label={(branding as any)[key].name}>
+                    {(branding as any)[key].name}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+        </Card.Content>
+      </Card.Root>
+
+      <div class="flex items-center gap-2 px-1 text-[10px] font-medium text-muted-foreground/60">
+        <CheckCircle2 class="h-3.5 w-3.5 text-green-600/50" />
+        Settings persist in this browser.
+      </div>
+    </div>
+
+    <!-- Right Column: Live Preview Sandbox -->
+    <div class="w-full space-y-4 lg:w-[400px]">
+      <div class="sticky top-8 space-y-4">
+        <p class="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+          Live Preview Sandbox
+        </p>
+        <div
+          class="rounded-2xl border bg-card p-8 shadow-sm transition-all {uiSettings.displayDensity !==
+          'default'
+            ? `acc-density-${uiSettings.displayDensity}`
+            : ''}"
+          data-slot="sandbox"
+          class:font-sans={uiSettings.fontFamily === "inter"}
+          class:font-archivo={uiSettings.fontFamily === "archivo"}
+          class:font-shantell={uiSettings.fontFamily === "shantell"}
+          class:acc-reduced-motion={uiSettings.reducedMotion}
+        >
+          <div class="flex flex-col items-center gap-6 text-center">
+            <img src={brandingState.profile.logoUrl} alt="Logo" class="h-16 w-auto grayscale-0" />
+            <div class="w-full space-y-4">
+              <div class="space-y-1">
+                <h3 class="text-lg font-bold text-foreground">
+                  {brandingState.profile.issuerName}
+                </h3>
+                <p class="text-xs text-muted-foreground">Electronic Receipt #88219</p>
+              </div>
+
+              <div class="h-px w-full bg-border"></div>
+
+              <div class="space-y-2 text-left">
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Water Fee</span>
+                  <span class="font-bold">24,500.00</span>
+                </div>
+                <div class="flex justify-between text-xs">
+                  <span class="text-muted-foreground">Association Fee</span>
+                  <span class="font-bold">1,200.00</span>
+                </div>
+                <div class="flex justify-between border-t pt-2 font-bold">
+                  <span>TOTAL</span>
+                  <span>₱25,700.00</span>
+                </div>
+              </div>
+
+              <div class="rounded-lg bg-muted/50 p-4 text-[10px] text-muted-foreground italic">
+                This is a reactive preview showing current branding, typography, and density
+                settings.
+              </div>
             </div>
           </div>
         </div>
-      </Card.Content>
-      <Card.Footer class="border-t bg-muted/10 px-6 py-4">
-        <div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          <CheckCircle2 class="h-4 w-4 text-green-600" />
-          Settings are saved automatically for this device.
-        </div>
-      </Card.Footer>
-    </Card.Root>
+      </div>
+    </div>
   </div>
 </div>

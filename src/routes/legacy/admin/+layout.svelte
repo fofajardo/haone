@@ -4,10 +4,13 @@
   import AdminSidebar from "$lib/components/admin-sidebar.svelte";
   import AdminHeader from "$lib/components/admin-header.svelte";
   import { auth } from "$lib/auth.svelte";
+  import { brandingState } from "$lib/branding.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
   import { loadGisScript } from "$lib/gmail";
   import { Button } from "$lib/components/ui/button";
   import { LogIn, Loader2 } from "lucide-svelte";
+  import { setMode } from "mode-watcher";
   import branding from "$lib/branding.json";
 
   let { children } = $props();
@@ -80,7 +83,15 @@
   </div>
 {:else if !auth.accessToken}
   <div
-    class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white p-6 md:p-12"
+    class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white p-6 md:p-12 {uiSettings.fontFamily ===
+    'inter'
+      ? 'font-sans'
+      : ''} {uiSettings.displayDensity !== 'default'
+      ? `acc-density-${uiSettings.displayDensity}`
+      : ''}"
+    class:font-archivo={uiSettings.fontFamily === "archivo"}
+    class:font-shantell={uiSettings.fontFamily === "shantell"}
+    class:acc-reduced-motion={uiSettings.reducedMotion}
   >
     <div class="relative z-10 w-full max-w-sm space-y-4">
       <div class="flex flex-col items-center space-y-8 text-center">
@@ -133,11 +144,19 @@
     </AlertDialog.Content>
   </AlertDialog.Root>
 {:else}
-  <Sidebar.Provider>
+  <Sidebar.Provider
+    class="{uiSettings.fontFamily === 'inter'
+      ? 'font-sans'
+      : uiSettings.fontFamily === 'archivo'
+        ? 'font-archivo'
+        : 'font-shantell'} 
+      {uiSettings.reducedMotion ? 'acc-reduced-motion' : ''} 
+      {uiSettings.displayDensity !== 'default' ? `acc-density-${uiSettings.displayDensity}` : ''}"
+  >
     <AdminSidebar />
     <Sidebar.Inset>
       <AdminHeader />
-      <main class="font-archivo flex-1 overflow-auto p-4 md:p-8">
+      <main class="flex-1 overflow-auto p-4 md:p-8">
         {@render children()}
       </main>
     </Sidebar.Inset>
@@ -147,5 +166,83 @@
 <style>
   :global(.font-archivo) {
     font-family: "Archivo", sans-serif;
+  }
+  :global(.font-shantell) {
+    font-family: "Shantell Sans", cursive;
+  }
+
+  /* Accessibility Global Overrides */
+  :global(.acc-reduced-motion *) {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Density Scaling - Only applies for non-default density */
+  :global(.acc-density-compact) {
+    --density-spacing: 0.6;
+    --density-line-height: 1.25;
+    --density-radius: 0.5;
+  }
+  :global(.acc-density-comfortable) {
+    --density-spacing: 1.5;
+    --density-line-height: 2;
+    --density-radius: 1.5;
+  }
+
+  :global([class*="acc-density-"] *) {
+    line-height: var(--density-line-height) !important;
+  }
+
+  /* Global Radius Scaling */
+  :global([class*="acc-density-"] .rounded-xl),
+  :global([class*="acc-density-"] [data-slot="card"]) {
+    border-radius: calc(0.75rem * var(--density-radius)) !important;
+  }
+  :global([class*="acc-density-"] .rounded-2xl) {
+    border-radius: calc(1rem * var(--density-radius)) !important;
+  }
+
+  /* Target common UI components */
+  :global([class*="acc-density-"] [data-slot="card-header"]),
+  :global([class*="acc-density-"] [data-slot="card-content"]),
+  :global([class*="acc-density-"] [data-slot="card-footer"]) {
+    padding-top: calc(1.5rem * var(--density-spacing)) !important;
+    padding-bottom: calc(1.5rem * var(--density-spacing)) !important;
+  }
+
+  /* Sidebar scaling - Vertical Density */
+  :global([class*="acc-density-"] [data-slot="sidebar-menu-button"]) {
+    height: calc(2.25rem * var(--density-spacing)) !important;
+    padding-top: calc(0.5rem * var(--density-spacing)) !important;
+    padding-bottom: calc(0.5rem * var(--density-spacing)) !important;
+  }
+  :global([class*="acc-density-"] [data-slot="sidebar-group"]) {
+    gap: calc(0.5rem * var(--density-spacing)) !important;
+  }
+
+  /* Button scaling */
+  :global([class*="acc-density-"] .inline-flex.h-9),
+  :global([class*="acc-density-"] .inline-flex.h-10) {
+    height: calc(2.5rem * var(--density-spacing)) !important;
+    padding-left: calc(1rem * var(--density-spacing)) !important;
+    padding-right: calc(1rem * var(--density-spacing)) !important;
+  }
+
+  /* Horizontal scaling for cards */
+  :global(.acc-density-compact [data-slot*="card-"]) {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  :global(.acc-density-comfortable [data-slot*="card-"]) {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+
+  /* Global Gap Overrides */
+  :global(.acc-density-compact .gap-6) {
+    gap: 0.75rem !important;
+  }
+  :global(.acc-density-comfortable .gap-6) {
+    gap: 2.25rem !important;
   }
 </style>
