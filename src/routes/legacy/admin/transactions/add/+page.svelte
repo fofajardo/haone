@@ -252,237 +252,239 @@
 
     <Card.Root>
       <Card.Content class="space-y-8 p-6">
-      <!-- Basic Details -->
-      <div class="grid gap-6 md:grid-cols-2">
-        <div class="space-y-2">
-          <Label>Transaction Date</Label>
-          <Input type="date" bind:value={formData.date} />
-        </div>
-        <div class="space-y-2">
-          <Label>Academic Term</Label>
-          <Select.Root type="single" bind:value={formData.period}>
-            <Select.Trigger class="h-10 text-xs font-semibold">
-              {translatePeriod(formData.period) || "Select Term"}
-            </Select.Trigger>
-            <Select.Content>
-              {#each academicPeriods as term}
-                <Select.Item value={term.value} label={translatePeriod(term.value)}>
-                  {translatePeriod(term.value)}
-                </Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
-      </div>
-
-      <!-- Parties -->
-      <div class="grid gap-8 border-t pt-4 md:grid-cols-2">
-        <div class="relative space-y-3">
-          <Label
-            class="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >
-            <CircleUser class="h-3.5 w-3.5" /> Entry Creator
-          </Label>
-          <div class="relative">
-            <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              bind:value={creatorSearch}
-              onfocus={() => (showCreatorSuggestions = true)}
-              onblur={() => setTimeout(() => (showCreatorSuggestions = false), 200)}
-              placeholder="Search resident email or name..."
-              class="pl-10"
-            />
+        <!-- Basic Details -->
+        <div class="grid gap-6 md:grid-cols-2">
+          <div class="space-y-2">
+            <Label>Transaction Date</Label>
+            <Input type="date" bind:value={formData.date} />
           </div>
-          {#if showCreatorSuggestions && creatorSearch && filteredCreators.length > 0}
-            <div
-              class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-xl"
-            >
-              {#each filteredCreators as a}
-                <button
-                  onclick={() => selectCreator(a)}
-                  class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
-                >
-                  <span class="font-bold text-slate-900">{a.name}</span>
-                  <span class="text-[10px] text-muted-foreground">{a.email}</span>
-                </button>
-              {/each}
-            </div>
-          {/if}
-          <div
-            class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
-          >
-            <div class="flex flex-col">
-              <span class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
-                >Current Selection</span
-              >
-              <span class="text-xs font-bold text-slate-700"
-                >{formData.creatorName || "None selected"}</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <div class="relative space-y-3">
-          <Label
-            class="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >
-            <User class="h-3.5 w-3.5" /> Target Account
-          </Label>
-          <div class="relative">
-            <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              bind:value={accountSearch}
-              onfocus={() => (showAccountSuggestions = true)}
-              onblur={() => setTimeout(() => (showAccountSuggestions = false), 200)}
-              placeholder="Search resident email or name..."
-              class="pl-10"
-            />
-          </div>
-          {#if showAccountSuggestions && accountSearch && filteredAccounts.length > 0}
-            <div
-              class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-xl"
-            >
-              {#each filteredAccounts as a}
-                <button
-                  onclick={() => selectAccount(a)}
-                  class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
-                >
-                  <span class="font-bold text-slate-900">{a.name}</span>
-                  <span class="text-[10px] text-muted-foreground">{a.email}</span>
-                </button>
-              {/each}
-            </div>
-          {/if}
-          <div
-            class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
-          >
-            <div class="flex flex-col">
-              <span class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
-                >Current Selection</span
-              >
-              <span class="text-xs font-bold text-slate-700"
-                >{formData.accountName || "None selected"}</span
-              >
-              {#if formData.accountStNo}
-                <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
-                  >{formData.accountStNo}</span
-                >
-              {/if}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Financials -->
-      <div class="space-y-4 border-t pt-4">
-        <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Financial Details</Label
-        >
-        <div class="grid gap-6 md:grid-cols-3">
-          <div class="space-y-1.5">
-            <Label class="text-[10px] font-bold">Water Fee</Label>
-            <Input
-              type="number"
-              step="0.01"
-              bind:value={formData.waterFee}
-              class="text-right font-mono"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <Label class="text-[10px] font-bold">Assoc. Fee</Label>
-            <Input
-              type="number"
-              step="0.01"
-              bind:value={formData.assocFee}
-              class="text-right font-mono"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <Label class="text-[10px] font-bold">Misc</Label>
-            <Input
-              type="number"
-              step="0.01"
-              bind:value={formData.miscFee}
-              class="text-right font-mono"
-            />
-          </div>
-        </div>
-
-        <div class="grid gap-6 pt-2 md:grid-cols-3">
-          <div class="space-y-1.5">
-            <Label class="text-[10px] font-bold">Payment Processor</Label>
-            <Select.Root type="single" bind:value={formData.mop}>
+          <div class="space-y-2">
+            <Label>Academic Term</Label>
+            <Select.Root type="single" bind:value={formData.period}>
               <Select.Trigger class="h-10 text-xs font-semibold">
-                {translateMop(formData.mop)}
+                {translatePeriod(formData.period) || "Select Term"}
               </Select.Trigger>
               <Select.Content>
-                {#each mopTypes as mop}
-                  <Select.Item value={mop.value}>{mop.label}</Select.Item>
+                {#each academicPeriods as term}
+                  <Select.Item value={term.value} label={translatePeriod(term.value)}>
+                    {translatePeriod(term.value)}
+                  </Select.Item>
                 {/each}
               </Select.Content>
             </Select.Root>
           </div>
-          <div class="space-y-1.5">
-            <Label class="text-[10px] font-bold">Type</Label>
-            <Select.Root type="single" bind:value={formData.type}>
-              <Select.Trigger class="h-10 text-xs font-semibold">
-                {formData.type}
-              </Select.Trigger>
-              <Select.Content>
-                {#each transactionTypes as type}
-                  <Select.Item value={type.value}>{type.label}</Select.Item>
+        </div>
+
+        <!-- Parties -->
+        <div class="grid gap-8 border-t pt-4 md:grid-cols-2">
+          <div class="relative space-y-3">
+            <Label
+              class="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase"
+            >
+              <CircleUser class="h-3.5 w-3.5" /> Entry Creator
+            </Label>
+            <div class="relative">
+              <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                bind:value={creatorSearch}
+                onfocus={() => (showCreatorSuggestions = true)}
+                onblur={() => setTimeout(() => (showCreatorSuggestions = false), 200)}
+                placeholder="Search resident email or name..."
+                class="pl-10"
+              />
+            </div>
+            {#if showCreatorSuggestions && creatorSearch && filteredCreators.length > 0}
+              <div
+                class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-xl"
+              >
+                {#each filteredCreators as a}
+                  <button
+                    onclick={() => selectCreator(a)}
+                    class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
+                  >
+                    <span class="font-bold text-slate-900">{a.name}</span>
+                    <span class="text-[10px] text-muted-foreground">{a.email}</span>
+                  </button>
                 {/each}
-              </Select.Content>
-            </Select.Root>
+              </div>
+            {/if}
+            <div
+              class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
+            >
+              <div class="flex flex-col">
+                <span
+                  class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+                  >Current Selection</span
+                >
+                <span class="text-xs font-bold text-slate-700"
+                  >{formData.creatorName || "None selected"}</span
+                >
+              </div>
+            </div>
           </div>
-          <div class="space-y-1.5">
-            <Label class="text-[10px] font-bold">Reference Number</Label>
-            <Input bind:value={formData.mopRefNo} placeholder="e.g. Transaction ID" />
-          </div>
-          <div class="space-y-1.5">
-            <Label class="text-[10px] font-bold text-primary">InstaPay Invoice Number</Label>
-            <Input bind:value={formData.instapayInvoice} placeholder="Optional" />
+
+          <div class="relative space-y-3">
+            <Label
+              class="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase"
+            >
+              <User class="h-3.5 w-3.5" /> Target Account
+            </Label>
+            <div class="relative">
+              <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                bind:value={accountSearch}
+                onfocus={() => (showAccountSuggestions = true)}
+                onblur={() => setTimeout(() => (showAccountSuggestions = false), 200)}
+                placeholder="Search resident email or name..."
+                class="pl-10"
+              />
+            </div>
+            {#if showAccountSuggestions && accountSearch && filteredAccounts.length > 0}
+              <div
+                class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-xl"
+              >
+                {#each filteredAccounts as a}
+                  <button
+                    onclick={() => selectAccount(a)}
+                    class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
+                  >
+                    <span class="font-bold text-slate-900">{a.name}</span>
+                    <span class="text-[10px] text-muted-foreground">{a.email}</span>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+            <div
+              class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
+            >
+              <div class="flex flex-col">
+                <span
+                  class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+                  >Current Selection</span
+                >
+                <span class="text-xs font-bold text-slate-700"
+                  >{formData.accountName || "None selected"}</span
+                >
+                {#if formData.accountStNo}
+                  <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
+                    >{formData.accountStNo}</span
+                  >
+                {/if}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Notes -->
-      <div class="grid gap-6 border-t pt-4 md:grid-cols-2">
-        <div class="space-y-2">
+        <!-- Financials -->
+        <div class="space-y-4 border-t pt-4">
           <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Public Remarks</Label
+            >Financial Details</Label
           >
-          <textarea
-            bind:value={formData.notes}
-            placeholder="Description for the resident..."
-            class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-          ></textarea>
-        </div>
-        <div class="space-y-2">
-          <Label class="text-xs font-bold tracking-wider text-primary uppercase"
-            >Private Notes</Label
-          >
-          <textarea
-            bind:value={formData.notesPrivate}
-            placeholder="Internal context only (not visible to resident)..."
-            class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-          ></textarea>
-        </div>
-      </div>
+          <div class="grid gap-6 md:grid-cols-3">
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold">Water Fee</Label>
+              <Input
+                type="number"
+                step="0.01"
+                bind:value={formData.waterFee}
+                class="text-right font-mono"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold">Assoc. Fee</Label>
+              <Input
+                type="number"
+                step="0.01"
+                bind:value={formData.assocFee}
+                class="text-right font-mono"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold">Misc</Label>
+              <Input
+                type="number"
+                step="0.01"
+                bind:value={formData.miscFee}
+                class="text-right font-mono"
+              />
+            </div>
+          </div>
 
-      <div class="flex justify-end gap-3 border-t pt-4">
-        <Button variant="outline" href="/legacy/admin/transactions" disabled={isSubmitting}
-          >Cancel</Button
-        >
-        <Button onclick={handleSubmit} disabled={isSubmitting} class="min-w-[120px]">
-          {#if isSubmitting}
-            <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving...
-          {:else}
-            Save Transaction
-          {/if}
-        </Button>
-      </div>
-    </Card.Content>
-  </Card.Root>
-</div>
+          <div class="grid gap-6 pt-2 md:grid-cols-3">
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold">Payment Processor</Label>
+              <Select.Root type="single" bind:value={formData.mop}>
+                <Select.Trigger class="h-10 text-xs font-semibold">
+                  {translateMop(formData.mop)}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each mopTypes as mop}
+                    <Select.Item value={mop.value}>{mop.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            </div>
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold">Type</Label>
+              <Select.Root type="single" bind:value={formData.type}>
+                <Select.Trigger class="h-10 text-xs font-semibold">
+                  {formData.type}
+                </Select.Trigger>
+                <Select.Content>
+                  {#each transactionTypes as type}
+                    <Select.Item value={type.value}>{type.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            </div>
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold">Reference Number</Label>
+              <Input bind:value={formData.mopRefNo} placeholder="e.g. Transaction ID" />
+            </div>
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold text-primary">InstaPay Invoice Number</Label>
+              <Input bind:value={formData.instapayInvoice} placeholder="Optional" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="grid gap-6 border-t pt-4 md:grid-cols-2">
+          <div class="space-y-2">
+            <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+              >Public Remarks</Label
+            >
+            <textarea
+              bind:value={formData.notes}
+              placeholder="Description for the resident..."
+              class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            ></textarea>
+          </div>
+          <div class="space-y-2">
+            <Label class="text-xs font-bold tracking-wider text-primary uppercase"
+              >Private Notes</Label
+            >
+            <textarea
+              bind:value={formData.notesPrivate}
+              placeholder="Internal context only (not visible to resident)..."
+              class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t pt-4">
+          <Button variant="outline" href="/legacy/admin/transactions" disabled={isSubmitting}
+            >Cancel</Button
+          >
+          <Button onclick={handleSubmit} disabled={isSubmitting} class="min-w-[120px]">
+            {#if isSubmitting}
+              <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving...
+            {:else}
+              Save Transaction
+            {/if}
+          </Button>
+        </div>
+      </Card.Content>
+    </Card.Root>
+  </div>
 </div>
