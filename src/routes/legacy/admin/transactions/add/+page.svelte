@@ -5,7 +5,7 @@
   import { auth } from "$lib/auth.svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, appendSheetRow } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, appendSheetRow, appendRowToCache } from "$lib/google-sheets";
   import { translatePeriod, translateMop } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -278,6 +278,7 @@
       row[22] = txnId;
 
       await appendSheetRow(brandingState.spreadsheetId, "journal_general!A:W", [row]);
+      appendRowToCache(brandingState.spreadsheetId, "journal_general!A:W", [row]);
       goto("/legacy/admin/transactions");
     } catch (e: any) {
       error = `Submission failed: ${e.message}`;

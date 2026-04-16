@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { brandingState } from "$lib/branding.svelte";
-  import { fetchSheetRowsRaw, deleteSheetRow, invalidateCache } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, deleteSheetRow, deleteRowFromCache } from "$lib/google-sheets";
   import {
     formatCurrency,
     formatAmount,
@@ -102,7 +102,7 @@
     isDeleting = true;
     try {
       await deleteSheetRow(brandingState.spreadsheetId, "journal_general", rowIndex);
-      invalidateCache();
+      deleteRowFromCache(brandingState.spreadsheetId, "journal_general!A:W", rowIndex);
       goto("/legacy/admin/transactions");
     } catch (e: any) {
       error = `Deletion failed: ${e.message}`;

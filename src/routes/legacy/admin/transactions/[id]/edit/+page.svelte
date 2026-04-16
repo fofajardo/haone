@@ -5,7 +5,7 @@
   import { auth } from "$lib/auth.svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue, invalidateCache } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, updateSheetValue, updateRowInCache } from "$lib/google-sheets";
   import { translatePeriod, translateMop, parseRef } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -265,7 +265,7 @@
       const range = `journal_general!A${sheetRow}:W${sheetRow}`;
 
       await updateSheetValue(brandingState.spreadsheetId, range, [row]);
-      invalidateCache();
+      updateRowInCache(brandingState.spreadsheetId, "journal_general!A:W", rowIndex, row);
       goto(`/legacy/admin/transactions/${id}`);
     } catch (e: any) {
       error = `Save failed: ${e.message}`;

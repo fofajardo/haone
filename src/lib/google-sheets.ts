@@ -9,6 +9,41 @@ export function invalidateCache() {
   sheetsCache = {};
 }
 
+/**
+ * Incrementally append rows to a cached range.
+ */
+export function appendRowToCache(spreadsheetId: string, range: string, newRows: string[][]) {
+  const cacheKey = `${spreadsheetId}:${range}`;
+  if (sheetsCache[cacheKey]) {
+    sheetsCache[cacheKey].push(...newRows);
+  }
+}
+
+/**
+ * Incrementally update a row in a cached range.
+ */
+export function updateRowInCache(
+  spreadsheetId: string,
+  range: string,
+  rowIndex: number,
+  updatedRow: string[]
+) {
+  const cacheKey = `${spreadsheetId}:${range}`;
+  if (sheetsCache[cacheKey] && sheetsCache[cacheKey][rowIndex]) {
+    sheetsCache[cacheKey][rowIndex] = updatedRow;
+  }
+}
+
+/**
+ * Incrementally remove a row from a cached range.
+ */
+export function deleteRowFromCache(spreadsheetId: string, range: string, rowIndex: number) {
+  const cacheKey = `${spreadsheetId}:${range}`;
+  if (sheetsCache[cacheKey]) {
+    sheetsCache[cacheKey].splice(rowIndex, 1);
+  }
+}
+
 export interface SheetRow {
   [key: string]: string;
 }
@@ -133,7 +168,7 @@ export async function appendSheetRow(spreadsheetId: string, range: string, value
   const token = auth.accessToken;
   if (!token) throw new Error("Not authenticated");
 
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
 
   const resp = await fetch(url, {
     method: "POST",
@@ -200,6 +235,5 @@ export async function deleteSheetRow(spreadsheetId: string, sheetName: string, r
     throw new Error(err.error?.message || "Failed to delete row");
   }
 
-  invalidateCache();
   return await resp.json();
 }
