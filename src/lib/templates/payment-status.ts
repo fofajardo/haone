@@ -88,8 +88,8 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
       : "";
 
   const bedNotice = !data.bed
-    ? `<br/>
-    <div style="margin-bottom: 25px; padding: 20px; border: 2px solid #dc2626; background-color: #fef2f2; border-radius: 8px; text-align: center;">
+    ? `
+    <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px; border: 2px solid #dc2626; background-color: #fef2f2; border-radius: 8px; text-align: center;">
       <p style="margin: 0; font-size: 16px; font-weight: bold; color: #991b1b; text-transform: uppercase;">Action Required</p>
       <p style="margin: 10px 0; font-size: 14px; color: #b91c1c; line-height: 1.5;">
         Please complete the Semestral Association Member Registration Form immediately.
@@ -101,99 +101,99 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
     : "";
 
   const content = `
-  <p style="font-size: 16px; margin-bottom: 5px; font-weight: normal; display: block; color: #000;">Hi, <strong style="font-weight: bold;">${data.accountName}</strong> (Room ${data.room})</p>
-  
-  ${bedNotice}
+    <p style="font-size: 16px; margin-bottom: 5px; font-weight: normal; display: block; color: #000;">Hi, <strong style="font-weight: bold;">${data.accountName}</strong> (Room ${data.room})</p>
+    
+    ${bedNotice}
 
-  <p style="font-size: 14px; color: #000; margin-bottom: 25px; line-height: 1.5; display: block;">Please review your payment status for the current semester below:</p>
+    <p style="font-size: 14px; color: #000; margin-bottom: 25px; line-height: 1.5; display: block;">Please review your payment status for the current semester below:</p>
 
-  <h3 style="background-color: #000; color: #ffffff; text-align: center; padding: 10px; font-size: 14px; letter-spacing: 1px; margin: 0; display: block; font-weight: bold;">PAYMENT STATUS AS OF ${dateStr}</h3>
+    <h3 style="background-color: #000; color: #ffffff; text-align: center; padding: 10px; font-size: 14px; letter-spacing: 1px; margin: 0; display: block; font-weight: bold;">PAYMENT STATUS AS OF ${dateStr}</h3>
 
-  <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; display: table;">
-    <!-- WATER FEES SECTION -->
-    <tr>
-      <td rowspan="4" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: top; width: 30%;">
-        <p style="font-weight: bold; margin-bottom: 2px;">Water Fees</p>
-        <p style="font-size: 11px; color: #000; line-height: 1.4; margin: 0; font-style: italic;">for the entire semester</p>
-      </td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Billed Amount</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waterBase)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Total Amount Paid</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waterPaid)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Waived</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waterWaived)}</td>
-    </tr>
-    <tr style="background-color: #f8fafc;">
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; font-weight: bold;">Amount Due</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0; font-weight: bold;">₱</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold;">${formatAmount(data.waterBal)}</td>
-    </tr>
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; display: table;">
+      <!-- WATER FEES SECTION -->
+      <tr>
+        <td rowspan="4" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: top; width: 30%;">
+          <p style="font-weight: bold; margin-bottom: 2px;">Water Fees</p>
+          <p style="font-size: 11px; color: #000; line-height: 1.4; margin: 0; font-style: italic;">for the entire semester</p>
+        </td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Billed Amount</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waterBase)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Total Amount Paid</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waterPaid)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Waived</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waterWaived)}</td>
+      </tr>
+      <tr style="background-color: #f8fafc;">
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; font-weight: bold;">Amount Due</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0; font-weight: bold;">₱</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold;">${formatAmount(data.waterBal)}</td>
+      </tr>
 
-    <!-- ASSOCIATION FEE SECTION -->
-    <tr style="border-top: 2px solid #000;">
-      <td rowspan="4" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: top; width: 30%;">
-        <p style="font-weight: bold; margin-bottom: 2px;">Association Fee</p>
-        <p style="font-size: 11px; color: #000; line-height: 1.4; margin: 0; font-style: italic;">for the entire semester</p>
-      </td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Billed Amount</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.assocBase)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Total Amount Paid</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.assocPaid)}</td>
-    </tr>
-    <tr>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Waived</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.assocWaived)}</td>
-    </tr>
-    <tr style="background-color: #f8fafc;">
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; font-weight: bold;">Amount Due</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0; font-weight: bold;">₱</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold;">${formatAmount(data.assocBal)}</td>
-    </tr>
+      <!-- ASSOCIATION FEE SECTION -->
+      <tr style="border-top: 2px solid #000;">
+        <td rowspan="4" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: top; width: 30%;">
+          <p style="font-weight: bold; margin-bottom: 2px;">Association Fee</p>
+          <p style="font-size: 11px; color: #000; line-height: 1.4; margin: 0; font-style: italic;">for the entire semester</p>
+        </td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Billed Amount</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.assocBase)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Total Amount Paid</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.assocPaid)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Waived</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.assocWaived)}</td>
+      </tr>
+      <tr style="background-color: #f8fafc;">
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; font-weight: bold;">Amount Due</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0; font-weight: bold;">₱</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold;">${formatAmount(data.assocBal)}</td>
+      </tr>
 
-    <!-- SUMMARY SECTION -->
-    <tr style="background-color: #000; color: #ffffff;">
-      <td colspan="4" style="text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px; font-weight: bold;">SUMMARY</td>
-    </tr>
-    <tr>
-      <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">
-        <p style="font-weight: bold; margin-bottom: 2px;">Billed Amount</p>
-        <p style="font-size: 10px; font-style: italic; color: #000; margin: 0;">for the entire semester</p>
-      </td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold;">${formatAccounting(data.totalBase)}</td>
-    </tr>
-    <tr>
-      <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Total Amount Paid</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.paid)}</td>
-    </tr>
-    <tr>
-      <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Waived</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waived)}</td>
-    </tr>
-    <tr style="background-color: #f8fafc;">
-      <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; font-weight: bold;">Outstanding Amount</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0; font-weight: bold;">₱</td>
-      <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold; color: ${data.bal < 0 ? "#dc2626" : "black"};">${formatAmount(data.bal)}</td>
-    </tr>
-  </table>
+      <!-- SUMMARY SECTION -->
+      <tr style="background-color: #000; color: #ffffff;">
+        <td colspan="4" style="text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px; font-weight: bold;">SUMMARY</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">
+          <p style="font-weight: bold; margin-bottom: 2px;">Billed Amount</p>
+          <p style="font-size: 10px; font-style: italic; color: #000; margin: 0;">for the entire semester</p>
+        </td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold;">${formatAccounting(data.totalBase)}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Total Amount Paid</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.paid)}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">Less: Waived</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waived)}</td>
+      </tr>
+      <tr style="background-color: #f8fafc;">
+        <td colspan="2" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; font-weight: bold;">Outstanding Amount</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0; font-weight: bold;">₱</td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold; color: ${data.bal < 0 ? "#dc2626" : "black"};">${formatAmount(data.bal)}</td>
+      </tr>
+    </table>
 
-  ${fullyPaidSection}
+    ${fullyPaidSection}
 
-  ${negativeNotice}
+    ${negativeNotice}
 
     <p style="font-size: 14px; font-weight: bold; margin-top: 12px; margin-bottom: 12px; color: #000; display: block;">Reminders:</p>
     
@@ -211,7 +211,6 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
     <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block; margin-top: 35px;">
       For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${branding.replyTo}" style="color: #0047AB; text-decoration: underline;">${branding.replyTo}</a>.
     </p>
-  </div>
   `;
 
   return wrapEmailHtml(content, branding.emailHeaderUrl, branding.replyTo);
