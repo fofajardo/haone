@@ -1,13 +1,32 @@
 import { auth } from "./auth.svelte";
 
+let sheetsCache: Record<string, string[][]> = {};
+
+/**
+ * Clears the session-based Sheets data cache.
+ */
+export function invalidateCache() {
+  sheetsCache = {};
+}
+
 export interface SheetRow {
   [key: string]: string;
 }
 
 /**
  * Enhanced fetch to return raw values as well, to help with row indexing.
+ * Includes session-based caching.
  */
-export async function fetchSheetRowsRaw(spreadsheetId: string, range: string): Promise<string[][]> {
+export async function fetchSheetRowsRaw(
+  spreadsheetId: string,
+  range: string,
+  forceRefresh = false
+): Promise<string[][]> {
+  const cacheKey = `${spreadsheetId}:${range}`;
+  if (!forceRefresh && sheetsCache[cacheKey]) {
+    return sheetsCache[cacheKey];
+  }
+
   const token = auth.accessToken;
   if (!token) throw new Error("Not authenticated");
 
@@ -22,7 +41,9 @@ export async function fetchSheetRowsRaw(spreadsheetId: string, range: string): P
   }
 
   const data = await resp.json();
-  return data.values || [];
+  const values = data.values || [];
+  sheetsCache[cacheKey] = values;
+  return values;
 }
 
 /**

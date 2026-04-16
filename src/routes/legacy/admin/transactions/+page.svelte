@@ -84,19 +84,27 @@
     ID: 22
   };
 
-  async function loadData() {
+  async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
     isLoading = true;
     error = null;
 
     try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W");
+      const rows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "journal_general!A:W",
+        forceRefresh
+      );
       if (rows.length === 0) {
         journal = [];
         return;
       }
 
-      const constRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C");
+      const constRows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "constants!A:C",
+        forceRefresh
+      );
       transactionTypes = constRows
         .slice(1)
         .filter((r) => (r[0] || "").startsWith("PMT_"))
@@ -210,7 +218,7 @@
     {#snippet actions()}
       <TermFilter onSelect={() => loadData()} />
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
+        <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
           <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
           <span class="hidden sm:inline">Refresh</span>
         </Button>
@@ -284,7 +292,7 @@
       class="flex h-64 flex-col items-center justify-center gap-2 rounded-xl border border-destructive/10 bg-destructive/5"
     >
       <p class="text-sm font-bold text-destructive">{error}</p>
-      <Button variant="outline" size="sm" onclick={loadData}>Try Again</Button>
+      <Button variant="outline" size="sm" onclick={() => loadData()}>Try Again</Button>
     </div>
   {:else if filteredJournal.length > 0}
     <Card.Root class="overflow-hidden">

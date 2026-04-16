@@ -57,13 +57,17 @@
     "chart-5": { label: "Group 5", color: "var(--chart-5)" }
   } as const;
 
-  async function loadData() {
+  async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
     isLoading = true;
     error = null;
 
     try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
+      const rows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "accounts!A:AD",
+        forceRefresh
+      );
       const accounts = rows.slice(1).filter((row) => {
         const email = (row[COL.EMAIL] || "").trim();
         const period = (row[COL.PERIOD] || "").trim();
@@ -161,7 +165,7 @@
   <SubpageHeader title="Reports">
     {#snippet actions()}
       <TermFilter onSelect={loadData} />
-      <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
+      <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
         <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
         <span class="hidden sm:inline">Refresh</span>
       </Button>

@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, batchUpdateValues } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, batchUpdateValues, invalidateCache } from "$lib/google-sheets";
   import {
     parseCSVAmount,
     calculateTotal,
@@ -170,7 +170,7 @@
     return type === "one" ? `${count} ${singular}` : `${count} ${plural}`;
   }
 
-  async function loadData() {
+  async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
     isLoading = true;
     error = null;
@@ -179,7 +179,11 @@
     isSuccess = false;
 
     try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:V");
+      const rows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "journal_general!A:V",
+        forceRefresh
+      );
       queue = rows
         .slice(1)
         .map((row, idx) => ({
@@ -364,6 +368,7 @@
         await batchUpdateValues(brandingState.spreadsheetId, allUpdates);
       }
       isSuccess = true;
+      invalidateCache(); // Clear cache to reflect changes in Ledger/Accounts
       setTimeout(() => loadData(), 2000);
     } catch (e: any) {
       error = `Ledger sync failed: ${e.message}. Emails were sent, but the sheet was not updated`;
@@ -387,7 +392,7 @@
       {#snippet actions()}
         <TermFilter onSelect={() => loadData()} />
         <div class="flex gap-2">
-          <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
+          <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
             <RefreshCcw class="mr-2 h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
             Refresh
           </Button>
@@ -501,6 +506,7 @@
                     ><Checkbox
                       checked={selectedIndices.has(item.rowIndex)}
                       onCheckedChange={() => toggleSelect(item.rowIndex)}
+                      onclick={(e) => e.stopPropagation()}
                       aria-label="Select row"
                     /></Table.Cell
                   >

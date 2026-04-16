@@ -144,14 +144,18 @@
     return parseFloat(clean) || 0;
   }
 
-  async function loadResidentProfile() {
+  async function loadResidentProfile(forceRefresh = false) {
     if (!brandingState.spreadsheetId || !stno) return;
     isLoading = true;
     error = null;
 
     try {
       // 1. Fetch Account Details
-      const accRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
+      const accRows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "accounts!A:AD",
+        forceRefresh
+      );
       const allRowsForStno = accRows.filter((r) => r[ACC.STNO]?.trim() === stno);
 
       if (allRowsForStno.length === 0) {
@@ -189,7 +193,11 @@
       };
 
       // 2. Fetch Transaction History
-      const jorRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W");
+      const jorRows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "journal_general!A:W",
+        forceRefresh
+      );
       history = jorRows
         .slice(1)
         .filter(
@@ -246,7 +254,12 @@
 
     {#snippet actions()}
       <TermFilter onSelect={loadResidentProfile} />
-      <Button variant="outline" size="sm" onclick={loadResidentProfile} disabled={isLoading}>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadResidentProfile(true)}
+        disabled={isLoading}
+      >
         <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
         <span class="hidden sm:inline">Refresh Data</span>
       </Button>

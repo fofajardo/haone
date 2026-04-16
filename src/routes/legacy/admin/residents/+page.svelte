@@ -106,13 +106,17 @@
     return parseFloat(clean) || 0;
   }
 
-  async function loadData() {
+  async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
     isLoading = true;
     error = null;
     selectedIndices = new Set();
     try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
+      const rows = await fetchSheetRowsRaw(
+        brandingState.spreadsheetId,
+        "accounts!A:AD",
+        forceRefresh
+      );
       residents = rows
         .slice(1)
         .map((row) => ({
@@ -291,9 +295,9 @@
   {#if !isDispatchMode}
     <SubpageHeader title="Residents">
       {#snippet actions()}
-        <TermFilter onSelect={loadData} />
+        <TermFilter onSelect={() => loadData()} />
         <div class="flex gap-2">
-          <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
+          <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
             <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
             <span class="hidden sm:inline">Refresh</span>
           </Button>
