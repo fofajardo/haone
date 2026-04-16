@@ -33,24 +33,24 @@ export function generateAcknowledgmentReceiptHtml(
   }
 
   const content = `
-  <h2 class="em-h2">ACKNOWLEDGMENT RECEIPT</h2>
+  <h2 style="font-size: 20px; font-weight: bold; text-transform: uppercase; margin-bottom: 25px; color: #000; display: block;">ACKNOWLEDGMENT RECEIPT</h2>
 
-  <p class="em-hi">Hi, <strong>${data.accountFullName}</strong></p>
+  <p style="font-size: 16px; margin-bottom: 5px; font-weight: normal; display: block; color: #000;">Hi, <strong style="font-weight: bold;">${data.accountFullName}</strong></p>
 
-  <p class="em-p">
+  <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block;">
     ${typeSpecificText}Please find the acknowledgment receipt linked below for your records.
   </p>
 
   <div style="text-align: center; margin: 35px 0;">
-    <a href="${data.receiptUrl}" class="em-link-btn">VIEW RECEIPT HERE</a>
+    <a href="${data.receiptUrl}" style="color: #0047AB; font-size: 24px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">VIEW RECEIPT HERE</a>
   </div>
 
-  <p class="em-p">
-    We recommend retaining this email for future reference. <strong>Please verify that the amounts listed on the receipt are correct.</strong> The records will be deemed final one week after you receive this email.
+  <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block;">
+    We recommend retaining this email for future reference. <strong style="font-weight: bold;">Please verify that the amounts listed on the receipt are correct.</strong> The records will be deemed final one week after you receive this email.
   </p>
 
-  <p class="em-p">
-    For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${branding.replyTo}" class="em-link-inline">${branding.replyTo}</a>.
+  <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block;">
+    For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${branding.replyTo}" style="color: #0047AB; text-decoration: underline;">${branding.replyTo}</a>.
   </p>
   `;
 
