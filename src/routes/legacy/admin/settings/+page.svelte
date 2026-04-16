@@ -5,7 +5,7 @@
   import * as Select from "$lib/components/ui/select";
   import { Switch } from "$lib/components/ui/switch";
   import { Input } from "$lib/components/ui/input";
-  import { Monitor, Sun, Moon, CheckCircle2, AlertTriangle } from "lucide-svelte";
+  import { Monitor, Sun, Moon, CircleCheckBig, TriangleAlert } from "lucide-svelte";
   import branding from "$lib/branding.json";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
@@ -168,7 +168,7 @@
                 <div
                   class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] text-amber-600"
                 >
-                  <AlertTriangle class="h-3.5 w-3.5" />
+                  <TriangleAlert class="h-3.5 w-3.5" />
                   <span
                     >Manual override active. This will target a different sheet than the
                     organization default.</span
@@ -184,7 +184,7 @@
       </Card.Root>
 
       <div class="flex items-center gap-2 px-1 text-[10px] font-medium text-muted-foreground/60">
-        <CheckCircle2 class="h-3.5 w-3.5 text-green-600/50" />
+        <CircleCheckBig class="h-3.5 w-3.5 text-green-600/50" />
         Settings persist in this browser.
       </div>
     </div>

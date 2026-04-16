@@ -9,7 +9,7 @@
   import { onMount } from "svelte";
   import { loadGisScript } from "$lib/gmail";
   import { Button } from "$lib/components/ui/button";
-  import { LogIn, Loader2 } from "lucide-svelte";
+  import { LogIn, LoaderCircle } from "lucide-svelte";
   import { setMode } from "mode-watcher";
   import branding from "$lib/branding.json";
 
@@ -80,7 +80,7 @@
 
 {#if isLoading}
   <div class="flex min-h-screen flex-col items-center justify-center gap-4">
-    <Loader2 class="h-8 w-8 animate-spin text-slate-900" />
+    <LoaderCircle class="h-8 w-8 animate-spin text-slate-900" />
   </div>
 {:else if !auth.accessToken}
   <div

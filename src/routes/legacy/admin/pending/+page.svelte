@@ -27,8 +27,9 @@
   import {
     RefreshCcw,
     FileCheck,
-    AlertCircle,
-    CheckCircle2,
+    CircleAlert,
+    CircleCheckBig,
+    LoaderCircle,
     ListFilter,
     ArrowUp,
     ArrowDown,
@@ -425,7 +426,7 @@
       <div
         class="flex items-center gap-3 rounded-lg border bg-muted/20 p-4 text-sm font-medium text-destructive"
       >
-        <AlertCircle class="h-4 w-4" />
+        <CircleAlert class="h-4 w-4" />
         <p>{error}</p>
       </div>
     {/if}
@@ -559,7 +560,7 @@
       <div
         class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
       >
-        <CheckCircle2 class="h-8 w-8" />
+        <CircleCheckBig class="h-8 w-8" />
         <div class="text-center">
           <p>No pending entries</p>
         </div>
@@ -587,9 +588,9 @@
           class="min-w-[80px] bg-primary text-primary-foreground"
         >
           {#if isSending}
-            <Loader2 class="mr-2 h-4 w-4 animate-spin" /> Sending...
+            <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Sending...
           {:else if isSuccess}
-            <CheckCircle2 class="mr-2 h-4 w-4" /> Sent
+            <CircleCheckBig class="mr-2 h-4 w-4" /> Sent
           {:else}
             <Play class="mr-2 h-4 w-4" /> Run
           {/if}
@@ -715,7 +716,7 @@
           <div
             class="flex items-center gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm font-medium text-destructive"
           >
-            <AlertCircle class="h-5 w-5" />
+            <CircleAlert class="h-5 w-5" />
             <span>{error}</span>
           </div>
         {/if}

@@ -20,14 +20,14 @@
   import { Label } from "$lib/components/ui/label";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import {
-    Loader2,
+    LoaderCircle,
     RefreshCcw,
     ChevronLeft,
     User,
     ShieldCheck,
     CreditCard,
     History,
-    AlertCircle,
+    CircleAlert,
     Info,
     ArrowUpRight,
     MapPin,
@@ -258,7 +258,7 @@
   {:else if error}
     <Card.Root class="border-destructive/20 bg-destructive/5">
       <Card.Content class="flex flex-col items-center justify-center p-12 text-center">
-        <AlertCircle class="mb-4 h-12 w-12 text-destructive opacity-50" />
+        <CircleAlert class="mb-4 h-12 w-12 text-destructive opacity-50" />
         <h2 class="text-lg font-bold text-destructive">{error}</h2>
         <Button variant="outline" class="mt-4" href="/legacy/admin/residents">Return to Hub</Button>
       </Card.Content>

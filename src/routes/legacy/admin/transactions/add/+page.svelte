@@ -11,7 +11,7 @@
   import { Label } from "$lib/components/ui/label";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import * as Select from "$lib/components/ui/select";
-  import { Loader2, ChevronLeft, Search, User, UserCircle } from "lucide-svelte";
+  import { LoaderCircle, ChevronLeft, Search, User, CircleUser } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
 
@@ -241,16 +241,16 @@
     href="/legacy/admin/transactions"
   />
 
-  {#if error}
-    <div
-      class="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm font-medium text-destructive"
-    >
-      {error}
-    </div>
-  {/if}
+    {#if error}
+      <div
+        class="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm font-medium text-destructive"
+      >
+        {error}
+      </div>
+    {/if}
 
-  <Card.Root>
-    <Card.Content class="space-y-8 p-6">
+    <Card.Root>
+      <Card.Content class="space-y-8 p-6">
       <!-- Basic Details -->
       <div class="grid gap-6 md:grid-cols-2">
         <div class="space-y-2">
@@ -280,7 +280,7 @@
           <Label
             class="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase"
           >
-            <UserCircle class="h-3.5 w-3.5" /> Entry Creator
+            <CircleUser class="h-3.5 w-3.5" /> Entry Creator
           </Label>
           <div class="relative">
             <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
@@ -475,7 +475,7 @@
         >
         <Button onclick={handleSubmit} disabled={isSubmitting} class="min-w-[120px]">
           {#if isSubmitting}
-            <Loader2 class="mr-2 h-4 w-4 animate-spin" /> Saving...
+            <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving...
           {:else}
             Save Transaction
           {/if}

@@ -18,7 +18,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Label } from "$lib/components/ui/label";
   import {
-    Loader2,
+    LoaderCircle,
     ChevronLeft,
     History,
     User,

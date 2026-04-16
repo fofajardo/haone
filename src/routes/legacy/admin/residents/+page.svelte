@@ -24,8 +24,9 @@
     ChevronLeft,
     ChevronRight,
     Play,
-    CheckCircle2,
-    AlertCircle,
+    CircleCheckBig,
+    CircleAlert,
+    LoaderCircle,
     Eye,
     ArrowUpDown,
     FilterX
@@ -509,7 +510,7 @@
                           class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[8px] font-black text-amber-700 uppercase"
                           title="Outstanding is 0 but water/assoc balances are negative. Check for misassigned payments."
                         >
-                          <AlertCircle class="h-2.5 w-2.5" />
+                          <CircleAlert class="h-2.5 w-2.5" />
                           Potential Misassignment
                         </span>
                       {/if}
@@ -552,9 +553,9 @@
         class="min-w-[120px]"
       >
         {#if isSending}
-          <Loader2 class="mr-2 h-4 w-4 animate-spin" /> Sending...
+          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Sending...
         {:else if isSuccess}
-          <CheckCircle2 class="mr-2 h-4 w-4" /> Finished
+          <CircleCheckBig class="mr-2 h-4 w-4" /> Finished
         {:else}
           <Play class="mr-2 h-4 w-4" /> Start Broadcast
         {/if}
