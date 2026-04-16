@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { page } from "$app/state";
   import { goto } from "$app/navigation";
+  import { auth } from "$lib/auth.svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw, appendSheetRow } from "$lib/google-sheets";
@@ -10,8 +12,8 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import RichEditor from "$lib/components/RichEditor.svelte";
-  import * as Select from "$lib/components/ui/select";
-  import { LoaderCircle, ChevronLeft, Search, User, CircleUser } from "lucide-svelte";
+  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { LoaderCircle, ChevronLeft, Search, Calendar, Users, Wallet, StickyNote } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
 
@@ -28,6 +30,7 @@
     email: string;
     name: string;
     stNo: string;
+    period: string;
     raw: string[];
   }
 
@@ -42,8 +45,9 @@
   // Form State
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
-    creatorEmail: "",
-    creatorName: "",
+    creatorEmail: auth.user?.email || "",
+    creatorName: auth.user?.name || "",
+    creatorStNo: "",
     accountEmail: "",
     accountName: "",
     accountStNo: "",
@@ -61,6 +65,13 @@
     prRefNo: ""
   });
 
+  // Display initial creator if set
+  $effect(() => {
+    if (formData.creatorEmail && !creatorSearch) {
+      creatorSearch = formData.creatorEmail;
+    }
+  });
+
   // Autocomplete State
   let creatorSearch = $state("");
   let accountSearch = $state("");
@@ -72,18 +83,29 @@
     isLoading = true;
     try {
       const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
-      const allAccounts = rows
+      const rawAccounts = rows
         .slice(1)
         .map((row) => ({
           email: (row[ACC.EMAIL] || "").trim(),
           name: (row[ACC.ACCOUNT_FULL_NAME] || row[ACC.CE_FULL_NAME] || "").trim(),
           stNo: (row[ACC.CE_STNO] || "").toString().trim(),
+          period: (row[ACC.PERIOD] || "").trim(),
           raw: row
         }))
-        .filter((a) => a.email);
+        .filter((a) => a.email && a.email.toLowerCase() !== "email");
 
-      // Deduplicate by email to avoid repeated names in suggestions
-      accounts = Array.from(new Map(allAccounts.map((a) => [a.email, a])).values());
+      const fundsAccount: AccountRecord = {
+        email: "_funds",
+        name: "Association Funds",
+        stNo: "SYSTEM",
+        period: "ALWAYS",
+        raw: []
+      };
+
+      // Deduplicate by email
+      accounts = Array.from(
+        new Map([...rawAccounts, fundsAccount].map((a) => [a.email, a])).values()
+      );
 
       const constRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C");
       transactionTypes = constRows
@@ -97,6 +119,7 @@
       academicPeriods = constRows
         .slice(1)
         .filter((r) => (r[0] || "").startsWith("SEM_"))
+        .filter((r) => !r[1]?.includes("DO_NOT_USE") && !r[2]?.includes("DO_NOT_USE"))
         .map((r) => ({
           value: r[1] || r[0],
           label: r[1] || r[0]
@@ -116,6 +139,23 @@
       error = `Failed to load accounts: ${e.message}`;
     } finally {
       isLoading = false;
+      // Handle query params
+      const targetEmail = page.url.searchParams.get("account");
+      if (targetEmail) {
+        const matched = accounts.find((a) => a.email.toLowerCase() === targetEmail.toLowerCase());
+        if (matched) {
+          selectAccount(matched);
+        }
+      }
+
+      // Populate current user stNo if matching
+      const userMail = auth.user?.email;
+      if (userMail) {
+        const myAcc = accounts.find((a) => a.email.toLowerCase() === userMail.toLowerCase());
+        if (myAcc) {
+          formData.creatorStNo = myAcc.stNo;
+        }
+      }
     }
   }
 
@@ -125,8 +165,9 @@
     accounts
       .filter(
         (a) =>
-          a.email.toLowerCase().includes(creatorSearch.toLowerCase()) ||
-          a.name.toLowerCase().includes(creatorSearch.toLowerCase())
+          (a.email.toLowerCase().includes(creatorSearch.toLowerCase()) ||
+            a.name.toLowerCase().includes(creatorSearch.toLowerCase())) &&
+          (!formData.period || a.period === formData.period)
       )
       .slice(0, 5)
   );
@@ -135,8 +176,11 @@
     accounts
       .filter(
         (a) =>
-          a.email.toLowerCase().includes(accountSearch.toLowerCase()) ||
-          a.name.toLowerCase().includes(accountSearch.toLowerCase())
+          (a.email.toLowerCase().includes(accountSearch.toLowerCase()) ||
+            a.name.toLowerCase().includes(accountSearch.toLowerCase())) &&
+          (a.email === "_funds" ||
+            !formData.period ||
+            a.period === formData.period)
       )
       .slice(0, 5)
   );
@@ -144,7 +188,8 @@
   function selectCreator(a: AccountRecord) {
     formData.creatorEmail = a.email;
     formData.creatorName = a.name;
-    creatorSearch = a.name || a.email;
+    formData.creatorStNo = a.stNo;
+    creatorSearch = a.email;
     showCreatorSuggestions = false;
   }
 
@@ -152,7 +197,7 @@
     formData.accountEmail = a.email;
     formData.accountName = a.name;
     formData.accountStNo = a.stNo;
-    accountSearch = a.name || a.email;
+    accountSearch = a.email;
     showAccountSuggestions = false;
   }
 
@@ -237,7 +282,6 @@
 <div class="space-y-6">
   <SubpageHeader
     title="Add Transaction"
-    subtitle="Create a new entry in the general journal."
     href="/legacy/admin/transactions"
   />
 
@@ -251,40 +295,41 @@
     {/if}
 
     <Card.Root>
-      <Card.Content class="space-y-8 p-6">
+      <Card.Content class="space-y-8">
         <!-- Basic Details -->
-        <div class="grid gap-6 md:grid-cols-2">
+        <div class="space-y-4">
+          <Label class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase">
+            <Calendar class="h-3.5 w-3.5" /> General Information
+          </Label>
+          <div class="grid gap-6 md:grid-cols-2">
           <div class="space-y-2">
-            <Label>Transaction Date</Label>
+            <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Transaction Date</Label>
             <Input type="date" bind:value={formData.date} />
           </div>
           <div class="space-y-2">
-            <Label>Academic Term</Label>
-            <Select.Root type="single" bind:value={formData.period}>
-              <Select.Trigger class="h-10 text-xs font-semibold">
-                {translatePeriod(formData.period) || "Select Term"}
-              </Select.Trigger>
-              <Select.Content>
-                {#each academicPeriods as term}
-                  <Select.Item value={term.value} label={translatePeriod(term.value)}>
-                    {translatePeriod(term.value)}
-                  </Select.Item>
-                {/each}
-              </Select.Content>
-            </Select.Root>
+            <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Academic Term</Label>
+            <NativeSelect.Root bind:value={formData.period} class="h-10 w-full text-xs font-semibold">
+              {#each academicPeriods as term}
+                <NativeSelect.Option value={term.value}>{translatePeriod(term.value)}</NativeSelect.Option>
+              {/each}
+            </NativeSelect.Root>
           </div>
         </div>
+      </div>
 
-        <!-- Parties -->
-        <div class="grid gap-8 border-t pt-4 md:grid-cols-2">
-          <div class="relative space-y-3">
-            <Label
-              class="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >
-              <CircleUser class="h-3.5 w-3.5" /> Entry Creator
+        <div class="space-y-4 border-t pt-4">
+            <Label class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase">
+              <Users class="h-3.5 w-3.5" /> Transaction Parties
             </Label>
+            <div class="grid gap-8 md:grid-cols-2">
+              <div class="relative space-y-3">
+                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Entry Creator
+                </Label>
             <div class="relative">
-              <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+              <Search
+                class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              />
               <Input
                 bind:value={creatorSearch}
                 onfocus={() => (showCreatorSuggestions = true)}
@@ -319,18 +364,23 @@
                 <span class="text-xs font-bold text-slate-700"
                   >{formData.creatorName || "None selected"}</span
                 >
+                {#if formData.creatorStNo}
+                  <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
+                    >{formData.creatorStNo}</span
+                  >
+                {/if}
               </div>
             </div>
           </div>
 
-          <div class="relative space-y-3">
-            <Label
-              class="flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >
-              <User class="h-3.5 w-3.5" /> Target Account
-            </Label>
+              <div class="relative space-y-3">
+                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  Target Account
+                </Label>
             <div class="relative">
-              <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+              <Search
+                class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              />
               <Input
                 bind:value={accountSearch}
                 onfocus={() => (showAccountSuggestions = true)}
@@ -374,15 +424,16 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Financials -->
+        <!-- Payment Details -->
         <div class="space-y-4 border-t pt-4">
-          <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Financial Details</Label
-          >
+          <Label class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase">
+            <Wallet class="h-3.5 w-3.5" /> Payment Details
+          </Label>
           <div class="grid gap-6 md:grid-cols-3">
             <div class="space-y-1.5">
-              <Label class="text-[10px] font-bold">Water Fee</Label>
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Water Fee</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -391,7 +442,7 @@
               />
             </div>
             <div class="space-y-1.5">
-              <Label class="text-[10px] font-bold">Assoc. Fee</Label>
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Association Fee</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -400,7 +451,7 @@
               />
             </div>
             <div class="space-y-1.5">
-              <Label class="text-[10px] font-bold">Misc</Label>
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Misc</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -410,48 +461,45 @@
             </div>
           </div>
 
-          <div class="grid gap-6 pt-2 md:grid-cols-3">
+          <div class="grid gap-6 pt-2 md:grid-cols-2">
             <div class="space-y-1.5">
-              <Label class="text-[10px] font-bold">Payment Processor</Label>
-              <Select.Root type="single" bind:value={formData.mop}>
-                <Select.Trigger class="h-10 text-xs font-semibold">
-                  {translateMop(formData.mop)}
-                </Select.Trigger>
-                <Select.Content>
-                  {#each mopTypes as mop}
-                    <Select.Item value={mop.value}>{mop.label}</Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Payment Processor</Label>
+              <NativeSelect.Root bind:value={formData.mop} class="h-10 w-full text-xs font-semibold">
+                {#each mopTypes as mop}
+                  <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>
+                {/each}
+              </NativeSelect.Root>
             </div>
             <div class="space-y-1.5">
-              <Label class="text-[10px] font-bold">Type</Label>
-              <Select.Root type="single" bind:value={formData.type}>
-                <Select.Trigger class="h-10 text-xs font-semibold">
-                  {formData.type}
-                </Select.Trigger>
-                <Select.Content>
-                  {#each transactionTypes as type}
-                    <Select.Item value={type.value}>{type.label}</Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Type</Label>
+              <NativeSelect.Root bind:value={formData.type} class="h-10 w-full text-xs font-semibold">
+                {#each transactionTypes as type}
+                  <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
+                {/each}
+              </NativeSelect.Root>
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="space-y-1.5">
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Reference Number</Label>
+              <Input bind:value={formData.mopRefNo} placeholder="e.g., Transaction ID" />
             </div>
             <div class="space-y-1.5">
-              <Label class="text-[10px] font-bold">Reference Number</Label>
-              <Input bind:value={formData.mopRefNo} placeholder="e.g. Transaction ID" />
-            </div>
-            <div class="space-y-1.5">
-              <Label class="text-[10px] font-bold text-primary">InstaPay Invoice Number</Label>
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">InstaPay Invoice Number</Label>
               <Input bind:value={formData.instapayInvoice} placeholder="Optional" />
             </div>
           </div>
         </div>
 
         <!-- Notes -->
-        <div class="grid gap-6 border-t pt-4 md:grid-cols-2">
+        <div class="space-y-4 border-t pt-4">
+          <Label class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase">
+            <StickyNote class="h-3.5 w-3.5" /> Documentation
+          </Label>
+          <div class="grid gap-6 md:grid-cols-2">
           <div class="space-y-2">
-            <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+            <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
               >Public Remarks</Label
             >
             <textarea
@@ -461,7 +509,7 @@
             ></textarea>
           </div>
           <div class="space-y-2">
-            <Label class="text-xs font-bold tracking-wider text-primary uppercase"
+            <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
               >Private Notes</Label
             >
             <textarea
@@ -471,6 +519,7 @@
             ></textarea>
           </div>
         </div>
+      </div>
 
         <div class="flex justify-end gap-3 border-t pt-4">
           <Button variant="outline" href="/legacy/admin/transactions" disabled={isSubmitting}
@@ -480,7 +529,7 @@
             {#if isSubmitting}
               <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving...
             {:else}
-              Save Transaction
+              Save
             {/if}
           </Button>
         </div>
