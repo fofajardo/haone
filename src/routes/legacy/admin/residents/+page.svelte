@@ -135,7 +135,10 @@
           raw: row
         }))
         .filter(
-          (r) => r.email && (!uiSettings.currentSemester || r.period === uiSettings.currentSemester)
+          (r) =>
+            r.email &&
+            r.email !== "_vacant" &&
+            (!uiSettings.currentSemester || r.period === uiSettings.currentSemester)
         );
     } catch (e: any) {
       error = e.message;
