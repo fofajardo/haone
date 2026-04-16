@@ -3,9 +3,15 @@
   import { Editor } from "@tiptap/core";
   import StarterKit from "@tiptap/starter-kit";
   import Link from "@tiptap/extension-link";
+  import BulletList from "@tiptap/extension-bullet-list";
+  import OrderedList from "@tiptap/extension-ordered-list";
+  import ListItem from "@tiptap/extension-list-item";
   import Underline from "@tiptap/extension-underline";
   import Placeholder from "@tiptap/extension-placeholder";
   import { Button } from "$lib/components/ui/button";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
   import {
     Bold,
     Italic,
@@ -14,7 +20,6 @@
     ListOrdered,
     Link as LinkIcon,
     Unlink,
-    Code,
     RotateCcw
   } from "lucide-svelte";
 
@@ -25,17 +30,44 @@
 
   let element: HTMLElement;
   let editor: Editor | undefined = $state();
+  let selectionState = $state(0);
+
+  // Link Dialog State
+  let linkDialogOpen = $state(false);
+  let linkUrl = $state("");
 
   onMount(() => {
     editor = new Editor({
       element,
       extensions: [
-        StarterKit,
+        StarterKit.configure({
+          bulletList: false,
+          orderedList: false,
+          listItem: false
+        }),
+        BulletList.configure({
+          HTMLAttributes: {
+            style:
+              "margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside; list-style-type: disc;"
+          }
+        }),
+        OrderedList.configure({
+          HTMLAttributes: {
+            style:
+              "margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside; list-style-type: decimal;"
+          }
+        }),
+        ListItem.configure({
+          HTMLAttributes: {
+            style:
+              "margin-bottom: 10px; list-style-type: inherit; line-height: 1.4; font-size: 14px; color: #000;"
+          }
+        }),
         Underline,
         Link.configure({
           openOnClick: false,
           HTMLAttributes: {
-            class: "text-blue-600 underline"
+            style: "color: #0047AB; text-decoration: underline; font-weight: 500;"
           }
         }),
         Placeholder.configure({
@@ -45,11 +77,15 @@
       content,
       onUpdate: ({ editor }) => {
         content = editor.getHTML();
+        selectionState++;
+      },
+      onSelectionUpdate: () => {
+        selectionState++;
       },
       editorProps: {
         attributes: {
           class:
-            "prose prose-sm max-w-none focus:outline-none min-h-[300px] p-6 text-sm text-slate-800 leading-relaxed"
+            "prose prose-sm max-w-none focus:outline-none min-h-[400px] p-6 text-sm text-slate-800 leading-relaxed"
         }
       }
     });
@@ -59,116 +95,150 @@
     };
   });
 
-  function setLink() {
-    const previousUrl = editor?.getAttributes("link").href;
-    const url = window.prompt("URL", previousUrl);
+  function openLinkDialog() {
+    linkUrl = editor?.getAttributes("link").href || "";
+    linkDialogOpen = true;
+  }
 
-    if (url === null) return;
-    if (url === "") {
+  function applyLink() {
+    if (linkUrl === "") {
       editor?.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
+    } else {
+      editor?.chain().focus().extendMarkRange("link").setLink({ href: linkUrl }).run();
     }
-
-    editor?.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    linkDialogOpen = false;
   }
 </script>
 
 <div
   class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all focus-within:ring-1 focus-within:ring-slate-300"
 >
-  <!-- Toolbar -->
+  <!-- Fixed Toolbar -->
   {#if editor}
-    <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 bg-slate-50/50 p-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8 {editor.isActive('bold') ? 'bg-slate-200 text-slate-900' : 'text-slate-500'}"
-        onclick={() => editor?.chain().focus().toggleBold().run()}
-      >
-        <Bold class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8 {editor.isActive('italic')
-          ? 'bg-slate-200 text-slate-900'
-          : 'text-slate-500'}"
-        onclick={() => editor?.chain().focus().toggleItalic().run()}
-      >
-        <Italic class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8 {editor.isActive('underline')
-          ? 'bg-slate-200 text-slate-900'
-          : 'text-slate-500'}"
-        onclick={() => editor?.chain().focus().toggleUnderline().run()}
-      >
-        <UnderlineIcon class="h-4 w-4" />
-      </Button>
-
-      <div class="mx-1 h-4 w-[1px] bg-slate-200"></div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8 {editor.isActive('bulletList')
-          ? 'bg-slate-200 text-slate-900'
-          : 'text-slate-500'}"
-        onclick={() => editor?.chain().focus().toggleBulletList().run()}
-      >
-        <List class="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8 {editor.isActive('orderedList')
-          ? 'bg-slate-200 text-slate-900'
-          : 'text-slate-500'}"
-        onclick={() => editor?.chain().focus().toggleOrderedList().run()}
-      >
-        <ListOrdered class="h-4 w-4" />
-      </Button>
-
-      <div class="mx-1 h-4 w-[1px] bg-slate-200"></div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8 {editor.isActive('link') ? 'bg-slate-200 text-slate-900' : 'text-slate-500'}"
-        onclick={setLink}
-      >
-        <LinkIcon class="h-4 w-4" />
-      </Button>
-      {#if editor.isActive("link")}
+    {#key selectionState}
+      <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 bg-slate-50/70 p-2">
         <Button
           variant="ghost"
-          size="icon"
-          class="h-8 w-8 text-destructive"
-          onclick={() => editor?.chain().focus().unsetLink().run()}
+          size="sm"
+          class="h-8 w-8 transition-colors {editor.isActive('bold')
+            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+          onclick={() => editor?.chain().focus().toggleBold().run()}
         >
-          <Unlink class="h-4 w-4" />
+          <Bold class="h-3.5 w-3.5" />
         </Button>
-      {/if}
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 w-8 transition-colors {editor.isActive('italic')
+            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+          onclick={() => editor?.chain().focus().toggleItalic().run()}
+        >
+          <Italic class="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 w-8 transition-colors {editor.isActive('underline')
+            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+          onclick={() => editor?.chain().focus().toggleUnderline().run()}
+        >
+          <UnderlineIcon class="h-3.5 w-3.5" />
+        </Button>
 
-      <div class="flex-grow"></div>
+        <div class="mx-1 h-4 w-[1px] bg-slate-200"></div>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-8 w-8 text-slate-400 hover:text-slate-900"
-        onclick={() => editor?.chain().focus().clearNodes().unsetAllMarks().run()}
-        title="Clear formatting"
-      >
-        <RotateCcw class="h-3.5 w-3.5" />
-      </Button>
-    </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 w-8 transition-colors {editor.isActive('bulletList')
+            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+          onclick={() => editor?.chain().focus().toggleBulletList().run()}
+        >
+          <List class="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 w-8 transition-colors {editor.isActive('orderedList')
+            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+          onclick={() => editor?.chain().focus().toggleOrderedList().run()}
+        >
+          <ListOrdered class="h-3.5 w-3.5" />
+        </Button>
+
+        <div class="mx-1 h-4 w-[1px] bg-slate-200"></div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 w-8 transition-colors {editor.isActive('link')
+            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+          onclick={openLinkDialog}
+        >
+          <LinkIcon class="h-3.5 w-3.5" />
+        </Button>
+        {#if editor.isActive("link")}
+          <Button
+            variant="ghost"
+            size="sm"
+            class="h-8 w-8 text-destructive hover:bg-destructive/10"
+            onclick={() => editor?.chain().focus().unsetLink().run()}
+          >
+            <Unlink class="h-3.5 w-3.5" />
+          </Button>
+        {/if}
+
+        <div class="flex-grow"></div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-8 w-8 text-slate-400 transition-colors hover:bg-slate-200/50 hover:text-slate-900"
+          onclick={() => editor?.chain().focus().clearNodes().unsetAllMarks().run()}
+          title="Clear formatting"
+        >
+          <RotateCcw class="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    {/key}
   {/if}
 
   <!-- Editor Container -->
-  <div bind:this={element} class="tiptap-container border-0"></div>
+  <div bind:this={element} class="tiptap-container min-h-[400px] border-0"></div>
 </div>
+
+<!-- Link Dialog -->
+<Dialog.Root bind:open={linkDialogOpen}>
+  <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Header>
+      <Dialog.Title>Edit Link</Dialog.Title>
+      <Dialog.Description>
+        Enter the URL for the selected text. Leave empty to remove link.
+      </Dialog.Description>
+    </Dialog.Header>
+    <div class="grid gap-4 py-4">
+      <div class="grid gap-2">
+        <Label for="url">URL</Label>
+        <Input
+          id="url"
+          placeholder="https://example.com"
+          bind:value={linkUrl}
+          onkeydown={(e) => e.key === "Enter" && applyLink()}
+        />
+      </div>
+    </div>
+    <Dialog.Footer>
+      <Button variant="outline" onclick={() => (linkDialogOpen = false)}>Cancel</Button>
+      <Button type="submit" onclick={applyLink}>Apply</Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
 
 <style>
   :global(.tiptap p.is-editor-empty:first-child::before) {
@@ -180,23 +250,23 @@
   }
 
   :global(.tiptap ul) {
-    list-style-type: disc;
-    padding-left: 1.5rem;
-    margin: 1rem 0;
+    list-style-type: disc !important;
+    padding-left: 1.5rem !important;
+    margin: 1rem 0 !important;
   }
 
   :global(.tiptap ol) {
-    list-style-type: decimal;
-    padding-left: 1.5rem;
-    margin: 1rem 0;
+    list-style-type: decimal !important;
+    padding-left: 1.5rem !important;
+    margin: 1rem 0 !important;
   }
 
   :global(.tiptap li) {
-    margin: 0.25rem 0;
+    margin: 0.25rem 0 !important;
   }
 
   :global(.tiptap a) {
-    color: #0047ab;
+    color: #1a56db;
     text-decoration: underline;
     font-weight: 500;
   }

@@ -64,24 +64,10 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
   `
       : "";
 
-  const inlineReminders = (data.reminders || "")
-    .replace(
-      /<ul/g,
-      '<ul style="margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside; list-style-type: disc;"'
-    )
-    .replace(
-      /<ol/g,
-      '<ol style="margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside; list-style-type: decimal;"'
-    )
-    .replace(
-      /<li/g,
-      '<li style="margin-bottom: 10px; list-style-type: inherit; line-height: 1.4; font-size: 14px; color: #000;"'
-    );
-
   const accountSpecificContent = data.reminders
     ? `
     <div style="margin-bottom: 25px; color: #000; font-size: 14px;">
-      ${inlineReminders}
+      ${data.reminders}
     </div>
   `
     : "";
