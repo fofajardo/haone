@@ -453,6 +453,7 @@
                     ><Checkbox
                       checked={selectedIndices.has(r.stno)}
                       onCheckedChange={() => toggleResident(r.stno)}
+                      onclick={(e) => e.stopPropagation()}
                     /></Table.Cell
                   >
                   <Table.Cell class="px-4 py-3 align-top">
