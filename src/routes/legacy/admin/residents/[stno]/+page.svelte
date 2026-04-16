@@ -253,16 +253,17 @@
     {/snippet}
 
     {#snippet actions()}
-      <TermFilter onSelect={loadResidentProfile} />
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadResidentProfile(true)}
-        disabled={isLoading}
-      >
-        <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
-        <span class="hidden sm:inline">Refresh Data</span>
-      </Button>
+      <div class="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadResidentProfile(true)}
+          disabled={isLoading}
+        >
+          <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
+          <span class="hidden sm:inline">Refresh Data</span>
+        </Button>
+      </div>
     {/snippet}
   </SubpageHeader>
 
@@ -277,6 +278,33 @@
       </Card.Content>
     </Card.Root>
   {:else if account}
+    <div class="grid gap-4 lg:grid-cols-12">
+      <div class="lg:col-span-3">
+        <TermFilter onSelect={loadResidentProfile} />
+      </div>
+
+      <div class="space-y-1 lg:col-span-9">
+        <Label class="text-[10px] font-bold text-muted-foreground uppercase">Actions</Label>
+        <div class="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            href="/legacy/admin/transactions/add?account={account.email}"
+            class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
+          >
+            <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" /> Add Transaction
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            class="pointer-events-none h-9 text-xs font-bold opacity-50"
+          >
+            Export Statement (PDF)
+          </Button>
+        </div>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Sidebar Information -->
       <div class="order-2 space-y-6 lg:order-1 lg:col-span-1">
@@ -551,29 +579,6 @@
             {/if}
           </Card.Content>
         </Card.Root>
-
-        <div class="rounded-xl border border-dashed border-muted p-6 text-center">
-          <p class="mb-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-            Audit Controls
-          </p>
-          <div class="flex justify-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              href="/legacy/admin/transactions/add?account={account.email}"
-              class="h-8 text-[10px] font-bold"
-            >
-              <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" /> Direct Entry
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              class="pointer-events-none h-8 text-[10px] font-bold opacity-50"
-            >
-              Export Statement (PDF)
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   {/if}
