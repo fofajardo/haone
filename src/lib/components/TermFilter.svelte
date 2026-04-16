@@ -58,7 +58,7 @@
   }
 </script>
 
-<div class="space-y-1 mb-0 min-w-0">
+<div class="mb-0 min-w-0 space-y-1">
   <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
     >Academic Term</Label
   >
