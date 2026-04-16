@@ -17,7 +17,7 @@
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import * as Table from "$lib/components/ui/table";
-  import * as Select from "$lib/components/ui/select";
+  import * as NativeSelect from "$lib/components/ui/native-select";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -205,7 +205,7 @@
     <div class="space-y-1 lg:col-span-5">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
       <div class="relative">
-        <Search class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+        <Search class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           bind:value={filterSearch}
           placeholder="Name, account, or notes..."
@@ -216,36 +216,22 @@
 
     <div class="space-y-1 lg:col-span-2">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label>
-      <Select.Root type="single" bind:value={filterType}>
-        <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
-          <span class="truncate">
-            {filterType === "ALL" ? "All Types" : filterType}
-          </span>
-        </Select.Trigger>
-        <Select.Content>
-          <Select.Item value="ALL">All Types</Select.Item>
-          {#each transactionTypes as type}
-            <Select.Item value={type.value}>{type.label}</Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
+      <NativeSelect.Root bind:value={filterType} class="h-9 text-xs font-semibold">
+        <NativeSelect.Option value="ALL">All Types</NativeSelect.Option>
+        {#each transactionTypes as type}
+          <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
+        {/each}
+      </NativeSelect.Root>
     </div>
 
     <div class="space-y-1 lg:col-span-2">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Processor</Label>
-      <Select.Root type="single" bind:value={filterMop}>
-        <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
-          <span class="truncate">
-            {filterMop === "ALL" ? "All Methods" : translateMop(filterMop)}
-          </span>
-        </Select.Trigger>
-        <Select.Content>
-          <Select.Item value="ALL">All Methods</Select.Item>
-          {#each mopTypes as mop}
-            <Select.Item value={mop.value}>{mop.label}</Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
+      <NativeSelect.Root bind:value={filterMop} class="h-9 text-xs font-semibold">
+        <NativeSelect.Option value="ALL">All Methods</NativeSelect.Option>
+        {#each mopTypes as mop}
+          <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>
+        {/each}
+      </NativeSelect.Root>
     </div>
 
     <div class="flex items-end lg:col-span-1">

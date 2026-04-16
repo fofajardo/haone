@@ -4,7 +4,7 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { translatePeriod } from "$lib/receipt-utils";
-  import * as Select from "$lib/components/ui/select";
+  import * as NativeSelect from "$lib/components/ui/native-select";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
 
@@ -63,20 +63,15 @@
     >Academic Term</Label
   >
   {#if semesters.length > 0}
-    <Select.Root type="single" value={uiSettings.currentSemester} onValueChange={handleChange}>
-      <Select.Trigger class="h-9 w-full min-w-0 text-xs font-semibold">
-        <span class="truncate">
-          {translatePeriod(uiSettings.currentSemester) || "Select Term"}
-        </span>
-      </Select.Trigger>
-      <Select.Content>
-        {#each semesters as sem}
-          <Select.Item value={sem.value} label={translatePeriod(sem.value)}>
-            {translatePeriod(sem.value)}
-          </Select.Item>
-        {/each}
-      </Select.Content>
-    </Select.Root>
+    <NativeSelect.Root
+      bind:value={uiSettings.currentSemester}
+      class="h-9 w-full text-xs font-semibold"
+      onchange={(e) => handleChange(e.currentTarget.value)}
+    >
+      {#each semesters as sem}
+        <NativeSelect.Option value={sem.value}>{translatePeriod(sem.value)}</NativeSelect.Option>
+      {/each}
+    </NativeSelect.Root>
   {:else}
     <Input
       bind:value={uiSettings.currentSemester}

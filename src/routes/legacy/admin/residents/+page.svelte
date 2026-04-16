@@ -11,7 +11,7 @@
   import { goto } from "$app/navigation";
   import * as Card from "$lib/components/ui/card";
   import * as Table from "$lib/components/ui/table";
-  import * as Select from "$lib/components/ui/select";
+  import * as NativeSelect from "$lib/components/ui/native-select";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -171,7 +171,7 @@
     <div class="space-y-1 lg:col-span-5">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
       <div class="relative">
-        <Search class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
+        <Search class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           bind:value={filterSearch}
           placeholder="Search by name, email, or room..."
@@ -182,40 +182,22 @@
 
     <div class="space-y-1 lg:col-span-2">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Room</Label>
-      <Select.Root type="single" bind:value={filterRoom}>
-        <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
-          <span class="truncate">
-            {filterRoom === "ALL" ? "All Rooms" : filterRoom}
-          </span>
-        </Select.Trigger>
-        <Select.Content>
-          {#each rooms as room}
-            <Select.Item value={room}>{room === "ALL" ? "All Rooms" : room}</Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
+      <NativeSelect.Root bind:value={filterRoom} class="h-9 text-xs font-semibold">
+        {#each rooms as room}
+          <NativeSelect.Option value={room}
+            >{room === "ALL" ? "All Rooms" : room}</NativeSelect.Option
+          >
+        {/each}
+      </NativeSelect.Root>
     </div>
 
     <div class="space-y-1 lg:col-span-2">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Status</Label>
-      <Select.Root type="single" bind:value={filterStatus}>
-        <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
-          <span class="truncate">
-            {#if filterStatus === "ALL"}
-              All Statuses
-            {:else if filterStatus === "FULLY_PAID"}
-              Fully Paid
-            {:else}
-              Pending
-            {/if}
-          </span>
-        </Select.Trigger>
-        <Select.Content>
-          <Select.Item value="ALL">All Statuses</Select.Item>
-          <Select.Item value="FULLY_PAID">Fully Paid</Select.Item>
-          <Select.Item value="PENDING">Pending</Select.Item>
-        </Select.Content>
-      </Select.Root>
+      <NativeSelect.Root bind:value={filterStatus} class="h-9 text-xs font-semibold">
+        <NativeSelect.Option value="ALL">All Statuses</NativeSelect.Option>
+        <NativeSelect.Option value="FULLY_PAID">Fully Paid</NativeSelect.Option>
+        <NativeSelect.Option value="PENDING">Pending</NativeSelect.Option>
+      </NativeSelect.Root>
     </div>
 
     <div class="flex items-end lg:col-span-1">

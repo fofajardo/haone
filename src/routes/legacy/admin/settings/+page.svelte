@@ -2,7 +2,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";
-  import * as Select from "$lib/components/ui/select";
+  import * as NativeSelect from "$lib/components/ui/native-select";
   import { Switch } from "$lib/components/ui/switch";
   import { Input } from "$lib/components/ui/input";
   import { Monitor, Sun, Moon, CircleCheckBig, TriangleAlert } from "lucide-svelte";
@@ -145,18 +145,13 @@
           <div class="space-y-4">
             <div class="space-y-2">
               <Label for="branding">Active Profile</Label>
-              <Select.Root type="single" bind:value={brandingState.selectedKey}>
-                <Select.Trigger class="w-full">
-                  {brandingState.profile.name}
-                </Select.Trigger>
-                <Select.Content>
-                  {#each brandingProfiles as key}
-                    <Select.Item value={key} label={(branding as any)[key].name}>
-                      {(branding as any)[key].name}
-                    </Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
+              <NativeSelect.Root bind:value={brandingState.selectedKey} class="h-10 w-full">
+                {#each brandingProfiles as key}
+                  <NativeSelect.Option value={key}
+                    >{(branding as any)[key].name}</NativeSelect.Option
+                  >
+                {/each}
+              </NativeSelect.Root>
             </div>
             <div class="space-y-2">
               <Label>Google Spreadsheet ID</Label>
