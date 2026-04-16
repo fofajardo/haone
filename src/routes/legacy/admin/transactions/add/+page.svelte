@@ -234,13 +234,14 @@
   }
 </script>
 
-<div class="mx-auto max-w-3xl space-y-6">
+<div class="space-y-6">
   <SubpageHeader
     title="Add Transaction"
     subtitle="Create a new entry in the general journal."
     href="/legacy/admin/transactions"
   />
 
+  <div class="mx-auto max-w-3xl space-y-6">
     {#if error}
       <div
         class="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm font-medium text-destructive"
@@ -483,4 +484,5 @@
       </div>
     </Card.Content>
   </Card.Root>
+</div>
 </div>
