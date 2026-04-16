@@ -1,79 +1,331 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { FileText, Mail, ArrowRight, ShieldCheck } from "lucide-svelte";
+  import {
+    Mail,
+    ArrowRight,
+    Users,
+    Receipt,
+    ChartPie,
+    Settings,
+    History,
+    TrendingUp,
+    Clock,
+    ListFilter,
+    CircleCheck
+  } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
+  import { brandingState } from "$lib/branding.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
+  import { fetchSheetRowsRaw } from "$lib/google-sheets";
+  import { formatCurrency, formatDate, translatePeriod } from "$lib/receipt-utils";
+  import { mapRowToResident, mapRowToJournal } from "$lib/resident-logic";
+  import { onMount } from "svelte";
+
+  let stats = $state({
+    activeResidents: 0,
+    pendingSettlements: 0,
+    totalCollected: 0,
+    collectionRate: 0
+  });
+
+  let recentTransactions = $state<any[]>([]);
+  let isLoading = $state(true);
 
   const tools = [
     {
-      title: "Receipt Manager",
-      description: "Process payment exports and generate secure receipt links.",
-      href: "/legacy/admin/receipts",
-      icon: FileText,
-      color: "text-blue-500",
-      bg: "bg-blue-500/10"
+      title: "Pending Receipts",
+      description: "Review pending payments and generate secure receipts.",
+      href: "/legacy/admin/pending",
+      icon: Receipt,
+      color: "text-[#7B1113]",
+      bg: "bg-[#7B1113]/10",
+      border: "hover:border-[#7B1113]/50"
     },
     {
-      title: "Email Manager",
-      description: "Batch send receipts to residents using the Gmail API.",
-      href: "/legacy/admin/emails",
+      title: "Email Dispatcher",
+      description: "Batch send receipts to residents via Gmail API.",
+      href: "/legacy/admin/email-dispatcher",
       icon: Mail,
-      color: "text-purple-500",
-      bg: "bg-purple-500/10"
+      color: "text-[#7B1113]",
+      bg: "bg-[#7B1113]/10",
+      border: "hover:border-[#7B1113]/50"
+    },
+    {
+      title: "Residents",
+      description: "Manage resident profiles, rooms, and balances.",
+      href: "/legacy/admin/residents",
+      icon: Users,
+      color: "text-[#7B1113]",
+      bg: "bg-[#7B1113]/10",
+      border: "hover:border-[#7B1113]/50"
+    },
+    {
+      title: "Transactions",
+      description: "Full transaction history and manual entry management.",
+      href: "/legacy/admin/transactions",
+      icon: ListFilter,
+      color: "text-[#7B1113]",
+      bg: "bg-[#7B1113]/10",
+      border: "hover:border-[#7B1113]/50"
+    },
+    {
+      title: "Reports",
+      description: "Export data and view collection performance trends.",
+      href: "/legacy/admin/reports",
+      icon: ChartPie,
+      color: "text-[#7B1113]",
+      bg: "bg-[#7B1113]/10",
+      border: "hover:border-[#7B1113]/50"
+    },
+    {
+      title: "Settings",
+      description: "Configure branding, semesters, and UI preferences.",
+      href: "/legacy/admin/settings",
+      icon: Settings,
+      color: "text-[#7B1113]",
+      bg: "bg-[#7B1113]/10",
+      border: "hover:border-[#7B1113]/50"
     }
   ];
+
+  async function loadDashboardData() {
+    if (!brandingState.spreadsheetId) return;
+    isLoading = true;
+
+    try {
+      const [journalRows, accountRows] = await Promise.all([
+        fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W"),
+        fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:Z")
+      ]);
+
+      // Stats from Accounts
+      const currentSem = uiSettings.currentSemester.trim();
+      const accounts = accountRows
+        .slice(1)
+        .map((r) => mapRowToResident(r))
+        .filter((r) => r.period === currentSem && r.email && r.email !== "_vacant");
+
+      stats.activeResidents = accounts.length;
+
+      const fullyPaidCount = accounts.filter((r) => r.isFullyPaid).length;
+      stats.collectionRate =
+        stats.activeResidents > 0 ? (fullyPaidCount / stats.activeResidents) * 100 : 0;
+
+      // Stats from Journal
+      const journalData = journalRows.slice(1).map((r, idx) => mapRowToJournal(r, idx));
+      const pending = journalData.filter((r) => {
+        return (
+          r.period === currentSem &&
+          (!r.prDateIssued || r.prDateIssued === "#N/A") &&
+          r.prRefNo !== "N/A" &&
+          r.prRefNo !== "#N/A"
+        );
+      });
+      stats.pendingSettlements = pending.length;
+
+      // Total Collected in Semester
+      stats.totalCollected = accounts.reduce((sum, r) => sum + r.paid, 0);
+
+      // Recent Transactions (last 5)
+      recentTransactions = journalData
+        .filter((r) => r.period === currentSem)
+        .slice(-5)
+        .reverse();
+    } catch (e) {
+      console.error("Dashboard load failed", e);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  onMount(loadDashboardData);
 </script>
 
-<div class="space-y-10">
-  <div class="space-y-2">
+<div class="space-y-12 pb-12">
+  <!-- Header Section -->
+  <div class="relative overflow-hidden rounded-3xl bg-[#7B1113] px-8 py-12 text-white shadow-2xl">
     <div
-      class="flex items-center gap-2 text-sm font-semibold tracking-wider text-primary uppercase"
-    >
-      <ShieldCheck class="h-4 w-4" />
-      Admin Console
+      class="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
+    ></div>
+    <div
+      class="absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
+    ></div>
+
+    <div class="relative z-10 space-y-4">
+      <div
+        class="flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-white/60 uppercase"
+      ></div>
+      <h1 class="text-4xl font-black tracking-tight md:text-5xl lg:text-6xl">
+        Welcome back, <span class="text-white">{auth.user?.name.split(" ")[0]}</span>
+      </h1>
+      <p class="max-w-[600px] text-lg text-white/80 md:text-xl">
+        Manage residents, track collections, and automate communications for <span
+          class="font-semibold text-white"
+          >{translatePeriod(uiSettings.currentSemester) || "Active Term"}</span
+        >.
+      </p>
     </div>
-    <h1 class="text-4xl font-extrabold tracking-tight lg:text-5xl">
-      Welcome back, {auth.user?.name.split(" ")[0]}
-    </h1>
-    <p class="max-w-[600px] text-xl text-muted-foreground">
-      Manage receipts, communications, and associations from your centralized dashboard.
-    </p>
   </div>
 
-  <div class="grid gap-6 md:grid-cols-2">
-    {#each tools as tool}
-      <Card.Root
-        class="group relative overflow-hidden border-2 shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-xl"
-      >
-        <div
-          class={`absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full ${tool.bg} blur-3xl transition-transform duration-500 group-hover:scale-150`}
-        ></div>
-
-        <Card.Header>
-          <div class={`mb-4 w-fit rounded-xl ${tool.bg} p-3 ${tool.color}`}>
-            <tool.icon class="h-8 w-8" />
+  <!-- Quick Stats -->
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <Card.Root
+      class="overflow-hidden border-none bg-white shadow-md transition-all hover:shadow-lg"
+    >
+      <Card.Content class="px-6 py-0">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <p class="text-xs font-bold tracking-wider text-slate-500 uppercase">
+              Active Residents
+            </p>
+            <h3 class="text-3xl font-black text-slate-900">{stats.activeResidents}</h3>
           </div>
-          <Card.Title class="text-2xl">{tool.title}</Card.Title>
-          <Card.Description class="text-base leading-relaxed">
-            {tool.description}
-          </Card.Description>
-        </Card.Header>
+          <div class="rounded-2xl bg-[#7B1113]/5 p-3 text-[#7B1113]">
+            <Users class="h-6 w-6" />
+          </div>
+        </div>
+      </Card.Content>
+    </Card.Root>
 
-        <Card.Content>
-          <Button
+    <Card.Root
+      class="overflow-hidden border-none bg-white shadow-md transition-all hover:shadow-lg"
+    >
+      <Card.Content class="px-6 py-0">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <p class="text-xs font-bold tracking-wider text-slate-500 uppercase">
+              Pending Settlements
+            </p>
+            <h3 class="text-3xl font-black text-slate-900">{stats.pendingSettlements}</h3>
+          </div>
+          <div class="rounded-2xl bg-[#7B1113]/5 p-3 text-[#7B1113]">
+            <Clock class="h-6 w-6" />
+          </div>
+        </div>
+      </Card.Content>
+    </Card.Root>
+
+    <Card.Root
+      class="overflow-hidden border-none bg-white shadow-md transition-all hover:shadow-lg"
+    >
+      <Card.Content class="px-6 py-0">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <p class="text-xs font-bold tracking-wider text-slate-500 uppercase">Total Collected</p>
+            <h3 class="text-2xl font-black text-slate-900">
+              {formatCurrency(stats.totalCollected)}
+            </h3>
+          </div>
+          <div class="rounded-2xl bg-[#7B1113]/5 p-3 text-[#7B1113]">
+            <TrendingUp class="h-6 w-6" />
+          </div>
+        </div>
+      </Card.Content>
+    </Card.Root>
+
+    <Card.Root
+      class="overflow-hidden border-none bg-white shadow-md transition-all hover:shadow-lg"
+    >
+      <Card.Content class="px-6 py-0">
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <p class="text-xs font-bold tracking-wider text-slate-500 uppercase">Collection Rate</p>
+            <h3 class="text-3xl font-black text-slate-900">{stats.collectionRate.toFixed(1)}%</h3>
+          </div>
+          <div class="rounded-2xl bg-[#7B1113]/5 p-3 text-[#7B1113]">
+            <CircleCheck class="h-6 w-6" />
+          </div>
+        </div>
+      </Card.Content>
+    </Card.Root>
+  </div>
+
+  <div class="grid gap-8 lg:grid-cols-3">
+    <!-- Tools Section -->
+    <div class="lg:col-span-2">
+      <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-slate-900">Administrative Tools</h2>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        {#each tools as tool}
+          <a
             href={tool.href}
-            variant="ghost"
-            class="group/btn p-0 font-semibold text-primary hover:bg-transparent"
+            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-white p-5 transition-all duration-300 hover:shadow-xl {tool.border}"
           >
-            Launch
-            <ArrowRight class="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-          </Button>
-        </Card.Content>
+            <div class={`w-fit rounded-xl ${tool.bg} p-2.5 ${tool.color}`}>
+              <tool.icon class="h-6 w-6" />
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900">{tool.title}</h3>
+              <p class="mt-1 line-clamp-2 text-sm text-slate-500">
+                {tool.description}
+              </p>
+            </div>
+            <div
+              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+            >
+              <ArrowRight class={`h-5 w-5 ${tool.color}`} />
+            </div>
+          </a>
+        {/each}
+      </div>
+    </div>
 
-        <a href={tool.href} class="absolute inset-0"
-          ><span class="sr-only">Go to {tool.title}</span></a
+    <!-- Recent Activity -->
+    <div>
+      <div class="mb-6 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-slate-900">Recent Transactions</h2>
+        <Button
+          variant="ghost"
+          size="sm"
+          href="/legacy/admin/transactions"
+          class="text-xs font-bold"
         >
+          View All
+        </Button>
+      </div>
+      <Card.Root class="overflow-hidden border-none bg-white p-0 shadow-md">
+        <Card.Content class="divide-y p-0">
+          {#if isLoading}
+            {#each Array(5) as _}
+              <div class="flex animate-pulse items-center gap-4 p-4">
+                <div class="h-10 w-10 rounded-full bg-slate-100"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-3 w-1/2 rounded bg-slate-100"></div>
+                  <div class="h-2 w-1/3 rounded bg-slate-100"></div>
+                </div>
+              </div>
+            {/each}
+          {:else if recentTransactions.length > 0}
+            {#each recentTransactions as tx}
+              <div class="group flex items-center gap-4 p-4 transition-colors hover:bg-slate-50">
+                <div
+                  class="rounded-full bg-[#7B1113]/5 p-2.5 text-[#7B1113] transition-colors group-hover:bg-white group-hover:shadow-sm"
+                >
+                  <History class="h-4 w-4" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-bold text-slate-900">{tx.name}</p>
+                  <p class="text-[10px] font-bold text-slate-500 uppercase">
+                    {tx.type} • {formatDate(tx.date)}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="font-mono text-sm font-bold text-slate-900 tabular-nums">
+                    {formatCurrency(tx.amount)}
+                  </p>
+                </div>
+              </div>
+            {/each}
+          {:else}
+            <div class="flex h-40 flex-col items-center justify-center p-8 text-center">
+              <History class="mb-2 h-8 w-8 text-slate-300" />
+              <p class="text-sm font-medium text-slate-500">No recent transactions</p>
+            </div>
+          {/if}
+        </Card.Content>
       </Card.Root>
-    {/each}
+    </div>
   </div>
 </div>
