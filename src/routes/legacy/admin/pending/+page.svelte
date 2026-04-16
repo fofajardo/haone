@@ -12,7 +12,7 @@
     formatAmount,
     formatDate
   } from "$lib/receipt-utils";
-  import { mailMerge } from "$lib/mail-merge";
+  import { generateAcknowledgmentReceiptHtml } from "$lib/templates/acknowledgment";
   import { createEmail, sendEmail } from "$lib/gmail";
   import { auth } from "$lib/auth.svelte";
   import * as Card from "$lib/components/ui/card";
@@ -128,42 +128,6 @@
     LEGACY_RECEIPT_URL: 21
   };
 
-  const emailTemplate = `
-<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #000; line-height: 1.5;">
-  <div style="margin-bottom: 25px;">
-    <img src="{{HEADER_IMAGE_URL}}" width="100%" alt="Header" style="display: block; border: none;">
-  </div>
-
-  <h2 style="font-size: 20px; font-weight: bold; text-transform: uppercase; margin-bottom: 25px;">ACKNOWLEDGMENT RECEIPT</h2>
-
-  <p style="margin-bottom: 20px;">Hi, {{ACCOUNT_FULL_NAME}}</p>
-
-  <p style="margin-bottom: 25px;">
-    {{TYPE|COLLECTION_OTHERS|Thank you for your payment last {{DATE}}. }}{{TYPE|COLLECTION|Thank you for your payment last {{DATE}}. }}{{TYPE|REFUND|Your payment was refunded. }}{{TYPE|WAIVED|A portion of your semestral fees to the Association has been waived. }}{{TYPE|RECLASSIFY|This is a correction to a previously-issued receipt. }}Please find the acknowledgment receipt linked below for your records.
-  </p>
-
-  <div style="text-align: center; margin: 35px 0;">
-    <a href="{{RECEIPT_URL}}" style="color: #0047AB; font-size: 24px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">VIEW RECEIPT HERE</a>
-  </div>
-
-  <p style="margin-bottom: 20px;">
-    We recommend retaining this email for future reference. <strong>Please verify that the amounts listed on the receipt are correct.</strong> The records will be deemed final one week after you receive this email.
-  </p>
-
-  <p style="margin-bottom: 25px;">
-    For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:{{REPLY_TO}}" style="color: #0047AB;">{{REPLY_TO}}</a>.
-  </p>
-
-  <div style="font-size: 12px; color: #777; margin-top: 40px;">
-    <p style="margin-bottom: 15px;">This is a system-generated message. When responding to this email, please use the reply address provided (this will be done automatically by Gmail or your email client when you select "Reply").</p>
-    
-    <p style="font-weight: bold; margin-bottom: 5px;">COMMUNICATION CONFIDENTIALITY NOTICE</p>
-    <p style="font-style: italic; line-height: 1.3;">
-      This message, its thread, and any attachments are privileged, confidential and intended for the specified recipient only. No part of this message may be shared in any form or manner without the consent of the sender. If you are not the intended recipient of this message, please inform the sender immediately and delete the message from your inbox.
-    </p>
-  </div>
-</div>`;
-
   function pluralize(count: number, singular: string, plural: string) {
     const pr = new Intl.PluralRules("en-US");
     const type = pr.select(count);
@@ -233,14 +197,13 @@
     const item = stagedDispatch[previewIndex];
     const branding = brandingState.profile;
 
-    const body = mailMerge(emailTemplate, {
-      ACCOUNT_FULL_NAME: item.receipt.receivedFrom,
-      DATE: formatDate(item.receipt.paymentDate),
-      TYPE: item.receipt.transactionType,
-      RECEIPT_URL: item.url,
-      ISSUER: branding.issuerName.toUpperCase(),
-      REPLY_TO: branding.replyTo,
-      HEADER_IMAGE_URL: branding.emailHeaderUrl
+    const body = generateAcknowledgmentReceiptHtml({
+      accountFullName: item.receipt.receivedFrom,
+      date: item.receipt.paymentDate,
+      type: item.receipt.transactionType,
+      receiptUrl: item.url,
+      replyTo: branding.replyTo,
+      headerImageUrl: branding.emailHeaderUrl
     });
 
     const subject = `Your ${branding.shortName} Receipt PMT-${item.receipt.seriesNumber}`;
@@ -339,14 +302,13 @@
           continue;
         }
 
-        const mergedBody = mailMerge(emailTemplate, {
-          ACCOUNT_FULL_NAME: item.receipt.receivedFrom,
-          DATE: formatDate(item.receipt.paymentDate),
-          TYPE: item.receipt.transactionType,
-          RECEIPT_URL: item.url,
-          ISSUER: branding.issuerName.toUpperCase(),
-          REPLY_TO: branding.replyTo,
-          HEADER_IMAGE_URL: branding.emailHeaderUrl
+        const mergedBody = generateAcknowledgmentReceiptHtml({
+          accountFullName: item.receipt.receivedFrom,
+          date: item.receipt.paymentDate,
+          type: item.receipt.transactionType,
+          receiptUrl: item.url,
+          replyTo: branding.replyTo,
+          headerImageUrl: branding.emailHeaderUrl
         });
 
         const subject = `Your ${branding.shortName} Receipt PMT-${item.receipt.seriesNumber}`;
@@ -434,7 +396,7 @@
         <p>{error}</p>
       </div>
     {/if}
-    
+
     <div class="mb-2 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
       <TermFilter onSelect={() => loadData()} />
     </div>

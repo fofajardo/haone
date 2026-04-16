@@ -1,14 +1,22 @@
-import { formatCurrency, formatDate } from "$lib/receipt-utils";
+import { formatAccounting, formatAmount } from "$lib/receipt-utils";
+import { wrapEmailHtml } from "./base";
 
+/**
+ * Generates HTML for a Payment Status Update email.
+ */
 export function generatePaymentStatusHtml(data: {
   accountName: string;
   room: string;
+  bed: string;
+  waterBase: number;
   waterPaid: number;
   waterWaived: number;
   waterBal: number;
+  assocBase: number;
   assocPaid: number;
   assocWaived: number;
   assocBal: number;
+  totalBase: number;
   paid: number;
   waived: number;
   bal: number;
@@ -21,144 +29,216 @@ export function generatePaymentStatusHtml(data: {
     .toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     .toUpperCase();
 
-  const fullyPaidSection = data.isFullyPaid
-    ? `
-    <div style="margin-top: 25px; padding: 15px; border: 1px solid #e2e8f0; background-color: #f8fafc; border-radius: 8px;">
-      <p style="font-size: 13px; color: #475569; margin-bottom: 5px;"><strong>Is Certificate of Full Payment Available?</strong></p>
-      <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 10px;">
-        Clearance from the Residence Hall Association will be issued either upon request or after the last payment that fully settles the account.
-      </p>
-      <p style="font-size: 13px; font-weight: bold; color: #1e293b; margin-bottom: 10px;">YES</p>
-      <p style="font-size: 12px; color: #0f172a; line-height: 1.5; font-style: italic;">
-        For your security, the PDF file is password-protected. You may open it by entering your student number (e.g., 2001-01234).
-      </p>
-    </div>
-  `
-    : `
-     <div style="margin-top: 25px; padding: 15px; border: 1px solid #f1f5f9; border-radius: 8px;">
-      <p style="font-size: 13px; color: #475569; margin-bottom: 5px;"><strong>Is Certificate of Full Payment Available?</strong></p>
-      <p style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 10px;">
-        Clearance from the Residence Hall Association will be issued either upon request or after the last payment that fully settles the account.
-      </p>
-      <p style="font-size: 13px; font-weight: bold; color: #1e293b;">NO</p>
-    </div>
+  const fullyPaidSection = `
+    <table class="em-table" style="margin-top: 25px;">
+      <tr>
+        <td class="em-td ${data.isFullyPaid ? "em-bg-gray" : ""}" style="padding: 15px;">
+          <p class="em-h4" style="margin-bottom: 5px;">Is Certificate of Full Payment Available?</p>
+          <p class="em-p-small" style="${data.isFullyPaid ? "margin-bottom: 10px;" : ""}">
+            Clearance from the Residence Hall Association will be issued either upon request or after the last payment that fully settles the account.
+          </p>
+          ${
+            data.isFullyPaid
+              ? `
+          <p class="em-p-small em-italic">
+            For your security, the PDF file is password-protected. You may open it by entering your student number (e.g., 2001-01234).
+          </p>
+          `
+              : ""
+          }
+        </td>
+        <td class="em-td em-bold" style="padding: 15px; text-align: center; width: 60px;">
+          ${data.isFullyPaid ? "YES" : "NO"}
+        </td>
+      </tr>
+    </table>
   `;
 
   const negativeNotice =
     data.bal < 0
       ? `
-    <p style="margin-top: 25px; color: #dc2626; font-weight: bold; font-size: 14px; text-transform: uppercase;">
+    <p class="em-negative">
       IMPORTANT: If you see a NEGATIVE OUTSTANDING AMOUNT above, you may be eligible for a refund. Please inquire at Room B105.
     </p>
   `
       : "";
 
-  const semRules = !data.isFullyPaid
+  const accountSpecificContent = data.reminders
     ? `
-    <div style="margin-top: 25px; font-size: 13px; line-height: 1.6; color: #334155;">
-      <p>We want to kindly remind you that as per Section 19 and Section 25 of the Norms of Conduct and Responsibilities of Residents of the Residence Hall Agreement for this semester:</p>
-      <p style="font-style: italic; margin-left: 20px;">19. The resident shall join the residence hall’s online group and will keep constant communication with the dorm staff and student officers...</p>
-      <p style="font-style: italic; margin-left: 20px;">25. The resident shall pay a semestral association fee to the Residence Hall Association and other fees (e.g. Water fees, Gas fees, etc.)...</p>
-      
-      <p style="font-weight: bold; margin-top: 20px;">Association Fee (₱200.00 per semester):</p>
+    <div style="margin-bottom: 25px; font-size: 14px;">
+      ${data.reminders}
+    </div>
+  `
+    : "";
+
+  const sectionRules = !data.isFullyPaid
+    ? `
+    <div style="margin-top: 25px;">
+      <ul style="margin-top: 5px;">
+        <li>We want to kindly remind you that as per <strong>Section 19</strong> and <strong>Section 25</strong> of the <strong>Norms of Conduct and Responsibilities of Residents</strong> of the Residence Hall Agreement for this semester:</li>
+      </ul>
+      <blockquote style="margin: 0 0 20px 20px; padding-left: 15px; border-left: 2px solid #eee;">
+        <p class="em-p-small em-italic" style="margin-bottom: 10px;">
+          19. The resident shall <strong>join the residence hall’s online group</strong> and will keep constant communication with the dorm staff and student officers to get updates and other announcements from pertinent offices, including the dorm management, Office of Student Housing, Office of the Vice Chancellor for Student Affairs, the University Health Service, the University, and the Local Government Unit. 
+        </p>
+        <br/>
+        <p class="em-p-small em-italic">
+          25. The resident shall <strong>pay a semestral association fee to the Residence Hall Association and other fees (e.g. Water fees, Gas fees, etc.)</strong> determined and agreed upon by the Association and the hall residents. Non-payment or insufficient payment to the Association will incur an accountability and may be cause for holding the resident’s next dorm application and University clearance until settled.
+        </p>
+      </blockquote>
+
+      <p class="em-p em-bold" style="margin-top: 20px; text-decoration: underline;">Association Fee (₱200.00 per semester):</p>
       <ul>
         <li>You may pay just ₱100.00 initially, with the remaining balance due later.</li>
-        <li>This fee helps fund events held in the dorm and maintenance of appliances.</li>
+        <li>This fee helps fund events held in the dorm (e.g., Open House, PasADAhan), purchase/maintenance of appliances, and other expenses.</li>
       </ul>
 
-      <p style="font-weight: bold; margin-top: 15px;">Water Contribution (₱100.00 per month):</p>
+      <p class="em-p em-bold" style="margin-top: 15px; text-decoration: underline;">Water Contribution (₱100.00 per month):</p>
       <ul>
-        <li>This will be paid TWICE a month (15th and 30th).</li>
+        <li>This will be paid <strong>TWICE</strong> a month.</li>
+        <li>The first payment of <strong>₱50.00</strong> is due on or before the 15th.</li>
+        <li>The remaining <strong>₱50.00</strong> will be collected on the last day or the 30th of the month.</li>
       </ul>
     </div>
   `
     : "";
 
-  return `
-<div style="font-family: sans-serif; max-width: 650px; margin: 0 auto; color: #0f172a; line-height: 1.5;">
-  <div style="margin-bottom: 25px;">
-    <img src="${data.headerImageUrl}" width="100%" alt="Header" style="display: block; border: none;">
-  </div>
+  const bedNotice = !data.bed
+    ? `<br/>
+    <div class="em-notice-box">
+      <p class="em-notice-h">Action Required</p>
+      <p class="em-notice-p">
+        Please complete the Semestral Association Member Registration Form immediately.
+      </p>
+      <div style="margin-top: 15px;">
+        <a href="https://tr.ee/ati_sr" class="em-btn-primary">COMPLETE FORM</a>
+      </div>
+    </div>
+  `
+    : "";
 
-  <p style="font-size: 16px; margin-bottom: 5px;">Hi, <strong>${data.accountName}</strong> (Room ${data.room})</p>
-  <p style="font-size: 14px; color: #475569; margin-bottom: 25px;">Please review your payment status for the current semester below:</p>
+  const content = `
+  <p class="em-hi">Hi, <strong>${data.accountName}</strong> (Room ${data.room})</p>
+  
+  ${bedNotice}
 
-  <h3 style="background-color: #000; color: #fff; text-align: center; padding: 10px; font-size: 14px; letter-spacing: 1px; margin-bottom: 0;">PAYMENT STATUS AS OF ${dateStr}</h3>
+  <p class="em-p" style="margin-bottom: 25px;">Please review your payment status for the current semester below:</p>
 
-  <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
-    <tr style="background-color: #f8fafc;">
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: bold; font-size: 13px;">Water Fees</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px;">Total Amount Paid</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: bold; text-align: right;">${formatCurrency(data.waterPaid)}</td>
+  <h3 class="em-h3 em-bold">PAYMENT STATUS AS OF ${dateStr}</h3>
+
+  <table class="em-table">
+    <!-- WATER FEES SECTION -->
+    <tr>
+      <td rowspan="4" class="em-td em-td-cat">
+        <p class="em-bold" style="margin-bottom: 2px;">Water Fees</p>
+        <p class="em-p-small em-italic">for the entire semester</p>
+      </td>
+      <td class="em-td">Billed Amount</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.waterBase)}</td>
     </tr>
     <tr>
-      <td style="padding: 12px; border: 1px solid #e2e8f0;">&nbsp;</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px;">Less: Waived</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 13px; text-align: right;">${formatCurrency(data.waterWaived)}</td>
+      <td class="em-td">Less: Total Amount Paid</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.waterPaid)}</td>
     </tr>
-    <tr style="background-color: #f8fafc;">
-      <td style="padding: 12px; border: 1px solid #e2e8f0;">&nbsp;</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px; font-weight: bold;">Outstanding Amount</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 14px; font-weight: bold; text-align: right;">${formatCurrency(data.waterBal)}</td>
+    <tr>
+      <td class="em-td">Less: Waived</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.waterWaived)}</td>
+    </tr>
+    <tr class="em-bg-gray">
+      <td class="em-td em-bold">Amount Due</td>
+      <td class="em-td em-td-sym em-bold">₱</td>
+      <td class="em-td em-td-val em-bold">${formatAmount(data.waterBal)}</td>
     </tr>
 
-    <tr style="border-top: 2px solid #000;">
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: bold; font-size: 13px;">Association Fee</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px;">Total Amount Paid</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: bold; text-align: right;">${formatCurrency(data.assocPaid)}</td>
+    <!-- ASSOCIATION FEE SECTION -->
+    <tr class="em-border-top-thick">
+      <td rowspan="4" class="em-td em-td-cat">
+        <p class="em-bold" style="margin-bottom: 2px;">Association Fee</p>
+        <p class="em-p-small em-italic">for the entire semester</p>
+      </td>
+      <td class="em-td">Billed Amount</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.assocBase)}</td>
     </tr>
     <tr>
-      <td style="padding: 12px; border: 1px solid #e2e8f0;">&nbsp;</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px;">Less: Waived</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 13px; text-align: right;">${formatCurrency(data.assocWaived)}</td>
+      <td class="em-td">Less: Total Amount Paid</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.assocPaid)}</td>
     </tr>
-    <tr style="background-color: #f8fafc;">
-      <td style="padding: 12px; border: 1px solid #e2e8f0;">&nbsp;</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px; font-weight: bold;">Outstanding Amount</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 14px; font-weight: bold; text-align: right;">${formatCurrency(data.assocBal)}</td>
+    <tr>
+      <td class="em-td">Less: Waived</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.assocWaived)}</td>
+    </tr>
+    <tr class="em-bg-gray">
+      <td class="em-td em-bold">Amount Due</td>
+      <td class="em-td em-td-sym em-bold">₱</td>
+      <td class="em-td em-td-val em-bold">${formatAmount(data.assocBal)}</td>
     </tr>
 
-    <tr style="background-color: #000; color: #fff;">
-      <td colspan="3" style="text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px;">SUMMARY</td>
+    <!-- SUMMARY SECTION -->
+    <tr class="em-bg-black">
+      <td colspan="4" style="text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px; font-weight: bold;">SUMMARY</td>
     </tr>
     <tr>
-      <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px; font-weight: bold;">Total Amount Paid</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 14px; font-weight: bold; text-align: right;">${formatCurrency(data.paid)}</td>
+      <td colspan="2" class="em-td">
+        <p class="em-bold" style="margin-bottom: 2px;">Billed Amount</p>
+        <p class="em-p-tiny">for the entire semester</p>
+      </td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val em-bold">${formatAccounting(data.totalBase)}</td>
     </tr>
     <tr>
-      <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0; font-size: 12px;">Less: Waived</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 13px; text-align: right;">${formatCurrency(data.waived)}</td>
+      <td colspan="2" class="em-td">Less: Total Amount Paid</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.paid)}</td>
     </tr>
-    <tr style="background-color: #f8fafc;">
-      <td colspan="2" style="padding: 12px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: bold;">Outstanding Amount</td>
-      <td style="padding: 12px; border: 1px solid #e2e8f0; font-size: 16px; font-weight: bold; text-align: right; color: ${data.bal < 0 ? "#dc2626" : "black"}">${formatCurrency(data.bal)}</td>
+    <tr>
+      <td colspan="2" class="em-td">Less: Waived</td>
+      <td class="em-td em-td-sym"></td>
+      <td class="em-td em-td-val">${formatAccounting(data.waived)}</td>
+    </tr>
+    <tr class="em-bg-gray">
+      <td colspan="2" class="em-td em-bold">Outstanding Amount</td>
+      <td class="em-td em-td-sym em-bold">₱</td>
+      <td class="em-td em-td-val em-bold" style="color: ${data.bal < 0 ? "#dc2626" : "black"};">${formatAmount(data.bal)}</td>
     </tr>
   </table>
 
   ${fullyPaidSection}
+
   ${negativeNotice}
 
-  <div style="margin-top: 35px; border-top: 1px solid #e2e8f0; pt-25px;">
-    <h4 style="font-size: 14px; font-weight: bold; margin-bottom: 15px; color: #1e293b;">Reminders:</h4>
-    <div style="font-size: 13px; line-height: 1.6; color: #334155;">
-      ${data.reminders}
-    </div>
-  </div>
-
-  ${semRules}
-
-  <p style="margin-top: 35px; font-size: 13px; color: #475569;">
-    For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${data.replyTo}" style="color: #0047AB;">${data.replyTo}</a>.
-  </p>
-
-  <div style="font-size: 11px; color: #64748b; margin-top: 45px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
-    <p style="margin-bottom: 15px;">This is a system-generated message. When responding to this email, please use the reply address provided.</p>
+  <div style="margin-top: 35px;">
+    <p class="em-h4">Reminders:</p>
     
-    <p style="font-weight: bold; margin-bottom: 5px; color: #475569;">COMMUNICATION CONFIDENTIALITY NOTICE</p>
-    <p style="font-style: italic; line-height: 1.4;">
-      This message, its thread, and any attachments are privileged, confidential and intended for the specified recipient only. No part of this message may be shared in any form or manner without the consent of the sender. If you are not the intended recipient, please delete this message.
+    ${accountSpecificContent}
+
+    <ul>
+      <li><strong>Join our Facebook Messenger Community</strong>: <a href="https://tr.ee/ati_fbme" class="em-link-inline">https://tr.ee/ati_fbme</a></li>
+      <li><strong>Join our Facebook Group</strong>: <a href="https://www.facebook.com/groups/618203756704972" class="em-link-inline">https://www.facebook.com/groups/618203756704972</a></li>
+      <li><strong>Like our Facebook Page</strong>: <a href="https://www.facebook.com/atintcrha.uplb" class="em-link-inline">https://www.facebook.com/atintcrha.uplb</a></li>
+      <li>E-receipts for payments made within the week will be issued at the end of each week. You will receive monthly emails similar to this one for balance updates.</li>
+      <li>Financial reports of the Association will be shared via Facebook Messenger and the bulletin board at the end of the semester.</li>
+    </ul>
+
+    ${sectionRules}
+
+    <p class="em-p em-bold" style="margin-top: 20px; text-decoration: underline;">Payment Options and Considerations:</p>
+    <ul>
+      <li>Refer to the bulletin board or <a href="https://kawing.pages.dev/ati_payment" class="em-link-inline">this document</a> for payment instructions.</li>
+      <li>Residents have the option to pay the full amount upfront.</li>
+      <li>Residents experiencing financial difficulties can defer payment by notifying dorm officers.</li>
+    </ul>
+
+    <p class="em-p" style="margin-top: 35px;">
+      For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${data.replyTo}" class="em-link-inline">${data.replyTo}</a>.
     </p>
   </div>
-</div>
   `;
+
+  return wrapEmailHtml(content, data.headerImageUrl, data.replyTo);
 }

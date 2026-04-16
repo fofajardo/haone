@@ -40,12 +40,15 @@
     PERIOD: 1,
     ROOM: 2,
     BED: 3,
+    WATER_BASE: 4,
     WATER_PAID: 5,
     WATER_WAIVED: 6,
     WATER_BAL: 7,
+    ASSOC_BASE: 8,
     ASSOC_PAID: 9,
     ASSOC_WAIVED: 10,
     ASSOC_BAL: 11,
+    TOTAL_BASE: 12,
     PAID: 13,
     WAIVED: 14,
     BAL: 15,
@@ -61,12 +64,15 @@
     bed: string;
     name: string;
     stno: string;
+    waterBase: number;
     waterPaid: number;
     waterWaived: number;
     waterBal: number;
+    assocBase: number;
     assocPaid: number;
     assocWaived: number;
     assocBal: number;
+    totalBase: number;
     paid: number;
     waived: number;
     bal: number;
@@ -94,11 +100,7 @@
   let previewIndex = $state(0);
 
   // Custom Reminders (Rich Text / HTML support)
-  let customReminders = $state(`<ul>
-  <li>Join our Facebook Messenger Community/Group Chat: https://tr.ee/ati_fbme</li>
-  <li>Join our Facebook Group: https://www.facebook.com/groups/618203756704972</li>
-  <li>Like our Facebook Page: https://www.facebook.com/atintcrha.uplb</li>
-</ul>`);
+  let customReminders = $state("");
 
   function parseAmount(val: any) {
     if (!val) return 0;
@@ -126,12 +128,15 @@
           bed: (row[COL.BED] || "").trim(),
           name: (row[COL.ACCOUNT_FULL_NAME] || "").trim(),
           stno: (row[COL.STNO] || "").trim(),
+          waterBase: parseAmount(row[COL.WATER_BASE]),
           waterPaid: parseAmount(row[COL.WATER_PAID]),
           waterWaived: parseAmount(row[COL.WATER_WAIVED]),
           waterBal: parseAmount(row[COL.WATER_BAL]),
+          assocBase: parseAmount(row[COL.ASSOC_BASE]),
           assocPaid: parseAmount(row[COL.ASSOC_PAID]),
           assocWaived: parseAmount(row[COL.ASSOC_WAIVED]),
           assocBal: parseAmount(row[COL.ASSOC_BAL]),
+          totalBase: parseAmount(row[COL.TOTAL_BASE]),
           paid: parseAmount(row[COL.PAID]),
           waived: parseAmount(row[COL.WAIVED]),
           bal: parseAmount(row[COL.BAL]),
@@ -226,12 +231,16 @@
     const body = generatePaymentStatusHtml({
       accountName: r.name,
       room: r.room,
+      bed: r.bed,
+      waterBase: r.waterBase,
       waterPaid: r.waterPaid,
       waterWaived: r.waterWaived,
       waterBal: r.waterBal,
+      assocBase: r.assocBase,
       assocPaid: r.assocPaid,
       assocWaived: r.assocWaived,
       assocBal: r.assocBal,
+      totalBase: r.totalBase,
       paid: r.paid,
       waived: r.waived,
       bal: r.bal,
@@ -258,12 +267,16 @@
         const body = generatePaymentStatusHtml({
           accountName: r.name,
           room: r.room,
+          bed: r.bed,
+          waterBase: r.waterBase,
           waterPaid: r.waterPaid,
           waterWaived: r.waterWaived,
           waterBal: r.waterBal,
+          assocBase: r.assocBase,
           assocPaid: r.assocPaid,
           assocWaived: r.assocWaived,
           assocBal: r.assocBal,
+          totalBase: r.totalBase,
           paid: r.paid,
           waived: r.waived,
           bal: r.bal,
@@ -367,12 +380,7 @@
       </div>
 
       <div class="flex items-end lg:col-span-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={resetFilters}
-          class="h-9 w-full px-2 text-xs"
-        >
+        <Button variant="outline" size="sm" onclick={resetFilters} class="h-9 w-full px-2 text-xs">
           <FunnelX class="mr-2 h-4 w-4" /> Clear
         </Button>
       </div>

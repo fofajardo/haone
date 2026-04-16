@@ -280,12 +280,7 @@
     </div>
 
     <div class="flex items-end lg:col-span-1">
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={resetFilters}
-        class="h-9 w-full px-2 text-xs"
-      >
+      <Button variant="outline" size="sm" onclick={resetFilters} class="h-9 w-full px-2 text-xs">
         <FunnelX class="mr-2 h-4 w-4" /> Clear
       </Button>
     </div>
