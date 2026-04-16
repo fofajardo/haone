@@ -49,6 +49,7 @@
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
   let rowIndex = $state<number | null>(null);
+  let isDialogOpen = $state(false);
 
   async function loadTransaction() {
     if (!brandingState.spreadsheetId) return;
@@ -99,6 +100,7 @@
   async function handleDelete() {
     if (rowIndex === null || !brandingState.spreadsheetId) return;
 
+    isDialogOpen = false;
     isDeleting = true;
     try {
       await deleteSheetRow(brandingState.spreadsheetId, "journal_general", rowIndex);
@@ -152,7 +154,7 @@
             Edit
           </Button>
 
-          <AlertDialog.Root>
+          <AlertDialog.Root bind:open={isDialogOpen}>
             <AlertDialog.Trigger>
               {#snippet child({ props })}
                 <Button
