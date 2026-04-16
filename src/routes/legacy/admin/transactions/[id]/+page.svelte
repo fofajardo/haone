@@ -1,8 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
+  import { goto } from "$app/navigation";
   import { brandingState } from "$lib/branding.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, deleteSheetRow, invalidateCache } from "$lib/google-sheets";
   import {
     formatCurrency,
     formatAmount,
@@ -10,11 +11,12 @@
     formatDate,
     translateMop,
     translatePeriod,
+    translateType,
     parseCSVAmount,
-    parseRef,
-    translateType
+    parseRef
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { Label } from "$lib/components/ui/label";
@@ -28,7 +30,9 @@
     ShieldCheck,
     Link as LinkIcon,
     ArrowUpRight,
-    ExternalLink
+    ExternalLink,
+    Pencil,
+    Trash2
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -42,7 +46,9 @@
   let creatorStNo = $state<string | null>(null);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
+  let isDeleting = $state(false);
   let error = $state<string | null>(null);
+  let rowIndex = $state<number | null>(null);
 
   async function loadTransaction() {
     if (!brandingState.spreadsheetId) return;
@@ -51,12 +57,13 @@
 
     try {
       const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W");
-      // Find by ID (Index 22)
-      const match = rows.find((row) => row[JOR.ID] === id);
+      const idx = rows.findIndex((row) => row[JOR.ID] === id);
+      const match = rows[idx];
 
       if (!match) {
         error = "Transaction not found in the ledger.";
       } else {
+        rowIndex = idx;
         transaction = mapRowToJournal(match);
 
         // Fetch accounts to resolve creator details
@@ -89,6 +96,22 @@
     }
   }
 
+  async function handleDelete() {
+    if (rowIndex === null || !brandingState.spreadsheetId) return;
+
+    isDeleting = true;
+    try {
+      await deleteSheetRow(brandingState.spreadsheetId, "journal_general", rowIndex);
+      invalidateCache();
+      goto("/legacy/admin/transactions");
+    } catch (e: any) {
+      error = `Deletion failed: ${e.message}`;
+      window.scrollTo(0, 0);
+    } finally {
+      isDeleting = false;
+    }
+  }
+
   onMount(loadTransaction);
 
   const fees = $derived(
@@ -116,6 +139,59 @@
       {/if}
     {/snippet}
     {#snippet actions()}
+      {#if transaction && !transaction.wasAudited}
+        <div class="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            class="h-8 gap-1.5 font-bold"
+            href="/legacy/admin/transactions/{id}/edit"
+            disabled={isDeleting}
+          >
+            <Pencil class="h-3 w-3" />
+            Edit
+          </Button>
+
+          <AlertDialog.Root>
+            <AlertDialog.Trigger>
+              {#snippet child({ props })}
+                <Button
+                  {...props}
+                  variant="outline"
+                  size="sm"
+                  class="h-8 gap-1.5 font-bold"
+                  disabled={isDeleting}
+                >
+                  {#if isDeleting}
+                    <LoaderCircle class="h-3 w-3 animate-spin" />
+                  {:else}
+                    <Trash2 class="h-3 w-3" />
+                  {/if}
+                  Delete
+                </Button>
+              {/snippet}
+            </AlertDialog.Trigger>
+            <AlertDialog.Content>
+              <AlertDialog.Header>
+                <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
+                <AlertDialog.Description>
+                  This will permanently delete this transaction record from the ledger. This action
+                  cannot be undone.
+                </AlertDialog.Description>
+              </AlertDialog.Header>
+              <AlertDialog.Footer>
+                <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+                <AlertDialog.Action
+                  onclick={handleDelete}
+                  class="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Proceed
+                </AlertDialog.Action>
+              </AlertDialog.Footer>
+            </AlertDialog.Content>
+          </AlertDialog.Root>
+        </div>
+      {/if}
       {#if transaction && transaction.legacyReceiptUrl}
         <Button
           size="sm"
@@ -133,10 +209,10 @@
   {#if isLoading}
     <LoadingView text="Loading transaction..." />
   {:else if error}
-    <Card.Root class="border-destructive/20 bg-destructive/5">
+    <Card.Root class="border-slate-200 bg-slate-50">
       <Card.Content class="flex flex-col items-center justify-center p-12 text-center">
-        <History class="mb-4 h-12 w-12 text-destructive opacity-50" />
-        <h2 class="text-lg font-bold text-destructive">{error}</h2>
+        <History class="mb-4 h-12 w-12 text-slate-400 opacity-50" />
+        <h2 class="text-lg font-bold text-slate-900">{error}</h2>
         <Button variant="outline" class="mt-4" href="/legacy/admin/transactions"
           >Return to Journal</Button
         >

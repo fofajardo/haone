@@ -153,3 +153,53 @@ export async function appendSheetRow(spreadsheetId: string, range: string, value
 
   return await resp.json();
 }
+
+/**
+ * Deletes a row from a specific sheet by its index.
+ */
+export async function deleteSheetRow(spreadsheetId: string, sheetName: string, rowIndex: number) {
+  const token = auth.accessToken;
+  if (!token) throw new Error("Not authenticated");
+
+  // 1. Resolve sheetId from sheetName
+  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`;
+  const data = await fetch(metaUrl, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then((res) => res.json());
+
+  const sheet = data.sheets?.find((s: any) => s.properties.title === sheetName);
+  if (!sheet) throw new Error(`Sheet "${sheetName}" not found`);
+  const sheetId = sheet.properties.sheetId;
+
+  // 2. Perform delete dimension request
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId,
+              dimension: "ROWS",
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1
+            }
+          }
+        }
+      ]
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error?.message || "Failed to delete row");
+  }
+
+  invalidateCache();
+  return await resp.json();
+}
