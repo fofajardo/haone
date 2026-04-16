@@ -118,7 +118,15 @@ export function stageStatusEmail(
   emailDispatcher.configType = "reminders";
   emailDispatcher.batchType = "REMINDER";
 
-  emailDispatcher.push(mapResidentToStagedEmail(resident, branding, options.customReminders));
+  if (options.customReminders) {
+    emailDispatcher.customReminders = options.customReminders;
+  } else if (branding.defaultReminders) {
+    emailDispatcher.customReminders = branding.defaultReminders;
+  }
+
+  emailDispatcher.push(
+    mapResidentToStagedEmail(resident, branding, emailDispatcher.customReminders)
+  );
 
   if (options.redirect) {
     goto("/legacy/admin/email-dispatcher");
@@ -144,8 +152,14 @@ export function stageStatusEmailBatch(
   emailDispatcher.configType = "reminders";
   emailDispatcher.batchType = "REMINDER";
 
+  if (options.customReminders) {
+    emailDispatcher.customReminders = options.customReminders;
+  } else if (branding.defaultReminders) {
+    emailDispatcher.customReminders = branding.defaultReminders;
+  }
+
   for (const r of residents) {
-    emailDispatcher.push(mapResidentToStagedEmail(r, branding, options.customReminders));
+    emailDispatcher.push(mapResidentToStagedEmail(r, branding, emailDispatcher.customReminders));
   }
 
   if (options.redirect) {

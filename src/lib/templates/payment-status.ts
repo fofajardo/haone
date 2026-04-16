@@ -64,45 +64,42 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
   `
       : "";
 
+  const inlineReminders = (data.reminders || "")
+    .replace(
+      /<ul/g,
+      '<ul style="margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside; list-style-type: disc;"'
+    )
+    .replace(
+      /<ol/g,
+      '<ol style="margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside; list-style-type: decimal;"'
+    )
+    .replace(
+      /<li/g,
+      '<li style="margin-bottom: 10px; list-style-type: inherit; line-height: 1.4; font-size: 14px; color: #000;"'
+    );
+
   const accountSpecificContent = data.reminders
     ? `
-    <div style="margin-bottom: 25px; font-size: 14px;">
-      ${data.reminders}
+    <div style="margin-bottom: 25px; color: #000; font-size: 14px;">
+      ${inlineReminders}
     </div>
   `
     : "";
 
-  const sectionRules = !data.isFullyPaid
-    ? `
-    <div style="margin-top: 25px;">
-      <ul style="margin-top: 5px; margin-bottom: 15px; padding: 0 0 0 35px; list-style-position: outside;">
-        <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px;">We want to kindly remind you that as per <strong>Section 19</strong> and <strong>Section 25</strong> of the <strong>Norms of Conduct and Responsibilities of Residents</strong> of the Residence Hall Agreement for this semester:</li>
-      </ul>
-      <blockquote style="margin: 0 0 20px 20px; padding-left: 15px; border-left: 2px solid #eee;">
-        <p style="font-size: 11px; color: #000; line-height: 1.4; margin: 0; margin-bottom: 10px; font-style: italic;">
-          19. The resident shall <strong>join the residence hall’s online group</strong> and will keep constant communication with the dorm staff and student officers to get updates and other announcements from pertinent offices, including the dorm management, Office of Student Housing, Office of the Vice Chancellor for Student Affairs, the University Health Service, the University, and the Local Government Unit. 
-        </p>
-        <br/>
-        <p style="font-size: 11px; color: #000; line-height: 1.4; margin: 0; font-style: italic;">
-          25. The resident shall <strong>pay a semestral association fee to the Residence Hall Association and other fees (e.g. Water fees, Gas fees, etc.)</strong> determined and agreed upon by the Association and the hall residents. Non-payment or insufficient payment to the Association will incur an accountability and may be cause for holding the resident’s next dorm application and University clearance until settled.
-        </p>
-      </blockquote>
+  const replacements = {
+    "{assocBase}": formatAmount(data.assocBase),
+    "{assocHalf}": formatAmount(data.assocBase / 2),
+    "{waterMonthly}": formatAmount(data.waterBase / 4),
+    "{waterHalf}": formatAmount(data.waterBase / 8)
+  };
 
-      <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block; font-weight: bold; margin-top: 20px; text-decoration: underline;">Association Fee (₱200.00 per semester):</p>
-      <ul style="margin: 15px 0 15px 0; padding: 0 0 0 35px; list-style-position: outside;">
-        <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px;">You may pay just ₱100.00 initially, with the remaining balance due later.</li>
-        <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px;">This fee helps fund events held in the dorm (e.g., Open House, PasADAhan), purchase/maintenance of appliances, and other expenses.</li>
-      </ul>
-
-      <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block; font-weight: bold; margin-top: 15px; text-decoration: underline;">Water Contribution (₱100.00 per month):</p>
-      <ul style="margin: 15px 0 15px 0; padding: 0 0 0 35px; list-style-position: outside;">
-        <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px;">This will be paid <strong>TWICE</strong> a month.</li>
-        <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px;">The first payment of <strong>₱50.00</strong> is due on or before the 15th.</li>
-        <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px;">The remaining <strong>₱50.00</strong> will be collected on the last day or the 30th of the month.</li>
-      </ul>
-    </div>
-  `
-    : "";
+  const sectionRules =
+    !data.isFullyPaid && branding.sectionRules
+      ? Object.entries(replacements).reduce(
+          (acc, [key, val]) => acc.replace(new RegExp(key, "g"), val),
+          branding.sectionRules
+        )
+      : "";
 
   const bedNotice = !data.bed
     ? `<br/>
@@ -112,7 +109,7 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
         Please complete the Semestral Association Member Registration Form immediately.
       </p>
       <div style="margin-top: 15px;">
-        <a href="https://tr.ee/ati_sr" style="display: inline-block; padding: 12px 25px; background-color: #dc2626; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">COMPLETE FORM</a>
+        <a href="${branding.regFormUrl || "#"}" style="display: inline-block; padding: 12px 25px; background-color: #dc2626; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">COMPLETE FORM</a>
       </div>
     </div>`
     : "";
@@ -212,26 +209,17 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
 
   ${negativeNotice}
 
-  <div style="margin-top: 35px;">
-    <p style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #000; display: block;">Reminders:</p>
+    <p style="font-size: 14px; font-weight: bold; margin-top: 12px; margin-bottom: 12px; color: #000; display: block;">Reminders:</p>
     
     ${accountSpecificContent}
-
-    <ul style="margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside;">
-      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;"><strong style="font-weight: bold;">Join our Facebook Messenger Community</strong>: <a href="https://tr.ee/ati_fbme" style="color: #0047AB; text-decoration: underline;">https://tr.ee/ati_fbme</a></li>
-      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;"><strong style="font-weight: bold;">Join our Facebook Group</strong>: <a href="https://www.facebook.com/groups/618203756704972" style="color: #0047AB; text-decoration: underline;">https://www.facebook.com/groups/618203756704972</a></li>
-      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;"><strong style="font-weight: bold;">Like our Facebook Page</strong>: <a href="https://www.facebook.com/atintcrha.uplb" style="color: #0047AB; text-decoration: underline;">https://www.facebook.com/atintcrha.uplb</a></li>
-      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">E-receipts for payments made within the week will be issued at the end of each week. You will receive monthly emails similar to this one for balance updates.</li>
-      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Financial reports of the Association will be shared via Facebook Messenger and the bulletin board at the end of the semester.</li>
-    </ul>
 
     ${sectionRules}
 
     <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block; font-weight: bold; margin-top: 20px; text-decoration: underline;">Payment Options and Considerations:</p>
     <ul style="margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside;">
-      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Refer to the bulletin board or <a href="https://kawing.pages.dev/ati_payment" style="color: #0047AB; text-decoration: underline;">this document</a> for payment instructions.</li>
+      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Refer to the bulletin board or <a href="${branding.paymentInstructionsUrl || "#"}" style="color: #0047AB; text-decoration: underline;">this document</a> for payment instructions.</li>
       <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Residents have the option to pay the full amount upfront.</li>
-      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Residents experiencing financial difficulties can defer payment by notifying dorm officers.</li>
+      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Residents experiencing financial difficulties can defer payment by notifying the house council officers.</li>
     </ul>
 
     <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block; margin-top: 35px;">

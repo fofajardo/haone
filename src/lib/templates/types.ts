@@ -10,6 +10,10 @@ export interface BrandingProfile {
   googleClientId: string;
   replyTo: string;
   spreadsheetId: string;
+  sectionRules?: string;
+  regFormUrl?: string;
+  paymentInstructionsUrl?: string;
+  defaultReminders?: string;
 }
 
 export interface EmailTemplate<T> {
