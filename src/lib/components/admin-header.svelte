@@ -15,7 +15,12 @@
       <img
         src={brandingState.profile.logoUrl}
         alt={brandingState.profile.logoAlt}
-        class="h-10 w-auto object-contain"
+        class="h-10 w-auto object-contain dark:hidden"
+      />
+      <img
+        src={brandingState.profile.logoUrlDark || brandingState.profile.logoUrl}
+        alt={brandingState.profile.logoAlt}
+        class="hidden h-10 w-auto object-contain dark:block"
       />
     </div>
   </div>

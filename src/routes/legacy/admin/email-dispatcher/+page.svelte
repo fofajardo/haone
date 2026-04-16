@@ -155,7 +155,7 @@
     >
       <Mail class="h-8 w-8 text-muted-foreground" />
       <div class="text-center">
-        <p class="font-semibold text-slate-900">Queue is empty.</p>
+        <p class="font-semibold text-foreground">Queue is empty.</p>
         <p class="text-xs text-muted-foreground">
           Select records from Resident Directory or Pending Receipts to begin.
         </p>
@@ -172,11 +172,11 @@
             </Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
-            <div class="rounded-lg border bg-white p-4">
-              <p class="text-[10px] font-medium tracking-widest text-slate-700 uppercase">
+            <div class="rounded-lg border bg-muted/20 p-4">
+              <p class="text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
                 Emails in Queue
               </p>
-              <p class="text-2xl font-bold text-slate-900">{emailDispatcher.queue.length}</p>
+              <p class="text-2xl font-bold text-foreground">{emailDispatcher.queue.length}</p>
             </div>
 
             {#if isSending || isSuccess}
@@ -234,23 +234,23 @@
             </Card.Header>
             <Card.Content class="space-y-4">
               <div
-                class="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-100 bg-white"
+                class="divide-y divide-border overflow-hidden rounded-xl border border-border bg-muted/20"
               >
                 {#each batchSummary.items as fee}
                   <div class="flex items-center justify-between px-4 py-3">
-                    <span class="text-xs font-semibold text-slate-600">{fee.name}</span>
-                    <span class="font-mono text-xs font-semibold text-slate-900"
+                    <span class="text-xs font-semibold text-muted-foreground">{fee.name}</span>
+                    <span class="font-mono text-xs font-semibold text-foreground"
                       >{formatAmount(fee.amount)}</span
                     >
                   </div>
                 {/each}
               </div>
 
-              <div class="rounded-xl border border-slate-100 bg-white p-4">
-                <p class="text-[9px] font-medium tracking-widest text-slate-700 uppercase">
+              <div class="rounded-xl border border-border bg-muted/30 p-4">
+                <p class="text-[9px] font-medium tracking-widest text-muted-foreground uppercase">
                   Total Batch Confirmation
                 </p>
-                <p class="text-2xl font-bold text-slate-900 tabular-nums">
+                <p class="text-2xl font-bold text-foreground tabular-nums">
                   {formatCurrency(batchSummary.total)}
                 </p>
               </div>
@@ -321,22 +321,24 @@
           </Card.Header>
           <Card.Content>
             {#if currentEmail}
-              <div class="mb-4 space-y-2 rounded-md border bg-white p-3">
+              <div class="mb-4 space-y-2 rounded-md border bg-muted/20 p-3">
                 <div class="flex justify-between">
                   <span class="text-xs font-bold tracking-tighter text-muted-foreground uppercase"
                     >Recipient</span
                   >
-                  <span class="text-xs font-bold">{currentEmail.to}</span>
+                  <span class="text-xs font-bold text-foreground">{currentEmail.to}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-xs font-bold tracking-tighter text-muted-foreground uppercase"
                     >Subject</span
                   >
-                  <span class="text-xs font-semibold">{emailPreview.subject}</span>
+                  <span class="text-xs font-semibold text-foreground">{emailPreview.subject}</span>
                 </div>
               </div>
 
-              <div class="max-h-[600px] overflow-auto rounded-lg border bg-white shadow-inner">
+              <div
+                class="max-h-[600px] overflow-auto rounded-lg border bg-background text-foreground shadow-inner"
+              >
                 {@html emailPreview.body}
               </div>
             {/if}

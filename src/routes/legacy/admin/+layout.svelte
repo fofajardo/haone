@@ -80,11 +80,11 @@
 
 {#if isLoading}
   <div class="flex min-h-screen flex-col items-center justify-center gap-4">
-    <LoaderCircle class="h-8 w-8 animate-spin text-slate-900" />
+    <LoaderCircle class="h-8 w-8 animate-spin text-foreground" />
   </div>
 {:else if !auth.accessToken}
   <div
-    class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white p-6 md:p-12 {uiSettings.fontFamily ===
+    class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 md:p-12 {uiSettings.fontFamily ===
     'inter'
       ? 'font-sans'
       : ''} {uiSettings.displayDensity !== 'default'
@@ -100,14 +100,19 @@
         <img
           src={branding.default.logoUrl}
           alt={branding.default.logoAlt}
-          class="h-28 w-auto object-contain transition-all duration-500 hover:scale-[1.02]"
+          class="h-28 w-auto object-contain transition-all duration-500 hover:scale-[1.02] dark:hidden"
+        />
+        <img
+          src={branding.default.logoUrlDark || branding.default.logoUrl}
+          alt={branding.default.logoAlt}
+          class="hidden h-28 w-auto object-contain transition-all duration-500 hover:scale-[1.02] dark:block"
         />
       </div>
 
       <div class="animate-in pt-6 duration-1000 fade-in slide-in-from-bottom-4">
         <Button
           onclick={handleLogin}
-          class="h-14 w-full rounded-xl bg-slate-900 text-base font-bold text-white transition-all hover:bg-black active:scale-[0.98]"
+          class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
         >
           <LogIn class="mr-2 h-5 w-5" />
           Sign in with UP Mail
@@ -118,13 +123,14 @@
     <div
       class="absolute right-0 bottom-12 left-0 flex animate-in flex-col items-center gap-4 text-center duration-1000 fade-in slide-in-from-bottom-2"
     >
-      <div class="h-px w-8 bg-slate-100"></div>
+      <div class="h-px w-8 bg-border"></div>
       <div class="flex cursor-default items-center gap-2">
-        <span class="text-[9px] font-bold tracking-widest text-slate-400 uppercase">Powered by</span
+        <span class="text-[9px] font-bold tracking-widest text-muted-foreground uppercase"
+          >Powered by</span
         >
         <div class="flex items-center gap-1.5">
           <img src="/ha1.svg" alt="HAOne" class="h-4 w-4" />
-          <span class="text-xs font-black tracking-tighter text-slate-800">HAOne</span>
+          <span class="text-xs font-black tracking-tighter text-foreground">HAOne</span>
         </div>
       </div>
     </div>

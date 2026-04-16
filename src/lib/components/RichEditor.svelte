@@ -60,14 +60,14 @@
         ListItem.configure({
           HTMLAttributes: {
             style:
-              "margin-bottom: 10px; list-style-type: inherit; line-height: 1.4; font-size: 14px; color: #000;"
+              "margin-bottom: 10px; list-style-type: inherit; line-height: 1.4; font-size: 14px;"
           }
         }),
         Underline,
         Link.configure({
           openOnClick: false,
           HTMLAttributes: {
-            style: "color: #0047AB; text-decoration: underline; font-weight: 500;"
+            style: "color: var(--brand); text-decoration: underline; font-weight: 500;"
           }
         }),
         Placeholder.configure({
@@ -85,7 +85,7 @@
       editorProps: {
         attributes: {
           class:
-            "prose prose-sm max-w-none focus:outline-none min-h-[400px] p-6 text-sm text-slate-800 leading-relaxed"
+            "prose prose-sm max-w-none focus:outline-none min-h-[400px] p-6 text-sm text-foreground leading-relaxed"
         }
       }
     });
@@ -111,18 +111,18 @@
 </script>
 
 <div
-  class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all focus-within:ring-1 focus-within:ring-slate-300"
+  class="overflow-hidden rounded-xl border bg-card shadow-sm transition-all focus-within:ring-1 focus-within:ring-ring"
 >
   <!-- Fixed Toolbar -->
   {#if editor}
     {#key selectionState}
-      <div class="flex flex-wrap items-center gap-1 border-b border-slate-100 bg-slate-50/70 p-2">
+      <div class="flex flex-wrap items-center gap-1 border-b bg-muted/50 p-2">
         <Button
           variant="ghost"
           size="sm"
           class="h-8 w-8 transition-colors {editor.isActive('bold')
-            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleBold().run()}
         >
           <Bold class="h-3.5 w-3.5" />
@@ -131,8 +131,8 @@
           variant="ghost"
           size="sm"
           class="h-8 w-8 transition-colors {editor.isActive('italic')
-            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleItalic().run()}
         >
           <Italic class="h-3.5 w-3.5" />
@@ -141,21 +141,21 @@
           variant="ghost"
           size="sm"
           class="h-8 w-8 transition-colors {editor.isActive('underline')
-            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleUnderline().run()}
         >
           <UnderlineIcon class="h-3.5 w-3.5" />
         </Button>
 
-        <div class="mx-1 h-4 w-[1px] bg-slate-200"></div>
+        <div class="mx-1 h-4 w-[1px] bg-border"></div>
 
         <Button
           variant="ghost"
           size="sm"
           class="h-8 w-8 transition-colors {editor.isActive('bulletList')
-            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleBulletList().run()}
         >
           <List class="h-3.5 w-3.5" />
@@ -164,21 +164,21 @@
           variant="ghost"
           size="sm"
           class="h-8 w-8 transition-colors {editor.isActive('orderedList')
-            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleOrderedList().run()}
         >
           <ListOrdered class="h-3.5 w-3.5" />
         </Button>
 
-        <div class="mx-1 h-4 w-[1px] bg-slate-200"></div>
+        <div class="mx-1 h-4 w-[1px] bg-border"></div>
 
         <Button
           variant="ghost"
           size="sm"
           class="h-8 w-8 transition-colors {editor.isActive('link')
-            ? 'border-slate-200 bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
-            : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'}"
+            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={openLinkDialog}
         >
           <LinkIcon class="h-3.5 w-3.5" />
@@ -199,7 +199,7 @@
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 text-slate-400 transition-colors hover:bg-slate-200/50 hover:text-slate-900"
+          class="h-8 w-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           onclick={() => editor?.chain().focus().clearNodes().unsetAllMarks().run()}
           title="Clear formatting"
         >
@@ -266,7 +266,7 @@
   }
 
   :global(.tiptap a) {
-    color: #1a56db;
+    color: var(--brand);
     text-decoration: underline;
     font-weight: 500;
   }

@@ -309,12 +309,12 @@
                   class="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/5"
                   onclick={() => goto(`/legacy/admin/transactions/${record.id || ""}`)}
                 >
-                  <Table.Cell class="px-4 py-2 align-top text-xs text-slate-500 tabular-nums"
+                  <Table.Cell class="px-4 py-2 align-top text-xs text-muted-foreground tabular-nums"
                     >{formatDate(record.date)}</Table.Cell
                   >
                   <Table.Cell class="px-4 py-2 align-top">
                     <div class="flex flex-col">
-                      <span class="text-[11px] leading-tight font-bold text-slate-900"
+                      <span class="text-[11px] leading-tight font-bold text-foreground"
                         >{record.creatorName}</span
                       >
                       <span class="text-[9px] font-medium text-muted-foreground"
@@ -324,7 +324,7 @@
                   </Table.Cell>
                   <Table.Cell class="w-64 px-4 py-2 align-top">
                     <div class="flex flex-col">
-                      <span class="text-[11px] leading-tight font-bold text-slate-900"
+                      <span class="text-[11px] leading-tight font-bold text-foreground"
                         >{record.name}</span
                       >
                       <span class="text-[9px] font-medium text-muted-foreground"
@@ -334,7 +334,8 @@
                   </Table.Cell>
                   <Table.Cell class="px-4 py-2 align-top">
                     <div class="flex flex-col">
-                      <span class="text-[10px] font-bold tracking-tight text-slate-600 uppercase"
+                      <span
+                        class="text-[10px] font-bold tracking-tight text-muted-foreground uppercase"
                         >{translateType(record.type, transactionTypes)}</span
                       >
                       <span class="text-[9px] text-muted-foreground"
@@ -343,11 +344,11 @@
                     </div>
                   </Table.Cell>
                   <Table.Cell class="max-w-[200px] truncate px-4 py-2 align-top"
-                    ><span class="text-[10px] text-slate-600">{record.notes || "—"}</span
+                    ><span class="text-[10px] text-muted-foreground">{record.notes || "—"}</span
                     ></Table.Cell
                   >
                   <Table.Cell class="px-4 py-2 text-right align-top"
-                    ><span class="font-mono text-xs font-bold text-slate-900"
+                    ><span class="font-mono text-xs font-bold text-foreground"
                       >{formatAccounting(record.amount)}</span
                     ></Table.Cell
                   >
@@ -369,7 +370,7 @@
     >
       <ListFilter class="h-8 w-8 text-muted-foreground" />
       <div class="text-center">
-        <p class="font-semibold text-slate-900">No records found.</p>
+        <p class="font-semibold text-foreground">No records found.</p>
         <p class="text-xs text-muted-foreground">Try adjusting your filters or search query.</p>
       </div>
     </div>

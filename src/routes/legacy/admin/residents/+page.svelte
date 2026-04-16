@@ -303,18 +303,18 @@
                   <div class="flex flex-col">
                     <a
                       href="/legacy/admin/residents/{r.stno}"
-                      class="text-xs font-bold text-slate-900 transition-colors hover:text-primary hover:underline"
+                      class="text-xs font-bold text-foreground transition-colors hover:text-primary hover:underline"
                       onclick={(e) => e.stopPropagation()}>{r.name}</a
                     >
                     <span class="text-[10px] text-muted-foreground">{r.email}</span>
                   </div>
                 </Table.Cell>
                 <Table.Cell class="px-4 py-3 align-top"
-                  ><span class="text-xs font-medium text-slate-600">{r.room || "—"}</span
+                  ><span class="text-xs font-medium text-muted-foreground">{r.room || "—"}</span
                   ></Table.Cell
                 >
                 <Table.Cell class="px-4 py-3 align-top"
-                  ><span class="text-xs font-medium text-slate-600">{r.bed || "—"}</span
+                  ><span class="text-xs font-medium text-muted-foreground">{r.bed || "—"}</span
                   ></Table.Cell
                 >
                 <Table.Cell class="px-4 py-3 text-right align-top font-mono text-xs tabular-nums"
@@ -326,7 +326,7 @@
                 <Table.Cell
                   class="px-4 py-3 text-right align-top font-mono text-xs font-bold tabular-nums {r.bal >
                   0
-                    ? 'text-slate-900'
+                    ? 'text-foreground'
                     : 'text-primary'}"
                 >
                   <div class="flex flex-col items-end">
@@ -342,12 +342,12 @@
                   <div class="flex flex-col items-center gap-1">
                     {#if r.isFullyPaid}
                       <span
-                        class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-0.5 text-[10px] font-bold text-slate-800"
+                        class="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-bold text-secondary-foreground"
                         >FULLY PAID</span
                       >
                     {:else}
                       <span
-                        class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-400"
+                        class="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground"
                         >PENDING</span
                       >
                     {/if}
@@ -375,7 +375,7 @@
     >
       <Users class="h-8 w-8 text-muted-foreground" />
       <div class="text-center">
-        <p class="font-semibold text-slate-900">No residents found.</p>
+        <p class="font-semibold text-foreground">No residents found.</p>
         <p class="text-xs text-muted-foreground">Adjust filters or search query.</p>
       </div>
     </div>

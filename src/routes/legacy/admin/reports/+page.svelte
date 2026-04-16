@@ -201,12 +201,12 @@
               >
                 <div class="flex items-center gap-2 truncate">
                   <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
-                  <span class="truncate text-xs font-semibold text-slate-700" title={item.label}
+                  <span class="truncate text-xs font-semibold text-foreground/80" title={item.label}
                     >{item.label}</span
                   >
                 </div>
                 <div class="flex shrink-0 items-center gap-2 italic">
-                  <span class="text-xs font-bold text-slate-900">{item.value}</span>
+                  <span class="text-xs font-bold text-foreground">{item.value}</span>
                   <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
                 </div>
               </div>
@@ -244,12 +244,12 @@
               >
                 <div class="flex items-center gap-2 truncate">
                   <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
-                  <span class="truncate text-xs font-semibold text-slate-700" title={item.label}
+                  <span class="truncate text-xs font-semibold text-foreground/80" title={item.label}
                     >{item.label}</span
                   >
                 </div>
                 <div class="flex shrink-0 items-center gap-2 italic">
-                  <span class="text-xs font-bold text-slate-900">{item.value}</span>
+                  <span class="text-xs font-bold text-foreground">{item.value}</span>
                   <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
                 </div>
               </div>
@@ -287,10 +287,11 @@
               >
                 <div class="flex items-center gap-2 truncate">
                   <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
-                  <span class="truncate text-xs font-semibold text-slate-700">{item.label}</span>
+                  <span class="truncate text-xs font-semibold text-foreground/80">{item.label}</span
+                  >
                 </div>
                 <div class="flex shrink-0 items-center gap-2 italic">
-                  <span class="text-xs font-bold text-slate-900">{item.value}</span>
+                  <span class="text-xs font-bold text-foreground">{item.value}</span>
                   <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
                 </div>
               </div>
@@ -333,12 +334,12 @@
                   <div class="flex items-center gap-2 truncate">
                     <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
                     <span
-                      class="truncate text-[11px] font-semibold text-slate-700"
+                      class="truncate text-[11px] font-semibold text-foreground/80"
                       title={item.label}>{item.label}</span
                     >
                   </div>
                   <div class="flex shrink-0 items-center gap-2 italic">
-                    <span class="text-xs font-bold text-slate-900">{item.value}</span>
+                    <span class="text-xs font-bold text-foreground">{item.value}</span>
                     <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
                   </div>
                 </div>

@@ -281,9 +281,9 @@
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}
       <div
-        class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 font-medium text-slate-900"
+        class="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-4 font-medium text-foreground"
       >
-        <AlertCircle class="mt-0.5 h-4 w-4 text-slate-500" />
+        <AlertCircle class="mt-0.5 h-4 w-4 text-muted-foreground" />
         <span class="text-sm">{error}</span>
       </div>
     {/if}
@@ -296,7 +296,7 @@
           <!-- Basic Details -->
           <div class="space-y-4">
             <Label
-              class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase"
+              class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
             >
               <Calendar class="h-3.5 w-3.5" /> General Information
             </Label>
@@ -328,7 +328,7 @@
           <!-- Parties -->
           <div class="space-y-4 border-t pt-4">
             <Label
-              class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase"
+              class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
             >
               <Users class="h-3.5 w-3.5" /> Transaction Parties
             </Label>
@@ -351,14 +351,14 @@
                 </div>
                 {#if showCreatorSuggestions && creatorSearch && filteredCreators.length > 0}
                   <div
-                    class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-xl"
+                    class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-xl"
                   >
                     {#each filteredCreators as a}
                       <button
                         onclick={() => selectCreator(a)}
                         class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
                       >
-                        <span class="font-bold text-slate-900">{a.name}</span>
+                        <span class="font-bold text-foreground">{a.name}</span>
                         <span class="text-[10px] text-muted-foreground">{a.email}</span>
                       </button>
                     {/each}
@@ -384,14 +384,14 @@
                 </div>
                 {#if showAccountSuggestions && accountSearch && filteredAccounts.length > 0}
                   <div
-                    class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-white shadow-xl"
+                    class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-xl"
                   >
                     {#each filteredAccounts as a}
                       <button
                         onclick={() => selectAccount(a)}
                         class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
                       >
-                        <span class="font-bold text-slate-900">{a.name}</span>
+                        <span class="font-bold text-foreground">{a.name}</span>
                         <span class="text-[10px] text-muted-foreground">{a.email}</span>
                       </button>
                     {/each}
@@ -404,7 +404,7 @@
           <!-- Fees -->
           <div class="space-y-4 border-t pt-4">
             <Label
-              class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase"
+              class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
             >
               <Wallet class="h-3.5 w-3.5" /> Payment Details
             </Label>
@@ -492,7 +492,7 @@
           <!-- Documentation -->
           <div class="space-y-4 border-t pt-4">
             <Label
-              class="flex items-center gap-2 text-xs font-bold tracking-widest text-slate-900 uppercase"
+              class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
             >
               <StickyNote class="h-3.5 w-3.5" /> Documentation
             </Label>
@@ -503,7 +503,7 @@
                 >
                 <textarea
                   bind:value={formData.notes}
-                  class="h-[100px] w-full rounded-md border p-2 text-xs"
+                  class="h-[100px] w-full rounded-md border border-input bg-background p-2 text-xs text-foreground"
                 ></textarea>
               </div>
               <div class="space-y-2">
@@ -512,7 +512,7 @@
                 >
                 <textarea
                   bind:value={formData.notesPrivate}
-                  class="h-[100px] w-full rounded-md border p-2 text-xs"
+                  class="h-[100px] w-full rounded-md border border-input bg-background p-2 text-xs text-foreground"
                 ></textarea>
               </div>
             </div>

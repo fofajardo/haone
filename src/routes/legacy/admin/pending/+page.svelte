@@ -297,7 +297,7 @@
               <Table.Head class="px-2 py-3"
                 ><button
                   onclick={() => toggleSort("DATE")}
-                  class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-slate-900"
+                  class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
                   >Date {#if sortKey === "DATE"}{sortOrder === "asc" ? "↑" : "↓"}{:else}<ArrowUpDown
                       class="h-3 w-3 opacity-30"
                     />{/if}</button
@@ -306,7 +306,7 @@
               <Table.Head class="px-2 py-3"
                 ><button
                   onclick={() => toggleSort("ACCOUNT")}
-                  class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-slate-900"
+                  class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
                   >Account {#if sortKey === "ACCOUNT"}{sortOrder === "asc"
                       ? "↑"
                       : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
@@ -325,7 +325,7 @@
               <Table.Head class="px-4 py-3"
                 ><button
                   onclick={() => toggleSort("TOTAL")}
-                  class="flex w-full items-center justify-end gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-slate-900"
+                  class="flex w-full items-center justify-end gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
                   >Total {#if sortKey === "TOTAL"}{sortOrder === "asc"
                       ? "↑"
                       : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
@@ -353,11 +353,12 @@
                   /></Table.Cell
                 >
                 <Table.Cell class="w-32 px-2 py-2 align-top text-nowrap"
-                  ><span class="text-xs text-slate-500 tabular-nums">{formatDate(record.date)}</span
+                  ><span class="text-xs text-muted-foreground tabular-nums"
+                    >{formatDate(record.date)}</span
                   ></Table.Cell
                 >
                 <Table.Cell class="w-64 px-2 py-2 align-top"
-                  ><span class="text-sm leading-tight font-bold text-slate-900">{record.name}</span
+                  ><span class="text-sm leading-tight font-bold text-foreground">{record.name}</span
                   ></Table.Cell
                 >
                 <Table.Cell colspan={2} class="p-0 align-top">
@@ -367,12 +368,13 @@
                         class="flex items-center justify-between border-b border-muted/10 px-3 py-1.5 last:border-b-0"
                       >
                         <div class="flex flex-col">
-                          <span class="text-xs font-semibold text-slate-700">{fee.name}</span><span
+                          <span class="text-xs font-semibold text-foreground/80">{fee.name}</span
+                          ><span
                             class="text-[9px] font-bold tracking-tighter text-muted-foreground uppercase"
                             >{record.type}</span
                           >
                         </div>
-                        <span class="font-mono text-xs font-bold text-slate-600 tabular-nums"
+                        <span class="font-mono text-xs font-bold text-muted-foreground tabular-nums"
                           >{formatAmount(fee.amount)}</span
                         >
                       </div>
@@ -382,7 +384,7 @@
                 <Table.Cell class="px-2 py-2 align-top"
                   ><div class="flex flex-col">
                     <span
-                      class="text-[10px] leading-none font-bold tracking-tight text-slate-600 uppercase"
+                      class="text-[10px] leading-none font-bold tracking-tight text-muted-foreground uppercase"
                       >{translateMop(record.mop)}</span
                     ><span class="mt-0.5 text-[9px] text-muted-foreground tabular-nums"
                       >{record.mopRefNo === "N/A" || !record.mopRefNo
@@ -393,7 +395,7 @@
                 >
                 <Table.Cell class="px-4 py-2 text-right align-top"
                   ><span
-                    class="font-mono text-sm font-bold whitespace-nowrap text-slate-900 tabular-nums"
+                    class="font-mono text-sm font-bold whitespace-nowrap text-foreground tabular-nums"
                     >{formatCurrency(record.amount)}</span
                   ></Table.Cell
                 >
@@ -409,7 +411,7 @@
     >
       <CircleCheckBig class="h-8 w-8" />
       <div class="text-center">
-        <p class="font-semibold text-slate-900">No pending entries.</p>
+        <p class="font-semibold text-foreground">No pending entries.</p>
       </div>
     </div>
   {/if}

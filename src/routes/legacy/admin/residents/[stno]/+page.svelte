@@ -263,10 +263,10 @@
                 ><Mail class="h-3 w-3" /> Email Address</Label
               >
               <div class="flex items-center gap-2">
-                <p class="text-sm font-semibold text-slate-900">{account.email}</p>
+                <p class="text-sm font-semibold text-foreground">{account.email}</p>
                 <a
                   href="mailto:{account.email}"
-                  class="text-slate-400 transition-colors hover:text-primary"
+                  class="text-muted-foreground transition-colors hover:text-primary"
                   title="Send Email"
                 >
                   <Send class="h-3.5 w-3.5" />
@@ -299,21 +299,21 @@
                 <GraduationCap class="h-3 w-3" /> Academic Program
               </Label>
               <div
-                class="relative mt-2 space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-slate-200"
+                class="relative mt-2 space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
               >
                 {#each qualifications as q}
                   <div class="relative flex items-start gap-4 pl-8">
                     <div
-                      class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-white bg-slate-50 shadow-sm ring-1 ring-slate-200"
+                      class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-muted shadow-sm ring-1 ring-border"
                     >
-                      <GraduationCap class="h-2.5 w-2.5 text-slate-400" />
+                      <GraduationCap class="h-2.5 w-2.5 text-muted-foreground" />
                     </div>
                     <div class="flex flex-col gap-0.5">
                       <span
                         class="text-[9px] font-black tracking-widest text-primary uppercase opacity-80"
                         >{q.college}</span
                       >
-                      <p class="text-[13px] leading-tight font-bold text-slate-900">
+                      <p class="text-[13px] leading-tight font-bold text-foreground">
                         {q.program}
                       </p>
                     </div>
@@ -322,7 +322,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
               <div class="space-y-1">
                 <Label
                   class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
@@ -351,7 +351,7 @@
             </Card.Header>
             <Card.Content class="space-y-4">
               <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <span class="text-xs font-medium text-slate-600">Verification</span>
+                <span class="text-xs font-medium text-muted-foreground">Verification</span>
                 <Badge
                   variant="outline"
                   class="w-fit border-transparent bg-primary px-2 py-0.5 text-[10px] font-black text-white"
@@ -360,12 +360,14 @@
               </div>
               <div class="space-y-3">
                 <div class="flex flex-col gap-1">
-                  <span class="text-xs font-medium text-slate-600">Issued Date</span>
-                  <span class="text-sm font-bold text-slate-900">{account.ceIssued}</span>
+                  <span class="text-xs font-medium text-muted-foreground">Issued Date</span>
+                  <span class="text-sm font-bold text-foreground">{account.ceIssued}</span>
                 </div>
-                <div class="flex flex-col gap-1 border-t border-slate-100 pt-3">
-                  <span class="text-xs font-medium tracking-tight text-slate-600">Ref No.</span>
-                  <span class="font-mono text-sm font-black text-slate-900"
+                <div class="flex flex-col gap-1 border-t border-border pt-3">
+                  <span class="text-xs font-medium tracking-tight text-muted-foreground"
+                    >Ref No.</span
+                  >
+                  <span class="font-mono text-sm font-black text-foreground"
                     >{account.ceRefNo || "—"}</span
                   >
                 </div>
@@ -394,28 +396,28 @@
           </Card.Header>
           <Card.Content class="space-y-4">
             <div class="flex flex-col gap-1 border-b border-primary/10 pb-2">
-              <span class="text-xs font-medium text-slate-600">Water Fee Balance</span>
+              <span class="text-xs font-medium text-muted-foreground">Water Fee Balance</span>
               <span
                 class="font-mono text-sm font-bold {account.waterBal < 0
                   ? 'text-primary'
-                  : 'text-slate-900'}">{formatAmount(account.waterBal)}</span
+                  : 'text-foreground'}">{formatAmount(account.waterBal)}</span
               >
             </div>
             <div class="flex flex-col gap-1 border-b border-primary/10 pb-2">
-              <span class="text-xs font-medium text-slate-600">Association Fee Balance</span>
+              <span class="text-xs font-medium text-muted-foreground">Association Fee Balance</span>
               <span
                 class="font-mono text-sm font-bold {account.assocBal < 0
                   ? 'text-primary'
-                  : 'text-slate-900'}">{formatAmount(account.assocBal)}</span
+                  : 'text-foreground'}">{formatAmount(account.assocBal)}</span
               >
             </div>
             <div class="flex flex-col gap-1 pt-2">
-              <span class="text-xs font-black text-slate-900 uppercase">Total Outstanding</span>
+              <span class="text-xs font-black text-foreground uppercase">Total Outstanding</span>
               <div class="text-left">
                 <p
                   class="text-xl font-black tabular-nums {account.bal < 0
                     ? 'text-primary'
-                    : 'text-slate-900'}"
+                    : 'text-foreground'}"
                 >
                   {formatCurrency(account.bal)}
                 </p>
@@ -476,7 +478,7 @@
                           <div class="flex flex-col">
                             <a
                               href="/legacy/admin/transactions/{entry.id}"
-                              class="text-[11px] font-bold text-slate-900 hover:text-primary hover:underline"
+                              class="text-[11px] font-bold text-foreground hover:text-primary hover:underline"
                               >{formatDate(entry.date)}</a
                             >
                             <span class="text-[9px] font-medium text-muted-foreground"
@@ -487,7 +489,7 @@
                         <Table.Cell class="px-4 py-3 align-top">
                           <div class="flex flex-col">
                             <span
-                              class="text-[10px] font-black tracking-tight text-slate-800 uppercase"
+                              class="text-[10px] font-black tracking-tight text-foreground/80 uppercase"
                               >{translateType(entry.type, transactionTypes)}</span
                             >
                             <span class="text-[9px] text-muted-foreground"
@@ -496,12 +498,14 @@
                           </div>
                         </Table.Cell>
                         <Table.Cell class="px-4 py-3 align-top">
-                          <p class="text-[10px] leading-tight whitespace-pre-wrap text-slate-600">
+                          <p
+                            class="text-[10px] leading-tight whitespace-pre-wrap text-muted-foreground"
+                          >
                             {entry.notes || "—"}
                           </p>
                         </Table.Cell>
                         <Table.Cell class="px-4 py-3 text-right align-top">
-                          <span class="font-mono text-xs font-bold text-slate-900 tabular-nums">
+                          <span class="font-mono text-xs font-bold text-foreground tabular-nums">
                             {formatCurrency(entry.amount)}
                           </span>
                         </Table.Cell>
