@@ -1,11 +1,6 @@
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar";
-  import {
-    LayoutDashboard,
-    Settings,
-    Receipt,
-    LogOut
-  } from "lucide-svelte";
+  import { LayoutDashboard, Settings, Receipt, ListFilter, Users, LogOut } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
 
@@ -19,6 +14,16 @@
       title: "Pending Receipts",
       url: "/legacy/admin/pending",
       icon: Receipt
+    },
+    {
+      title: "Transactions",
+      url: "/legacy/admin/transactions",
+      icon: ListFilter
+    },
+    {
+      title: "Residents",
+      url: "/legacy/admin/residents",
+      icon: Users
     },
     {
       title: "Settings",

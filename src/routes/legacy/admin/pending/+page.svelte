@@ -23,6 +23,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Checkbox } from "$lib/components/ui/checkbox";
+  import TermFilter from "$lib/components/TermFilter.svelte";
   import {
     Loader2,
     RefreshCcw,
@@ -38,7 +39,8 @@
     Play,
     ChevronLeft,
     ChevronRight,
-    BarChart3
+    BarChart3,
+    Plus
   } from "lucide-svelte";
   import { encryptJSON } from "$lib/crypto";
   import type { ReceiptData, ReceiptItem } from "$lib/types";
@@ -65,7 +67,6 @@
 
   let queue = $state<PendingRow[]>([]);
   let selectedIndices = $state<Set<number>>(new Set()); // Stores rowIndex
-  let semesters = $state<SemesterOption[]>([]);
   let isLoading = $state(false);
   let isConfirming = $state(false);
   let error = $state<string | null>(null);
@@ -167,30 +168,6 @@
     return type === "one" ? `${count} ${singular}` : `${count} ${plural}`;
   }
 
-  async function loadSemesters() {
-    try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C");
-      if (rows.length <= 1) throw new Error("Constants sheet is empty.");
-
-      const allSemesters = rows
-        .slice(1)
-        .filter((row) => row[0]?.startsWith("SEM_"))
-        .filter((row) => !row[1]?.includes("DO_NOT_USE") && !row[2]?.includes("DO_NOT_USE"))
-        .map((row) => ({
-          value: row[1] || "",
-          label: row[1] || "",
-          description: row[2] || ""
-        }));
-
-      semesters = allSemesters.filter((v, i, a) => a.findIndex((t) => t.value === v.value) === i);
-      if (!uiSettings.currentSemester && semesters.length > 0) {
-        uiSettings.currentSemester = semesters[semesters.length - 1].value;
-      }
-    } catch (e: any) {
-      error = `Configuration error: (${e.message})`;
-    }
-  }
-
   async function loadData() {
     if (!brandingState.spreadsheetId) return;
     isLoading = true;
@@ -200,12 +177,6 @@
     isSuccess = false;
 
     try {
-      await loadSemesters();
-      if (!uiSettings.currentSemester) {
-        isLoading = false;
-        return;
-      }
-
       const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:V");
       queue = rows
         .slice(1)
@@ -415,37 +386,8 @@
         <h1 class="text-3xl font-bold tracking-tight text-slate-900">Pending Receipts</h1>
       </div>
 
-      <div class="flex flex-wrap items-end gap-3">
-        <div class="space-y-1.5">
-          <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
-            >Academic Term</Label
-          >
-          {#if semesters.length > 0}
-            <Select.Root
-              type="single"
-              bind:value={uiSettings.currentSemester}
-              onValueChange={() => loadData()}
-            >
-              <Select.Trigger class="h-9 w-64 text-xs font-semibold">
-                {translatePeriod(uiSettings.currentSemester) || "Select Term"}
-              </Select.Trigger>
-              <Select.Content>
-                {#each semesters as sem}
-                  <Select.Item value={sem.value} label={translatePeriod(sem.value)}
-                    >{translatePeriod(sem.value)}</Select.Item
-                  >
-                {/each}
-              </Select.Content>
-            </Select.Root>
-          {:else}
-            <Input
-              bind:value={uiSettings.currentSemester}
-              placeholder="Term code..."
-              class="h-9 w-32 text-xs"
-            />
-          {/if}
-        </div>
-
+      <div class="flex items-end gap-3">
+        <TermFilter onSelect={() => loadData()} />
         <div class="flex gap-2">
           <Button variant="outline" size="sm" onclick={loadData} disabled={isLoading}>
             <RefreshCcw class="mr-2 h-4 w-4 {isLoading ? 'animate-spin' : ''}" />

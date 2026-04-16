@@ -104,3 +104,31 @@ export async function batchUpdateValues(
 
   return await resp.json();
 }
+
+/**
+ * Appends a row to a specific sheet.
+ */
+export async function appendSheetRow(spreadsheetId: string, range: string, values: any[][]) {
+  const token = auth.accessToken;
+  if (!token) throw new Error("Not authenticated");
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`;
+
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      values
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error?.message || "Failed to append row");
+  }
+
+  return await resp.json();
+}

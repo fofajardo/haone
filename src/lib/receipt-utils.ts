@@ -12,6 +12,15 @@ export function formatAmount(amount: number) {
   });
 }
 
+export function formatAccounting(amount: number) {
+  const abs = Math.abs(amount);
+  const formatted = abs.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  return amount < 0 ? `(${formatted})` : formatted;
+}
+
 export function calculateTotal(items: { amount: number }[]) {
   if (!items) return 0;
   return items.reduce((sum, item) => sum + item.amount, 0);
@@ -19,7 +28,7 @@ export function calculateTotal(items: { amount: number }[]) {
 
 export function translateMop(mop: string) {
   const val = mop?.trim().toUpperCase() || "";
-  if (val === "CASH") return "N/A (CASH)";
+  if (val === "CASH") return "CASH";
   if (val === "GCASH") return "G-XCHANGE/GCASH";
   if (val === "MAYA") return "MAYA PHILIPPINES, INC./MAYA WALLET";
   if (val === "") return "N/A";
@@ -64,6 +73,50 @@ export function formatDate(dateStr: string) {
   } catch (e) {
     return dateStr;
   }
+}
+
+export function parseDateWeight(dateStr: any): number {
+  if (!dateStr) return 0;
+  let weight = 0;
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      weight = d.getTime();
+    } else {
+      // Fallback for M/D/YYYY or D/M/YYYY
+      const str = String(dateStr).trim();
+      const parts = str.split(/[\/\-]/);
+      if (parts.length === 3) {
+        // Assume M/D/YYYY (common in sheets)
+        const m = parseInt(parts[0]);
+        const day = parseInt(parts[1]);
+        let y = parseInt(parts[2]);
+        if (y < 100) y += 2000;
+        const date = new Date(y, m - 1, day);
+        if (!isNaN(date.getTime())) weight = date.getTime();
+      }
+    }
+  } catch (e) {}
+  return weight;
+}
+
+import collegeMapping from "./colleges.json";
+import programMapping from "./programs.json";
+
+export function translateCollege(college: string): string[] {
+  if (!college) return ["—"];
+  return college
+    .split(",")
+    .map((p) => p.trim())
+    .map((p) => (collegeMapping as Record<string, string>)[p] || p);
+}
+
+export function translateProgram(program: string): string[] {
+  if (!program) return ["—"];
+  return program
+    .split(":")
+    .map((p) => p.trim())
+    .map((p) => (programMapping as Record<string, string>)[p] || p);
 }
 
 export function parseCSVAmount(val: any): number {
