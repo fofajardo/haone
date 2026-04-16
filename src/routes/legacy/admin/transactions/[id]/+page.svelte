@@ -125,6 +125,19 @@
         >
       {/if}
     {/snippet}
+    {#snippet actions()}
+      {#if transaction && transaction[COL.LEGACY_RECEIPT_URL]}
+        <Button
+          size="sm"
+          class="h-8 gap-1.5 font-bold"
+          href={transaction[COL.LEGACY_RECEIPT_URL]}
+          target="_blank"
+        >
+          <ExternalLink class="h-3 w-3" />
+          View Receipt
+        </Button>
+      {/if}
+    {/snippet}
   </SubpageHeader>
 
   {#if isLoading}
@@ -242,9 +255,7 @@
                 </div>
               {/each}
               <div class="flex items-center justify-between pt-2">
-                <span class="text-xs font-black text-primary uppercase"
-                  >{transaction[COL.TYPE]} TOTAL</span
-                >
+                <span class="text-xs font-black text-primary uppercase">TOTAL</span>
                 <span class="text-xl font-black text-slate-900">{formatCurrency(total)}</span>
               </div>
             </div>
@@ -317,41 +328,6 @@
           </div>
         </div>
       </Card.Content>
-
-      <Card.Footer
-        class="flex flex-col gap-6 border-t bg-muted/5 p-8 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div class="flex items-center gap-6">
-          <div class="flex flex-col">
-            <span class="text-[9px] font-black tracking-widest text-muted-foreground uppercase"
-              >Incoming</span
-            >
-            <span class="font-mono text-sm font-bold text-emerald-600"
-              >+{formatAmount(parseFloat(transaction[COL.INCOMING]) || 0)}</span
-            >
-          </div>
-          <div class="flex flex-col">
-            <span class="text-[9px] font-black tracking-widest text-muted-foreground uppercase"
-              >Outgoing</span
-            >
-            <span class="font-mono text-sm font-bold text-rose-600"
-              >-{formatAmount(parseFloat(transaction[COL.OUTGOING]) || 0)}</span
-            >
-          </div>
-        </div>
-
-        {#if transaction[COL.LEGACY_RECEIPT_URL]}
-          <Button
-            variant="outline"
-            class="h-9 gap-2 border-slate-200 bg-white px-4 text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50"
-            href={transaction[COL.LEGACY_RECEIPT_URL]}
-            target="_blank"
-          >
-            <ExternalLink class="h-3.5 w-3.5" />
-            View Legacy Receipt
-          </Button>
-        {/if}
-      </Card.Footer>
     </Card.Root>
   {/if}
 </div>
