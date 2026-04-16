@@ -161,10 +161,9 @@
   onMount(loadData);
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="Reports">
     {#snippet actions()}
-      <TermFilter onSelect={loadData} />
       <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
         <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
         <span class="hidden sm:inline">Refresh</span>
@@ -181,6 +180,10 @@
       {error}
     </div>
   {:else}
+    <div class="mb-2 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+      <TermFilter onSelect={() => loadData()} />
+    </div>
+
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <!-- Payment Status -->
       <Card.Root class="xl:col-span-2">

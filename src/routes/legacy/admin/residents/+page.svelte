@@ -29,7 +29,7 @@
     LoaderCircle,
     Eye,
     ArrowUpDown,
-    FilterX
+    FunnelX
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -291,11 +291,10 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   {#if !isDispatchMode}
     <SubpageHeader title="Residents">
       {#snippet actions()}
-        <TermFilter onSelect={() => loadData()} />
         <div class="flex gap-2">
           <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
             <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
@@ -313,8 +312,11 @@
       {/snippet}
     </SubpageHeader>
 
-    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-      <div class="space-y-1.5 lg:col-span-2">
+    <div class="grid gap-2 lg:grid-cols-12">
+      <div class="lg:col-span-2">
+        <TermFilter onSelect={() => loadData()} />
+      </div>
+      <div class="space-y-1 lg:col-span-5">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
         <div class="relative">
           <Search class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
@@ -326,11 +328,13 @@
         </div>
       </div>
 
-      <div class="space-y-1.5">
+      <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Room</Label>
         <Select.Root type="single" bind:value={filterRoom}>
-          <Select.Trigger class="h-9 text-xs font-semibold">
-            {filterRoom === "ALL" ? "All Rooms" : filterRoom}
+          <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
+            <span class="truncate">
+              {filterRoom === "ALL" ? "All Rooms" : filterRoom}
+            </span>
           </Select.Trigger>
           <Select.Content>
             {#each rooms as room}
@@ -340,17 +344,19 @@
         </Select.Root>
       </div>
 
-      <div class="space-y-1.5">
+      <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Status</Label>
         <Select.Root type="single" bind:value={filterStatus}>
-          <Select.Trigger class="h-9 text-xs font-semibold">
-            {#if filterStatus === "ALL"}
-              All Statuses
-            {:else if filterStatus === "FULLY_PAID"}
-              Fully Paid
-            {:else}
-              Pending
-            {/if}
+          <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
+            <span class="truncate">
+              {#if filterStatus === "ALL"}
+                All Statuses
+              {:else if filterStatus === "FULLY_PAID"}
+                Fully Paid
+              {:else}
+                Pending
+              {/if}
+            </span>
           </Select.Trigger>
           <Select.Content>
             <Select.Item value="ALL">All Statuses</Select.Item>
@@ -360,14 +366,14 @@
         </Select.Root>
       </div>
 
-      <div class="flex items-end">
+      <div class="flex items-end lg:col-span-1">
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onclick={resetFilters}
-          class="h-9 text-xs text-muted-foreground"
+          class="h-9 w-full px-2 text-xs"
         >
-          Clear Filters
+          <FunnelX class="mr-2 h-4 w-4" /> Clear
         </Button>
       </div>
     </div>

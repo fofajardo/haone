@@ -58,14 +58,16 @@
   }
 </script>
 
-<div class="space-y-1.5">
+<div class="space-y-1 mb-0 min-w-0">
   <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
     >Academic Term</Label
   >
   {#if semesters.length > 0}
     <Select.Root type="single" value={uiSettings.currentSemester} onValueChange={handleChange}>
-      <Select.Trigger class="h-9 w-64 text-xs font-semibold">
-        {translatePeriod(uiSettings.currentSemester) || "Select Term"}
+      <Select.Trigger class="h-9 w-full min-w-0 text-xs font-semibold">
+        <span class="truncate">
+          {translatePeriod(uiSettings.currentSemester) || "Select Term"}
+        </span>
       </Select.Trigger>
       <Select.Content>
         {#each semesters as sem}
@@ -79,7 +81,7 @@
     <Input
       bind:value={uiSettings.currentSemester}
       placeholder="Term code..."
-      class="h-9 w-32 text-xs"
+      class="h-9 w-full text-xs"
       onblur={() => onSelect?.()}
     />
   {/if}

@@ -385,12 +385,11 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   {#if !isDispatchMode}
     <!-- LEDGER VIEW -->
     <SubpageHeader title="Pending Receipts">
       {#snippet actions()}
-        <TermFilter onSelect={() => loadData()} />
         <div class="flex gap-2">
           <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
             <RefreshCcw class="mr-2 h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
@@ -435,6 +434,10 @@
         <p>{error}</p>
       </div>
     {/if}
+    
+    <div class="mb-2 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+      <TermFilter onSelect={() => loadData()} />
+    </div>
 
     {#if isLoading}
       <LoadingView text="Loading records..." />

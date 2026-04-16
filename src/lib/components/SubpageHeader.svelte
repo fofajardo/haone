@@ -19,7 +19,7 @@
   } = $props();
 </script>
 
-<header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<header class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
   <div class="flex items-center gap-4">
     {#if href || onBack}
       <BackButton {href} onclick={onBack} />

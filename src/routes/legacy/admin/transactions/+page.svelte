@@ -27,7 +27,7 @@
     ListFilter,
     Plus,
     Search,
-    FilterX,
+    FunnelX,
     ArrowUpDown,
     ChevronLeft,
     ChevronRight
@@ -213,10 +213,9 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="Transactions">
     {#snippet actions()}
-      <TermFilter onSelect={() => loadData()} />
       <div class="flex gap-2">
         <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
           <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
@@ -230,8 +229,11 @@
     {/snippet}
   </SubpageHeader>
 
-  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-    <div class="space-y-1.5">
+  <div class="grid gap-2 lg:grid-cols-12">
+    <div class="lg:col-span-2">
+      <TermFilter onSelect={() => loadData()} />
+    </div>
+    <div class="space-y-1 lg:col-span-5">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
       <div class="relative">
         <Search class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
@@ -243,11 +245,13 @@
       </div>
     </div>
 
-    <div class="space-y-1.5">
+    <div class="space-y-1 lg:col-span-2">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label>
       <Select.Root type="single" bind:value={filterType}>
-        <Select.Trigger class="h-9 text-xs font-semibold">
-          {filterType === "ALL" ? "All Types" : filterType}
+        <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
+          <span class="truncate">
+            {filterType === "ALL" ? "All Types" : filterType}
+          </span>
         </Select.Trigger>
         <Select.Content>
           <Select.Item value="ALL">All Types</Select.Item>
@@ -258,11 +262,13 @@
       </Select.Root>
     </div>
 
-    <div class="space-y-1.5">
+    <div class="space-y-1 lg:col-span-2">
       <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Processor</Label>
       <Select.Root type="single" bind:value={filterMop}>
-        <Select.Trigger class="h-9 text-xs font-semibold">
-          {filterMop === "ALL" ? "All Methods" : translateMop(filterMop)}
+        <Select.Trigger class="h-9 w-full min-w-0 px-2 text-xs font-semibold">
+          <span class="truncate">
+            {filterMop === "ALL" ? "All Methods" : translateMop(filterMop)}
+          </span>
         </Select.Trigger>
         <Select.Content>
           <Select.Item value="ALL">All Methods</Select.Item>
@@ -273,14 +279,14 @@
       </Select.Root>
     </div>
 
-    <div class="flex items-end">
+    <div class="flex items-end lg:col-span-1">
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         onclick={resetFilters}
-        class="h-9 text-xs text-muted-foreground"
+        class="h-9 w-full px-2 text-xs"
       >
-        <FilterX class="mr-2 h-4 w-4" /> Clear Filters
+        <FunnelX class="mr-2 h-4 w-4" /> Clear
       </Button>
     </div>
   </div>
