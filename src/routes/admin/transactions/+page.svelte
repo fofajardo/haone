@@ -213,6 +213,7 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         meta={{ transactionTypes }}
+        rowId="id"
       />
     {:else}
       <div

@@ -31,6 +31,7 @@
     onSelectionChange?: (selectedIds: Set<string>) => void;
     pagination?: PaginationState;
     onPaginationChange?: (pagination: PaginationState) => void;
+    rowId: keyof TData | ((row: TData) => string);
   };
 
   let {
@@ -44,7 +45,8 @@
     onSelectionChange,
     meta,
     pagination = $bindable({ pageIndex: 0, pageSize: 20 }),
-    onPaginationChange: onPaginationChangeProp
+    onPaginationChange: onPaginationChangeProp,
+    rowId
   }: DataTableProps<TData, TValue> & { meta?: any } = $props();
 
   let sorting = $state<SortingState>([]);
@@ -83,6 +85,23 @@
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getRowId: (row) => {
+      if (typeof rowId === "function") {
+        const id = rowId(row);
+        if (!id) {
+          throw new Error("DataTable: getRowId function returned empty ID");
+        }
+        return id;
+      }
+      if (rowId) {
+        const id = row[rowId];
+        if (id === undefined || id === null || id === "") {
+          throw new Error(`DataTable: Row missing explicit ID field "${String(rowId)}"`);
+        }
+        return String(id);
+      }
+      throw new Error("DataTable: No rowId prop provided. Explicit row IDs are required.");
+    },
     onPaginationChange: (updater) => {
       if (typeof updater === "function") {
         pagination = updater(pagination);
@@ -119,14 +138,7 @@
   // Sync selection back to parent if requested
   $effect(() => {
     if (onSelectionChange) {
-      const selected = new Set(
-        table.getFilteredSelectedRowModel().rows.map((row) => {
-          // We assume rows have an 'id' or we use the original object as key if needed
-          // But usually we want a specific key like 'stno' or 'ledgerIndex'
-          // @ts-ignore
-          return row.original.stno || row.original.id || row.original.ledgerIndex || row.id;
-        })
-      );
+      const selected = new Set(table.getFilteredSelectedRowModel().rows.map((row) => row.id));
       onSelectionChange(selected);
     }
   });

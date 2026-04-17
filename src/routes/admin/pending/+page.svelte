@@ -26,7 +26,7 @@
   import { mapRowToJournal } from "$lib/resident-logic";
 
   let queue = $state<JournalRecord[]>([]);
-  let selectedIndices = $state<Set<string>>(new Set()); // Synced with DataTable (stno or ledgerIndex)
+  let selectedIndices = $state<Set<string>>(new Set());
   let isLoading = $state(false);
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
@@ -82,11 +82,13 @@
   onMount(loadData);
 
   async function prepareDispatch() {
-    if (selectedIndices.size === 0) return;
+    if (selectedIndices.size === 0) {
+      return;
+    }
     const baseUrl = window.location.origin + "/legacy/receipt";
     const stagedEmails = [];
 
-    const selectedRows = queue.filter((item) => selectedIndices.has(item.ledgerIndex!.toString()));
+    const selectedRows = queue.filter((item) => selectedIndices.has(item.id!.toString()));
     const branding = brandingState.profile;
 
     for (const record of selectedRows) {
@@ -254,11 +256,11 @@
       <DataTable
         data={filteredQueue}
         {columns}
-        rowIdKey="ledgerIndex"
         pagination={tableSync.pagination}
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         onSelectionChange={(ids) => (selectedIndices = ids)}
+        rowId="id"
       />
     {:else}
       <div

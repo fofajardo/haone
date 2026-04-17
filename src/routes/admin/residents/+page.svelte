@@ -198,6 +198,7 @@
           onPaginationChange={(p) => (tableSync.pagination = p)}
           onRowClick={(r) => goto(`/admin/residents/${r.stno}`)}
           onSelectionChange={(ids) => (selectedIndices = ids)}
+          rowId="stno"
         />
       {:else}
         <div

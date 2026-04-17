@@ -538,6 +538,7 @@
             {columns}
             meta={{ transactionTypes }}
             onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+            rowId="id"
           />
         {:else}
           <div class="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center">
