@@ -52,6 +52,7 @@
         "constants!A:C",
         forceRefresh
       );
+
       transactionTypes = constRows
         .slice(1)
         .filter((r) => (r[0] || "").startsWith("PMT_"))
@@ -71,7 +72,7 @@
           }))
       ];
 
-      journal = rows
+      const mappedJournal = rows
         .slice(1)
         .map((row, idx) => {
           const res = mapRowToJournal(row, idx);
@@ -80,7 +81,21 @@
             dateWeight: parseDateWeight(res.date)
           };
         })
-        .filter((r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester);
+        .filter((r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester)
+        .sort(
+          (a, b) =>
+            (b.dateWeight ?? 0) - (a.dateWeight ?? 0) || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0)
+        );
+
+      let globalBalance = 0;
+      for (let i = mappedJournal.length - 1; i >= 0; i--) {
+        if (!mappedJournal[i].type.toUpperCase().includes("WAIVED")) {
+          globalBalance += mappedJournal[i].amount;
+        }
+        mappedJournal[i].runningBalance = globalBalance;
+      }
+
+      journal = mappedJournal;
     } catch (e: any) {
       error = e.message;
     } finally {

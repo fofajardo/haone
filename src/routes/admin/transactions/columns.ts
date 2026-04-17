@@ -90,5 +90,21 @@ export const columns: ColumnDef<JournalRecord>[] = [
       }));
       return renderSnippet(amountSnippet, { amount: row.original.amount });
     }
+  },
+  {
+    accessorKey: "runningBalance",
+    header: () => {
+      const headerSnippet = createRawSnippet(() => ({
+        render: () => `<div class="text-right flex-1">Balance</div>`
+      }));
+      return renderSnippet(headerSnippet, {});
+    },
+    cell: ({ row }) => {
+      const balSnippet = createRawSnippet<[{ amount: number }]>((p) => ({
+        render: () =>
+          `<div class="text-right text-sm font-medium ${p().amount < 0 ? "text-primary" : ""}">${formatAccounting(p().amount || 0)}</div>`
+      }));
+      return renderSnippet(balSnippet, { amount: row.original.runningBalance ?? 0 });
+    }
   }
 ];

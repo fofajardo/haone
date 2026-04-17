@@ -115,4 +115,5 @@ export interface JournalRecord {
   raw: string[];
   dateWeight?: number;
   ledgerIndex?: number;
+  runningBalance?: number;
 }
