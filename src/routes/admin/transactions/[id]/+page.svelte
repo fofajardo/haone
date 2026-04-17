@@ -53,7 +53,7 @@
 
     try {
       const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W");
-      const idx = rows.findIndex((row) => row[JOR.ID] === id);
+      const idx = rows.findIndex((row, i) => row[JOR.ID] === id || (i + 1).toString() === id);
       const match = rows[idx];
 
       if (!match) {

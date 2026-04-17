@@ -72,7 +72,7 @@
           }))
       ];
 
-      const mappedJournal = rows
+      const mappedJournal: JournalRecord[] = rows
         .slice(1)
         .map((row, idx) => {
           const res = mapRowToJournal(row, idx);
@@ -206,7 +206,7 @@
         data={filteredJournal}
         {columns}
         meta={{ transactionTypes }}
-        onRowClick={(r) => goto(`/admin/transactions/${r.id || ""}`)}
+        onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
       />
     {:else}
       <div
