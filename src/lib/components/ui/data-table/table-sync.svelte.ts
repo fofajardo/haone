@@ -2,13 +2,14 @@ import { page } from "$app/state";
 import { goto } from "$app/navigation";
 import type { PaginationState } from "@tanstack/table-core";
 import { browser } from "$app/environment";
+import { untrack } from "svelte";
 
 /**
  * Utility to synchronize table filters and pagination state with the URL.
  * Supports debounced search and immediate updates for other filters.
  */
 export class TableSync<T extends Record<string, any>> {
-  filters = $state<T>();
+  filters = $state<T>({} as T);
   pagination = $state<PaginationState>({
     pageIndex: 0,
     pageSize: 20
@@ -18,6 +19,8 @@ export class TableSync<T extends Record<string, any>> {
   #searchKey: keyof T | null;
   #searchTimeout: any;
   #initialValues: T;
+  #defaultPageSize: number;
+  #isInitializing = true;
 
   constructor(options: {
     initialFilters: T;
@@ -28,8 +31,8 @@ export class TableSync<T extends Record<string, any>> {
     this.#initialValues = options.initialFilters;
     this.#paramMap = options.paramMap;
     this.#searchKey = options.searchKey || null;
+    this.#defaultPageSize = options.defaultPageSize || 20;
 
-    // Initialize from URL
     const searchParams = page.url.searchParams;
     const initial: any = { ...options.initialFilters };
 
@@ -41,18 +44,60 @@ export class TableSync<T extends Record<string, any>> {
     }
     this.filters = initial;
 
-    // Initialize Pagination
     const p = Number(searchParams.get("page"));
     const s = searchParams.get("size");
 
     this.pagination.pageIndex = isNaN(p) || p < 1 ? 0 : p - 1;
     this.pagination.pageSize =
-      s === "all" ? Number.MAX_SAFE_INTEGER : Number(s) || options.defaultPageSize || 20;
+      s === "all" ? Number.MAX_SAFE_INTEGER : Number(s) || this.#defaultPageSize;
 
-    // Setup Sync Effect
     $effect(() => {
-      this.#syncToUrl();
+      const _filt = JSON.stringify(this.filters);
+      const _pag = JSON.stringify(this.pagination);
+
+      untrack(() => {
+        if (this.#isInitializing) return;
+        this.#syncToUrl();
+      });
     });
+
+    $effect(() => {
+      const _url = page.url.search; // Track entire search string
+      untrack(() => {
+        this.#syncFromUrl();
+        this.#isInitializing = false;
+      });
+    });
+  }
+
+  #syncFromUrl() {
+    const searchParams = page.url.searchParams;
+    let changed = false;
+
+    const nextFilters = { ...this.filters } as any;
+    for (const [key, param] of Object.entries(this.#paramMap)) {
+      const val = searchParams.get(param) || this.#initialValues[key];
+      if (nextFilters[key] !== val) {
+        nextFilters[key] = val;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      this.filters = nextFilters;
+    }
+
+    const p = Number(searchParams.get("page"));
+    const s = searchParams.get("size");
+    const nextPageIndex = isNaN(p) || p < 1 ? 0 : p - 1;
+    const nextPageSize = s === "all" ? Number.MAX_SAFE_INTEGER : Number(s) || this.#defaultPageSize;
+
+    if (this.pagination.pageIndex !== nextPageIndex) {
+      this.pagination.pageIndex = nextPageIndex;
+    }
+    if (this.pagination.pageSize !== nextPageSize) {
+      this.pagination.pageSize = nextPageSize;
+    }
   }
 
   #syncToUrl() {
@@ -73,7 +118,13 @@ export class TableSync<T extends Record<string, any>> {
         // Sync Filters
         for (const [key, param] of Object.entries(this.#paramMap)) {
           const val = this.filters![key];
-          if (val && val !== "ALL") {
+          if (
+            val !== undefined &&
+            val !== null &&
+            val !== "" &&
+            val !== "ALL" &&
+            val !== this.#initialValues[key]
+          ) {
             url.searchParams.set(param, val.toString());
           } else {
             url.searchParams.delete(param);
@@ -85,13 +136,21 @@ export class TableSync<T extends Record<string, any>> {
         const sizeVal =
           this.pagination.pageSize >= 1000000 ? "all" : this.pagination.pageSize.toString();
 
-        url.searchParams.set("page", pageVal);
-        url.searchParams.set("size", sizeVal);
+        if (pageVal !== "1") {
+          url.searchParams.set("page", pageVal);
+        } else {
+          url.searchParams.delete("page");
+        }
+
+        if (sizeVal !== this.#defaultPageSize.toString()) {
+          url.searchParams.set("size", sizeVal);
+        } else {
+          url.searchParams.delete("size");
+        }
 
         if (url.searchParams.toString() !== oldQuery) {
           // If filters changed, reset page to 1
-          // (Detection: if old and new params differ beyond just page/size)
-          const oldParams = new URLSearchParams(oldQuery);
+          const oldParams = new URL(page.url).searchParams;
           oldParams.delete("page");
           oldParams.delete("size");
 
@@ -100,11 +159,11 @@ export class TableSync<T extends Record<string, any>> {
           newParams.delete("size");
 
           if (oldParams.toString() !== newParams.toString()) {
-            url.searchParams.set("page", "1");
+            url.searchParams.delete("page");
             this.pagination.pageIndex = 0;
           }
 
-          goto(url, { replaceState: true, noScroll: true, keepFocus: true });
+          goto(url.toString(), { replaceState: true, noScroll: true, keepFocus: true });
         }
       },
       isSearchChanging ? 300 : 0
