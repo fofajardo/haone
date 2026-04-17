@@ -19,7 +19,7 @@
 <div class="flex flex-col">
   {#if variant === "account"}
     <div class="flex flex-col">
-      <span class="font-semibold">{record.name}</span>
+      <span class="font-medium">{record.name}</span>
       <span class="text-muted-foreground">{record.type}</span>
     </div>
   {:else if variant === "total"}
