@@ -14,10 +14,8 @@ export const columns: ColumnDef<JournalRecord>[] = [
         return {
           render: () => `
             <div class="flex flex-col">
-              <a
-                href="/admin/transactions/${r.id}"
-                class="text-sm font-medium text-foreground hover:text-primary hover:underline"
-                >${formatDate(r.date)}</a
+              <span class="text-sm font-medium text-foreground"
+                >${formatDate(r.date)}</span
               >
               <span class="text-sm text-muted-foreground">${r.creator}</span>
             </div>
@@ -53,7 +51,7 @@ export const columns: ColumnDef<JournalRecord>[] = [
     cell: ({ row }) => {
       const notesSnippet = createRawSnippet<[{ notes: string }]>((p) => ({
         render: () => `
-          <p class="text-sm leading-tight whitespace-pre-wrap text-muted-foreground">
+          <p class="max-w-[300px] truncate text-sm leading-tight text-muted-foreground" title="${p().notes || ""}">
             ${p().notes || "—"}
           </p>
         `

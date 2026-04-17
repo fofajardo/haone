@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
@@ -9,7 +10,8 @@
     formatAmount,
     translateCollege,
     translateProgram,
-    parseDateWeight
+    parseDateWeight,
+    pluralize
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -30,7 +32,14 @@
     Mail,
     Send,
     IdCard,
-    Bed as BedIcon
+    Bed as BedIcon,
+    Droplets,
+    Users,
+    Wallet,
+    Calendar,
+    Hash,
+    ClipboardCheck,
+    AwardIcon
   } from "lucide-svelte";
   import {
     ACCOUNT_COL as ACC,
@@ -219,7 +228,7 @@
             onclick={sendStatusEmail}
             class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
           >
-            <Mail class="mr-1.5 h-3.5 w-3.5" /> Send Status Update
+            <Mail class="mr-1.5 h-3.5 w-3.5" /> Send Payment Status
           </Button>
           <Button
             variant="outline"
@@ -231,177 +240,187 @@
         </div>
       </div>
     </div>
-
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <!-- Sidebar Information -->
-      <div class="order-2 space-y-6 lg:order-1 lg:col-span-1">
-        <Card.Root>
-          <Card.Header>
-            <Card.Title class="flex items-center gap-2 text-lg">
-              <User class="h-5 w-5" />
-              Student Profile
-            </Card.Title>
-          </Card.Header>
-          <Card.Content class="space-y-4">
-            <div class="space-y-1">
-              <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                ><Mail class="h-3 w-3" /> Email Address</Label
+      <!-- Student Profile -->
+      <Card.Root class="flex h-full flex-col">
+        <Card.Header>
+          <Card.Title class="flex items-center gap-2 text-lg">
+            <User class="h-5 w-5" />
+            Student Profile
+          </Card.Title>
+        </Card.Header>
+        <Card.Content class="flex-1 space-y-4">
+          <div class="space-y-1">
+            <Label
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              ><Mail class="h-3 w-3" /> Email Address</Label
+            >
+            <div class="flex items-center gap-2">
+              <p class="text-sm font-semibold text-foreground">{account.email}</p>
+              <a
+                href="mailto:{account.email}"
+                class="text-muted-foreground transition-colors hover:text-primary"
+                title="Send Email"
               >
-              <div class="flex items-center gap-2">
-                <p class="text-sm font-semibold text-foreground">{account.email}</p>
-                <a
-                  href="mailto:{account.email}"
-                  class="text-muted-foreground transition-colors hover:text-primary"
-                  title="Send Email"
-                >
-                  <Send class="h-3.5 w-3.5" />
-                </a>
-              </div>
+                <Send class="h-3.5 w-3.5" />
+              </a>
             </div>
-            <div class="space-y-1">
-              <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                ><IdCard class="h-3 w-3" /> Student Number</Label
-              >
-              <p class="text-sm font-semibold">{account.stno}</p>
-            </div>
+          </div>
+          <div class="space-y-1">
+            <Label
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              ><IdCard class="h-3 w-3" /> Student Number</Label
+            >
+            <p class="text-sm font-semibold">{account.stno}</p>
+          </div>
 
-            <div class="space-y-1">
-              <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                ><Clock class="h-3 w-3" /> Semesters Active</Label
-              >
-              <div class="text-sm font-semibold">
-                {semesterCount}
-                {semesterCount === 1 ? "Semester" : "Semesters"}
-              </div>
+          <div class="space-y-1">
+            <Label
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              ><Clock class="h-3 w-3" /> Semesters Active</Label
+            >
+            <div class="text-sm font-semibold">
+              {semesterCount}
+              {semesterCount === 1 ? "Semester" : "Semesters"}
             </div>
+          </div>
 
-            <div class="space-y-4">
-              <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-              >
-                <GraduationCap class="h-3 w-3" /> Academic Program
-              </Label>
-              <div
-                class="relative mt-2 space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
-              >
-                {#each qualifications as q}
-                  <div class="relative flex items-start gap-4 pl-8">
-                    <div
-                      class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-muted shadow-sm ring-1 ring-border"
-                    >
-                      <GraduationCap class="h-2.5 w-2.5 text-muted-foreground" />
-                    </div>
-                    <div class="flex flex-col gap-0.5">
-                      <span
-                        class="text-[9px] font-black tracking-widest text-primary uppercase opacity-80"
-                        >{q.college}</span
-                      >
-                      <p class="text-[13px] leading-tight font-bold text-foreground">
-                        {q.program}
-                      </p>
-                    </div>
+          <div class="space-y-4">
+            <Label
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+            >
+              <GraduationCap class="h-3 w-3" /> Academic Program
+            </Label>
+            <div
+              class="relative mt-2 space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
+            >
+              {#each qualifications as q}
+                <div class="relative flex items-start gap-4 pl-8">
+                  <div
+                    class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-muted shadow-sm ring-1 ring-border"
+                  >
+                    <AwardIcon class="h-2.5 w-2.5 text-muted-foreground" />
                   </div>
-                {/each}
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
-              <div class="space-y-1">
-                <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                  ><MapPin class="h-3 w-3" /> Room</Label
-                >
-                <div class="text-sm font-semibold">{account.room}</div>
-              </div>
-              <div class="space-y-1">
-                <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                  ><BedIcon class="h-3 w-3" /> Bed</Label
-                >
-                <p class="text-sm font-semibold">{account.bed}</p>
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
-
-        {#if account.ceIssued}
-          <Card.Root>
-            <Card.Header>
-              <Card.Title class="flex items-center gap-2 text-lg text-primary">
-                <ShieldCheck class="h-5 w-5" />
-                Clearance Status
-              </Card.Title>
-            </Card.Header>
-            <Card.Content class="space-y-4">
-              <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <span class="text-xs font-medium text-muted-foreground">Verification</span>
-                <Badge
-                  variant="outline"
-                  class="w-fit border-transparent bg-primary px-2 py-0.5 text-[10px] font-black text-white"
-                  >VERIFIED</Badge
-                >
-              </div>
-              <div class="space-y-3">
-                <div class="flex flex-col gap-1">
-                  <span class="text-xs font-medium text-muted-foreground">Issued Date</span>
-                  <span class="text-sm font-bold text-foreground">{account.ceIssued}</span>
+                  <div class="flex flex-col gap-0.5">
+                    <span
+                      class="text-[9px] font-bold tracking-widest text-primary uppercase opacity-80"
+                      >{q.college}</span
+                    >
+                    <p class="text-[13px] leading-tight font-bold text-foreground">
+                      {q.program}
+                    </p>
+                  </div>
                 </div>
-                <div class="flex flex-col gap-1 border-t border-border pt-3">
-                  <span class="text-xs font-medium tracking-tight text-muted-foreground"
-                    >Ref No.</span
-                  >
-                  <span class="font-mono text-sm font-black text-foreground"
-                    >{account.ceRefNo || "—"}</span
-                  >
-                </div>
-              </div>
-              {#if account.ceLink}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  class="h-9 w-full border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
-                  href={account.ceLink}
-                  target="_blank"
-                >
-                  View Certificate <ArrowUpRight class="ml-1.5 h-4 w-4" />
-                </Button>
-              {/if}
-            </Card.Content>
-          </Card.Root>
-        {/if}
+              {/each}
+            </div>
+          </div>
 
-        <Card.Root>
+          <div class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+            <div class="space-y-1">
+              <Label
+                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                ><MapPin class="h-3 w-3" /> Room</Label
+              >
+              <div class="text-sm font-semibold">{account.room}</div>
+            </div>
+            <div class="space-y-1">
+              <Label
+                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                ><BedIcon class="h-3 w-3" /> Bed</Label
+              >
+              <p class="text-sm font-semibold">{account.bed}</p>
+            </div>
+          </div>
+        </Card.Content>
+      </Card.Root>
+
+      <!-- Financial & Clearance Info -->
+      <div class="flex h-full flex-col gap-6">
+        <Card.Root class="flex h-full flex-col">
           <Card.Header>
             <Card.Title class="flex items-center gap-2 text-lg">
               <CreditCard class="h-5 w-5" />
               Financial Standing
             </Card.Title>
           </Card.Header>
-          <Card.Content class="space-y-4">
-            <div class="flex flex-col gap-1 border-b border-primary/10 pb-2">
-              <span class="text-xs font-medium text-muted-foreground">Water Fee Balance</span>
-              <span
-                class="font-mono text-sm font-bold {account.waterBal < 0
-                  ? 'text-primary'
-                  : 'text-foreground'}">{formatAmount(account.waterBal)}</span
+          <Card.Content class="flex-1 space-y-6">
+            <!-- Water Fee Section -->
+            <div class="space-y-3">
+              <div class="pb-1">
+                <Label
+                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                >
+                  <Droplets class="h-3 w-3" /> Water Fee
+                </Label>
+              </div>
+              <div
+                class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-muted-foreground uppercase"
               >
+                <div class="flex flex-col gap-0.5">
+                  <span>Base</span>
+                  <span class="text-foreground">{formatAmount(account.waterBase)}</span>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span>Paid</span>
+                  <span class="text-foreground text-primary">{formatAmount(account.waterPaid)}</span
+                  >
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span>Waived</span>
+                  <span class="text-foreground">{formatAmount(account.waterWaived)}</span>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span>Balance</span>
+                  <span class="text-foreground {account.waterBal < 0 ? 'text-primary' : ''}"
+                    >{formatAmount(account.waterBal)}</span
+                  >
+                </div>
+              </div>
             </div>
-            <div class="flex flex-col gap-1 border-b border-primary/10 pb-2">
-              <span class="text-xs font-medium text-muted-foreground">Association Fee Balance</span>
-              <span
-                class="font-mono text-sm font-bold {account.assocBal < 0
-                  ? 'text-primary'
-                  : 'text-foreground'}">{formatAmount(account.assocBal)}</span
+
+            <!-- Association Fee Section -->
+            <div class="space-y-3">
+              <div class="pb-1">
+                <Label
+                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                >
+                  <Users class="h-3 w-3" /> Association Fee
+                </Label>
+              </div>
+              <div
+                class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-muted-foreground uppercase"
               >
+                <div class="flex flex-col gap-0.5">
+                  <span>Base</span>
+                  <span class="text-foreground">{formatAmount(account.assocBase)}</span>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span>Paid</span>
+                  <span class="text-foreground text-primary">{formatAmount(account.assocPaid)}</span
+                  >
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span>Waived</span>
+                  <span class="text-foreground">{formatAmount(account.assocWaived)}</span>
+                </div>
+                <div class="flex flex-col gap-0.5">
+                  <span>Balance</span>
+                  <span class="text-foreground {account.assocBal < 0 ? 'text-primary' : ''}"
+                    >{formatAmount(account.assocBal)}</span
+                  >
+                </div>
+              </div>
             </div>
+
             <div class="flex flex-col gap-1 pt-2">
-              <span class="text-xs font-black text-foreground uppercase">Total Outstanding</span>
+              <Label
+                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              >
+                <Wallet class="h-3 w-3" /> Total Amount Due
+              </Label>
               <div class="text-left">
                 <p
-                  class="text-xl font-black tabular-nums {account.bal < 0
+                  class="text-xl font-bold tabular-nums {account.bal < 0
                     ? 'text-primary'
                     : 'text-foreground'}"
                 >
@@ -412,7 +431,7 @@
           </Card.Content>
         </Card.Root>
 
-        {#if account.raw[ACC.NOTES]}
+        {#if account.raw[ACC.NOTES]?.trim()}
           <Card.Root class="border-amber-200 bg-amber-50/30">
             <Card.Header>
               <Card.Title class="flex items-center gap-2 text-sm text-amber-900">
@@ -427,32 +446,109 @@
           </Card.Root>
         {/if}
       </div>
-
-      <!-- Main Activity History -->
-      <div class="order-1 space-y-6 lg:order-2 lg:col-span-2">
-        <Card.Root class="overflow-hidden">
-          <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
-            <Card.Title class="flex items-center gap-2 text-lg">
-              <History class="h-5 w-5" />
-              Transaction History
-            </Card.Title>
-            <Badge variant="outline" class="font-bold">{history.length} entries</Badge>
-          </Card.Header>
-          <Card.Content>
-            {#if history.length > 0}
-              <DataTable data={history} {columns} meta={{ transactionTypes }} />
-            {:else}
-              <div class="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center">
-                <Clock class="h-8 w-8 text-muted-foreground opacity-20" />
-                <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-                  No transaction history found
-                </p>
+      <Card.Root class="flex h-full flex-col">
+        <Card.Header>
+          <Card.Title
+            class="flex items-center gap-2 text-lg {account.ceIssued ? 'text-primary' : ''}"
+          >
+            <ShieldCheck class="h-5 w-5" />
+            Clearance
+          </Card.Title>
+        </Card.Header>
+        <Card.Content class="flex-1 space-y-4">
+          {#if account.ceIssued}
+            <div class="space-y-3">
+              <div class="flex flex-col gap-1">
+                <Label
+                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                >
+                  <ClipboardCheck class="h-3 w-3" /> Verification Status
+                </Label>
+                <Badge
+                  class="w-fit border-transparent bg-primary px-3 py-1 text-[10px] font-black text-primary-foreground"
+                  >VERIFIED</Badge
+                >
               </div>
-            {/if}
-          </Card.Content>
-        </Card.Root>
-      </div>
+              <div class="flex flex-col gap-1 pt-2">
+                <Label
+                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                >
+                  <Calendar class="h-3 w-3" /> Issued Date
+                </Label>
+                <span class="text-sm font-bold text-foreground">{account.ceIssued}</span>
+              </div>
+              <div class="flex flex-col gap-1 pt-2">
+                <Label
+                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                >
+                  <Hash class="h-3 w-3" /> Reference Number
+                </Label>
+                <span class="font-mono text-sm font-black text-foreground"
+                  >{account.ceRefNo || "—"}</span
+                >
+              </div>
+            </div>
+          {:else}
+            <div class="space-y-4">
+              <div class="flex flex-col gap-1">
+                <Label
+                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                >
+                  <ClipboardCheck class="h-3 w-3" /> Verification Status
+                </Label>
+                <Badge
+                  class="w-fit border-transparent bg-destructive px-3 py-1 text-[10px] font-black text-white"
+                  >NOT CLEARED</Badge
+                >
+              </div>
+            </div>
+          {/if}
+        </Card.Content>
+        {#if account.ceIssued && account.ceLink}
+          <Card.Footer>
+            <Button
+              variant="outline"
+              size="sm"
+              class="h-10 w-full border-primary/20 text-xs font-bold text-primary transition-all hover:bg-primary/5"
+              href={account.ceLink}
+              target="_blank"
+            >
+              View Certificate <ArrowUpRight class="ml-2 h-4 w-4" />
+            </Button>
+          </Card.Footer>
+        {/if}
+      </Card.Root>
     </div>
+
+    <!-- Transaction History -->
+    <Card.Root class="overflow-hidden">
+      <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
+        <Card.Title class="flex items-center gap-2 text-lg">
+          <History class="h-5 w-5" />
+          Transaction History
+        </Card.Title>
+        <Badge variant="outline" class="font-bold"
+          >{pluralize(history.length, "entry", "entries")}</Badge
+        >
+      </Card.Header>
+      <Card.Content>
+        {#if history.length > 0}
+          <DataTable
+            data={history}
+            {columns}
+            meta={{ transactionTypes }}
+            onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+          />
+        {:else}
+          <div class="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center">
+            <Clock class="h-8 w-8 text-muted-foreground opacity-20" />
+            <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+              No transaction history found
+            </p>
+          </div>
+        {/if}
+      </Card.Content>
+    </Card.Root>
   {/if}
 </div>
 
