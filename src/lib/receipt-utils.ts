@@ -13,12 +13,13 @@ export function formatAmount(amount: number) {
 }
 
 export function formatAccounting(amount: number) {
-  const abs = Math.abs(amount);
+  const rounded = Math.round(amount * 100) / 100;
+  const abs = Math.abs(rounded);
   const formatted = abs.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
-  return amount < 0 ? `(${formatted})` : formatted;
+  return rounded < 0 ? `(${formatted})` : formatted;
 }
 
 export function calculateTotal(items: { amount: number }[]) {
