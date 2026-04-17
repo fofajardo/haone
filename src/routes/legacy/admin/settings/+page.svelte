@@ -222,11 +222,8 @@
     </div>
 
     <!-- Right Column: Live Preview Sandbox -->
-    <div class="w-full space-y-4 lg:w-[400px]">
+    <div class="hidden w-full space-y-4 lg:block lg:w-[400px]">
       <div class="sticky top-8 space-y-4">
-        <p class="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-          Live Preview Sandbox
-        </p>
         <div
           class="rounded-2xl border bg-card p-8 shadow-sm transition-all {uiSettings.displayDensity !==
           'default'
