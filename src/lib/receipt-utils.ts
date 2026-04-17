@@ -138,6 +138,13 @@ export function parseCSVAmount(val: any): number {
   return isNegative ? -parsed : parsed;
 }
 
+export function pluralize(count: number, singular: string, plural: string) {
+  const pr = new Intl.PluralRules("en-PH");
+  const type = pr.select(count);
+  const word = type === "one" ? singular : plural;
+  return `${count} ${word}`;
+}
+
 export function translateType(val: string, types: { value: string; label: string }[]) {
   const type = types.find((t) => t.value === val);
   return type ? type.label : val;

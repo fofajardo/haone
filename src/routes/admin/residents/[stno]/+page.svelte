@@ -7,28 +7,21 @@
   import {
     formatCurrency,
     formatAmount,
-    formatDate,
-    translateMop,
     translateCollege,
     translateProgram,
-    parseDateWeight,
-    translateType
+    parseDateWeight
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
-  import * as Table from "$lib/components/ui/table";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import { Label } from "$lib/components/ui/label";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import {
-    LoaderCircle,
     RefreshCcw,
-    ChevronLeft,
     User,
     ShieldCheck,
     CreditCard,
     History,
-    CircleAlert,
     Info,
     ArrowUpRight,
     MapPin,
@@ -37,8 +30,7 @@
     Mail,
     Send,
     IdCard,
-    Bed as BedIcon,
-    ArrowRight
+    Bed as BedIcon
   } from "lucide-svelte";
   import {
     ACCOUNT_COL as ACC,
@@ -46,13 +38,10 @@
     type ResidentRecord as AccountRecord,
     type JournalRecord
   } from "$lib/schemas";
-  import {
-    stageStatusEmail,
-    parseAmount,
-    mapRowToResident,
-    mapRowToJournal
-  } from "$lib/resident-logic";
+  import { stageStatusEmail, mapRowToResident, mapRowToJournal } from "$lib/resident-logic";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import { columns } from "./columns";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
 
@@ -451,66 +440,7 @@
           </Card.Header>
           <Card.Content class="p-0">
             {#if history.length > 0}
-              <div class="w-full overflow-x-auto">
-                <Table.Root>
-                  <Table.Header>
-                    <Table.Row class="bg-muted/10">
-                      <Table.Head class="px-4 py-3 text-[10px] font-bold uppercase">Date</Table.Head
-                      >
-                      <Table.Head class="px-4 py-3 text-[10px] font-bold uppercase"
-                        >Type/MOP</Table.Head
-                      >
-                      <Table.Head class="px-4 py-3 text-[10px] font-bold uppercase"
-                        >Notes</Table.Head
-                      >
-                      <Table.Head class="px-4 py-3 text-right text-[10px] font-bold uppercase"
-                        >Amount</Table.Head
-                      >
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {#each history as entry}
-                      <Table.Row class="transition-colors hover:bg-muted/5">
-                        <Table.Cell class="px-4 py-3 align-top whitespace-nowrap">
-                          <div class="flex flex-col">
-                            <a
-                              href="/admin/transactions/{entry.id}"
-                              class="text-[11px] font-bold text-foreground hover:text-primary hover:underline"
-                              >{formatDate(entry.date)}</a
-                            >
-                            <span class="text-[9px] font-medium text-muted-foreground"
-                              >{entry.creator}</span
-                            >
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell class="px-4 py-3 align-top">
-                          <div class="flex flex-col">
-                            <span
-                              class="text-[10px] font-black tracking-tight text-foreground/80 uppercase"
-                              >{translateType(entry.type, transactionTypes)}</span
-                            >
-                            <span class="text-[9px] text-muted-foreground"
-                              >{translateMop(entry.mop)}</span
-                            >
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell class="px-4 py-3 align-top">
-                          <p
-                            class="text-[10px] leading-tight whitespace-pre-wrap text-muted-foreground"
-                          >
-                            {entry.notes || "—"}
-                          </p>
-                        </Table.Cell>
-                        <Table.Cell class="px-4 py-3 text-right align-top">
-                          <span class="font-mono text-xs font-bold text-foreground tabular-nums">
-                            {formatCurrency(entry.amount)}
-                          </span>
-                        </Table.Cell>
-                      </Table.Row>
-                    {/each}
-                  </Table.Body>
-                </Table.Root>
-              </div>
+              <DataTable data={history} {columns} meta={{ transactionTypes }} />
             {:else}
               <div class="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center">
                 <Clock class="h-8 w-8 text-muted-foreground opacity-20" />

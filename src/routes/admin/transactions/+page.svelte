@@ -4,46 +4,18 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import {
-    calculateTotal,
-    formatCurrency,
-    translatePeriod,
-    translateMop,
-    formatAmount,
-    formatAccounting,
-    formatDate,
-    parseDateWeight,
-    parseCSVAmount,
-    translateType
-  } from "$lib/receipt-utils";
-  import * as Card from "$lib/components/ui/card";
-  import * as Table from "$lib/components/ui/table";
+  import { translateMop, parseDateWeight, pluralize } from "$lib/receipt-utils";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import {
-    RefreshCcw,
-    ListFilter,
-    Plus,
-    Search,
-    FunnelX,
-    ArrowUpDown,
-    ChevronLeft,
-    ChevronRight
-  } from "lucide-svelte";
-  import type { ReceiptItem } from "$lib/types";
+  import { RefreshCcw, ListFilter, Plus, Search, FunnelX } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-
-  interface TransactionRecord {
-    raw: string[];
-    index: number;
-    dateWeight: number;
-    total: number;
-  }
+  import { columns } from "./columns";
+  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
 
   let journal = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
@@ -56,12 +28,8 @@
   let filterType = $state("ALL");
   let filterMop = $state("ALL");
 
-  // Sort
-  let sortKey = $state("DATE");
-  let sortOrder = $state<"asc" | "desc">("desc");
-
-  import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/schemas";
-  import { mapRowToJournal, parseAmount } from "$lib/resident-logic";
+  import { type JournalRecord } from "$lib/schemas";
+  import { mapRowToJournal } from "$lib/resident-logic";
 
   async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
@@ -123,59 +91,27 @@
   onMount(loadData);
 
   const filteredJournal = $derived.by(() => {
-    return journal
-      .filter((r) => {
-        const searchStr = (
-          (r.name || "") +
-          (r.account || "") +
-          (r.creatorName || "") +
-          (r.notes || "")
-        ).toLowerCase();
+    return journal.filter((r) => {
+      const searchStr = (
+        (r.name || "") +
+        (r.account || "") +
+        (r.creatorName || "") +
+        (r.notes || "")
+      ).toLowerCase();
 
-        const matchSearch = filterSearch === "" || searchStr.includes(filterSearch.toLowerCase());
-        const matchSemester =
-          !uiSettings.currentSemester || r.period === uiSettings.currentSemester;
-        const matchType = filterType === "ALL" || r.type === filterType;
-        const matchMop = filterMop === "ALL" || r.mop === filterMop;
+      const matchSearch = filterSearch === "" || searchStr.includes(filterSearch.toLowerCase());
+      const matchSemester = !uiSettings.currentSemester || r.period === uiSettings.currentSemester;
+      const matchType = filterType === "ALL" || r.type === filterType;
+      const matchMop = filterMop === "ALL" || r.mop === filterMop;
 
-        return matchSearch && matchSemester && matchType && matchMop;
-      })
-      .sort((a, b) => {
-        const order = sortOrder === "asc" ? 1 : -1;
-        if (sortKey === "DATE") {
-          return (
-            (a.dateWeight! - b.dateWeight!) * order || (a.ledgerIndex! - b.ledgerIndex!) * order
-          );
-        }
-        if (sortKey === "TOTAL") return (a.amount - b.amount) * order;
-        if (sortKey === "ACCOUNT") return (a.name || "").localeCompare(b.name || "") * order;
-        if (sortKey === "CREATOR")
-          return (a.creatorName || "").localeCompare(b.creatorName || "") * order;
-        if (sortKey === "TYPE") return (a.type || "").localeCompare(b.type || "") * order;
-        return 0;
-      });
+      return matchSearch && matchSemester && matchType && matchMop;
+    });
   });
-
-  function toggleSort(key: string) {
-    if (sortKey === key) sortOrder = sortOrder === "asc" ? "desc" : "asc";
-    else {
-      sortKey = key;
-      sortOrder = "desc";
-    }
-  }
 
   function resetFilters() {
     filterSearch = "";
     filterType = "ALL";
     filterMop = "ALL";
-  }
-
-  function getActiveItems(r: JournalRecord) {
-    return [
-      { name: "Water Fee", amount: r.water },
-      { name: "Association Fee", amount: r.assoc },
-      { name: "Misc Fee", amount: r.misc }
-    ].filter((i) => i.amount !== 0);
   }
 </script>
 
@@ -251,125 +187,12 @@
     </div>
 
     {#if filteredJournal.length > 0}
-      <Card.Root class="overflow-hidden p-0">
-        <Card.Content class="p-0">
-          <div class="overflow-x-auto">
-            <Table.Root>
-              <Table.Header>
-                <Table.Row class="bg-muted/5">
-                  <Table.Head class="px-4 py-3"
-                    ><button
-                      onclick={() => toggleSort("DATE")}
-                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                      >Date {#if sortKey === "DATE"}{sortOrder === "asc"
-                          ? "↑"
-                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                    ></Table.Head
-                  >
-                  <Table.Head class="px-4 py-3">
-                    <button
-                      onclick={() => toggleSort("CREATOR")}
-                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                      >Creator {#if sortKey === "CREATOR"}{sortOrder === "asc"
-                          ? "↑"
-                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                    >
-                  </Table.Head>
-                  <Table.Head class="px-4 py-3"
-                    ><button
-                      onclick={() => toggleSort("ACCOUNT")}
-                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                      >Account {#if sortKey === "ACCOUNT"}{sortOrder === "asc"
-                          ? "↑"
-                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                    ></Table.Head
-                  >
-                  <Table.Head class="px-4 py-3">
-                    <button
-                      onclick={() => toggleSort("TYPE")}
-                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                      >Type/MOP {#if sortKey === "TYPE"}{sortOrder === "asc"
-                          ? "↑"
-                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                    >
-                  </Table.Head>
-                  <Table.Head
-                    class="px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase"
-                    >Notes</Table.Head
-                  >
-                  <Table.Head class="px-4 py-3 text-right"
-                    ><button
-                      onclick={() => toggleSort("TOTAL")}
-                      class="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                      >Total {#if sortKey === "TOTAL"}{sortOrder === "asc"
-                          ? "↑"
-                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                    ></Table.Head
-                  >
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {#each filteredJournal as record}
-                  <Table.Row
-                    class="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/5"
-                    onclick={() => goto(`/admin/transactions/${record.id || ""}`)}
-                  >
-                    <Table.Cell
-                      class="px-4 py-2 align-top text-xs text-muted-foreground tabular-nums"
-                      >{formatDate(record.date)}</Table.Cell
-                    >
-                    <Table.Cell class="px-4 py-2 align-top">
-                      <div class="flex flex-col">
-                        <span class="text-[11px] leading-tight font-bold text-foreground"
-                          >{record.creatorName}</span
-                        >
-                        <span class="text-[9px] font-medium text-muted-foreground"
-                          >{record.creator}</span
-                        >
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell class="w-64 px-4 py-2 align-top">
-                      <div class="flex flex-col">
-                        <span class="text-[11px] leading-tight font-bold text-foreground"
-                          >{record.name}</span
-                        >
-                        <span class="text-[9px] font-medium text-muted-foreground"
-                          >{record.account}</span
-                        >
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell class="px-4 py-2 align-top">
-                      <div class="flex flex-col">
-                        <span
-                          class="text-[10px] font-bold tracking-tight text-muted-foreground uppercase"
-                          >{translateType(record.type, transactionTypes)}</span
-                        >
-                        <span class="text-[9px] text-muted-foreground"
-                          >{translateMop(record.mop)}</span
-                        >
-                      </div>
-                    </Table.Cell>
-                    <Table.Cell class="max-w-[200px] truncate px-4 py-2 align-top"
-                      ><span class="text-[10px] text-muted-foreground">{record.notes || "—"}</span
-                      ></Table.Cell
-                    >
-                    <Table.Cell class="px-4 py-2 text-right align-top"
-                      ><span class="font-mono text-xs font-bold text-foreground"
-                        >{formatAccounting(record.amount)}</span
-                      ></Table.Cell
-                    >
-                  </Table.Row>
-                {/each}
-              </Table.Body>
-            </Table.Root>
-          </div>
-        </Card.Content>
-      </Card.Root>
-      <div
-        class="flex items-center justify-between px-1 text-[10px] font-medium text-muted-foreground"
-      >
-        <p>Displaying {filteredJournal.length} of {journal.length} records</p>
-      </div>
+      <DataTable
+        data={filteredJournal}
+        {columns}
+        meta={{ transactionTypes }}
+        onRowClick={(r) => goto(`/admin/transactions/${r.id || ""}`)}
+      />
     {:else}
       <div
         class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"

@@ -52,7 +52,7 @@ async function handleResponseError(resp: Response, defaultMessage: string) {
   if (resp.status === 401) {
     auth.lastError = {
       title: "Session Expired",
-      description: "Your session has expired. Please sign in again."
+      description: "Please sign in again."
     };
     auth.logout();
     throw new Error("Session expired (401)");

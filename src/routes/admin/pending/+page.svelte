@@ -6,56 +6,27 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw, batchUpdateValues, invalidateCache } from "$lib/google-sheets";
-  import {
-    parseCSVAmount,
-    calculateTotal,
-    formatCurrency,
-    translatePeriod,
-    translateMop,
-    formatAmount,
-    formatDate
-  } from "$lib/receipt-utils";
-  import { auth } from "$lib/auth.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import * as Table from "$lib/components/ui/table";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Button } from "$lib/components/ui/button";
-  import { Checkbox } from "$lib/components/ui/checkbox";
+  import { pluralize } from "$lib/receipt-utils";
+  import { encryptJSON } from "$lib/crypto";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import {
-    RefreshCcw,
-    FileCheck,
-    CircleAlert,
-    CircleCheckBig,
-    ArrowUpDown,
-    Trash2
-  } from "lucide-svelte";
+  import { RefreshCcw, FileCheck, Trash2, CircleCheckBig } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { encryptJSON } from "$lib/crypto";
+  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import { columns } from "./columns";
   import type { ReceiptData } from "$lib/types";
 
+  import { type JournalRecord } from "$lib/schemas";
+  import { mapRowToJournal } from "$lib/resident-logic";
+
   let queue = $state<JournalRecord[]>([]);
-  let selectedIndices = $state<Set<number>>(new Set()); // Stores rowIndex
+  let selectedIndices = $state<Set<string>>(new Set()); // Synced with DataTable (stno or ledgerIndex)
   let isLoading = $state(false);
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
-
-  // Sort State
-  type SortKey = "DATE" | "ACCOUNT" | "TOTAL";
-  let sortKey = $state<SortKey>("DATE");
-  let sortOrder = $state<"asc" | "desc">("desc");
-
-  // Column Mapping
-  import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/schemas";
-  import { mapRowToJournal, parseAmount } from "$lib/resident-logic";
-
-  function pluralize(count: number, singular: string, plural: string) {
-    const pr = new Intl.PluralRules("en-US");
-    const type = pr.select(count);
-    return type === "one" ? `${count} ${singular}` : `${count} ${plural}`;
-  }
 
   async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
@@ -89,42 +60,12 @@
 
   onMount(loadData);
 
-  const sortedQueue = $derived.by(() => {
-    return [...queue].sort((a, b) => {
-      const order = sortOrder === "asc" ? 1 : -1;
-      if (sortKey === "DATE")
-        return (new Date(a.date).getTime() - new Date(b.date).getTime()) * order;
-      if (sortKey === "ACCOUNT") return (a.name || "").localeCompare(b.name || "") * order;
-      if (sortKey === "TOTAL") return (a.amount - b.amount) * order;
-      return 0;
-    });
-  });
-
-  function toggleSort(key: SortKey) {
-    if (sortKey === key) sortOrder = sortOrder === "asc" ? "desc" : "asc";
-    else {
-      sortKey = key;
-      sortOrder = key === "DATE" ? "desc" : "asc";
-    }
-  }
-
-  function toggleSelectAll() {
-    if (selectedIndices.size === queue.length) selectedIndices = new Set();
-    else selectedIndices = new Set(queue.map((item) => item.ledgerIndex!));
-  }
-
-  function toggleSelect(rowIndex: number) {
-    if (selectedIndices.has(rowIndex)) selectedIndices.delete(rowIndex);
-    else selectedIndices.add(rowIndex);
-    selectedIndices = new Set(selectedIndices);
-  }
-
   async function prepareDispatch() {
     if (selectedIndices.size === 0) return;
     const baseUrl = window.location.origin + "/legacy/receipt";
     const stagedEmails = [];
 
-    const selectedRows = queue.filter((item) => selectedIndices.has(item.ledgerIndex!));
+    const selectedRows = queue.filter((item) => selectedIndices.has(item.ledgerIndex!.toString()));
     const branding = brandingState.profile;
 
     for (const record of selectedRows) {
@@ -232,22 +173,15 @@
           disabled={isLoading || selectedIndices.size === 0}
         >
           <FileCheck class="mr-2 h-4 w-4" />
-          Settle
+          Settle ({selectedIndices.size})
         </Button>
 
-        <AlertDialog.Root bind:open={isDeleting}>
+        <AlertDialog.Root>
           <AlertDialog.Trigger>
-            {#snippet child({ props })}
-              <Button
-                {...props}
-                variant="outline"
-                size="sm"
-                disabled={isLoading || selectedIndices.size === 0}
-              >
-                <Trash2 class="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-            {/snippet}
+            <Button variant="outline" size="sm" disabled={isLoading || selectedIndices.size === 0}>
+              <Trash2 class="mr-2 h-4 w-4" />
+              Delete
+            </Button>
           </AlertDialog.Trigger>
           <AlertDialog.Content>
             <AlertDialog.Header>
@@ -267,148 +201,29 @@
     {/snippet}
   </SubpageHeader>
 
-  {#if isLoading}
+  {#if isLoading && queue.length === 0}
     <LoadingView text="Loading records..." />
   {:else if error}
     <ErrorView {error} class="mb-3">
       <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
     </ErrorView>
   {:else}
-    <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+    <div class="mb-4 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
       <TermFilter onSelect={() => loadData()} />
     </div>
 
     {#if queue.length > 0}
-      <Card.Root class="overflow-hidden p-0">
-        <Card.Content class="p-0">
-          <Table.Root>
-            <Table.Header>
-              <Table.Row class="bg-muted/5">
-                <Table.Head class="w-10 px-4">
-                  <Checkbox
-                    checked={selectedIndices.size === queue.length && queue.length > 0}
-                    onCheckedChange={toggleSelectAll}
-                    aria-label="Select all"
-                  />
-                </Table.Head>
-                <Table.Head class="px-2 py-3"
-                  ><button
-                    onclick={() => toggleSort("DATE")}
-                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
-                    >Date {#if sortKey === "DATE"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  ></Table.Head
-                >
-                <Table.Head class="px-2 py-3"
-                  ><button
-                    onclick={() => toggleSort("ACCOUNT")}
-                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
-                    >Account {#if sortKey === "ACCOUNT"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  ></Table.Head
-                >
-                <Table.Head class="px-2 py-3 text-[10px] font-bold text-muted-foreground uppercase"
-                  >Composition</Table.Head
-                >
-                <Table.Head
-                  class="px-2 py-3 text-right text-[10px] font-bold text-muted-foreground uppercase"
-                  >Amount</Table.Head
-                >
-                <Table.Head class="px-2 py-3 text-[10px] font-bold text-muted-foreground uppercase"
-                  >Payment Details</Table.Head
-                >
-                <Table.Head class="px-4 py-3"
-                  ><button
-                    onclick={() => toggleSort("TOTAL")}
-                    class="flex w-full items-center justify-end gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
-                    >Total {#if sortKey === "TOTAL"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  ></Table.Head
-                >
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {#each sortedQueue as record}
-                {@const activeItems = getActiveItems(record)}
-                <Table.Row
-                  class="group cursor-pointer border-b transition-colors last:border-b-0 hover:bg-muted/5 {selectedIndices.has(
-                    record.ledgerIndex!
-                  )
-                    ? 'bg-muted/5'
-                    : ''}"
-                  onclick={() => toggleSelect(record.ledgerIndex!)}
-                >
-                  <Table.Cell class="w-10 px-4 py-2 align-top"
-                    ><Checkbox
-                      checked={selectedIndices.has(record.ledgerIndex!)}
-                      onCheckedChange={() => toggleSelect(record.ledgerIndex!)}
-                      onclick={(e) => e.stopPropagation()}
-                      aria-label="Select row"
-                    /></Table.Cell
-                  >
-                  <Table.Cell class="w-32 px-2 py-2 align-top text-nowrap"
-                    ><span class="text-xs text-muted-foreground tabular-nums"
-                      >{formatDate(record.date)}</span
-                    ></Table.Cell
-                  >
-                  <Table.Cell class="w-64 px-2 py-2 align-top"
-                    ><span class="text-sm leading-tight font-bold text-foreground"
-                      >{record.name}</span
-                    ></Table.Cell
-                  >
-                  <Table.Cell colspan={2} class="p-0 align-top">
-                    <div class="flex flex-col">
-                      {#each activeItems as fee}
-                        <div
-                          class="flex items-center justify-between border-b border-muted/10 px-3 py-1.5 last:border-b-0"
-                        >
-                          <div class="flex flex-col">
-                            <span class="text-xs font-semibold text-foreground/80">{fee.name}</span
-                            ><span
-                              class="text-[9px] font-bold tracking-tighter text-muted-foreground uppercase"
-                              >{record.type}</span
-                            >
-                          </div>
-                          <span
-                            class="font-mono text-xs font-bold text-muted-foreground tabular-nums"
-                            >{formatAmount(fee.amount)}</span
-                          >
-                        </div>
-                      {/each}
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell class="px-2 py-2 align-top"
-                    ><div class="flex flex-col">
-                      <span
-                        class="text-[10px] leading-none font-bold tracking-tight text-muted-foreground uppercase"
-                        >{translateMop(record.mop)}</span
-                      ><span class="mt-0.5 text-[9px] text-muted-foreground tabular-nums"
-                        >{record.mopRefNo === "N/A" || !record.mopRefNo
-                          ? "No Reference Code"
-                          : record.mopRefNo}</span
-                      >
-                    </div></Table.Cell
-                  >
-                  <Table.Cell class="px-4 py-2 text-right align-top"
-                    ><span
-                      class="font-mono text-sm font-bold whitespace-nowrap text-foreground tabular-nums"
-                      >{formatCurrency(record.amount)}</span
-                    ></Table.Cell
-                  >
-                </Table.Row>
-              {/each}
-            </Table.Body>
-          </Table.Root>
-        </Card.Content>
-      </Card.Root>
+      <DataTable
+        data={queue}
+        {columns}
+        onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+        onSelectionChange={(ids) => (selectedIndices = ids)}
+      />
     {:else}
       <div
         class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
       >
-        <CircleCheckBig class="h-8 w-8" />
+        <CircleCheckBig class="h-8 w-8 text-muted-foreground" />
         <div class="text-center">
           <p class="font-semibold text-foreground">No pending entries.</p>
         </div>

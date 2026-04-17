@@ -126,17 +126,29 @@
   <div class="rounded-md border">
     <Table.Root class={tableClass}>
       <Table.Header>
-        {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+        {#each table.getHeaderGroups() as headerGroup, i (headerGroup.id)}
           <Table.Row>
             {#each headerGroup.headers as header (header.id)}
-              <Table.Head class="[&:has([role=checkbox])]:ps-4">
-                {#if !header.isPlaceholder}
+              {#if header.isPlaceholder}
+                <Table.Head
+                  class="[&:has([role=checkbox])]:text-center"
+                  rowspan={table.getHeaderGroups().length - i}
+                >
                   <FlexRender
                     content={header.column.columnDef.header}
                     context={header.getContext()}
                   />
-                {/if}
-              </Table.Head>
+                </Table.Head>
+              {:else if !header.column.parent && i > 0}
+                <!-- Omit to respect rowspan from above -->
+              {:else}
+                <Table.Head class="[&:has([role=checkbox])]:text-center" colspan={header.colSpan}>
+                  <FlexRender
+                    content={header.column.columnDef.header}
+                    context={header.getContext()}
+                  />
+                </Table.Head>
+              {/if}
             {/each}
           </Table.Row>
         {/each}
@@ -149,7 +161,7 @@
             class={cn(onRowClick && "cursor-pointer")}
           >
             {#each row.getVisibleCells() as cell (cell.id)}
-              <Table.Cell class="[&:has([role=checkbox])]:ps-4">
+              <Table.Cell class="[&:has([role=checkbox])]:text-center">
                 <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
               </Table.Cell>
             {/each}
