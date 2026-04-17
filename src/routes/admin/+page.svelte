@@ -36,7 +36,7 @@
     {
       title: "Pending Receipts",
       description: "Review pending payments and generate secure receipts.",
-      href: "/legacy/admin/pending",
+      href: "/admin/pending",
       icon: Receipt,
       color: "text-brand",
       bg: "bg-brand/10",
@@ -45,7 +45,7 @@
     {
       title: "Email Dispatcher",
       description: "Batch send receipts to residents via Gmail API.",
-      href: "/legacy/admin/email-dispatcher",
+      href: "/admin/email-dispatcher",
       icon: Mail,
       color: "text-brand",
       bg: "bg-brand/10",
@@ -54,7 +54,7 @@
     {
       title: "Residents",
       description: "Manage resident profiles, rooms, and balances.",
-      href: "/legacy/admin/residents",
+      href: "/admin/residents",
       icon: Users,
       color: "text-brand",
       bg: "bg-brand/10",
@@ -63,7 +63,7 @@
     {
       title: "Transactions",
       description: "Full transaction history and manual entry management.",
-      href: "/legacy/admin/transactions",
+      href: "/admin/transactions",
       icon: ListFilter,
       color: "text-brand",
       bg: "bg-brand/10",
@@ -72,7 +72,7 @@
     {
       title: "Reports",
       description: "Export data and view collection performance trends.",
-      href: "/legacy/admin/reports",
+      href: "/admin/reports",
       icon: ChartPie,
       color: "text-brand",
       bg: "bg-brand/10",
@@ -81,7 +81,7 @@
     {
       title: "Settings",
       description: "Configure branding, semesters, and UI preferences.",
-      href: "/legacy/admin/settings",
+      href: "/admin/settings",
       icon: Settings,
       color: "text-brand",
       bg: "bg-brand/10",
@@ -292,12 +292,7 @@
     <div>
       <div class="mb-6 flex items-center justify-between">
         <h2 class="text-xl font-bold text-foreground">Recent Transactions</h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          href="/legacy/admin/transactions"
-          class="text-xs font-bold"
-        >
+        <Button variant="ghost" size="sm" href="/admin/transactions" class="text-xs font-bold">
           View All
         </Button>
       </div>

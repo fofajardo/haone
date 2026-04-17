@@ -129,7 +129,7 @@ export function stageStatusEmail(
   );
 
   if (options.redirect) {
-    goto("/legacy/admin/email-dispatcher");
+    goto("/admin/email-dispatcher");
   }
 }
 
@@ -163,7 +163,7 @@ export function stageStatusEmailBatch(
   }
 
   if (options.redirect) {
-    goto("/legacy/admin/email-dispatcher");
+    goto("/admin/email-dispatcher");
   }
 }
 

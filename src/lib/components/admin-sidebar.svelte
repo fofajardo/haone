@@ -15,32 +15,32 @@
   const items = [
     {
       title: "Dashboard",
-      url: "/legacy/admin",
+      url: "/admin",
       icon: LayoutDashboard
     },
     {
       title: "Reports",
-      url: "/legacy/admin/reports",
+      url: "/admin/reports",
       icon: ChartPie
     },
     {
       title: "Pending Receipts",
-      url: "/legacy/admin/pending",
+      url: "/admin/pending",
       icon: Receipt
     },
     {
       title: "Transactions",
-      url: "/legacy/admin/transactions",
+      url: "/admin/transactions",
       icon: ListFilter
     },
     {
       title: "Residents",
-      url: "/legacy/admin/residents",
+      url: "/admin/residents",
       icon: Users
     },
     {
       title: "Settings",
-      url: "/legacy/admin/settings",
+      url: "/admin/settings",
       icon: Settings
     }
   ];

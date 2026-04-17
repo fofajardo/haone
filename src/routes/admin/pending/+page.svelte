@@ -181,7 +181,7 @@
     }
 
     emailDispatcher.pushBatch(stagedEmails);
-    goto("/legacy/admin/email-dispatcher");
+    goto("/admin/email-dispatcher");
   }
 
   async function deleteSelected() {

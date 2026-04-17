@@ -280,7 +280,7 @@
 
       await appendSheetRow(brandingState.spreadsheetId, "journal_general!A:W", [row]);
       appendRowToCache(brandingState.spreadsheetId, "journal_general!A:W", [row]);
-      goto("/legacy/admin/transactions");
+      goto("/admin/transactions");
     } catch (e: any) {
       error = `Submission failed: ${e.message}`;
     } finally {
@@ -290,7 +290,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Add Transaction" href="/legacy/admin/transactions" />
+  <SubpageHeader title="Add Transaction" href="/admin/transactions" />
 
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}
@@ -566,7 +566,7 @@
         </div>
 
         <div class="flex justify-end gap-3 border-t pt-4">
-          <Button variant="outline" href="/legacy/admin/transactions" disabled={isSubmitting}
+          <Button variant="outline" href="/admin/transactions" disabled={isSubmitting}
             >Cancel</Button
           >
           <Button onclick={handleSubmit} disabled={isSubmitting} class="min-w-[120px]">

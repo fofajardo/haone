@@ -100,7 +100,7 @@
     try {
       await deleteSheetRow(brandingState.spreadsheetId, "journal_general", rowIndex);
       deleteRowFromCache(brandingState.spreadsheetId, "journal_general!A:W", rowIndex);
-      goto("/legacy/admin/transactions");
+      goto("/admin/transactions");
     } catch (e: any) {
       error = `Deletion failed: ${e.message}`;
       window.scrollTo(0, 0);
@@ -123,7 +123,7 @@
 
   const total = $derived(fees.reduce((sum: number, f: { amount: number }) => sum + f.amount, 0));
   const mopInfo = $derived(transaction ? parseRef(transaction.mopRefNo) : null);
- 
+
   const headerColors = $derived(() => {
     if (!transaction) return "bg-muted/5";
     const mop = (transaction.mop || "").toUpperCase();
@@ -134,7 +134,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="View Transaction" href="/legacy/admin/transactions">
+  <SubpageHeader title="View Transaction" href="/admin/transactions">
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}
         <Badge class="border-transparent bg-primary px-2 py-0 text-[10px] font-black text-white"
@@ -149,13 +149,13 @@
             variant="outline"
             size="sm"
             class="h-8 gap-1.5 font-bold"
-            href="/legacy/admin/transactions/{id}/edit"
+            href="/admin/transactions/{id}/edit"
             disabled={isDeleting}
           >
             <Pencil class="h-3 w-3" />
             Edit
           </Button>
- 
+
           <AlertDialog.Root bind:open={isDialogOpen}>
             <AlertDialog.Trigger>
               {#snippet child({ props })}
@@ -209,7 +209,7 @@
       {/if}
     {/snippet}
   </SubpageHeader>
- 
+
   {#if isLoading}
     <LoadingView text="Loading transaction..." />
   {:else if error}
@@ -217,9 +217,7 @@
       <Card.Content class="flex flex-col items-center justify-center p-12 text-center">
         <History class="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
         <h2 class="text-lg font-bold text-foreground">{error}</h2>
-        <Button variant="outline" class="mt-4" href="/legacy/admin/transactions"
-          >Return to Journal</Button
-        >
+        <Button variant="outline" class="mt-4" href="/admin/transactions">Return to Journal</Button>
       </Card.Content>
     </Card.Root>
   {:else if transaction}
@@ -272,7 +270,7 @@
               <User class="h-3.5 w-3.5" /> Account Holder
             </Label>
             <a
-              href="/legacy/admin/residents/{transaction.stno}"
+              href="/admin/residents/{transaction.stno}"
               class="group block space-y-1 transition-all hover:opacity-80"
             >
               <p
@@ -294,7 +292,7 @@
             </Label>
             {#if creatorStNo}
               <a
-                href="/legacy/admin/residents/{creatorStNo}"
+                href="/admin/residents/{creatorStNo}"
                 class="group block space-y-1 transition-all hover:opacity-80"
               >
                 <p

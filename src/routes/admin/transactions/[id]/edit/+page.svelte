@@ -266,7 +266,7 @@
 
       await updateSheetValue(brandingState.spreadsheetId, range, [row]);
       updateRowInCache(brandingState.spreadsheetId, "journal_general!A:W", rowIndex, row);
-      goto(`/legacy/admin/transactions/${id}`);
+      goto(`/admin/transactions/${id}`);
     } catch (e: any) {
       error = `Save failed: ${e.message}`;
     } finally {
@@ -276,7 +276,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Edit Transaction" href="/legacy/admin/transactions/{id}" />
+  <SubpageHeader title="Edit Transaction" href="/admin/transactions/{id}" />
 
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}
@@ -519,7 +519,7 @@
           </div>
 
           <div class="flex justify-end gap-3 border-t pt-4">
-            <Button variant="outline" href="/legacy/admin/transactions/{id}" disabled={isSubmitting}
+            <Button variant="outline" href="/admin/transactions/{id}" disabled={isSubmitting}
               >Cancel</Button
             >
             <Button onclick={handleSubmit} disabled={isSubmitting} class="min-w-[120px]">

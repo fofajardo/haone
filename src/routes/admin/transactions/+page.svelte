@@ -187,7 +187,7 @@
           <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
           <span class="hidden sm:inline">Refresh</span>
         </Button>
-        <Button size="sm" href="/legacy/admin/transactions/add">
+        <Button size="sm" href="/admin/transactions/add">
           <Plus class="mr-2 h-4 w-4" />
           Add
         </Button>
@@ -312,7 +312,7 @@
                 {#each filteredJournal as record}
                   <Table.Row
                     class="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/5"
-                    onclick={() => goto(`/legacy/admin/transactions/${record.id || ""}`)}
+                    onclick={() => goto(`/admin/transactions/${record.id || ""}`)}
                   >
                     <Table.Cell
                       class="px-4 py-2 align-top text-xs text-muted-foreground tabular-nums"

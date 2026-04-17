@@ -304,7 +304,7 @@
                   <Table.Cell class="px-4 py-3 align-top">
                     <div class="flex flex-col">
                       <a
-                        href="/legacy/admin/residents/{r.stno}"
+                        href="/admin/residents/{r.stno}"
                         class="text-xs font-bold text-foreground transition-colors hover:text-primary hover:underline"
                         onclick={(e) => e.stopPropagation()}>{r.name}</a
                       >

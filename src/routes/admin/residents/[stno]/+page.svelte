@@ -164,7 +164,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title={account?.name || "Resident Profile"} href="/legacy/admin/residents">
+  <SubpageHeader title={account?.name || "Resident Profile"} href="/admin/residents">
     {#snippet titleExtra()}
       {#if account}
         <div class="flex flex-wrap gap-2">
@@ -205,7 +205,7 @@
     <LoadingView text="Loading profile..." />
   {:else if error}
     <ErrorView {error}>
-      <Button variant="outline" class="mt-4" href="/legacy/admin/residents">Return to Hub</Button>
+      <Button variant="outline" class="mt-4" href="/admin/residents">Return to Hub</Button>
     </ErrorView>
   {:else if account}
     <div class="grid gap-4 lg:grid-cols-12">
@@ -219,7 +219,7 @@
           <Button
             variant="outline"
             size="sm"
-            href="/legacy/admin/transactions/add?account={account.email}"
+            href="/admin/transactions/add?account={account.email}"
             class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
           >
             <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" /> Add Transaction
@@ -474,7 +474,7 @@
                         <Table.Cell class="px-4 py-3 align-top whitespace-nowrap">
                           <div class="flex flex-col">
                             <a
-                              href="/legacy/admin/transactions/{entry.id}"
+                              href="/admin/transactions/{entry.id}"
                               class="text-[11px] font-bold text-foreground hover:text-primary hover:underline"
                               >{formatDate(entry.date)}</a
                             >
