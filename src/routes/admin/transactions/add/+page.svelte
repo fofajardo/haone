@@ -278,7 +278,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Add Transaction" href="/admin/transactions" />
+  <SubpageHeader title="Add Transaction" />
 
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}

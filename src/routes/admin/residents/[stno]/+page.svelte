@@ -162,7 +162,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title={account?.name || "Resident Profile"} href="/admin/residents">
+  <SubpageHeader title={account?.name || "Resident Profile"}>
     {#snippet titleExtra()}
       {#if account}
         <div class="flex flex-wrap gap-2">

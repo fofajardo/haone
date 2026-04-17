@@ -262,7 +262,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Edit Transaction" href="/admin/transactions/{id}" />
+  <SubpageHeader title="Edit Transaction" />
 
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}

@@ -21,9 +21,7 @@
 
 <header class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
   <div class="flex items-center gap-4">
-    {#if href || onBack}
-      <BackButton {href} onclick={onBack} />
-    {/if}
+    <BackButton {href} onclick={onBack} />
     <div class="space-y-1">
       <div class="flex items-center gap-2">
         <h1 class="text-3xl font-bold tracking-tight text-foreground">{title}</h1>

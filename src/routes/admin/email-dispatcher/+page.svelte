@@ -122,7 +122,7 @@
 </script>
 
 <div class="space-y-4">
-  <SubpageHeader title="Email Dispatcher" onBack={handleBack}>
+  <SubpageHeader title="Email Dispatcher">
     {#snippet actions()}
       <div class="flex gap-2">
         <Button

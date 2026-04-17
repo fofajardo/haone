@@ -139,7 +139,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="View Transaction" href="/admin/transactions">
+  <SubpageHeader title="View Transaction">
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}
         <Badge class="border-transparent bg-primary px-2 py-0 text-[10px] font-black text-white"
