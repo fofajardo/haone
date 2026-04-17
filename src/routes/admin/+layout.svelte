@@ -16,6 +16,7 @@
 
   let { children } = $props();
   let isLoading = $state(true);
+  let isLoggingIn = $state(false);
   let rememberMe = $state(true);
 
   let alertState = $state({ open: false, title: "", description: "" });
@@ -49,6 +50,7 @@
       return;
     }
 
+    isLoggingIn = true;
     try {
       const tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
         client_id: (branding.default as any).googleClientId,
@@ -56,6 +58,7 @@
           "openid profile email https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/spreadsheets",
         callback: async (response: any) => {
           if (response.error) {
+            isLoggingIn = false;
             showError("Sign-in Failed", response.error_description || response.error);
             return;
           }
@@ -66,13 +69,16 @@
               await testAccess(spreadsheetId, response.access_token);
               auth.setSession(response.access_token, userInfo, rememberMe);
             } catch (e: any) {
-              // This is already handled for us.
+              isLoggingIn = false;
             }
+          } else {
+            isLoggingIn = false;
           }
         }
       });
       tokenClient.requestAccessToken();
     } catch (e: any) {
+      isLoggingIn = false;
       showError("System Error", e.message);
     }
   }
@@ -112,10 +118,16 @@
       <div class="animate-in pt-6 duration-1000 fade-in slide-in-from-bottom-4">
         <Button
           onclick={handleLogin}
+          disabled={isLoggingIn}
           class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
         >
-          <LogIn class="mr-2 h-5 w-5" />
-          Sign in with Google
+          {#if isLoggingIn}
+            <LoaderCircle class="mr-2 h-5 w-5 animate-spin" />
+            Signing in...
+          {:else}
+            <LogIn class="mr-2 h-5 w-5" />
+            Sign in with Google
+          {/if}
         </Button>
       </div>
     </div>
