@@ -79,9 +79,16 @@ async function handleResponseError(resp: Response, defaultMessage: string) {
 /**
  * Standard fetch with auth and error handling.
  */
-async function fetchWithAuth(url: string, defaultError: string, init: RequestInit = {}) {
-  const token = auth.accessToken;
-  if (!token) throw new Error("Not authenticated");
+async function fetchWithAuth(
+  url: string,
+  defaultError: string,
+  init: RequestInit = {},
+  explicitToken?: string
+) {
+  const token = explicitToken || auth.accessToken;
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
 
   const resp = await fetch(url, {
     ...init,
@@ -96,6 +103,15 @@ async function fetchWithAuth(url: string, defaultError: string, init: RequestIni
   }
 
   return resp;
+}
+
+/**
+ * Tests connectivity to a spreadsheet with an explicit token.
+ * Useful for pre-login verification.
+ */
+export async function testAccess(spreadsheetId: string, token: string) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=spreadsheetId`;
+  await fetchWithAuth(url, "Connection test failed", {}, token);
 }
 
 export interface SheetRow {

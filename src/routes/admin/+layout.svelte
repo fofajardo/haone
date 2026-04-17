@@ -8,6 +8,7 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
   import { loadGisScript } from "$lib/gmail";
+  import { testAccess } from "$lib/google-sheets";
   import { Button } from "$lib/components/ui/button";
   import { LogIn, LoaderCircle } from "lucide-svelte";
   import { setMode } from "mode-watcher";
@@ -61,12 +62,11 @@
           if (response.access_token) {
             try {
               const userInfo = await auth.fetchUserInfo(response.access_token);
+              const spreadsheetId = (branding.default as any).spreadsheetId;
+              await testAccess(spreadsheetId, response.access_token);
               auth.setSession(response.access_token, userInfo, rememberMe);
             } catch (e: any) {
-              showError(
-                "Verification Error",
-                "Failed to verify account details. Please try again."
-              );
+              // This is already handled for us.
             }
           }
         }
