@@ -243,20 +243,6 @@
       row[JOR.NAME] = formData.accountName;
       row[JOR.STNO] = formData.accountStNo;
 
-      // Handle Incoming/Outgoing (Optional logic from add page)
-      const water = parseFloat(formData.waterFee) || 0;
-      const assoc = parseFloat(formData.assocFee) || 0;
-      const misc = parseFloat(formData.miscFee) || 0;
-      const total = water + assoc + misc;
-
-      if (formData.type === "COLLECTION" || formData.type === "COLLECTION_OTHERS") {
-        row[JOR.INCOMING] = total.toString();
-        row[JOR.OUTGOING] = "";
-      } else if (formData.type === "REFUND" || formData.type === "WAIVED") {
-        row[JOR.OUTGOING] = total.toString();
-        row[JOR.INCOMING] = "";
-      }
-
       row[JOR.WAS_AUDITED] = "FALSE";
       row[JOR.ID] = id; // Preserve ID
 

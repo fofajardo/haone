@@ -264,18 +264,6 @@
       row[15] = formData.accountName;
       row[16] = formData.accountStNo;
 
-      // Calculate Incoming/Outgoing
-      const water = parseFloat(formData.waterFee) || 0;
-      const assoc = parseFloat(formData.assocFee) || 0;
-      const misc = parseFloat(formData.miscFee) || 0;
-      const total = water + assoc + misc;
-
-      if (formData.type === "COLLECTION" || formData.type === "COLLECTION_OTHERS") {
-        row[17] = total.toString();
-      } else if (formData.type === "REFUND" || formData.type === "WAIVED") {
-        row[18] = total.toString();
-      }
-
       row[22] = txnId;
 
       await appendSheetRow(brandingState.spreadsheetId, "journal_general!A:W", [row]);
