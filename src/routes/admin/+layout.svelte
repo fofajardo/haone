@@ -35,6 +35,13 @@
     }
   });
 
+  $effect(() => {
+    if (auth.lastError) {
+      showError(auth.lastError.title, auth.lastError.description);
+      auth.lastError = null;
+    }
+  });
+
   async function handleLogin() {
     if (!(window as any).google) {
       showError("Connection Error", "Google Identity Services not loaded. Check your connection.");
@@ -54,13 +61,6 @@
           if (response.access_token) {
             try {
               const userInfo = await auth.fetchUserInfo(response.access_token);
-              if (!userInfo.email.endsWith("@up.edu.ph")) {
-                showError(
-                  "Unauthorized Account",
-                  "Only UP Mail accounts are authorized to access this console."
-                );
-                return;
-              }
               auth.setSession(response.access_token, userInfo, rememberMe);
             } catch (e: any) {
               showError(
@@ -115,7 +115,7 @@
           class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
         >
           <LogIn class="mr-2 h-5 w-5" />
-          Sign in with UP Mail
+          Sign in with Google
         </Button>
       </div>
     </div>
@@ -142,7 +142,7 @@
       <AlertDialog.Header>
         <AlertDialog.Title>{alertState.title}</AlertDialog.Title>
         <AlertDialog.Description>
-          {alertState.description}
+          {@html alertState.description}
         </AlertDialog.Description>
       </AlertDialog.Header>
       <AlertDialog.Footer>
