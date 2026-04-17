@@ -1,4 +1,5 @@
 import { auth } from "./auth.svelte";
+import { brandingState } from "./branding.svelte";
 
 let sheetsCache: Record<string, string[][]> = {};
 
@@ -44,6 +45,59 @@ export function deleteRowFromCache(spreadsheetId: string, range: string, rowInde
   }
 }
 
+/**
+ * Standard error handling for Google API responses.
+ */
+async function handleResponseError(resp: Response, defaultMessage: string) {
+  if (resp.status === 401) {
+    auth.lastError = {
+      title: "Session Expired",
+      description: "Your session has expired. Please sign in again."
+    };
+    auth.logout();
+    throw new Error("Session expired (401)");
+  }
+  if (resp.status === 403) {
+    const replyTo = brandingState.profile.replyTo || "";
+    auth.lastError = {
+      title: "Not Authorized",
+      description: `You do not have permission to use this platform. Please contact the administrator via <a href="mailto:${replyTo}">email</a>.`
+    };
+    auth.logout();
+    throw new Error("Not authorized (403)");
+  }
+  let message = defaultMessage;
+  try {
+    const err = await resp.json();
+    message = err.error?.message || defaultMessage;
+  } catch (e) {
+    // Fallback if not JSON
+  }
+  throw new Error(message);
+}
+
+/**
+ * Standard fetch with auth and error handling.
+ */
+async function fetchWithAuth(url: string, defaultError: string, init: RequestInit = {}) {
+  const token = auth.accessToken;
+  if (!token) throw new Error("Not authenticated");
+
+  const resp = await fetch(url, {
+    ...init,
+    headers: {
+      ...init.headers,
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!resp.ok) {
+    await handleResponseError(resp, defaultError);
+  }
+
+  return resp;
+}
+
 export interface SheetRow {
   [key: string]: string;
 }
@@ -62,22 +116,8 @@ export async function fetchSheetRowsRaw(
     return sheetsCache[cacheKey];
   }
 
-  const token = auth.accessToken;
-  if (!token) throw new Error("Not authenticated");
-
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
-  const resp = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  if (!resp.ok) {
-    if (resp.status === 401) {
-      auth.logout();
-      throw new Error("Session expired. Please sign in again.");
-    }
-    const err = await resp.json();
-    throw new Error(err.error?.message || "Failed to fetch sheet data");
-  }
+  const resp = await fetchWithAuth(url, "Failed to fetch sheet data");
 
   const data = await resp.json();
   const values = data.values || [];
@@ -114,25 +154,11 @@ export async function updateSheetValue(spreadsheetId: string, range: string, val
 
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
 
-  const resp = await fetch(url, {
+  const resp = await fetchWithAuth(url, "Failed to update sheet", {
     method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      values
-    })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ values })
   });
-
-  if (!resp.ok) {
-    if (resp.status === 401) {
-      auth.logout();
-      throw new Error("Session expired. Please sign in again.");
-    }
-    const err = await resp.json();
-    throw new Error(err.error?.message || "Failed to update sheet");
-  }
 
   return await resp.json();
 }
@@ -149,26 +175,14 @@ export async function batchUpdateValues(
 
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchUpdate`;
 
-  const resp = await fetch(url, {
+  const resp = await fetchWithAuth(url, "Failed to batch update sheet", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       valueInputOption: "USER_ENTERED",
       data
     })
   });
-
-  if (!resp.ok) {
-    if (resp.status === 401) {
-      auth.logout();
-      throw new Error("Session expired. Please sign in again.");
-    }
-    const err = await resp.json();
-    throw new Error(err.error?.message || "Failed to batch update sheet");
-  }
 
   return await resp.json();
 }
@@ -182,25 +196,11 @@ export async function appendSheetRow(spreadsheetId: string, range: string, value
 
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
 
-  const resp = await fetch(url, {
+  const resp = await fetchWithAuth(url, "Failed to append row", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      values
-    })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ values })
   });
-
-  if (!resp.ok) {
-    if (resp.status === 401) {
-      auth.logout();
-      throw new Error("Session expired. Please sign in again.");
-    }
-    const err = await resp.json();
-    throw new Error(err.error?.message || "Failed to append row");
-  }
 
   return await resp.json();
 }
@@ -214,9 +214,9 @@ export async function deleteSheetRow(spreadsheetId: string, sheetName: string, r
 
   // 1. Resolve sheetId from sheetName
   const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`;
-  const data = await fetch(metaUrl, {
-    headers: { Authorization: `Bearer ${token}` }
-  }).then((res) => res.json());
+  const metaResp = await fetchWithAuth(metaUrl, "Failed to fetch spreadsheet metadata");
+
+  const data = await metaResp.json();
 
   const sheet = data.sheets?.find((s: any) => s.properties.title === sheetName);
   if (!sheet) throw new Error(`Sheet "${sheetName}" not found`);
@@ -224,12 +224,9 @@ export async function deleteSheetRow(spreadsheetId: string, sheetName: string, r
 
   // 2. Perform delete dimension request
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
-  const resp = await fetch(url, {
+  const resp = await fetchWithAuth(url, "Failed to delete row", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       requests: [
         {
@@ -245,15 +242,6 @@ export async function deleteSheetRow(spreadsheetId: string, sheetName: string, r
       ]
     })
   });
-
-  if (!resp.ok) {
-    if (resp.status === 401) {
-      auth.logout();
-      throw new Error("Session expired. Please sign in again.");
-    }
-    const err = await resp.json();
-    throw new Error(err.error?.message || "Failed to delete row");
-  }
 
   return await resp.json();
 }

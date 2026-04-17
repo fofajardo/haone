@@ -11,6 +11,7 @@ class AuthState {
   accessToken = $state<string | null>(null);
   user = $state<UserInfo | null>(null);
   isRemembered = $state(false);
+  lastError = $state<{ title: string; description: string } | null>(null);
 
   constructor() {
     if (browser) {
