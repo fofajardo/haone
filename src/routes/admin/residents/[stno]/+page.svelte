@@ -438,7 +438,7 @@
             </Card.Title>
             <Badge variant="outline" class="font-bold">{history.length} entries</Badge>
           </Card.Header>
-          <Card.Content class="p-0">
+          <Card.Content>
             {#if history.length > 0}
               <DataTable data={history} {columns} meta={{ transactionTypes }} />
             {:else}
