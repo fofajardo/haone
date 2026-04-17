@@ -13,8 +13,10 @@
   } from "@tanstack/table-core";
   import * as Table from "$lib/components/ui/table/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
   import { FlexRender, createSvelteTable } from "$lib/components/ui/data-table/index.js";
   import { cn } from "$lib/utils";
+  import * as NativeSelect from "$lib/components/ui/native-select/index.js";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -26,6 +28,8 @@
     filterColumnId?: string;
     selectedRowIds?: Set<string>; // For external syncing if needed
     onSelectionChange?: (selectedIds: Set<string>) => void;
+    pagination?: PaginationState;
+    onPaginationChange?: (pagination: PaginationState) => void;
   };
 
   let {
@@ -37,10 +41,11 @@
     filterSearch = $bindable(""),
     filterColumnId,
     onSelectionChange,
-    meta
+    meta,
+    pagination = $bindable({ pageIndex: 0, pageSize: 20 }),
+    onPaginationChange: onPaginationChangeProp
   }: DataTableProps<TData, TValue> & { meta?: any } = $props();
 
-  let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 20 });
   let sorting = $state<SortingState>([]);
   let columnFilters = $state<ColumnFiltersState>([]);
   let rowSelection = $state<RowSelectionState>({});
@@ -78,8 +83,12 @@
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onPaginationChange: (updater) => {
-      if (typeof updater === "function") pagination = updater(pagination);
-      else pagination = updater;
+      if (typeof updater === "function") {
+        pagination = updater(pagination);
+      } else {
+        pagination = updater;
+      }
+      onPaginationChangeProp?.(pagination);
     },
     onSortingChange: (updater) => {
       if (typeof updater === "function") sorting = updater(sorting);
@@ -123,6 +132,32 @@
 </script>
 
 <div class={cn("w-full", className)}>
+  {#if table.getIsAllPageRowsSelected() && !table.getIsAllRowsSelected()}
+    <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
+      All <span class="font-bold">{table.getPaginationRowModel().rows.length}</span> items on this
+      page are selected.
+      <Button
+        variant="link"
+        class="h-auto p-0 font-bold"
+        onclick={() => table.toggleAllRowsSelected(true)}
+      >
+        Select all {table.getFilteredRowModel().rows.length} items in match
+      </Button>
+    </div>
+  {:else if table.getIsAllRowsSelected() && table.getFilteredRowModel().rows.length > table.getState().pagination.pageSize}
+    <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
+      All <span class="font-bold">{table.getFilteredRowModel().rows.length}</span> items are
+      selected.
+      <Button
+        variant="link"
+        class="h-auto p-0 font-bold text-destructive"
+        onclick={() => table.resetRowSelection()}
+      >
+        Clear selection
+      </Button>
+    </div>
+  {/if}
+
   <div class="rounded-md border">
     <Table.Root class={tableClass}>
       <Table.Header>
@@ -175,28 +210,65 @@
     </Table.Root>
   </div>
 
-  <div class="flex items-center justify-end space-x-2 py-4">
-    <div class="flex-1 text-sm text-muted-foreground">
-      {table.getFilteredSelectedRowModel().rows.length} of
-      {table.getFilteredRowModel().rows.length} row(s) selected.
+  <div class="flex flex-col items-center justify-between gap-4 py-4 md:flex-row">
+    <div class="flex flex-col items-center gap-4 text-sm sm:flex-row sm:gap-6">
+      <span class="whitespace-nowrap">
+        {table.getFilteredSelectedRowModel().rows.length} of
+        {table.getFilteredRowModel().rows.length} row(s) selected.
+      </span>
     </div>
-    <div class="space-x-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => table.previousPage()}
-        disabled={!table.getCanPreviousPage()}
-      >
-        Previous
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => table.nextPage()}
-        disabled={!table.getCanNextPage()}
-      >
-        Next
-      </Button>
+    <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
+      <div class="flex items-center gap-2 text-sm font-medium">
+        <span>Show</span>
+        <NativeSelect.Root
+          value={table.getState().pagination.pageSize >= 1000000
+            ? "all"
+            : table.getState().pagination.pageSize.toString()}
+          onchange={(e) => {
+            const val = e.currentTarget.value;
+            table.setPageSize(val === "all" ? Number.MAX_SAFE_INTEGER : Number(val));
+          }}
+          class="h-8 w-20 px-1 text-xs"
+        >
+          {#each [10, 20, 50, 100] as size}
+            <NativeSelect.Option value={size.toString()}>{size}</NativeSelect.Option>
+          {/each}
+          <NativeSelect.Option value="all">All</NativeSelect.Option>
+        </NativeSelect.Root>
+      </div>
+      <div class="flex items-center justify-center gap-2 text-sm font-medium">
+        <span>Page</span>
+        <Input
+          type="number"
+          class="h-8 w-12 [appearance:textfield] px-1 text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          value={table.getState().pagination.pageIndex + 1}
+          onchange={(e) => {
+            const val = Number(e.currentTarget.value);
+            if (isNaN(val)) return;
+            const page = Math.max(0, Math.min(val - 1, table.getPageCount() - 1));
+            table.setPageIndex(page);
+          }}
+        />
+        <span class="whitespace-nowrap">of {table.getPageCount()}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   </div>
 </div>

@@ -3,15 +3,18 @@
   import { emailDispatcher } from "$lib/dispatcher.svelte";
   import { AcknowledgmentTemplate } from "$lib/templates/acknowledgment";
   import { goto } from "$app/navigation";
+  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw, batchUpdateValues, invalidateCache } from "$lib/google-sheets";
   import { pluralize } from "$lib/receipt-utils";
   import { encryptJSON } from "$lib/crypto";
   import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import { RefreshCcw, FileCheck, Trash2, CircleCheckBig } from "lucide-svelte";
+  import { Search, RefreshCcw, FileCheck, Trash2, CircleCheckBig } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -27,6 +30,24 @@
   let isLoading = $state(false);
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
+
+  const tableSync = new TableSync({
+    initialFilters: { search: "" },
+    paramMap: { search: "q" },
+    searchKey: "search"
+  });
+
+  const filteredQueue = $derived.by(() => {
+    return queue.filter((r) => {
+      const search = tableSync.filters!.search.toLowerCase();
+      return (
+        r.name?.toLowerCase().includes(search) ||
+        r.account?.toLowerCase().includes(search) ||
+        r.notes?.toLowerCase().includes(search) ||
+        r.mopRefNo?.toLowerCase().includes(search)
+      );
+    });
+  });
 
   async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
@@ -209,14 +230,31 @@
       <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
     </ErrorView>
   {:else}
-    <div class="mb-4 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
-      <TermFilter onSelect={() => loadData()} />
+    <div class="mb-4 grid gap-2 lg:grid-cols-12">
+      <div class="lg:col-span-2">
+        <TermFilter onSelect={() => loadData()} />
+      </div>
+      <div class="space-y-1 lg:col-span-10">
+        <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
+        <div class="relative">
+          <Search
+            class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            bind:value={tableSync.filters!.search}
+            placeholder="Search by name, account, or notes..."
+            class="h-9 pl-9 text-xs"
+          />
+        </div>
+      </div>
     </div>
 
-    {#if queue.length > 0}
+    {#if filteredQueue.length > 0}
       <DataTable
-        data={queue}
+        data={filteredQueue}
         {columns}
+        pagination={tableSync.pagination}
+        onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         onSelectionChange={(ids) => (selectedIndices = ids)}
       />

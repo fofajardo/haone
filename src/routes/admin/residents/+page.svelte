@@ -6,6 +6,7 @@
   import { type ResidentRecord as Resident } from "$lib/schemas";
   import { mapRowToResident, stageStatusEmailBatch } from "$lib/resident-logic";
   import { goto } from "$app/navigation";
+  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -22,9 +23,14 @@
   let residents = $state<Resident[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
-  let filterSearch = $state("");
-  let filterRoom = $state("ALL");
-  let filterStatus = $state("ALL");
+  const tableSync = new TableSync({
+    initialFilters: { search: "", room: "ALL", status: "ALL" },
+    paramMap: { search: "q", room: "room", status: "status" },
+    searchKey: "search"
+  });
+
+  // Alias for readability in existing code or keep as tableSync.filters/pagination
+  let pagination = $derived.by(() => tableSync.pagination);
   let selectedIndices = $state<Set<string>>(new Set()); // Uses stno as key
   let customReminders = $state("");
 
@@ -58,21 +64,22 @@
   onMount(loadData);
 
   const filteredResidents = $derived.by(() => {
-    return residents.filter((r) => {
-      const matchSearch =
-        !filterSearch ||
-        r.name.toLowerCase().includes(filterSearch.toLowerCase()) ||
-        r.email.toLowerCase().includes(filterSearch.toLowerCase()) ||
-        r.room.toLowerCase().includes(filterSearch.toLowerCase());
-
-      const matchRoom = filterRoom === "ALL" || r.room === filterRoom;
-      const matchStatus =
-        filterStatus === "ALL" ||
-        (filterStatus === "FULLY_PAID" && r.isFullyPaid) ||
-        (filterStatus === "PENDING" && !r.isFullyPaid);
-
-      return matchSearch && matchRoom && matchStatus;
-    });
+    return residents
+      .filter((r) => {
+        const search = tableSync.filters!.search.toLowerCase();
+        return (
+          r.name?.toLowerCase().includes(search) ||
+          r.email?.toLowerCase().includes(search) ||
+          r.room?.toLowerCase().includes(search)
+        );
+      })
+      .filter((r) => tableSync.filters!.room === "ALL" || r.room === tableSync.filters!.room)
+      .filter((r) => {
+        if (tableSync.filters!.status === "ALL") return true;
+        if (tableSync.filters!.status === "FULLY_PAID") return r.isFullyPaid;
+        if (tableSync.filters!.status === "PENDING") return !r.isFullyPaid;
+        return true;
+      });
   });
 
   const rooms = $derived([
@@ -86,14 +93,7 @@
   ]);
 
   function resetFilters() {
-    filterSearch = "";
-    filterRoom = "ALL";
-    filterStatus = "ALL";
-  }
-
-  function toggleSelectAll() {
-    if (selectedIndices.size === filteredResidents.length) selectedIndices = new Set();
-    else selectedIndices = new Set(filteredResidents.map((r) => r.stno));
+    tableSync.reset();
   }
 
   function prepareDispatch() {
@@ -144,7 +144,7 @@
               class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             />
             <Input
-              bind:value={filterSearch}
+              bind:value={tableSync.filters!.search}
               placeholder="Search by name, email, or room..."
               class="h-9 pl-9 text-xs"
             />
@@ -153,7 +153,10 @@
 
         <div class="space-y-1 lg:col-span-2">
           <Label class="text-[10px] font-bold text-muted-foreground uppercase">Room</Label>
-          <NativeSelect.Root bind:value={filterRoom} class="h-10 w-full text-xs font-semibold">
+          <NativeSelect.Root
+            bind:value={tableSync.filters!.room}
+            class="h-10 w-full text-xs font-semibold"
+          >
             {#each rooms as room}
               <NativeSelect.Option value={room}
                 >{room === "ALL" ? "All Rooms" : room}</NativeSelect.Option
@@ -165,7 +168,10 @@
         <div class="space-y-1 lg:col-span-2">
           <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Status</Label
           >
-          <NativeSelect.Root bind:value={filterStatus} class="h-10 w-full text-xs font-semibold">
+          <NativeSelect.Root
+            bind:value={tableSync.filters!.status}
+            class="h-10 w-full text-xs font-semibold"
+          >
             <NativeSelect.Option value="ALL">All Statuses</NativeSelect.Option>
             <NativeSelect.Option value="FULLY_PAID">Fully Paid</NativeSelect.Option>
             <NativeSelect.Option value="PENDING">Pending</NativeSelect.Option>
@@ -188,6 +194,8 @@
         <DataTable
           data={filteredResidents}
           {columns}
+          pagination={tableSync.pagination}
+          onPaginationChange={(p) => (tableSync.pagination = p)}
           onRowClick={(r) => goto(`/admin/residents/${r.stno}`)}
           onSelectionChange={(ids) => (selectedIndices = ids)}
         />

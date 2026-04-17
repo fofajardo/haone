@@ -1,10 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
+  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { translateMop, parseDateWeight, pluralize } from "$lib/receipt-utils";
+  import { translateMop, parseDateWeight } from "$lib/receipt-utils";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -24,9 +25,11 @@
   let error = $state<string | null>(null);
 
   // Filters
-  let filterSearch = $state("");
-  let filterType = $state("ALL");
-  let filterMop = $state("ALL");
+  const tableSync = new TableSync({
+    initialFilters: { search: "", type: "ALL", mop: "ALL" },
+    paramMap: { search: "q", type: "type", mop: "mop" },
+    searchKey: "search"
+  });
 
   import { type JournalRecord } from "$lib/schemas";
   import { mapRowToJournal } from "$lib/resident-logic";
@@ -106,27 +109,22 @@
   onMount(loadData);
 
   const filteredJournal = $derived.by(() => {
-    return journal.filter((r) => {
-      const searchStr = (
-        (r.name || "") +
-        (r.account || "") +
-        (r.creatorName || "") +
-        (r.notes || "")
-      ).toLowerCase();
-
-      const matchSearch = filterSearch === "" || searchStr.includes(filterSearch.toLowerCase());
-      const matchSemester = !uiSettings.currentSemester || r.period === uiSettings.currentSemester;
-      const matchType = filterType === "ALL" || r.type === filterType;
-      const matchMop = filterMop === "ALL" || r.mop === filterMop;
-
-      return matchSearch && matchSemester && matchType && matchMop;
-    });
+    return journal
+      .filter((r) => {
+        const search = tableSync.filters!.search.toLowerCase();
+        return (
+          r.name?.toLowerCase().includes(search) ||
+          r.account?.toLowerCase().includes(search) ||
+          r.notes?.toLowerCase().includes(search) ||
+          r.mopRefNo?.toLowerCase().includes(search)
+        );
+      })
+      .filter((r) => tableSync.filters!.type === "ALL" || r.type === tableSync.filters!.type)
+      .filter((r) => tableSync.filters!.mop === "ALL" || r.mop === tableSync.filters!.mop);
   });
 
   function resetFilters() {
-    filterSearch = "";
-    filterType = "ALL";
-    filterMop = "ALL";
+    tableSync.reset();
   }
 </script>
 
@@ -164,7 +162,7 @@
             class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
-            bind:value={filterSearch}
+            bind:value={tableSync.filters!.search}
             placeholder="Name, account, or notes..."
             class="h-9 pl-9 text-xs"
           />
@@ -174,7 +172,10 @@
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label
         >
-        <NativeSelect.Root bind:value={filterType} class="h-10 w-full text-xs font-semibold">
+        <NativeSelect.Root
+          bind:value={tableSync.filters!.type}
+          class="h-10 w-full text-xs font-semibold"
+        >
           <NativeSelect.Option value="ALL">All Types</NativeSelect.Option>
           {#each transactionTypes as type}
             <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
@@ -186,7 +187,10 @@
         <Label class="text-[10px] font-bold text-muted-foreground uppercase"
           >Payment Processor</Label
         >
-        <NativeSelect.Root bind:value={filterMop} class="h-10 w-full text-xs font-semibold">
+        <NativeSelect.Root
+          bind:value={tableSync.filters!.mop}
+          class="h-10 w-full text-xs font-semibold"
+        >
           <NativeSelect.Option value="ALL">All Methods</NativeSelect.Option>
           {#each mopTypes as mop}
             <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>
@@ -205,8 +209,10 @@
       <DataTable
         data={filteredJournal}
         {columns}
-        meta={{ transactionTypes }}
+        pagination={tableSync.pagination}
+        onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+        meta={{ transactionTypes }}
       />
     {:else}
       <div
