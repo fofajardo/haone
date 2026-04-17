@@ -7,7 +7,8 @@
     ListFilter,
     Users,
     LogOut,
-    ChartPie
+    ChartPie,
+    Mail
   } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
@@ -37,6 +38,14 @@
       title: "Residents",
       url: "/admin/residents",
       icon: Users
+    }
+  ];
+
+  const secondaryItems = [
+    {
+      title: "Email Dispatcher",
+      url: "/admin/email-dispatcher",
+      icon: Mail
     },
     {
       title: "Settings",
@@ -61,6 +70,22 @@
       <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
       <Sidebar.Menu>
         {#each items as item}
+          <Sidebar.MenuItem>
+            <Sidebar.MenuButton isActive={page.url.pathname === item.url}>
+              {#snippet child({ props })}
+                <a href={item.url} {...props}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </a>
+              {/snippet}
+            </Sidebar.MenuButton>
+          </Sidebar.MenuItem>
+        {/each}
+      </Sidebar.Menu>
+    </Sidebar.Group>
+    <Sidebar.Group class="mt-auto">
+      <Sidebar.Menu>
+        {#each secondaryItems as item}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton isActive={page.url.pathname === item.url}>
               {#snippet child({ props })}
