@@ -4,6 +4,7 @@
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
   import { RefreshCcw, GraduationCap, School, CalendarDays, CircleDollarSign } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import { uiSettings } from "$lib/settings.svelte";
@@ -161,11 +162,9 @@
   {#if isLoading}
     <LoadingView text="Generating reports..." />
   {:else if error}
-    <div
-      class="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm font-medium text-destructive"
-    >
-      {error}
-    </div>
+    <ErrorView {error}>
+      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+    </ErrorView>
   {:else}
     <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
       <TermFilter onSelect={() => loadData()} />

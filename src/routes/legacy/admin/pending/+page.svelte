@@ -32,6 +32,7 @@
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
   import { encryptJSON } from "$lib/crypto";
   import type { ReceiptData } from "$lib/types";
 
@@ -266,153 +267,152 @@
     {/snippet}
   </SubpageHeader>
 
-  {#if error}
-    <div
-      class="flex items-center gap-3 rounded-lg border bg-muted/20 p-4 text-sm font-medium text-destructive"
-    >
-      <CircleAlert class="h-4 w-4" />
-      <p>{error}</p>
-    </div>
-  {/if}
-
-  <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
-    <TermFilter onSelect={() => loadData()} />
-  </div>
-
   {#if isLoading}
     <LoadingView text="Loading records..." />
-  {:else if queue.length > 0}
-    <Card.Root class="overflow-hidden p-0">
-      <Card.Content class="p-0">
-        <Table.Root>
-          <Table.Header>
-            <Table.Row class="bg-muted/5">
-              <Table.Head class="w-10 px-4">
-                <Checkbox
-                  checked={selectedIndices.size === queue.length && queue.length > 0}
-                  onCheckedChange={toggleSelectAll}
-                  aria-label="Select all"
-                />
-              </Table.Head>
-              <Table.Head class="px-2 py-3"
-                ><button
-                  onclick={() => toggleSort("DATE")}
-                  class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
-                  >Date {#if sortKey === "DATE"}{sortOrder === "asc" ? "↑" : "↓"}{:else}<ArrowUpDown
-                      class="h-3 w-3 opacity-30"
-                    />{/if}</button
-                ></Table.Head
-              >
-              <Table.Head class="px-2 py-3"
-                ><button
-                  onclick={() => toggleSort("ACCOUNT")}
-                  class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
-                  >Account {#if sortKey === "ACCOUNT"}{sortOrder === "asc"
-                      ? "↑"
-                      : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                ></Table.Head
-              >
-              <Table.Head class="px-2 py-3 text-[10px] font-bold text-muted-foreground uppercase"
-                >Composition</Table.Head
-              >
-              <Table.Head
-                class="px-2 py-3 text-right text-[10px] font-bold text-muted-foreground uppercase"
-                >Amount</Table.Head
-              >
-              <Table.Head class="px-2 py-3 text-[10px] font-bold text-muted-foreground uppercase"
-                >Payment Details</Table.Head
-              >
-              <Table.Head class="px-4 py-3"
-                ><button
-                  onclick={() => toggleSort("TOTAL")}
-                  class="flex w-full items-center justify-end gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
-                  >Total {#if sortKey === "TOTAL"}{sortOrder === "asc"
-                      ? "↑"
-                      : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                ></Table.Head
-              >
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {#each sortedQueue as record}
-              {@const activeItems = getActiveItems(record)}
-              <Table.Row
-                class="group cursor-pointer border-b transition-colors last:border-b-0 hover:bg-muted/5 {selectedIndices.has(
-                  record.ledgerIndex!
-                )
-                  ? 'bg-muted/5'
-                  : ''}"
-                onclick={() => toggleSelect(record.ledgerIndex!)}
-              >
-                <Table.Cell class="w-10 px-4 py-2 align-top"
-                  ><Checkbox
-                    checked={selectedIndices.has(record.ledgerIndex!)}
-                    onCheckedChange={() => toggleSelect(record.ledgerIndex!)}
-                    onclick={(e) => e.stopPropagation()}
-                    aria-label="Select row"
-                  /></Table.Cell
+  {:else if error}
+    <ErrorView {error} class="mb-3">
+      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+    </ErrorView>
+  {:else}
+    <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+      <TermFilter onSelect={() => loadData()} />
+    </div>
+
+    {#if queue.length > 0}
+      <Card.Root class="overflow-hidden p-0">
+        <Card.Content class="p-0">
+          <Table.Root>
+            <Table.Header>
+              <Table.Row class="bg-muted/5">
+                <Table.Head class="w-10 px-4">
+                  <Checkbox
+                    checked={selectedIndices.size === queue.length && queue.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                  />
+                </Table.Head>
+                <Table.Head class="px-2 py-3"
+                  ><button
+                    onclick={() => toggleSort("DATE")}
+                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
+                    >Date {#if sortKey === "DATE"}{sortOrder === "asc"
+                        ? "↑"
+                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                  ></Table.Head
                 >
-                <Table.Cell class="w-32 px-2 py-2 align-top text-nowrap"
-                  ><span class="text-xs text-muted-foreground tabular-nums"
-                    >{formatDate(record.date)}</span
-                  ></Table.Cell
+                <Table.Head class="px-2 py-3"
+                  ><button
+                    onclick={() => toggleSort("ACCOUNT")}
+                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
+                    >Account {#if sortKey === "ACCOUNT"}{sortOrder === "asc"
+                        ? "↑"
+                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                  ></Table.Head
                 >
-                <Table.Cell class="w-64 px-2 py-2 align-top"
-                  ><span class="text-sm leading-tight font-bold text-foreground">{record.name}</span
-                  ></Table.Cell
+                <Table.Head class="px-2 py-3 text-[10px] font-bold text-muted-foreground uppercase"
+                  >Composition</Table.Head
                 >
-                <Table.Cell colspan={2} class="p-0 align-top">
-                  <div class="flex flex-col">
-                    {#each activeItems as fee}
-                      <div
-                        class="flex items-center justify-between border-b border-muted/10 px-3 py-1.5 last:border-b-0"
-                      >
-                        <div class="flex flex-col">
-                          <span class="text-xs font-semibold text-foreground/80">{fee.name}</span
-                          ><span
-                            class="text-[9px] font-bold tracking-tighter text-muted-foreground uppercase"
-                            >{record.type}</span
-                          >
-                        </div>
-                        <span class="font-mono text-xs font-bold text-muted-foreground tabular-nums"
-                          >{formatAmount(fee.amount)}</span
-                        >
-                      </div>
-                    {/each}
-                  </div>
-                </Table.Cell>
-                <Table.Cell class="px-2 py-2 align-top"
-                  ><div class="flex flex-col">
-                    <span
-                      class="text-[10px] leading-none font-bold tracking-tight text-muted-foreground uppercase"
-                      >{translateMop(record.mop)}</span
-                    ><span class="mt-0.5 text-[9px] text-muted-foreground tabular-nums"
-                      >{record.mopRefNo === "N/A" || !record.mopRefNo
-                        ? "No Reference Code"
-                        : record.mopRefNo}</span
-                    >
-                  </div></Table.Cell
+                <Table.Head
+                  class="px-2 py-3 text-right text-[10px] font-bold text-muted-foreground uppercase"
+                  >Amount</Table.Head
                 >
-                <Table.Cell class="px-4 py-2 text-right align-top"
-                  ><span
-                    class="font-mono text-sm font-bold whitespace-nowrap text-foreground tabular-nums"
-                    >{formatCurrency(record.amount)}</span
-                  ></Table.Cell
+                <Table.Head class="px-2 py-3 text-[10px] font-bold text-muted-foreground uppercase"
+                  >Payment Details</Table.Head
+                >
+                <Table.Head class="px-4 py-3"
+                  ><button
+                    onclick={() => toggleSort("TOTAL")}
+                    class="flex w-full items-center justify-end gap-1.5 text-[10px] font-bold text-muted-foreground uppercase transition-colors hover:text-foreground"
+                    >Total {#if sortKey === "TOTAL"}{sortOrder === "asc"
+                        ? "↑"
+                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                  ></Table.Head
                 >
               </Table.Row>
-            {/each}
-          </Table.Body>
-        </Table.Root>
-      </Card.Content>
-    </Card.Root>
-  {:else if !isLoading && !error}
-    <div
-      class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
-    >
-      <CircleCheckBig class="h-8 w-8" />
-      <div class="text-center">
-        <p class="font-semibold text-foreground">No pending entries.</p>
+            </Table.Header>
+            <Table.Body>
+              {#each sortedQueue as record}
+                {@const activeItems = getActiveItems(record)}
+                <Table.Row
+                  class="group cursor-pointer border-b transition-colors last:border-b-0 hover:bg-muted/5 {selectedIndices.has(
+                    record.ledgerIndex!
+                  )
+                    ? 'bg-muted/5'
+                    : ''}"
+                  onclick={() => toggleSelect(record.ledgerIndex!)}
+                >
+                  <Table.Cell class="w-10 px-4 py-2 align-top"
+                    ><Checkbox
+                      checked={selectedIndices.has(record.ledgerIndex!)}
+                      onCheckedChange={() => toggleSelect(record.ledgerIndex!)}
+                      onclick={(e) => e.stopPropagation()}
+                      aria-label="Select row"
+                    /></Table.Cell
+                  >
+                  <Table.Cell class="w-32 px-2 py-2 align-top text-nowrap"
+                    ><span class="text-xs text-muted-foreground tabular-nums"
+                      >{formatDate(record.date)}</span
+                    ></Table.Cell
+                  >
+                  <Table.Cell class="w-64 px-2 py-2 align-top"
+                    ><span class="text-sm leading-tight font-bold text-foreground"
+                      >{record.name}</span
+                    ></Table.Cell
+                  >
+                  <Table.Cell colspan={2} class="p-0 align-top">
+                    <div class="flex flex-col">
+                      {#each activeItems as fee}
+                        <div
+                          class="flex items-center justify-between border-b border-muted/10 px-3 py-1.5 last:border-b-0"
+                        >
+                          <div class="flex flex-col">
+                            <span class="text-xs font-semibold text-foreground/80">{fee.name}</span
+                            ><span
+                              class="text-[9px] font-bold tracking-tighter text-muted-foreground uppercase"
+                              >{record.type}</span
+                            >
+                          </div>
+                          <span
+                            class="font-mono text-xs font-bold text-muted-foreground tabular-nums"
+                            >{formatAmount(fee.amount)}</span
+                          >
+                        </div>
+                      {/each}
+                    </div>
+                  </Table.Cell>
+                  <Table.Cell class="px-2 py-2 align-top"
+                    ><div class="flex flex-col">
+                      <span
+                        class="text-[10px] leading-none font-bold tracking-tight text-muted-foreground uppercase"
+                        >{translateMop(record.mop)}</span
+                      ><span class="mt-0.5 text-[9px] text-muted-foreground tabular-nums"
+                        >{record.mopRefNo === "N/A" || !record.mopRefNo
+                          ? "No Reference Code"
+                          : record.mopRefNo}</span
+                      >
+                    </div></Table.Cell
+                  >
+                  <Table.Cell class="px-4 py-2 text-right align-top"
+                    ><span
+                      class="font-mono text-sm font-bold whitespace-nowrap text-foreground tabular-nums"
+                      >{formatCurrency(record.amount)}</span
+                    ></Table.Cell
+                  >
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        </Card.Content>
+      </Card.Root>
+    {:else}
+      <div
+        class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
+      >
+        <CircleCheckBig class="h-8 w-8" />
+        <div class="text-center">
+          <p class="font-semibold text-foreground">No pending entries.</p>
+        </div>
       </div>
-    </div>
+    {/if}
   {/if}
 </div>

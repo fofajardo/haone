@@ -6,13 +6,11 @@
   import { fetchSheetRowsRaw, deleteSheetRow, deleteRowFromCache } from "$lib/google-sheets";
   import {
     formatCurrency,
-    formatAmount,
     formatAccounting,
     formatDate,
     translateMop,
     translatePeriod,
     translateType,
-    parseCSVAmount,
     parseRef
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
@@ -22,14 +20,9 @@
   import { Label } from "$lib/components/ui/label";
   import {
     LoaderCircle,
-    ChevronLeft,
     History,
     User,
-    CreditCard,
-    FileText,
     ShieldCheck,
-    Link as LinkIcon,
-    ArrowUpRight,
     ExternalLink,
     Pencil,
     Trash2
@@ -40,7 +33,7 @@
   const id = $derived(page.params.id);
 
   import { JOURNAL_COL as JOR, ACCOUNT_COL as ACC, type JournalRecord } from "$lib/schemas";
-  import { mapRowToJournal, parseAmount } from "$lib/resident-logic";
+  import { mapRowToJournal } from "$lib/resident-logic";
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorStNo = $state<string | null>(null);

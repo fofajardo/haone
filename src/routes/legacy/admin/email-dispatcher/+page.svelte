@@ -7,6 +7,8 @@
   import { Button } from "$lib/components/ui/button";
   import { Progress } from "$lib/components/ui/progress";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import { formatCurrency, formatAmount } from "$lib/receipt-utils";
   import {
@@ -190,12 +192,11 @@
             {/if}
 
             {#if error}
-              <div
-                class="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-xs font-medium text-destructive"
-              >
-                <CircleAlert class="mt-0.5 h-4 w-4" />
-                <span>{error}</span>
-              </div>
+              <ErrorView {error}>
+                <Button variant="outline" size="sm" class="mt-2" onclick={runBatch}
+                  >Try Again</Button
+                >
+              </ErrorView>
             {/if}
 
             {#if isSuccess}

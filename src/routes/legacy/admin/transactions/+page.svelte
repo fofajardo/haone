@@ -36,6 +36,7 @@
   import type { ReceiptItem } from "$lib/types";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
 
   interface TransactionRecord {
     raw: string[];
@@ -194,185 +195,191 @@
     {/snippet}
   </SubpageHeader>
 
-  <div class="grid gap-2 lg:grid-cols-12">
-    <div class="lg:col-span-2">
-      <TermFilter onSelect={() => loadData()} />
-    </div>
-    <div class="space-y-1 lg:col-span-5">
-      <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
-      <div class="relative">
-        <Search class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          bind:value={filterSearch}
-          placeholder="Name, account, or notes..."
-          class="h-9 pl-9 text-xs"
-        />
-      </div>
-    </div>
-
-    <div class="space-y-1 lg:col-span-2">
-      <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label>
-      <NativeSelect.Root bind:value={filterType} class="h-9 text-xs font-semibold">
-        <NativeSelect.Option value="ALL">All Types</NativeSelect.Option>
-        {#each transactionTypes as type}
-          <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
-        {/each}
-      </NativeSelect.Root>
-    </div>
-
-    <div class="space-y-1 lg:col-span-2">
-      <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Processor</Label>
-      <NativeSelect.Root bind:value={filterMop} class="h-9 text-xs font-semibold">
-        <NativeSelect.Option value="ALL">All Methods</NativeSelect.Option>
-        {#each mopTypes as mop}
-          <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>
-        {/each}
-      </NativeSelect.Root>
-    </div>
-
-    <div class="flex items-end lg:col-span-1">
-      <Button variant="outline" size="sm" onclick={resetFilters} class="h-9 w-full px-2 text-xs">
-        <FunnelX class="mr-2 h-4 w-4" /> Clear
-      </Button>
-    </div>
-  </div>
-
   {#if isLoading}
     <LoadingView text="Loading transactions..." />
   {:else if error}
-    <div
-      class="flex h-64 flex-col items-center justify-center gap-2 rounded-xl border border-destructive/10 bg-destructive/5"
-    >
-      <p class="text-sm font-bold text-destructive">{error}</p>
-      <Button variant="outline" size="sm" onclick={() => loadData()}>Try Again</Button>
-    </div>
-  {:else if filteredJournal.length > 0}
-    <Card.Root class="overflow-hidden p-0">
-      <Card.Content class="p-0">
-        <div class="overflow-x-auto">
-          <Table.Root>
-            <Table.Header>
-              <Table.Row class="bg-muted/5">
-                <Table.Head class="px-4 py-3"
-                  ><button
-                    onclick={() => toggleSort("DATE")}
-                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                    >Date {#if sortKey === "DATE"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  ></Table.Head
-                >
-                <Table.Head class="px-4 py-3">
-                  <button
-                    onclick={() => toggleSort("CREATOR")}
-                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                    >Creator {#if sortKey === "CREATOR"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  >
-                </Table.Head>
-                <Table.Head class="px-4 py-3"
-                  ><button
-                    onclick={() => toggleSort("ACCOUNT")}
-                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                    >Account {#if sortKey === "ACCOUNT"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  ></Table.Head
-                >
-                <Table.Head class="px-4 py-3">
-                  <button
-                    onclick={() => toggleSort("TYPE")}
-                    class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                    >Type/MOP {#if sortKey === "TYPE"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  >
-                </Table.Head>
-                <Table.Head class="px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase"
-                  >Notes</Table.Head
-                >
-                <Table.Head class="px-4 py-3 text-right"
-                  ><button
-                    onclick={() => toggleSort("TOTAL")}
-                    class="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
-                    >Total {#if sortKey === "TOTAL"}{sortOrder === "asc"
-                        ? "↑"
-                        : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
-                  ></Table.Head
-                >
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {#each filteredJournal as record}
-                <Table.Row
-                  class="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/5"
-                  onclick={() => goto(`/legacy/admin/transactions/${record.id || ""}`)}
-                >
-                  <Table.Cell class="px-4 py-2 align-top text-xs text-muted-foreground tabular-nums"
-                    >{formatDate(record.date)}</Table.Cell
-                  >
-                  <Table.Cell class="px-4 py-2 align-top">
-                    <div class="flex flex-col">
-                      <span class="text-[11px] leading-tight font-bold text-foreground"
-                        >{record.creatorName}</span
-                      >
-                      <span class="text-[9px] font-medium text-muted-foreground"
-                        >{record.creator}</span
-                      >
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell class="w-64 px-4 py-2 align-top">
-                    <div class="flex flex-col">
-                      <span class="text-[11px] leading-tight font-bold text-foreground"
-                        >{record.name}</span
-                      >
-                      <span class="text-[9px] font-medium text-muted-foreground"
-                        >{record.account}</span
-                      >
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell class="px-4 py-2 align-top">
-                    <div class="flex flex-col">
-                      <span
-                        class="text-[10px] font-bold tracking-tight text-muted-foreground uppercase"
-                        >{translateType(record.type, transactionTypes)}</span
-                      >
-                      <span class="text-[9px] text-muted-foreground"
-                        >{translateMop(record.mop)}</span
-                      >
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell class="max-w-[200px] truncate px-4 py-2 align-top"
-                    ><span class="text-[10px] text-muted-foreground">{record.notes || "—"}</span
-                    ></Table.Cell
-                  >
-                  <Table.Cell class="px-4 py-2 text-right align-top"
-                    ><span class="font-mono text-xs font-bold text-foreground"
-                      >{formatAccounting(record.amount)}</span
-                    ></Table.Cell
-                  >
-                </Table.Row>
-              {/each}
-            </Table.Body>
-          </Table.Root>
-        </div>
-      </Card.Content>
-    </Card.Root>
-    <div
-      class="flex items-center justify-between px-1 text-[10px] font-medium text-muted-foreground"
-    >
-      <p>Displaying {filteredJournal.length} of {journal.length} records</p>
-    </div>
+    <ErrorView {error}>
+      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+    </ErrorView>
   {:else}
-    <div
-      class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
-    >
-      <ListFilter class="h-8 w-8 text-muted-foreground" />
-      <div class="text-center">
-        <p class="font-semibold text-foreground">No records found.</p>
-        <p class="text-xs text-muted-foreground">Try adjusting your filters or search query.</p>
+    <div class="grid gap-2 lg:grid-cols-12">
+      <div class="lg:col-span-2">
+        <TermFilter onSelect={() => loadData()} />
+      </div>
+      <div class="space-y-1 lg:col-span-5">
+        <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
+        <div class="relative">
+          <Search
+            class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            bind:value={filterSearch}
+            placeholder="Name, account, or notes..."
+            class="h-9 pl-9 text-xs"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1 lg:col-span-2">
+        <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label
+        >
+        <NativeSelect.Root bind:value={filterType} class="h-9 text-xs font-semibold">
+          <NativeSelect.Option value="ALL">All Types</NativeSelect.Option>
+          {#each transactionTypes as type}
+            <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
+          {/each}
+        </NativeSelect.Root>
+      </div>
+
+      <div class="space-y-1 lg:col-span-2">
+        <Label class="text-[10px] font-bold text-muted-foreground uppercase"
+          >Payment Processor</Label
+        >
+        <NativeSelect.Root bind:value={filterMop} class="h-9 text-xs font-semibold">
+          <NativeSelect.Option value="ALL">All Methods</NativeSelect.Option>
+          {#each mopTypes as mop}
+            <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>
+          {/each}
+        </NativeSelect.Root>
+      </div>
+
+      <div class="flex items-end lg:col-span-1">
+        <Button variant="outline" size="sm" onclick={resetFilters} class="h-9 w-full px-2 text-xs">
+          <FunnelX class="mr-2 h-4 w-4" /> Clear
+        </Button>
       </div>
     </div>
+
+    {#if filteredJournal.length > 0}
+      <Card.Root class="overflow-hidden p-0">
+        <Card.Content class="p-0">
+          <div class="overflow-x-auto">
+            <Table.Root>
+              <Table.Header>
+                <Table.Row class="bg-muted/5">
+                  <Table.Head class="px-4 py-3"
+                    ><button
+                      onclick={() => toggleSort("DATE")}
+                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
+                      >Date {#if sortKey === "DATE"}{sortOrder === "asc"
+                          ? "↑"
+                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                    ></Table.Head
+                  >
+                  <Table.Head class="px-4 py-3">
+                    <button
+                      onclick={() => toggleSort("CREATOR")}
+                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
+                      >Creator {#if sortKey === "CREATOR"}{sortOrder === "asc"
+                          ? "↑"
+                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                    >
+                  </Table.Head>
+                  <Table.Head class="px-4 py-3"
+                    ><button
+                      onclick={() => toggleSort("ACCOUNT")}
+                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
+                      >Account {#if sortKey === "ACCOUNT"}{sortOrder === "asc"
+                          ? "↑"
+                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                    ></Table.Head
+                  >
+                  <Table.Head class="px-4 py-3">
+                    <button
+                      onclick={() => toggleSort("TYPE")}
+                      class="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
+                      >Type/MOP {#if sortKey === "TYPE"}{sortOrder === "asc"
+                          ? "↑"
+                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                    >
+                  </Table.Head>
+                  <Table.Head
+                    class="px-4 py-3 text-[10px] font-bold text-muted-foreground uppercase"
+                    >Notes</Table.Head
+                  >
+                  <Table.Head class="px-4 py-3 text-right"
+                    ><button
+                      onclick={() => toggleSort("TOTAL")}
+                      class="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase"
+                      >Total {#if sortKey === "TOTAL"}{sortOrder === "asc"
+                          ? "↑"
+                          : "↓"}{:else}<ArrowUpDown class="h-3 w-3 opacity-30" />{/if}</button
+                    ></Table.Head
+                  >
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {#each filteredJournal as record}
+                  <Table.Row
+                    class="cursor-pointer border-b transition-colors last:border-0 hover:bg-muted/5"
+                    onclick={() => goto(`/legacy/admin/transactions/${record.id || ""}`)}
+                  >
+                    <Table.Cell
+                      class="px-4 py-2 align-top text-xs text-muted-foreground tabular-nums"
+                      >{formatDate(record.date)}</Table.Cell
+                    >
+                    <Table.Cell class="px-4 py-2 align-top">
+                      <div class="flex flex-col">
+                        <span class="text-[11px] leading-tight font-bold text-foreground"
+                          >{record.creatorName}</span
+                        >
+                        <span class="text-[9px] font-medium text-muted-foreground"
+                          >{record.creator}</span
+                        >
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell class="w-64 px-4 py-2 align-top">
+                      <div class="flex flex-col">
+                        <span class="text-[11px] leading-tight font-bold text-foreground"
+                          >{record.name}</span
+                        >
+                        <span class="text-[9px] font-medium text-muted-foreground"
+                          >{record.account}</span
+                        >
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell class="px-4 py-2 align-top">
+                      <div class="flex flex-col">
+                        <span
+                          class="text-[10px] font-bold tracking-tight text-muted-foreground uppercase"
+                          >{translateType(record.type, transactionTypes)}</span
+                        >
+                        <span class="text-[9px] text-muted-foreground"
+                          >{translateMop(record.mop)}</span
+                        >
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell class="max-w-[200px] truncate px-4 py-2 align-top"
+                      ><span class="text-[10px] text-muted-foreground">{record.notes || "—"}</span
+                      ></Table.Cell
+                    >
+                    <Table.Cell class="px-4 py-2 text-right align-top"
+                      ><span class="font-mono text-xs font-bold text-foreground"
+                        >{formatAccounting(record.amount)}</span
+                      ></Table.Cell
+                    >
+                  </Table.Row>
+                {/each}
+              </Table.Body>
+            </Table.Root>
+          </div>
+        </Card.Content>
+      </Card.Root>
+      <div
+        class="flex items-center justify-between px-1 text-[10px] font-medium text-muted-foreground"
+      >
+        <p>Displaying {filteredJournal.length} of {journal.length} records</p>
+      </div>
+    {:else}
+      <div
+        class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
+      >
+        <ListFilter class="h-8 w-8 text-muted-foreground" />
+        <div class="text-center">
+          <p class="font-semibold text-foreground">No records found.</p>
+          <p class="text-xs text-muted-foreground">Try adjusting your filters or search query.</p>
+        </div>
+      </div>
+    {/if}
   {/if}
 </div>

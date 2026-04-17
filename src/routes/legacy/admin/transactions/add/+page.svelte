@@ -24,6 +24,7 @@
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
 
   // Account Sheet Indices
   const ACC = {
@@ -293,11 +294,11 @@
 
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}
-      <div
-        class="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm font-medium text-destructive"
-      >
-        {error}
-      </div>
+      <ErrorView {error} class="mb-4">
+        <Button variant="outline" size="sm" class="mt-2" onclick={() => loadAccounts()}
+          >Try Again</Button
+        >
+      </ErrorView>
     {/if}
 
     <Card.Root>

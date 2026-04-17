@@ -54,6 +54,7 @@
   } from "$lib/resident-logic";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
 
   const stno = $derived(page.params.stno);
 
@@ -203,13 +204,9 @@
   {#if isLoading}
     <LoadingView text="Loading profile..." />
   {:else if error}
-    <Card.Root class="border-destructive/20 bg-destructive/5">
-      <Card.Content class="flex flex-col items-center justify-center p-12 text-center">
-        <CircleAlert class="mb-4 h-12 w-12 text-destructive opacity-50" />
-        <h2 class="text-lg font-bold text-destructive">{error}</h2>
-        <Button variant="outline" class="mt-4" href="/legacy/admin/residents">Return to Hub</Button>
-      </Card.Content>
-    </Card.Root>
+    <ErrorView {error}>
+      <Button variant="outline" class="mt-4" href="/legacy/admin/residents">Return to Hub</Button>
+    </ErrorView>
   {:else if account}
     <div class="grid gap-4 lg:grid-cols-12">
       <div class="lg:col-span-3">
