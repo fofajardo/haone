@@ -223,7 +223,7 @@
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label
         >
-        <NativeSelect.Root bind:value={filterType} class="h-9 text-xs font-semibold">
+        <NativeSelect.Root bind:value={filterType} class="h-10 w-full text-xs font-semibold">
           <NativeSelect.Option value="ALL">All Types</NativeSelect.Option>
           {#each transactionTypes as type}
             <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
@@ -235,7 +235,7 @@
         <Label class="text-[10px] font-bold text-muted-foreground uppercase"
           >Payment Processor</Label
         >
-        <NativeSelect.Root bind:value={filterMop} class="h-9 text-xs font-semibold">
+        <NativeSelect.Root bind:value={filterMop} class="h-10 w-full text-xs font-semibold">
           <NativeSelect.Option value="ALL">All Methods</NativeSelect.Option>
           {#each mopTypes as mop}
             <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>

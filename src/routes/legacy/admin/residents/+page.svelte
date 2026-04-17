@@ -192,7 +192,7 @@
 
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Room</Label>
-        <NativeSelect.Root bind:value={filterRoom} class="h-9 text-xs font-semibold">
+        <NativeSelect.Root bind:value={filterRoom} class="h-10 w-full text-xs font-semibold">
           {#each rooms as room}
             <NativeSelect.Option value={room}
               >{room === "ALL" ? "All Rooms" : room}</NativeSelect.Option
@@ -203,7 +203,7 @@
 
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Status</Label>
-        <NativeSelect.Root bind:value={filterStatus} class="h-9 text-xs font-semibold">
+        <NativeSelect.Root bind:value={filterStatus} class="h-10 w-full text-xs font-semibold">
           <NativeSelect.Option value="ALL">All Statuses</NativeSelect.Option>
           <NativeSelect.Option value="FULLY_PAID">Fully Paid</NativeSelect.Option>
           <NativeSelect.Option value="PENDING">Pending</NativeSelect.Option>
