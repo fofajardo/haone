@@ -179,7 +179,11 @@
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Active Residents
             </p>
-            <h3 class="text-3xl font-black text-foreground">{stats.activeResidents}</h3>
+            {#if isLoading}
+              <div class="h-9 w-16 animate-pulse rounded bg-muted/50"></div>
+            {:else}
+              <h3 class="text-3xl font-black text-foreground">{stats.activeResidents}</h3>
+            {/if}
           </div>
           <div class="rounded-2xl bg-brand/5 p-3 text-brand">
             <Users class="h-6 w-6" />
@@ -195,7 +199,11 @@
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Pending Receipts
             </p>
-            <h3 class="text-3xl font-black text-foreground">{stats.pendingSettlements}</h3>
+            {#if isLoading}
+              <div class="h-9 w-12 animate-pulse rounded bg-muted/50"></div>
+            {:else}
+              <h3 class="text-3xl font-black text-foreground">{stats.pendingSettlements}</h3>
+            {/if}
           </div>
           <div class="rounded-2xl bg-brand/5 p-3 text-brand">
             <Clock class="h-6 w-6" />
@@ -211,9 +219,13 @@
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Total Collected
             </p>
-            <h3 class="text-2xl font-black text-foreground">
-              {formatCurrency(stats.totalCollected)}
-            </h3>
+            {#if isLoading}
+              <div class="h-8 w-32 animate-pulse rounded bg-muted/50"></div>
+            {:else}
+              <h3 class="text-2xl font-black text-foreground">
+                {formatCurrency(stats.totalCollected)}
+              </h3>
+            {/if}
           </div>
           <div class="rounded-2xl bg-brand/5 p-3 text-brand">
             <TrendingUp class="h-6 w-6" />
@@ -229,7 +241,13 @@
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Collection Rate
             </p>
-            <h3 class="text-3xl font-black text-foreground">{stats.collectionRate.toFixed(1)}%</h3>
+            {#if isLoading}
+              <div class="h-9 w-20 animate-pulse rounded bg-muted/50"></div>
+            {:else}
+              <h3 class="text-3xl font-black text-foreground">
+                {stats.collectionRate.toFixed(1)}%
+              </h3>
+            {/if}
           </div>
           <div class="rounded-2xl bg-brand/5 p-3 text-brand">
             <CircleCheck class="h-6 w-6" />
