@@ -234,10 +234,10 @@
     </ErrorView>
   {:else}
     <div class="mb-4 grid gap-2 lg:grid-cols-12">
-      <div class="lg:col-span-2">
+      <div class="lg:col-span-3">
         <TermFilter onSelect={() => loadData()} />
       </div>
-      <div class="space-y-1 lg:col-span-10">
+      <div class="space-y-1 lg:col-span-9">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
         <div class="relative">
           <Search

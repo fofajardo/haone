@@ -152,10 +152,10 @@
     </ErrorView>
   {:else}
     <div class="grid gap-2 lg:grid-cols-12">
-      <div class="lg:col-span-2">
+      <div class="lg:col-span-3">
         <TermFilter onSelect={() => loadData()} />
       </div>
-      <div class="space-y-1 lg:col-span-5">
+      <div class="space-y-1 lg:col-span-4">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
         <div class="relative">
           <Search
@@ -199,7 +199,7 @@
       </div>
 
       <div class="flex items-end lg:col-span-1">
-        <Button variant="outline" size="sm" onclick={resetFilters} class="h-9 w-full px-2 text-xs">
+        <Button variant="outline" size="sm" onclick={resetFilters} class="mb-1 h-9 w-full px-2">
           <FunnelX class="mr-2 h-4 w-4" /> Clear
         </Button>
       </div>
