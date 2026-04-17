@@ -142,6 +142,7 @@
       });
     }
 
+    emailDispatcher.batchType = "ACKNOWLEDGMENT";
     emailDispatcher.pushBatch(stagedEmails);
     goto("/admin/email-dispatcher");
   }
@@ -253,6 +254,7 @@
       <DataTable
         data={filteredQueue}
         {columns}
+        rowIdKey="ledgerIndex"
         pagination={tableSync.pagination}
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
