@@ -17,6 +17,7 @@
   import { FlexRender, createSvelteTable } from "$lib/components/ui/data-table/index.js";
   import { cn } from "$lib/utils";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
+  import { pluralize } from "$lib/receipt-utils";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -214,7 +215,7 @@
     <div class="flex flex-col items-center gap-4 text-sm sm:flex-row sm:gap-6">
       <span class="whitespace-nowrap">
         {table.getFilteredSelectedRowModel().rows.length} of
-        {table.getFilteredRowModel().rows.length} row(s) selected.
+        {pluralize(table.getFilteredRowModel().rows.length, "row", "rows")} selected.
       </span>
     </div>
     <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
