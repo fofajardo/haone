@@ -71,6 +71,10 @@ export async function fetchSheetRowsRaw(
   });
 
   if (!resp.ok) {
+    if (resp.status === 401) {
+      auth.logout();
+      throw new Error("Session expired. Please sign in again.");
+    }
     const err = await resp.json();
     throw new Error(err.error?.message || "Failed to fetch sheet data");
   }
@@ -122,6 +126,10 @@ export async function updateSheetValue(spreadsheetId: string, range: string, val
   });
 
   if (!resp.ok) {
+    if (resp.status === 401) {
+      auth.logout();
+      throw new Error("Session expired. Please sign in again.");
+    }
     const err = await resp.json();
     throw new Error(err.error?.message || "Failed to update sheet");
   }
@@ -154,6 +162,10 @@ export async function batchUpdateValues(
   });
 
   if (!resp.ok) {
+    if (resp.status === 401) {
+      auth.logout();
+      throw new Error("Session expired. Please sign in again.");
+    }
     const err = await resp.json();
     throw new Error(err.error?.message || "Failed to batch update sheet");
   }
@@ -182,6 +194,10 @@ export async function appendSheetRow(spreadsheetId: string, range: string, value
   });
 
   if (!resp.ok) {
+    if (resp.status === 401) {
+      auth.logout();
+      throw new Error("Session expired. Please sign in again.");
+    }
     const err = await resp.json();
     throw new Error(err.error?.message || "Failed to append row");
   }
@@ -231,6 +247,10 @@ export async function deleteSheetRow(spreadsheetId: string, sheetName: string, r
   });
 
   if (!resp.ok) {
+    if (resp.status === 401) {
+      auth.logout();
+      throw new Error("Session expired. Please sign in again.");
+    }
     const err = await resp.json();
     throw new Error(err.error?.message || "Failed to delete row");
   }
