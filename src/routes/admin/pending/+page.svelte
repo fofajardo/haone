@@ -37,7 +37,7 @@
     try {
       const rows = await fetchSheetRowsRaw(
         brandingState.spreadsheetId,
-        "journal_general!A:V",
+        "journal_general!A:W",
         forceRefresh
       );
       queue = rows
@@ -94,7 +94,7 @@
       const url = `${baseUrl}?data=${encrypted}`;
 
       stagedEmails.push({
-        id: record.ledgerIndex!.toString(),
+        id: record.id.toString(),
         to: recipient,
         recipientName: receipt.receivedFrom,
         template: AcknowledgmentTemplate as any,
@@ -115,7 +115,7 @@
             },
             { range: `journal_general!V${record.ledgerIndex}`, values: [[url]] }
           ];
-          await batchUpdateValues(brandingState.spreadsheetId, updates);
+          await batchUpdateValues(brandingState.spreadsheetId!, updates);
           invalidateCache();
         }
       });
@@ -132,8 +132,9 @@
     error = null;
 
     try {
-      const updates = Array.from(selectedIndices).map((idx) => ({
-        range: `journal_general!A${idx}:W${idx}`,
+      const selectedRecords = queue.filter((r) => selectedIndices.has(r.ledgerIndex!.toString()));
+      const updates = selectedRecords.map((r) => ({
+        range: `journal_general!A${r.ledgerIndex}:W${r.ledgerIndex}`,
         values: [new Array(23).fill("")]
       }));
 
