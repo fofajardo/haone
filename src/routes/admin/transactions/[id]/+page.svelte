@@ -375,33 +375,37 @@
           </div>
         </div>
 
-        <!-- BOTTOM: Remarks -->
-        <div class="space-y-6 border-t border-border pt-8">
-          <div class="grid gap-8 md:grid-cols-2">
-            <div class="space-y-3">
-              <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                >Public Remarks</Label
-              >
-              <div
-                class="rounded-xl border border-border bg-muted/20 p-5 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground"
-              >
-                {transaction.notes || "No public remarks provided."}
-              </div>
-            </div>
-            {#if transaction.notesPrivate}
-              <div class="space-y-3">
-                <Label class="text-[10px] font-bold tracking-widest text-primary uppercase"
-                  >Private Notes</Label
-                >
-                <div
-                  class="rounded-xl border border-primary/10 bg-primary/5 p-5 text-sm leading-relaxed text-foreground/80 italic"
-                >
-                  {transaction.notesPrivate}
+        {#if transaction.notes?.trim() || transaction.notesPrivate?.trim()}
+          <!-- BOTTOM: Remarks -->
+          <div class="space-y-6 border-t border-border pt-8">
+            <div class="grid gap-8 md:grid-cols-2">
+              {#if transaction.notes?.trim()}
+                <div class="space-y-3">
+                  <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                    >Public Remarks</Label
+                  >
+                  <div
+                    class="rounded-xl border border-border bg-muted/20 p-5 text-sm leading-relaxed text-muted-foreground"
+                  >
+                    {transaction.notes}
+                  </div>
                 </div>
-              </div>
-            {/if}
+              {/if}
+              {#if transaction.notesPrivate?.trim()}
+                <div class="space-y-3">
+                  <Label class="text-[10px] font-bold tracking-widest text-primary uppercase"
+                    >Private Notes</Label
+                  >
+                  <div
+                    class="rounded-xl border border-primary/10 bg-primary/5 p-5 text-sm leading-relaxed text-foreground/80 italic"
+                  >
+                    {transaction.notesPrivate}
+                  </div>
+                </div>
+              {/if}
+            </div>
           </div>
-        </div>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
