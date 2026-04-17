@@ -27,7 +27,11 @@
     Pencil,
     Trash2,
     Banknote,
-    Smartphone
+    Smartphone,
+    ListFilter as ListFilterIcon,
+    Hash,
+    Info,
+    Lock
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -45,6 +49,7 @@
   let error = $state<string | null>(null);
   let rowIndex = $state<number | null>(null);
   let isDialogOpen = $state(false);
+  let isSystemAlertOpen = $state(false);
 
   async function loadTransaction() {
     if (!brandingState.spreadsheetId) return;
@@ -260,66 +265,136 @@
         </div>
       </Card.Header>
 
-      <Card.Content class="space-y-10 p-8">
+      <Card.Content class="space-y-10 px-8 pb-8">
         <!-- TOP: Parties -->
         <div class="grid gap-8 md:grid-cols-2">
-          <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
-            <Label
-              class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-            >
-              <User class="h-3.5 w-3.5" /> Account Holder
-            </Label>
+          {#if transaction.creator && !transaction.creator.startsWith("_") && creatorStNo}
             <a
-              href="/admin/residents/{transaction.stno}"
-              class="group block space-y-1 transition-all hover:opacity-80"
+              href="/admin/residents/{creatorStNo}"
+              class="group block space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
             >
-              <p
-                class="text-base font-bold text-foreground transition-colors group-hover:text-primary"
+              <Label
+                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
               >
-                {transaction.name}
-              </p>
-              <p class="text-xs font-medium text-muted-foreground">{transaction.account}</p>
-              <p class="mt-1 font-mono text-[10px] font-bold text-primary">
-                {transaction.stno}
-              </p>
-            </a>
-          </div>
-          <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
-            <Label
-              class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-            >
-              <ShieldCheck class="h-3.5 w-3.5" /> Entry Creator
-            </Label>
-            {#if creatorStNo}
-              <a
-                href="/admin/residents/{creatorStNo}"
-                class="group block space-y-1 transition-all hover:opacity-80"
-              >
-                <p
-                  class="text-base font-bold text-foreground transition-colors group-hover:text-primary"
-                >
+                <ShieldCheck class="h-3.5 w-3.5" /> Recorder
+              </Label>
+              <div class="space-y-1 text-left">
+                <p class="text-base font-bold text-foreground">
                   {transaction.creatorName}
                 </p>
-                <p class="text-xs font-medium text-muted-foreground">{transaction.creator}</p>
-                <p class="mt-1 font-mono text-[10px] font-bold text-primary">
+                <p class="text-xs font-medium text-muted-foreground">
+                  {transaction.creator}
+                </p>
+                <p class="mt-1 font-mono text-[10px] font-bold text-muted-foreground/80">
                   {creatorStNo}
                 </p>
-              </a>
-            {:else}
-              <div class="space-y-1">
-                <p class="text-base font-bold text-foreground">{transaction.creatorName}</p>
-                <p class="text-xs font-medium text-muted-foreground">{transaction.creator}</p>
               </div>
-            {/if}
-          </div>
+            </a>
+          {:else if transaction.creator && transaction.creator.startsWith("_")}
+            <button
+              onclick={() => (isSystemAlertOpen = true)}
+              class="group block w-full cursor-pointer space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
+            >
+              <Label
+                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
+              >
+                <ShieldCheck class="h-3.5 w-3.5" /> Recorder
+              </Label>
+              <div class="space-y-1 text-left">
+                <p class="text-base font-bold text-foreground">
+                  {transaction.creatorName}
+                </p>
+                <p class="text-xs font-medium text-muted-foreground">
+                  {transaction.creator}
+                </p>
+              </div>
+            </button>
+          {:else}
+            <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
+              <Label
+                class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              >
+                <ShieldCheck class="h-3.5 w-3.5" /> Recorder
+              </Label>
+              <div class="space-y-1">
+                <p class="text-base font-bold text-foreground">
+                  {transaction.creatorName}
+                </p>
+                <p class="text-xs font-medium text-muted-foreground">
+                  {transaction.creator}
+                </p>
+              </div>
+            </div>
+          {/if}
+
+          {#if !transaction.account?.startsWith("_")}
+            <a
+              href="/admin/residents/{transaction.stno}"
+              class="group block space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
+            >
+              <Label
+                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
+              >
+                <User class="h-3.5 w-3.5" /> Account
+              </Label>
+              <div class="space-y-1 text-left">
+                <p class="text-base font-bold text-foreground">
+                  {transaction.name}
+                </p>
+                <p class="text-xs font-medium text-muted-foreground">
+                  {transaction.account}
+                </p>
+                <p class="mt-1 font-mono text-[10px] font-bold text-muted-foreground/80">
+                  {transaction.stno}
+                </p>
+              </div>
+            </a>
+          {:else if transaction.account?.startsWith("_")}
+            <button
+              onclick={() => (isSystemAlertOpen = true)}
+              class="group block w-full cursor-pointer space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
+            >
+              <Label
+                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
+              >
+                <User class="h-3.5 w-3.5" /> Account
+              </Label>
+              <div class="space-y-1 text-left">
+                <p class="text-base font-bold text-foreground">
+                  {transaction.name}
+                </p>
+                <p class="text-xs font-medium text-muted-foreground">
+                  {transaction.account}
+                </p>
+              </div>
+            </button>
+          {:else}
+            <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
+              <Label
+                class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              >
+                <User class="h-3.5 w-3.5" /> Account
+              </Label>
+              <div class="space-y-1">
+                <p class="text-base font-bold text-foreground">
+                  {transaction.name}
+                </p>
+                <p class="text-xs font-medium text-muted-foreground">
+                  {transaction.account}
+                </p>
+              </div>
+            </div>
+          {/if}
         </div>
 
         <!-- MID: Ledger Details -->
         <div class="grid gap-12 md:grid-cols-2">
           <div class="space-y-6">
-            <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-              >Particulars</Label
+            <Label
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
             >
+              <ListFilterIcon class="h-3 w-3" /> Particulars
+            </Label>
             <div class="space-y-3">
               {#each fees as fee}
                 <div class="flex items-center justify-between border-b border-border pb-3">
@@ -337,9 +412,11 @@
           </div>
 
           <div class="space-y-6">
-            <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-              >Reference Identifiers</Label
+            <Label
+              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
             >
+              <Hash class="h-3 w-3" /> Reference Identifiers
+            </Label>
             <div class="grid grid-cols-1 gap-6">
               <div class="space-y-1.5">
                 <Label class="text-[10px] font-bold text-muted-foreground uppercase"
@@ -381,9 +458,11 @@
             <div class="grid gap-8 md:grid-cols-2">
               {#if transaction.notes?.trim()}
                 <div class="space-y-3">
-                  <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                    >Public Remarks</Label
+                  <Label
+                    class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
                   >
+                    <Info class="h-3 w-3" /> Public Remarks
+                  </Label>
                   <div
                     class="rounded-xl border border-border bg-muted/20 p-5 text-sm leading-relaxed text-muted-foreground"
                   >
@@ -393,9 +472,11 @@
               {/if}
               {#if transaction.notesPrivate?.trim()}
                 <div class="space-y-3">
-                  <Label class="text-[10px] font-bold tracking-widest text-primary uppercase"
-                    >Private Notes</Label
+                  <Label
+                    class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-primary uppercase"
                   >
+                    <Lock class="h-3 w-3" /> Private Notes
+                  </Label>
                   <div
                     class="rounded-xl border border-primary/10 bg-primary/5 p-5 text-sm leading-relaxed text-foreground/80 italic"
                   >
@@ -410,3 +491,18 @@
     </Card.Root>
   {/if}
 </div>
+
+<AlertDialog.Root bind:open={isSystemAlertOpen}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>System Account</AlertDialog.Title>
+      <AlertDialog.Description>
+        This entry was generated by a system process or a legacy migration. It does not have a
+        corresponding resident profile.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Action onclick={() => (isSystemAlertOpen = false)}>Close</AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
