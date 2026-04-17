@@ -3,6 +3,8 @@
 import type { PageInfo } from "$lib/types";
 
 declare global {
+  const __COMMIT_SHA__: string;
+  const __APP_VERSION__: string;
   namespace App {
     // interface Error {}
     // interface Locals {}
