@@ -60,6 +60,21 @@
     clickedAction = type;
     callback();
   }
+
+  const receiptDetails = $derived([
+    { label: "Issuer", value: activeBranding.issuerName },
+    { label: "Date Issued", value: formatDate(receiptData.dateIssued) },
+    { label: "Payment Date", value: formatDate(receiptData.paymentDate) },
+    { label: "Period", value: translatePeriod(receiptData.period) },
+    { label: "Series Number", value: receiptData.seriesNumber, mono: true },
+    { label: "Received From", value: receiptData.receivedFrom },
+    { label: "Received By", value: receiptData.receivedBy },
+    { label: "Payment Processor", value: translateMop(receiptData.processor) },
+    { label: "Reference Number", value: refInfo.reference, mono: true },
+    ...(refInfo.invoice
+      ? [{ label: "InstaPay Invoice No.", value: refInfo.invoice, mono: true }]
+      : [])
+  ]);
 </script>
 
 <div class="w-full max-w-2xl space-y-6 print:hidden">
@@ -88,58 +103,23 @@
           <h3 class="text-xs font-semibold tracking-widest uppercase">Acknowledgment Receipt</h3>
         </div>
         <div class="space-y-3 px-1">
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Issuer</span>
-            <span class="text-sm font-medium">{activeBranding.issuerName}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Date Issued</span>
-            <span class="text-sm font-medium">{formatDate(receiptData.dateIssued)}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Payment Date</span>
-            <span class="text-sm font-medium">{formatDate(receiptData.paymentDate)}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Period</span>
-            <span class="text-sm font-medium">{translatePeriod(receiptData.period)}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Series Number</span>
-            <span class="font-mono text-sm">{receiptData.seriesNumber}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Received From</span>
-            <span class="text-sm font-medium">{receiptData.receivedFrom}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Received By</span>
-            <span class="text-sm font-medium">{receiptData.receivedBy}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Payment Processor</span>
-            <span class="text-sm font-medium">{translateMop(receiptData.processor)}</span>
-          </div>
-          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-muted-foreground uppercase">Reference Number</span>
-            <span class="font-mono text-sm">{refInfo.reference}</span>
-          </div>
-          {#if refInfo.invoice}
+          {#each receiptDetails as detail}
             <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between">
-              <span class="text-xs text-muted-foreground uppercase">InstaPay Invoice No.</span>
-              <span class="font-mono text-sm">{refInfo.invoice}</span>
+              <span class="text-xs font-bold text-muted-foreground uppercase">{detail.label}</span>
+              <span class="text-sm {detail.mono ? 'font-mono' : 'font-medium'}">{detail.value}</span
+              >
             </div>
-          {/if}
+          {/each}
         </div>
       </section>
 
       <!-- Line Items Table -->
       <div class="rounded-md border">
         <Table.Root>
-          <Table.Header class="hidden bg-muted/50 sm:table-header-group">
+          <Table.Header class="hidden bg-muted/50 text-xs sm:table-header-group">
             <Table.Row>
-              <Table.Head class="h-9">Description</Table.Head>
-              <Table.Head class="h-9 text-right">Amount</Table.Head>
+              <Table.Head class="h-9 font-bold uppercase">Description</Table.Head>
+              <Table.Head class="h-9 text-right font-bold uppercase">Amount</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -214,7 +194,7 @@
         for claim of input tax.
       </p>
       {#if qrDataUrl}
-        <div class="rounded border bg-white p-1 shadow-sm">
+        <div class="mt-4 rounded border bg-white p-1 shadow-sm">
           <img src={qrDataUrl} alt="Verification QR" class="h-16 w-16" />
         </div>
       {/if}
