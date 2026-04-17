@@ -25,7 +25,9 @@
     ShieldCheck,
     ExternalLink,
     Pencil,
-    Trash2
+    Trash2,
+    Banknote,
+    Smartphone
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -120,8 +122,15 @@
   );
 
   const total = $derived(fees.reduce((sum: number, f: { amount: number }) => sum + f.amount, 0));
-
   const mopInfo = $derived(transaction ? parseRef(transaction.mopRefNo) : null);
+ 
+  const headerColors = $derived(() => {
+    if (!transaction) return "bg-muted/5";
+    const mop = (transaction.mop || "").toUpperCase();
+    if (mop === "GCASH") return "bg-blue-500/10 dark:bg-blue-600/15 border-blue-500/20";
+    if (mop === "MAYA") return "bg-emerald-500/10 dark:bg-emerald-600/15 border-emerald-500/20";
+    return "bg-muted/5";
+  });
 </script>
 
 <div class="space-y-6">
@@ -146,7 +155,7 @@
             <Pencil class="h-3 w-3" />
             Edit
           </Button>
-
+ 
           <AlertDialog.Root bind:open={isDialogOpen}>
             <AlertDialog.Trigger>
               {#snippet child({ props })}
@@ -200,7 +209,7 @@
       {/if}
     {/snippet}
   </SubpageHeader>
-
+ 
   {#if isLoading}
     <LoadingView text="Loading transaction..." />
   {:else if error}
@@ -214,31 +223,38 @@
       </Card.Content>
     </Card.Root>
   {:else if transaction}
-    <Card.Root class="mx-auto max-w-4xl">
-      <Card.Header class="border-b bg-muted/5 pb-8">
+    <Card.Root class="mx-auto max-w-4xl overflow-hidden p-0">
+      <Card.Header class="border-b p-8 transition-colors {headerColors()}">
         <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div class="space-y-1">
-            <span class="text-[10px] font-black tracking-widest text-primary uppercase"
+            <span class="text-[10px] font-bold tracking-widest text-primary uppercase"
               >{translateType(transaction.type, transactionTypes)}</span
             >
             <div class="flex items-center gap-3">
-              <h2 class="text-3xl font-black tracking-tight text-foreground">
+              <h2 class="text-3xl font-bold tracking-tight text-foreground">
                 {formatCurrency(total)}
               </h2>
               <div class="h-6 w-px bg-border"></div>
-              <span class="text-[10px] font-black tracking-widest text-muted-foreground uppercase"
-                >{translateMop(transaction.mop)}</span
+              <div
+                class="flex items-center gap-1.5 font-bold tracking-widest text-foreground uppercase"
               >
+                {#if (transaction.mop || "").toUpperCase() === "CASH"}
+                  <Banknote class="h-3.5 w-3.5 opacity-60" />
+                {:else if (transaction.mop || "").toUpperCase() === "GCASH" || (transaction.mop || "").toUpperCase() === "MAYA"}
+                  <Smartphone class="h-3.5 w-3.5 opacity-60" />
+                {/if}
+                <span class="text-[10px]">{translateMop(transaction.mop)}</span>
+              </div>
             </div>
           </div>
           <div class="flex gap-10">
             <div class="flex flex-col items-end gap-1">
               <Label class="text-[10px] font-bold text-muted-foreground uppercase">Date</Label>
-              <p class="text-sm font-black text-foreground">{formatDate(transaction.date)}</p>
+              <p class="text-sm font-bold text-foreground">{formatDate(transaction.date)}</p>
             </div>
             <div class="flex flex-col items-end gap-1">
-              <Label class="text-[10px] font-bold text-muted-foreground uppercase">Period</Label>
-              <p class="text-sm leading-none font-black text-foreground">
+              <Label class="text-[10px] font-bold text-muted-foreground uppercase">Term</Label>
+              <p class="text-sm font-bold text-foreground">
                 {translatePeriod(transaction.period)}
               </p>
             </div>
@@ -251,7 +267,7 @@
         <div class="grid gap-8 md:grid-cols-2">
           <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
             <Label
-              class="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
             >
               <User class="h-3.5 w-3.5" /> Account Holder
             </Label>
@@ -260,7 +276,7 @@
               class="group block space-y-1 transition-all hover:opacity-80"
             >
               <p
-                class="text-base font-black text-foreground transition-colors group-hover:text-primary"
+                class="text-base font-bold text-foreground transition-colors group-hover:text-primary"
               >
                 {transaction.name}
               </p>
@@ -272,7 +288,7 @@
           </div>
           <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
             <Label
-              class="flex items-center gap-2 text-[10px] font-black tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
             >
               <ShieldCheck class="h-3.5 w-3.5" /> Entry Creator
             </Label>
@@ -282,7 +298,7 @@
                 class="group block space-y-1 transition-all hover:opacity-80"
               >
                 <p
-                  class="text-base font-black text-foreground transition-colors group-hover:text-primary"
+                  class="text-base font-bold text-foreground transition-colors group-hover:text-primary"
                 >
                   {transaction.creatorName}
                 </p>
@@ -293,7 +309,7 @@
               </a>
             {:else}
               <div class="space-y-1">
-                <p class="text-base font-black text-foreground">{transaction.creatorName}</p>
+                <p class="text-base font-bold text-foreground">{transaction.creatorName}</p>
                 <p class="text-xs font-medium text-muted-foreground">{transaction.creator}</p>
               </div>
             {/if}
@@ -303,27 +319,27 @@
         <!-- MID: Ledger Details -->
         <div class="grid gap-12 md:grid-cols-2">
           <div class="space-y-6">
-            <Label class="text-[10px] font-black tracking-widest text-muted-foreground uppercase"
+            <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
               >Particulars</Label
             >
             <div class="space-y-3">
               {#each fees as fee}
                 <div class="flex items-center justify-between border-b border-border pb-3">
                   <span class="text-sm font-semibold text-muted-foreground">{fee.name}</span>
-                  <span class="font-mono text-sm font-black text-foreground"
+                  <span class="font-mono text-sm font-bold text-foreground"
                     >{formatAccounting(fee.amount)}</span
                   >
                 </div>
               {/each}
               <div class="flex items-center justify-between pt-2">
-                <span class="text-xs font-black text-primary uppercase">TOTAL</span>
-                <span class="text-xl font-black text-foreground">{formatCurrency(total)}</span>
+                <span class="text-xs font-bold text-primary uppercase">TOTAL</span>
+                <span class="text-xl font-bold text-foreground">{formatCurrency(total)}</span>
               </div>
             </div>
           </div>
 
           <div class="space-y-6">
-            <Label class="text-[10px] font-black tracking-widest text-muted-foreground uppercase"
+            <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
               >Reference Identifiers</Label
             >
             <div class="grid grid-cols-1 gap-6">
@@ -331,7 +347,7 @@
                 <Label class="text-[10px] font-bold text-muted-foreground uppercase"
                   >Series Number</Label
                 >
-                <p class="font-mono text-sm leading-none font-black text-primary">
+                <p class="font-mono text-sm leading-none font-bold text-primary">
                   {transaction.prRefNo || "—"}
                 </p>
               </div>
@@ -365,7 +381,7 @@
         <div class="space-y-6 border-t border-border pt-8">
           <div class="grid gap-8 md:grid-cols-2">
             <div class="space-y-3">
-              <Label class="text-[10px] font-black tracking-widest text-muted-foreground uppercase"
+              <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
                 >Public Remarks</Label
               >
               <div
@@ -376,8 +392,8 @@
             </div>
             {#if transaction.notesPrivate}
               <div class="space-y-3">
-                <Label class="text-[10px] font-black tracking-widest text-primary uppercase"
-                  >Private NOTES</Label
+                <Label class="text-[10px] font-bold tracking-widest text-primary uppercase"
+                  >Private Notes</Label
                 >
                 <div
                   class="rounded-xl border border-primary/10 bg-primary/5 p-5 text-sm leading-relaxed text-foreground/80 italic"
