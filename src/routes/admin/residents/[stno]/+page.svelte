@@ -44,7 +44,7 @@
   import {
     ACCOUNT_COL as ACC,
     JOURNAL_COL as JOR,
-    type ResidentRecord as AccountRecord,
+    type ResidentRecord,
     type JournalRecord
   } from "$lib/schemas";
   import { stageStatusEmail, mapRowToResident, mapRowToJournal } from "$lib/resident-logic";
@@ -56,7 +56,7 @@
 
   const stno = $derived(page.params.stno);
 
-  let account = $state<AccountRecord | null>(null);
+  let account = $state<ResidentRecord | null>(null);
   let history = $state<JournalRecord[]>([]);
   let semesterCount = $state(0);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);

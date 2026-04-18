@@ -11,20 +11,19 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import RichEditor from "$lib/components/RichEditor.svelte";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import {
     LoaderCircle,
-    ChevronLeft,
-    Search,
     Calendar,
     Users,
     Wallet,
     StickyNote
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
+  import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
+  import { mapRowToResident } from "$lib/resident-logic";
+  import type { ResidentRecord } from "$lib/schemas";
 
   // Account Sheet Indices
   const ACC = {
@@ -35,15 +34,7 @@
     CE_FULL_NAME: 25
   };
 
-  interface AccountRecord {
-    email: string;
-    name: string;
-    stNo: string;
-    period: string;
-    raw: string[];
-  }
-
-  let accounts = $state<AccountRecord[]>([]);
+  let accounts = $state<ResidentRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let academicPeriods = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
@@ -84,30 +75,42 @@
   // Autocomplete State
   let creatorSearch = $state("");
   let accountSearch = $state("");
-  let showCreatorSuggestions = $state(false);
-  let showAccountSuggestions = $state(false);
 
   async function loadAccounts() {
     if (!brandingState.spreadsheetId) return;
-    isLoading = true;
     try {
       const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
       const rawAccounts = rows
         .slice(1)
-        .map((row) => ({
-          email: (row[ACC.EMAIL] || "").trim(),
-          name: (row[ACC.ACCOUNT_FULL_NAME] || row[ACC.CE_FULL_NAME] || "").trim(),
-          stNo: (row[ACC.CE_STNO] || "").toString().trim(),
-          period: (row[ACC.PERIOD] || "").trim(),
-          raw: row
-        }))
+        .map((row) => mapRowToResident(row))
         .filter((a) => a.email && a.email.toLowerCase() !== "email");
 
-      const fundsAccount: AccountRecord = {
+      const fundsAccount: ResidentRecord = {
         email: "_funds",
         name: "Association Funds",
-        stNo: "SYSTEM",
+        stno: "SYSTEM",
         period: "ALWAYS",
+        room: "",
+        bed: "",
+        waterBase: 0,
+        waterPaid: 0,
+        waterWaived: 0,
+        waterBal: 0,
+        assocBase: 0,
+        assocPaid: 0,
+        assocWaived: 0,
+        assocBal: 0,
+        totalBase: 0,
+        paid: 0,
+        waived: 0,
+        bal: 0,
+        isFullyPaid: true,
+        notes: "",
+        college: "",
+        program: "",
+        ceIssued: "",
+        ceRefNo: "",
+        ceLink: "",
         raw: []
       };
 
@@ -172,42 +175,18 @@
 
   onMount(loadAccounts);
 
-  const filteredCreators = $derived(
-    accounts
-      .filter(
-        (a) =>
-          (a.email.toLowerCase().includes(creatorSearch.toLowerCase()) ||
-            a.name.toLowerCase().includes(creatorSearch.toLowerCase())) &&
-          (!formData.period || a.period === formData.period)
-      )
-      .slice(0, 5)
-  );
-
-  const filteredAccounts = $derived(
-    accounts
-      .filter(
-        (a) =>
-          (a.email.toLowerCase().includes(accountSearch.toLowerCase()) ||
-            a.name.toLowerCase().includes(accountSearch.toLowerCase())) &&
-          (a.email === "_funds" || !formData.period || a.period === formData.period)
-      )
-      .slice(0, 5)
-  );
-
-  function selectCreator(a: AccountRecord) {
+  function selectCreator(a: ResidentRecord) {
     formData.creatorEmail = a.email;
     formData.creatorName = a.name;
-    formData.creatorStNo = a.stNo;
-    creatorSearch = a.email;
-    showCreatorSuggestions = false;
+    formData.creatorStNo = a.stno;
+    creatorSearch = a.name;
   }
 
-  function selectAccount(a: AccountRecord) {
+  function selectAccount(a: ResidentRecord) {
     formData.accountEmail = a.email;
     formData.accountName = a.name;
-    formData.accountStNo = a.stNo;
-    accountSearch = a.email;
-    showAccountSuggestions = false;
+    formData.accountStNo = a.stno;
+    accountSearch = a.name;
   }
 
   async function handleSubmit() {
@@ -331,36 +310,13 @@
           </Label>
           <div class="grid gap-8 md:grid-cols-2">
             <div class="relative space-y-3">
-              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                Entry Creator
-              </Label>
-              <div class="relative">
-                <Search
-                  class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  bind:value={creatorSearch}
-                  onfocus={() => (showCreatorSuggestions = true)}
-                  onblur={() => setTimeout(() => (showCreatorSuggestions = false), 200)}
-                  placeholder="Search resident email or name…"
-                  class="pl-10"
-                />
-              </div>
-              {#if showCreatorSuggestions && creatorSearch && filteredCreators.length > 0}
-                <div
-                  class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-xl"
-                >
-                  {#each filteredCreators as a}
-                    <button
-                      onclick={() => selectCreator(a)}
-                      class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
-                    >
-                      <span class="font-bold text-foreground">{a.name}</span>
-                      <span class="text-[10px] text-muted-foreground">{a.email}</span>
-                    </button>
-                  {/each}
-                </div>
-              {/if}
+              <AccountAutocomplete
+                label="Recorder"
+                placeholder="Search resident email or name…"
+                {accounts}
+                filter={(a) => !formData.period || a.period === formData.period}
+                onSelect={selectCreator}
+              />
               <div
                 class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
               >
@@ -382,36 +338,14 @@
             </div>
 
             <div class="relative space-y-3">
-              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-                Target Account
-              </Label>
-              <div class="relative">
-                <Search
-                  class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                  bind:value={accountSearch}
-                  onfocus={() => (showAccountSuggestions = true)}
-                  onblur={() => setTimeout(() => (showAccountSuggestions = false), 200)}
-                  placeholder="Search resident email or name…"
-                  class="pl-10"
-                />
-              </div>
-              {#if showAccountSuggestions && accountSearch && filteredAccounts.length > 0}
-                <div
-                  class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border bg-popover shadow-xl"
-                >
-                  {#each filteredAccounts as a}
-                    <button
-                      onclick={() => selectAccount(a)}
-                      class="flex w-full flex-col px-4 py-2.5 text-left text-sm transition-colors hover:bg-muted"
-                    >
-                      <span class="font-bold text-foreground">{a.name}</span>
-                      <span class="text-[10px] text-muted-foreground">{a.email}</span>
-                    </button>
-                  {/each}
-                </div>
-              {/if}
+              <AccountAutocomplete
+                label="Account"
+                placeholder="Search resident email or name…"
+                {accounts}
+                filter={(a) =>
+                  a.email === "_funds" || !formData.period || a.period === formData.period}
+                onSelect={selectAccount}
+              />
               <div
                 class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
               >

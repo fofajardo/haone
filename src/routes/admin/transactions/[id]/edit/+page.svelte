@@ -2,11 +2,11 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { auth } from "$lib/auth.svelte";
   import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw, updateSheetValue, updateRowInCache } from "$lib/google-sheets";
   import { translatePeriod, translateMop, parseRef } from "$lib/receipt-utils";
+  import { mapRowToResident } from "$lib/resident-logic";
+  import type { ResidentRecord } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -14,7 +14,6 @@
   import * as NativeSelect from "$lib/components/ui/native-select";
   import {
     LoaderCircle,
-    ChevronLeft,
     Search,
     Calendar,
     Users,
@@ -27,18 +26,10 @@
 
   const id = $derived(page.params.id);
 
-  import { JOURNAL_COL as JOR, ACCOUNT_COL as ACC, type JournalRecord } from "$lib/schemas";
+  import { JOURNAL_COL as JOR } from "$lib/schemas";
   import { mapRowToJournal } from "$lib/resident-logic";
 
-  interface AccountRecord {
-    email: string;
-    name: string;
-    stNo: string;
-    period: string;
-    raw: string[];
-  }
-
-  let accounts = $state<AccountRecord[]>([]);
+  let accounts = $state<ResidentRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let academicPeriods = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
@@ -89,16 +80,41 @@
         fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W")
       ]);
 
-      accounts = accRows
+      const rawAccounts = accRows
         .slice(1)
-        .map((row) => ({
-          email: (row[ACC.EMAIL] || "").trim(),
-          name: (row[ACC.NAME] || "").trim(),
-          stNo: (row[ACC.STNO] || "").toString().trim(),
-          period: (row[ACC.PERIOD] || "").trim(),
-          raw: row
-        }))
+        .map((row) => mapRowToResident(row))
         .filter((a) => a.email && a.email.toLowerCase() !== "email");
+
+      const fundsAccount: ResidentRecord = {
+        email: "_funds",
+        name: "Association Funds",
+        stno: "SYSTEM",
+        period: "ALWAYS",
+        room: "",
+        bed: "",
+        waterBase: 0,
+        waterPaid: 0,
+        waterWaived: 0,
+        waterBal: 0,
+        assocBase: 0,
+        assocPaid: 0,
+        assocWaived: 0,
+        assocBal: 0,
+        totalBase: 0,
+        paid: 0,
+        waived: 0,
+        bal: 0,
+        isFullyPaid: true,
+        notes: "",
+        college: "",
+        program: "",
+        ceIssued: "",
+        ceRefNo: "",
+        ceLink: "",
+        raw: []
+      };
+
+      accounts = [...rawAccounts, fundsAccount];
 
       transactionTypes = constRows
         .slice(1)
@@ -169,7 +185,7 @@
       // Resolve creator student number
       const creatorAcc = accounts.find((a) => a.email.toLowerCase() === txn.creator.toLowerCase());
       if (creatorAcc) {
-        formData.creatorStNo = creatorAcc.stNo;
+        formData.creatorStNo = creatorAcc.stno;
       }
     } catch (e: any) {
       error = `Failed to load edit data: ${e.message}`;
@@ -200,19 +216,19 @@
       .slice(0, 5)
   );
 
-  function selectCreator(a: AccountRecord) {
+  function selectCreator(a: ResidentRecord) {
     formData.creatorEmail = a.email;
     formData.creatorName = a.name;
-    formData.creatorStNo = a.stNo;
-    creatorSearch = a.email;
+    formData.creatorStNo = a.stno;
+    creatorSearch = a.name;
     showCreatorSuggestions = false;
   }
 
-  function selectAccount(a: AccountRecord) {
+  function selectAccount(a: ResidentRecord) {
     formData.accountEmail = a.email;
     formData.accountName = a.name;
-    formData.accountStNo = a.stNo;
-    accountSearch = a.email;
+    formData.accountStNo = a.stno;
+    accountSearch = a.name;
     showAccountSuggestions = false;
   }
 
