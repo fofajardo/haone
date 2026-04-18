@@ -20,7 +20,7 @@
 
 <div
   id="export-template"
-  class="export-font absolute top-0 -left-[10000px] flex min-h-[297mm] w-[210mm] flex-col bg-[#ffffff] text-[#000000]"
+  class="export-font fixed top-0 -left-[10000px] flex min-h-[297mm] w-[210mm] flex-col bg-[#ffffff] text-[#000000]"
 >
   <!-- Letterhead -->
   <div class="w-full">
