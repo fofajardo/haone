@@ -17,10 +17,6 @@
       document.body.classList.remove("overflow-hidden");
     }
   });
-
-  $effect(() => {
-    pageState.title = "Welcome";
-  });
 </script>
 
 <div class="relative flex min-h-screen flex-col bg-background md:flex-row">
@@ -76,8 +72,7 @@
             href="/sign-in"
             class="h-14 rounded-xl bg-[#7B1113] text-lg font-bold text-white transition-all hover:bg-[#7B1113]/90 active:scale-[0.98]"
           >
-            <LogIn class="mr-2 h-5 w-5" />
-            Sign in
+            Continue
           </Button>
         {:else}
           <Button
