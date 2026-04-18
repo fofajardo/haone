@@ -109,10 +109,10 @@
     background:
       radial-gradient(circle at 20% 30%, #7b1113 0%, transparent 40%),
       radial-gradient(circle at 80% 20%, #4a0a0b 0%, transparent 40%),
-      radial-gradient(circle at 50% 80%, #2d0607 0%, transparent 50%),
+      radial-gradient(circle at 50% 80%, #2d5a27 0%, transparent 50%),
       radial-gradient(circle at 10% 90%, #7b1113 0%, transparent 40%),
       radial-gradient(circle at 90% 90%, #4a0a0b 0%, transparent 40%);
-    filter: blur(60px);
+    filter: blur(80px);
     opacity: 0.6;
     animation: aurora 30s ease-in-out infinite alternate;
   }
