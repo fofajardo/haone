@@ -12,13 +12,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import * as NativeSelect from "$lib/components/ui/native-select";
-  import {
-    LoaderCircle,
-    Calendar,
-    Users,
-    Wallet,
-    StickyNote
-  } from "lucide-svelte";
+  import { LoaderCircle, Calendar, Users, Wallet, StickyNote } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";

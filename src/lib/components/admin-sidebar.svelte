@@ -9,7 +9,8 @@
     LogOut,
     ChartPie,
     Mail,
-    FileSpreadsheet  } from "lucide-svelte";
+    FileSpreadsheet
+  } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
 
