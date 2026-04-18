@@ -1,0 +1,198 @@
+import branding from "./branding.json";
+import { translatePeriod } from "./receipt-utils";
+import type {
+  TDocumentDefinitions,
+  Content,
+  Alignment,
+  Margins,
+  ContextPageSize
+} from "pdfmake/interfaces";
+
+async function imgToDataUrl(url: string): Promise<string> {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((r) => {
+      const reader = new FileReader();
+      reader.onloadend = () => r(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    console.error("Failed to fetch image for PDF:", e);
+    return "";
+  }
+}
+
+function getOrdinalNum(n: number) {
+  return n + (n > 0 ? ["th", "st", "nd", "rd"][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : "");
+}
+
+export interface ClearancePDFOptions {
+  name: string;
+  period: string;
+  refNo: string;
+  brandingKey: string;
+  signatory: string;
+  signatoryTitle: string;
+  qrDataUrl?: string;
+}
+
+/**
+ * Generates a Certificate of Full Payment / Clearance PDF.
+ */
+export async function exportClearancePDF(options: ClearancePDFOptions) {
+  const { name, period, refNo, brandingKey, signatory, signatoryTitle, qrDataUrl } = options;
+
+  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
+    import("pdfmake/build/pdfmake"),
+    import("pdfmake/build/vfs_fonts")
+  ]);
+
+  const pdfMake = pdfMakeMod.default;
+  const pdfFonts = pdfFontsMod.default;
+
+  const vfs = (pdfFonts as any).pdfMake
+    ? (pdfFonts as any).pdfMake.vfs
+    : (pdfFonts as any).vfs || pdfFonts;
+  (pdfMake as any).vfs = vfs;
+
+  const fontBase = "https://raw.githubusercontent.com/Omnibus-Type/Archivo/master/fonts/ttf";
+  (pdfMake as any).addFonts({
+    Archivo: {
+      normal: `${fontBase}/Archivo-Regular.ttf`,
+      bold: `${fontBase}/Archivo-SemiBold.ttf`,
+      italics: `${fontBase}/Archivo-Italic.ttf`,
+      bolditalics: `${fontBase}/Archivo-SemiBoldItalic.ttf`
+    }
+  });
+
+  const profile = branding[brandingKey as keyof typeof branding] || branding.default;
+  const letterheadData = await imgToDataUrl(profile.letterheadUrl);
+  const qrImage = qrDataUrl ? await imgToDataUrl(qrDataUrl) : "";
+
+  const now = new Date();
+  const day = getOrdinalNum(now.getDate());
+  const month = now.toLocaleString("en-US", { month: "long" });
+  const year = now.getFullYear();
+  const semester = translatePeriod(period);
+
+  const docDefinition: TDocumentDefinitions = {
+    pageSize: "A4",
+    pageMargins: [72, 40, 72, 100],
+    background: function (currentPage: number): Content | null {
+      if (currentPage === 1 && letterheadData) {
+        return {
+          image: letterheadData,
+          width: 595.28
+        };
+      }
+      return null;
+    },
+    content: [
+      {
+        text: "CERTIFICATE OF FULL PAYMENT",
+        style: "header",
+        alignment: "center" as Alignment,
+        margin: [0, 180, 0, 40] as Margins
+      },
+      {
+        text: [
+          "This is to certify that ",
+          { text: name.toUpperCase() + ",", bold: true },
+          " a resident of the ",
+          { text: [profile.hallName, ","] },
+          " ",
+          { text: [profile.campus, ","] },
+          " has been cleared of any liability regarding association and water fees for the ",
+          { text: semester + ".", bold: true }
+        ],
+        lineHeight: 1.5,
+        alignment: "justify" as Alignment,
+        margin: [0, 0, 0, 24] as Margins
+      },
+      {
+        text: "This certification is issued at the request of the aforementioned student for any legal purposes it may serve and without any obligation on the part of the Association or any of its Officers.",
+        lineHeight: 1.5,
+        alignment: "justify" as Alignment,
+        margin: [0, 0, 0, 24] as Margins
+      },
+      {
+        text: `Issued this ${day} day of ${month} ${year} in the municipality of Los Baños, Laguna, Philippines.`,
+        lineHeight: 1.5,
+        alignment: "justify" as Alignment,
+        margin: [0, 0, 0, 24] as Margins
+      },
+      {
+        columns: [
+          { width: "*", text: "" },
+          {
+            width: "auto",
+            stack: [
+              { text: signatory.toUpperCase(), bold: true, alignment: "center" },
+              { text: signatoryTitle, fontSize: 11, alignment: "center" }
+            ]
+          }
+        ],
+        margin: [0, 40, 0, 100] as Margins
+      }
+    ],
+    footer: function (
+      currentPage: number,
+      pageCount: number,
+      pageSize: ContextPageSize
+    ): Content | null | undefined {
+      return {
+        stack: [
+          {
+            text: `Reference Number: ${refNo}`,
+            alignment: "center",
+            fontSize: 8,
+            margin: [0, 0, 0, 2]
+          },
+          {
+            text: "This document is electronically generated and does not require a signature.",
+            alignment: "center",
+            fontSize: 8,
+            margin: [0, 0, 0, 2]
+          },
+          {
+            text: `Generated by HAOne on ${new Date().toLocaleString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true
+            })}.`,
+            alignment: "center",
+            fontSize: 8
+          }
+        ],
+        margin: [0, 20, 0, 0]
+      };
+    },
+    images: {
+      qr: qrImage || ""
+    },
+    defaultStyle: {
+      font: "Archivo",
+      fontSize: 12
+    },
+    styles: {
+      header: {
+        fontSize: 14,
+        bold: true
+      }
+    }
+  };
+
+  if (qrImage && Array.isArray(docDefinition.content)) {
+    docDefinition.content.push({
+      image: "qr",
+      width: 72,
+      absolutePosition: { x: 500, y: 750 }
+    });
+  }
+
+  pdfMake.createPdf(docDefinition).download(`Clearance_${refNo}.pdf`);
+}

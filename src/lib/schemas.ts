@@ -87,6 +87,7 @@ export interface ResidentRecord {
   ceIssued: string;
   ceRefNo: string;
   ceLink: string;
+  ceFullName: string;
   raw: string[];
 }
 

@@ -5,12 +5,26 @@
   import Clock from "lucide-svelte/icons/clock";
   import TriangleAlert from "lucide-svelte/icons/triangle-alert";
   import CircleAlert from "lucide-svelte/icons/circle-alert";
+  import ShieldCheck from "lucide-svelte/icons/shield-check";
   import { type ResidentRecord as Resident } from "$lib/schemas";
 
   let { resident }: { resident: Resident } = $props();
 </script>
 
 <div class="flex items-center justify-center gap-1.5">
+  {#if resident.ceIssued && resident.ceIssued !== "" && resident.ceIssued !== "#N/A"}
+    <Tooltip.Root>
+      <Tooltip.Trigger>
+        <Badge variant="outline" class="border-brand/20 bg-brand/10 p-1.5 text-brand">
+          <ShieldCheck class="h-3.5 w-3.5" />
+        </Badge>
+      </Tooltip.Trigger>
+      <Tooltip.Content>
+        <p class="font-bold">Cleared on {resident.ceIssued}</p>
+      </Tooltip.Content>
+    </Tooltip.Root>
+  {/if}
+
   {#if resident.isFullyPaid}
     <Tooltip.Root>
       <Tooltip.Trigger>

@@ -39,7 +39,9 @@
     Calendar,
     Hash,
     ClipboardCheck,
-    AwardIcon
+    AwardIcon,
+    ChevronDown,
+    FileCheck
   } from "lucide-svelte";
   import {
     ACCOUNT_COL as ACC,
@@ -47,12 +49,20 @@
     type ResidentRecord,
     type JournalRecord
   } from "$lib/schemas";
-  import { stageStatusEmail, mapRowToResident, mapRowToJournal } from "$lib/resident-logic";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import {
+    stageStatusEmail,
+    stageClearanceEmail,
+    mapRowToResident,
+    mapRowToJournal
+  } from "$lib/resident-logic";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
+  import ClearanceDialog from "$lib/components/residents/ClearanceDialog.svelte";
 
   const stno = $derived(page.params.stno);
 
@@ -75,13 +85,23 @@
       : []
   );
 
+  let alertDialog = $state({
+    open: false,
+    title: "",
+    description: "",
+    type: "info" as "info" | "error"
+  });
+
+  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
+    alertDialog = { open: true, title, description, type };
+  }
+
   async function loadResidentProfile(forceRefresh = false) {
     if (!brandingState.spreadsheetId || !stno) return;
     isLoading = true;
     error = null;
 
     try {
-      // 1. Fetch Account Details
       const accRows = await fetchSheetRowsRaw(
         brandingState.spreadsheetId,
         "accounts!A:AD",
@@ -91,6 +111,7 @@
 
       if (allRowsForStno.length === 0) {
         error = `Resident with ID ${stno} not found in the database.`;
+        showAlert("Search Error", error, "error");
         return;
       }
 
@@ -102,6 +123,7 @@
 
       if (!matchedRow) {
         error = `This person is not a resident for the selected semester (${uiSettings.currentSemester || "All Term"}).`;
+        showAlert("Semester Error", error, "error");
         return;
       }
 
@@ -145,6 +167,7 @@
         }));
     } catch (e: any) {
       error = e.message;
+      showAlert("Data Error", e.message, "error");
     } finally {
       isLoading = false;
     }
@@ -158,6 +181,39 @@
       clearQueue: true,
       redirect: true
     });
+  }
+
+  function sendClearanceEmail() {
+    if (!account) return;
+    if (!account.ceLink) {
+      showAlert(
+        "Dispatch Blocked",
+        "No clearance certificate generated for this resident yet.",
+        "error"
+      );
+      return;
+    }
+    stageClearanceEmail(account, brandingState.profile, {
+      clearQueue: true,
+      redirect: true
+    });
+  }
+
+  let isClearDialogOpen = $state(false);
+  let residentsToClear = $state<ResidentRecord[]>([]);
+  let allAccounts = $state<ResidentRecord[]>([]);
+
+  onMount(async () => {
+    if (brandingState.spreadsheetId) {
+      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
+      allAccounts = rows.slice(1).map((row) => mapRowToResident(row));
+    }
+  });
+
+  async function handleClear() {
+    if (!account) return;
+    residentsToClear = [account];
+    isClearDialogOpen = true;
   }
 </script>
 
@@ -222,14 +278,45 @@
           >
             <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" /> Add Transaction
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={sendStatusEmail}
-            class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
-          >
-            <Mail class="mr-1.5 h-3.5 w-3.5" /> Send Payment Status
-          </Button>
+
+          {#if (!account.ceIssued || account.ceIssued === "" || account.ceIssued === "#N/A") && account.bal <= 0 && account.totalBase > 0}
+            <Button
+              variant="outline"
+              size="sm"
+              onclick={handleClear}
+              class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
+            >
+              <ShieldCheck class="mr-1.5 h-3.5 w-3.5" />
+              Mark as Cleared
+            </Button>
+          {/if}
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              {#snippet child({ props })}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  {...props}
+                  class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
+                >
+                  <Mail class="mr-1.5 h-3.5 w-3.5" />
+                  Send
+                  <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
+                </Button>
+              {/snippet}
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="start" class="w-56">
+              <DropdownMenu.Item onclick={sendStatusEmail}>
+                <Mail class="mr-2 h-4 w-4" />
+                <span>Send Payment Status</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onclick={sendClearanceEmail} disabled={!account.ceLink}>
+                <FileCheck class="mr-2 h-4 w-4" />
+                <span>Send Clearance Certificate</span>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
           <Button
             variant="outline"
             size="sm"
@@ -552,6 +639,27 @@
     </Card.Root>
   {/if}
 </div>
+
+<ClearanceDialog
+  bind:open={isClearDialogOpen}
+  residents={residentsToClear}
+  {allAccounts}
+  onSuccess={(count) => {
+    showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
+  }}
+/>
+
+<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
+      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>Continue</AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <style>
   :global(.prose) {

@@ -4,7 +4,12 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { type ResidentRecord as Resident } from "$lib/schemas";
-  import { mapRowToResident, stageStatusEmailBatch } from "$lib/resident-logic";
+  import {
+    mapRowToResident,
+    stageStatusEmailBatch,
+    stageClearanceEmailBatch
+  } from "$lib/resident-logic";
+  import { pluralize } from "$lib/receipt-utils";
   import { goto } from "$app/navigation";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import * as NativeSelect from "$lib/components/ui/native-select";
@@ -12,13 +17,26 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import { RefreshCcw, Users, Search, Mail, FunnelX } from "lucide-svelte";
+  import {
+    RefreshCcw,
+    Users,
+    Search,
+    Mail,
+    FunnelX,
+    ChevronDown,
+    FileCheck,
+    ShieldCheck,
+    LoaderCircle
+  } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { columns } from "./columns";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import ClearanceDialog from "$lib/components/residents/ClearanceDialog.svelte";
 
   let residents = $state<Resident[]>([]);
   let isLoading = $state(false);
@@ -33,6 +51,17 @@
   let pagination = $derived.by(() => tableSync.pagination);
   let selectedIndices = $state<Set<string>>(new Set()); // Uses stno as key
   let customReminders = $state("");
+
+  let alertDialog = $state({
+    open: false,
+    title: "",
+    description: "",
+    type: "info" as "info" | "error"
+  });
+
+  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
+    alertDialog = { open: true, title, description, type };
+  }
 
   async function loadData(forceRefresh = false) {
     if (!brandingState.spreadsheetId) return;
@@ -105,6 +134,47 @@
       redirect: true
     });
   }
+
+  function prepareClearanceDispatch() {
+    if (selectedIndices.size === 0) return;
+    const selectedResidents = residents.filter(
+      (r) => selectedIndices.has(r.stno) && r.ceLink && r.ceIssued
+    );
+    if (selectedResidents.length === 0) {
+      showAlert("Dispatch Blocked", "No cleared residents found among the selection.", "error");
+      return;
+    }
+    stageClearanceEmailBatch(selectedResidents, brandingState.profile, {
+      clearQueue: true,
+      redirect: true
+    });
+  }
+
+  let isClearDialogOpen = $state(false);
+  let residentsToClear = $state<Resident[]>([]);
+
+  async function handleBatchClear() {
+    if (selectedIndices.size === 0 || !brandingState.spreadsheetId) return;
+    const eligible = residents.filter(
+      (r) =>
+        selectedIndices.has(r.stno) &&
+        r.bal <= 0 &&
+        r.totalBase > 0 &&
+        (!r.ceIssued || r.ceIssued === "" || r.ceIssued === "#N/A")
+    );
+
+    if (eligible.length === 0) {
+      showAlert(
+        "Clearance Blocked",
+        "No eligible residents found in the selection (must be fully paid and not yet cleared).",
+        "error"
+      );
+      return;
+    }
+
+    residentsToClear = eligible;
+    isClearDialogOpen = true;
+  }
 </script>
 
 <Tooltip.Provider>
@@ -116,9 +186,44 @@
             <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
             <span class="hidden sm:inline">Refresh</span>
           </Button>
-          <Button size="sm" disabled={selectedIndices.size === 0} onclick={prepareDispatch}>
-            <Mail class="mr-2 h-4 w-4" />
-            Send Reminder ({selectedIndices.size})
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger disabled={selectedIndices.size === 0}>
+              {#snippet child({ props })}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={selectedIndices.size === 0}
+                  {...props}
+                >
+                  <Mail class="mr-2 h-4 w-4" />
+                  Send
+                  <ChevronDown class="ml-2 h-3 w-3 opacity-50" />
+                </Button>
+              {/snippet}
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end" class="w-56">
+              <DropdownMenu.Label>Batch Dispatch</DropdownMenu.Label>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item onclick={prepareDispatch}>
+                <Mail class="mr-2 h-4 w-4" />
+                <span>Send Payment Status</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onclick={prepareClearanceDispatch}>
+                <FileCheck class="mr-2 h-4 w-4" />
+                <span>Send Clearance Certificate</span>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onclick={handleBatchClear}
+            disabled={selectedIndices.size === 0}
+          >
+            <ShieldCheck class="mr-2 h-4 w-4" />
+            Mark as Cleared
           </Button>
         </div>
       {/snippet}
@@ -209,3 +314,25 @@
     {/if}
   </div>
 </Tooltip.Provider>
+
+<ClearanceDialog
+  bind:open={isClearDialogOpen}
+  residents={residentsToClear}
+  allAccounts={residents}
+  onSuccess={(count) => {
+    showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
+    selectedIndices = new Set(); // Clear selection after success
+  }}
+/>
+
+<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
+      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>Continue</AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

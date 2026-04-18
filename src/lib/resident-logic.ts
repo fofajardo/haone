@@ -1,5 +1,6 @@
 import { emailDispatcher } from "./dispatcher.svelte";
 import { PaymentStatusTemplate } from "./templates/payment-status";
+import { ClearanceCertificateTemplate } from "./templates/clearance";
 import type { BrandingProfile } from "./templates/types";
 import { goto } from "$app/navigation";
 import { ACCOUNT_COL, JOURNAL_COL, type ResidentRecord, type JournalRecord } from "./schemas";
@@ -58,6 +59,7 @@ export function mapRowToResident(row: string[]): ResidentRecord {
     ceRefNo: (row[ACCOUNT_COL.CE_REFNO] || "").trim(),
     ceIssued: (row[ACCOUNT_COL.CE_ISSUED] || "").trim(),
     ceLink: (row[ACCOUNT_COL.CE_LINK] || "").trim(),
+    ceFullName: (row[ACCOUNT_COL.CE_FULL_NAME] || "").trim(),
     notes: (row[ACCOUNT_COL.NOTES] || "").trim(),
     college: (row[ACCOUNT_COL.COLLEGE] || "").trim(),
     program: (row[ACCOUNT_COL.PROGRAM] || "").trim()
@@ -168,6 +170,60 @@ export function stageStatusEmailBatch(
 }
 
 /**
+ * Stages a single clearance certificate email.
+ */
+export function stageClearanceEmail(
+  resident: ResidentRecord,
+  branding: BrandingProfile,
+  options: {
+    clearQueue?: boolean;
+    redirect?: boolean;
+  } = {}
+) {
+  if (options.clearQueue) {
+    emailDispatcher.clear();
+  }
+
+  emailDispatcher.configType = "reminders";
+  emailDispatcher.batchType = "CLEARANCE";
+
+  emailDispatcher.push(mapResidentToStagedClearance(resident, branding));
+
+  if (options.redirect) {
+    goto("/admin/email-dispatcher");
+  }
+}
+
+/**
+ * Stages multiple clearance certificate emails.
+ */
+export function stageClearanceEmailBatch(
+  residents: ResidentRecord[],
+  branding: BrandingProfile,
+  options: {
+    clearQueue?: boolean;
+    redirect?: boolean;
+  } = {}
+) {
+  if (options.clearQueue) {
+    emailDispatcher.clear();
+  }
+
+  emailDispatcher.configType = "reminders";
+  emailDispatcher.batchType = "CLEARANCE";
+
+  for (const r of residents) {
+    if (r.ceLink) {
+      emailDispatcher.push(mapResidentToStagedClearance(r, branding));
+    }
+  }
+
+  if (options.redirect) {
+    goto("/admin/email-dispatcher");
+  }
+}
+
+/**
  * Private mapper from record to staged email.
  */
 function mapResidentToStagedEmail(
@@ -203,4 +259,77 @@ function mapResidentToStagedEmail(
     },
     branding: branding
   };
+}
+
+/**
+ * Private mapper from record to staged clearance email.
+ */
+function mapResidentToStagedClearance(resident: ResidentRecord, branding: BrandingProfile) {
+  return {
+    id: resident.stno,
+    to: resident.email,
+    recipientName: resident.name,
+    template: ClearanceCertificateTemplate as any,
+    data: {
+      accountName: resident.name,
+      period: resident.period,
+      ceLink: resident.ceLink,
+      ceRefNo: resident.ceRefNo
+    },
+    branding: branding
+  };
+}
+
+/**
+ * Clears a resident by generating a clearance link and updating the spreadsheet.
+ */
+export async function clearResident(
+  resident: ResidentRecord,
+  spreadsheetId: string,
+  brandingKey: string,
+  signatory: string,
+  signatoryTitle: string
+) {
+  const { updateSheetValue, fetchSheetRowsRaw } = await import("./google-sheets");
+  const { encryptJSON } = await import("./crypto");
+
+  const now = new Date();
+  const dateString = now.toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  });
+
+  const refNo = crypto.randomUUID();
+
+  const clearanceData = {
+    name: resident.ceFullName,
+    stno: resident.stno,
+    period: resident.period,
+    dateIssued: dateString,
+    refNo: refNo,
+    branding: brandingKey,
+    signatory,
+    signatoryTitle
+  };
+
+  const encrypted = await encryptJSON(clearanceData, resident.stno);
+  const publicLink = `${window.location.origin}/clearance?data=${encodeURIComponent(encrypted)}`;
+
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "accounts!A:B");
+  const rowIndex = rows.findIndex(
+    (r) => r[0]?.trim() === resident.email && r[1]?.trim() === resident.period
+  );
+
+  if (rowIndex === -1) throw new Error("Resident not found in sheet");
+
+  const actualRow = rowIndex + 1;
+
+  await Promise.all([
+    updateSheetValue(spreadsheetId, `accounts!Q${actualRow}`, [[refNo]]),
+    updateSheetValue(spreadsheetId, `accounts!R${actualRow}`, [[dateString]]),
+    updateSheetValue(spreadsheetId, `accounts!AA${actualRow}`, [[publicLink]])
+  ]);
+
+  return { refNo, dateString, publicLink };
 }

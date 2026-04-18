@@ -21,3 +21,14 @@ export interface ReceiptData {
   branding: string;
   items: ReceiptItem[];
 }
+
+export interface ClearanceData {
+  name: string;
+  stno: string;
+  period: string;
+  dateIssued: string;
+  refNo: string;
+  branding: string;
+  signatory: string;
+  signatoryTitle: string;
+}
