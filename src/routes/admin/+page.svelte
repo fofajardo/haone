@@ -13,7 +13,8 @@
     TrendingDown,
     Clock,
     ListFilter,
-    CircleCheck
+    CircleCheck,
+    FileSpreadsheet
   } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { brandingState } from "$lib/branding.svelte";
@@ -72,10 +73,19 @@
       border: "hover:border-brand/50"
     },
     {
-      title: "Reports",
-      description: "Export data and view collection performance trends.",
-      href: "/admin/reports",
+      title: "Demographics",
+      description: "Analyze resident distribution and historical trends.",
+      href: "/admin/demographics",
       icon: ChartPie,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
+    },
+    {
+      title: "Reports",
+      description: "Export collection summaries and payment status lists.",
+      href: "/admin/reports/clearance",
+      icon: FileSpreadsheet,
       color: "text-brand",
       bg: "bg-brand/10",
       border: "hover:border-brand/50"

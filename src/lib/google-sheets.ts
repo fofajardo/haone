@@ -261,3 +261,106 @@ export async function deleteSheetRow(spreadsheetId: string, sheetName: string, r
 
   return await resp.json();
 }
+
+/**
+ * Creates a new Google Spreadsheet.
+ */
+export async function createNewSpreadsheet(title: string, sheetTitle?: string) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets`;
+  const sheets = sheetTitle ? [{ properties: { title: sheetTitle } }] : [];
+
+  const resp = await fetchWithAuth(url, "Failed to create spreadsheet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      properties: { title },
+      sheets
+    })
+  });
+  return await resp.json();
+}
+
+/**
+ * Ensures a sheet with the given title exists in the spreadsheet.
+ */
+export async function ensureSheetExists(spreadsheetId: string, title: string) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties.title`;
+  const resp = await fetchWithAuth(url, "Failed to fetch spreadsheet metadata");
+  const data = await resp.json();
+
+  const exists = data.sheets?.some((s: any) => s.properties.title === title);
+  if (exists) return;
+
+  const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+  await fetchWithAuth(updateUrl, "Failed to create new sheet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      requests: [
+        {
+          addSheet: {
+            properties: { title }
+          }
+        }
+      ]
+    })
+  });
+}
+
+/**
+ * Formats a report sheet with frozen headers, bold text, and auto-resized columns.
+ */
+export async function formatReportSheet(
+  spreadsheetId: string,
+  sheetName: string,
+  rowCount: number,
+  colCount: number
+) {
+  // 1. Resolve sheetId
+  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`;
+  const metaResp = await fetchWithAuth(metaUrl, "Failed to fetch metadata");
+  const data = await metaResp.json();
+  const sheet = data.sheets?.find((s: any) => s.properties.title === sheetName);
+  if (!sheet) return;
+  const sheetId = sheet.properties.sheetId;
+
+  // 2. Apply formatting
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+  await fetchWithAuth(url, "Failed to format sheet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      requests: [
+        {
+          updateSheetProperties: {
+            properties: { sheetId, gridProperties: { frozenRowCount: 1 } },
+            fields: "gridProperties.frozenRowCount"
+          }
+        },
+        {
+          repeatCell: {
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              endRowIndex: 1,
+              startColumnIndex: 0,
+              endColumnIndex: colCount
+            },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: { red: 0.95, green: 0.95, blue: 0.95 },
+                textFormat: { bold: true, fontSize: 10 }
+              }
+            },
+            fields: "userEnteredFormat(backgroundColor,textFormat)"
+          }
+        },
+        {
+          autoResizeDimensions: {
+            dimensions: { sheetId, dimension: "COLUMNS", startIndex: 0, endIndex: colCount }
+          }
+        }
+      ]
+    })
+  });
+}

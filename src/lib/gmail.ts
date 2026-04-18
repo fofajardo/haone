@@ -19,6 +19,21 @@ export function loadGisScript() {
   });
 }
 
+export function loadGapiScript() {
+  return new Promise<void>((resolve, reject) => {
+    if (typeof window === "undefined") return;
+    if ((window as any).gapi) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://apis.google.com/js/api.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Google API Client (gapi)"));
+    document.head.appendChild(script);
+  });
+}
+
 /**
  * Encodes a string to base64url format for Gmail API.
  */

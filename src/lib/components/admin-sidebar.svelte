@@ -8,8 +8,8 @@
     Users,
     LogOut,
     ChartPie,
-    Mail
-  } from "lucide-svelte";
+    Mail,
+    FileSpreadsheet  } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
 
@@ -18,11 +18,6 @@
       title: "Dashboard",
       url: "/admin",
       icon: LayoutDashboard
-    },
-    {
-      title: "Reports",
-      url: "/admin/reports",
-      icon: ChartPie
     },
     {
       title: "Pending Receipts",
@@ -38,6 +33,19 @@
       title: "Residents",
       url: "/admin/residents",
       icon: Users
+    }
+  ];
+
+  const reportItems = [
+    {
+      title: "Demographics",
+      url: "/admin/demographics",
+      icon: ChartPie
+    },
+    {
+      title: "Clearance",
+      url: "/admin/reports/clearance",
+      icon: FileSpreadsheet
     }
   ];
 
@@ -82,6 +90,26 @@
           </Sidebar.MenuItem>
         {/each}
       </Sidebar.Menu>
+    </Sidebar.Group>
+
+    <Sidebar.Group>
+      <Sidebar.GroupLabel>Reports</Sidebar.GroupLabel>
+      <Sidebar.GroupContent>
+        <Sidebar.Menu>
+          {#each reportItems as item}
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton isActive={page.url.pathname === item.url}>
+                {#snippet child({ props })}
+                  <a href={item.url} {...props}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          {/each}
+        </Sidebar.Menu>
+      </Sidebar.GroupContent>
     </Sidebar.Group>
     <Sidebar.Group class="mt-auto">
       <Sidebar.Menu>
