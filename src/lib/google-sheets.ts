@@ -11,40 +11,91 @@ export function invalidateCache() {
 }
 
 /**
- * Incrementally append rows to a cached range.
+ * Incrementally remove a row from all cached ranges for a specific sheet.
  */
-export function appendRowToCache(spreadsheetId: string, range: string, newRows: string[][]) {
-  const cacheKey = `${spreadsheetId}:${range}`;
-  if (sheetsCache[cacheKey]) {
-    sheetsCache[cacheKey].push(...newRows);
+function deleteRowFromCache(spreadsheetId: string, sheetName: string, rowIndex: number) {
+  const prefix = `${spreadsheetId}:${sheetName}!`;
+  for (const cacheKey in sheetsCache) {
+    if (cacheKey.startsWith(prefix)) {
+      if (sheetsCache[cacheKey] && sheetsCache[cacheKey][rowIndex]) {
+        sheetsCache[cacheKey].splice(rowIndex, 1);
+      }
+    }
   }
+}
+/**
+ * Converts Column Letter (A, B, AA) to 0-indexed number.
+ */
+function colToNum(col: string): number {
+  let num = 0;
+  for (let i = 0; i < col.length; i++) {
+    num = num * 26 + (col.charCodeAt(i) - 64);
+  }
+  return num - 1;
 }
 
 /**
- * Incrementally update a row in a cached range.
+ * Surgically update a single cell in any cached range for a given sheet.
  */
-export function updateRowInCache(
+export function patchCacheCell(
   spreadsheetId: string,
-  range: string,
+  sheetName: string,
   rowIndex: number,
-  updatedRow: string[]
+  colIndex: number,
+  value: string
 ) {
-  const cacheKey = `${spreadsheetId}:${range}`;
-  if (sheetsCache[cacheKey] && sheetsCache[cacheKey][rowIndex]) {
-    sheetsCache[cacheKey][rowIndex] = updatedRow;
+  patchCacheRange(spreadsheetId, `${sheetName}!${numToCol(colIndex)}${rowIndex + 1}`, [[value]]);
+}
+
+/**
+ * Surgically update a range of cells in any cached range for a given sheet.
+ */
+export function patchCacheRange(spreadsheetId: string, range: string, values: any[][]) {
+  const parts = range.split("!");
+  if (parts.length !== 2) return;
+  const sheetName = parts[0];
+  const a1Range = parts[1];
+
+  const startMatch = a1Range.match(/([A-Z]+)([0-9]+)/);
+  if (!startMatch) return;
+
+  const startCol = colToNum(startMatch[1]);
+  const startRow = parseInt(startMatch[2]) - 1;
+
+  const prefix = `${spreadsheetId}:${sheetName}!`;
+  for (const cacheKey in sheetsCache) {
+    if (cacheKey.startsWith(prefix)) {
+      const data = sheetsCache[cacheKey];
+      if (!data) continue;
+
+      for (let r = 0; r < values.length; r++) {
+        const targetRow = startRow + r;
+        if (data[targetRow]) {
+          for (let c = 0; c < values[r].length; c++) {
+            const targetCol = startCol + c;
+            if (targetCol < data[targetRow].length) {
+              data[targetRow][targetCol] = String(values[r][c]);
+            }
+          }
+        }
+      }
+    }
   }
 }
 
 /**
- * Incrementally remove a row from a cached range.
+ * Converts 0-indexed column number to Column Letter.
  */
-export function deleteRowFromCache(spreadsheetId: string, range: string, rowIndex: number) {
-  const cacheKey = `${spreadsheetId}:${range}`;
-  if (sheetsCache[cacheKey]) {
-    sheetsCache[cacheKey].splice(rowIndex, 1);
+function numToCol(num: number): string {
+  let col = "";
+  let n = num + 1;
+  while (n > 0) {
+    let m = (n - 1) % 26;
+    col = String.fromCharCode(65 + m) + col;
+    n = Math.floor((n - m) / 26);
   }
+  return col;
 }
-
 /**
  * Standard error handling for Google API responses.
  */
@@ -176,7 +227,9 @@ export async function updateSheetValue(spreadsheetId: string, range: string, val
     body: JSON.stringify({ values })
   });
 
-  return await resp.json();
+  const res = await resp.json();
+  patchCacheRange(spreadsheetId, range, values);
+  return res;
 }
 
 /**
@@ -200,7 +253,13 @@ export async function batchUpdateValues(
     })
   });
 
-  return await resp.json();
+  const res = await resp.json();
+  if (data && Array.isArray(data)) {
+    for (const update of data) {
+      patchCacheRange(spreadsheetId, update.range, update.values);
+    }
+  }
+  return res;
 }
 
 /**
@@ -218,7 +277,11 @@ export async function appendSheetRow(spreadsheetId: string, range: string, value
     body: JSON.stringify({ values })
   });
 
-  return await resp.json();
+  const res = await resp.json();
+  if (res.updates?.updatedRange) {
+    patchCacheRange(spreadsheetId, res.updates.updatedRange, values);
+  }
+  return res;
 }
 
 /**
@@ -259,7 +322,9 @@ export async function deleteSheetRow(spreadsheetId: string, sheetName: string, r
     })
   });
 
-  return await resp.json();
+  const res = await resp.json();
+  deleteRowFromCache(spreadsheetId, sheetName, rowIndex);
+  return res;
 }
 
 /**

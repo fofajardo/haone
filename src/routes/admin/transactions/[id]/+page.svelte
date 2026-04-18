@@ -104,7 +104,6 @@
     isDeleting = true;
     try {
       await deleteSheetRow(brandingState.spreadsheetId, "journal_general", rowIndex);
-      deleteRowFromCache(brandingState.spreadsheetId, "journal_general!A:W", rowIndex);
       goto("/admin/transactions");
     } catch (e: any) {
       error = `Deletion failed: ${e.message}`;

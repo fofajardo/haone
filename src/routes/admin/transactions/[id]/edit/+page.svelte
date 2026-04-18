@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { brandingState } from "$lib/branding.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue, updateRowInCache } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/google-sheets";
   import { translatePeriod, translateMop, parseRef } from "$lib/receipt-utils";
   import { mapRowToResident } from "$lib/resident-logic";
   import type { ResidentRecord } from "$lib/schemas";
@@ -267,7 +267,6 @@
       const range = `journal_general!A${sheetRow}:W${sheetRow}`;
 
       await updateSheetValue(brandingState.spreadsheetId, range, [row]);
-      updateRowInCache(brandingState.spreadsheetId, "journal_general!A:W", rowIndex, row);
       goto(`/admin/transactions/${id}`);
     } catch (e: any) {
       error = `Save failed: ${e.message}`;

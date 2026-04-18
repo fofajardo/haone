@@ -240,7 +240,6 @@
       row[22] = txnId;
 
       await appendSheetRow(brandingState.spreadsheetId, "journal_general!A:W", [row]);
-      appendRowToCache(brandingState.spreadsheetId, "journal_general!A:W", [row]);
       goto("/admin/transactions");
     } catch (e: any) {
       error = `Submission failed: ${e.message}`;
