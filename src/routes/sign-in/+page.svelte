@@ -57,7 +57,7 @@
       const tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
         client_id: (branding.default as any).googleClientId,
         scope:
-          "openid profile email https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/spreadsheets",
+          "openid profile email https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly",
         callback: async (response: any) => {
           if (response.error) {
             isLoggingIn = false;
