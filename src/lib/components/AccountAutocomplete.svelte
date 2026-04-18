@@ -9,6 +9,7 @@
     placeholder = "Search name or email…",
     accounts = [],
     filter = (a: ResidentRecord) => true,
+    useOfficialName = false,
     value = $bindable(""),
     onSelect,
     class: className = ""
@@ -17,10 +18,13 @@
     placeholder?: string;
     accounts: ResidentRecord[];
     filter?: (a: ResidentRecord) => boolean;
+    useOfficialName?: boolean;
     value?: string;
     onSelect: (a: ResidentRecord) => void;
     class?: string;
   }>();
+
+  const getLabel = (a: ResidentRecord) => (useOfficialName ? a.ceFullName || a.name : a.name);
 
   let showSuggestions = $state(false);
 
@@ -28,7 +32,7 @@
     accounts
       .filter(
         (a) =>
-          (a.name.toLowerCase().includes(value.toLowerCase()) ||
+          (getLabel(a).toLowerCase().includes(value.toLowerCase()) ||
             a.email.toLowerCase().includes(value.toLowerCase())) &&
           filter(a)
       )
@@ -37,7 +41,7 @@
 
   function handleSelect(a: ResidentRecord) {
     onSelect(a);
-    value = a.name;
+    value = getLabel(a);
     showSuggestions = false;
   }
 </script>
@@ -68,7 +72,7 @@
           onclick={() => handleSelect(a)}
           class="flex w-full flex-col px-4 py-2 text-left text-xs transition-colors hover:bg-muted"
         >
-          <span class="font-bold text-foreground">{a.name}</span>
+          <span class="font-bold text-foreground">{getLabel(a)}</span>
           <span class="text-[10px] text-muted-foreground">{a.email}</span>
         </button>
       {/each}
