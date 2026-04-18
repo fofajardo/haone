@@ -10,6 +10,7 @@
     Settings,
     History,
     TrendingUp,
+    TrendingDown,
     Clock,
     ListFilter,
     CircleCheck
@@ -18,7 +19,7 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { formatCurrency, formatDate, translatePeriod } from "$lib/receipt-utils";
+  import { formatCurrency, formatDate, translatePeriod, translateType } from "$lib/receipt-utils";
   import { mapRowToResident, mapRowToJournal } from "$lib/resident-logic";
   import { onMount } from "svelte";
 
@@ -30,6 +31,7 @@
   });
 
   let recentTransactions = $state<any[]>([]);
+  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
 
   const tools = [
@@ -94,10 +96,19 @@
     isLoading = true;
 
     try {
-      const [journalRows, accountRows] = await Promise.all([
+      const [journalRows, accountRows, constRows] = await Promise.all([
         fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W"),
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:Z")
+        fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:Z"),
+        fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C")
       ]);
+
+      transactionTypes = constRows
+        .slice(1)
+        .filter((r) => (r[0] || "").startsWith("PMT_"))
+        .map((r) => ({
+          value: r[1] || r[0],
+          label: r[2] || r[1] || r[0]
+        }));
 
       // Stats from Accounts
       const currentSem = uiSettings.currentSemester.trim();
@@ -145,7 +156,7 @@
 <div class="space-y-12 pb-12">
   <!-- Header Section -->
   <div
-    class="relative overflow-hidden rounded-3xl bg-brand px-8 py-12 text-brand-foreground shadow-2xl"
+    class="relative overflow-hidden rounded-3xl bg-brand px-4 py-8 text-brand-foreground shadow-2xl sm:px-8 sm:py-12"
   >
     <div
       class="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
@@ -173,7 +184,7 @@
   <!-- Quick Stats -->
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
     <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-6 py-0">
+      <Card.Content class="px-4 py-0 sm:px-6">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
@@ -193,7 +204,7 @@
     </Card.Root>
 
     <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-6 py-0">
+      <Card.Content class="px-4 py-0 sm:px-6">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
@@ -213,7 +224,7 @@
     </Card.Root>
 
     <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-6 py-0">
+      <Card.Content class="px-4 py-0 sm:px-6">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
@@ -235,7 +246,7 @@
     </Card.Root>
 
     <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-6 py-0">
+      <Card.Content class="px-4 py-0 sm:px-6">
         <div class="flex items-center justify-between">
           <div class="space-y-1">
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
@@ -292,8 +303,8 @@
     <div>
       <div class="mb-6 flex items-center justify-between">
         <h2 class="text-xl font-bold text-foreground">Recent Transactions</h2>
-        <Button variant="ghost" size="sm" href="/admin/transactions" class="text-xs font-bold">
-          View All
+        <Button variant="ghost" size="icon" href="/admin/transactions" title="View All">
+          <ArrowRight class="h-4 w-4" />
         </Button>
       </div>
       <Card.Root class="overflow-hidden border-none bg-card p-0 shadow-md">
@@ -310,22 +321,40 @@
             {/each}
           {:else if recentTransactions.length > 0}
             {#each recentTransactions as tx}
-              <div class="group flex items-center gap-4 p-4 transition-colors hover:bg-muted/50">
+              <div
+                class="group flex items-start gap-3 p-3 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4 sm:p-4"
+              >
                 <div
-                  class="rounded-full bg-brand/5 p-2.5 text-brand transition-colors group-hover:bg-card group-hover:shadow-sm"
+                  class="shrink-0 rounded-full p-2.5 transition-colors group-hover:bg-card group-hover:shadow-sm {tx.amount >
+                  0
+                    ? 'bg-emerald-500/10 text-emerald-600'
+                    : tx.amount < 0
+                      ? 'bg-rose-500/10 text-rose-600'
+                      : 'bg-brand/5 text-brand'}"
                 >
-                  <History class="h-4 w-4" />
+                  {#if tx.amount > 0}
+                    <TrendingUp class="h-4 w-4" />
+                  {:else if tx.amount < 0}
+                    <TrendingDown class="h-4 w-4" />
+                  {:else}
+                    <History class="h-4 w-4" />
+                  {/if}
                 </div>
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-bold text-foreground">{tx.name}</p>
-                  <p class="text-[10px] font-bold text-muted-foreground uppercase">
-                    {tx.type} • {formatDate(tx.date)}
-                  </p>
-                </div>
-                <div class="text-right">
-                  <p class="font-mono text-sm font-bold text-foreground tabular-nums">
-                    {formatCurrency(tx.amount)}
-                  </p>
+
+                <div
+                  class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-bold text-foreground">{tx.name}</p>
+                    <p class="truncate text-[10px] font-bold text-muted-foreground uppercase">
+                      {translateType(tx.type, transactionTypes)} • {formatDate(tx.date)}
+                    </p>
+                  </div>
+                  <div class="shrink-0 text-left sm:text-right">
+                    <p class="font-mono text-sm font-bold text-foreground tabular-nums">
+                      {formatCurrency(tx.amount)}
+                    </p>
+                  </div>
                 </div>
               </div>
             {/each}
