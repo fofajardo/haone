@@ -3,6 +3,7 @@ import type { BrandingProfile, EmailTemplate } from "./types";
 
 export interface ClearanceEmailData {
   accountName: string;
+  ceFullName: string;
   period: string;
   ceLink: string;
   ceRefNo: string;

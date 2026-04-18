@@ -18,7 +18,7 @@ class DispatcherState {
   queue = $state<StagedEmail[]>([]);
   customReminders = $state(""); // For Payment Status updates
   configType = $state<"reminders" | null>(null);
-  batchType = $state<"ACKNOWLEDGMENT" | "REMINDER" | null>(null);
+  batchType = $state<"ACKNOWLEDGMENT" | "REMINDER" | "CLEARANCE" | null>(null);
 
   push(email: StagedEmail) {
     this.queue.push(email);

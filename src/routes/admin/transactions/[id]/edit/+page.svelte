@@ -111,6 +111,7 @@
         ceIssued: "",
         ceRefNo: "",
         ceLink: "",
+        ceFullName: "",
         raw: []
       };
 

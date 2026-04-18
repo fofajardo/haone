@@ -29,6 +29,7 @@ function getOrdinalNum(n: number) {
 
 export interface ClearancePDFOptions {
   name: string;
+  ceFullName?: string;
   period: string;
   refNo: string;
   brandingKey: string;
@@ -41,7 +42,8 @@ export interface ClearancePDFOptions {
  * Generates a Certificate of Full Payment / Clearance PDF.
  */
 export async function exportClearancePDF(options: ClearancePDFOptions) {
-  const { name, period, refNo, brandingKey, signatory, signatoryTitle, qrDataUrl } = options;
+  const { name, ceFullName, period, refNo, brandingKey, signatory, signatoryTitle, qrDataUrl } =
+    options;
 
   const [pdfMakeMod, pdfFontsMod] = await Promise.all([
     import("pdfmake/build/pdfmake"),
@@ -98,7 +100,7 @@ export async function exportClearancePDF(options: ClearancePDFOptions) {
       {
         text: [
           "This is to certify that ",
-          { text: name.toUpperCase() + ",", bold: true },
+          { text: (ceFullName || name).toUpperCase() + ",", bold: true },
           " a resident of the ",
           { text: [profile.hallName, ","] },
           " ",

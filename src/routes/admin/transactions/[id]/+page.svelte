@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { brandingState } from "$lib/branding.svelte";
-  import { fetchSheetRowsRaw, deleteSheetRow, deleteRowFromCache } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, deleteSheetRow } from "$lib/google-sheets";
   import {
     formatCurrency,
     formatAccounting,

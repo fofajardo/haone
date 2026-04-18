@@ -272,6 +272,7 @@ function mapResidentToStagedClearance(resident: ResidentRecord, branding: Brandi
     template: ClearanceCertificateTemplate as any,
     data: {
       accountName: resident.name,
+      ceFullName: resident.ceFullName,
       period: resident.period,
       ceLink: resident.ceLink,
       ceRefNo: resident.ceRefNo

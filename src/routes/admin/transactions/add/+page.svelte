@@ -5,7 +5,7 @@
   import { auth } from "$lib/auth.svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, appendSheetRow, appendRowToCache } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, appendSheetRow } from "$lib/google-sheets";
   import { translatePeriod, translateMop } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -105,6 +105,7 @@
         ceIssued: "",
         ceRefNo: "",
         ceLink: "",
+        ceFullName: "",
         raw: []
       };
 
@@ -159,7 +160,7 @@
       if (userMail) {
         const myAcc = accounts.find((a) => a.email.toLowerCase() === userMail.toLowerCase());
         if (myAcc) {
-          formData.creatorStNo = myAcc.stNo;
+          formData.creatorStNo = myAcc.stno;
           formData.creatorName = myAcc.name;
           creatorSearch = myAcc.email;
         }
