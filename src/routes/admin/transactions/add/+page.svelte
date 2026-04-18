@@ -256,9 +256,11 @@
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}
       <ErrorView {error} class="mb-4">
-        <Button variant="outline" size="sm" class="mt-2" onclick={() => loadAccounts()}
-          >Try Again</Button
-        >
+        {#if accounts.length === 0}
+          <Button variant="outline" size="sm" class="mt-2" onclick={() => loadAccounts()}
+            >Try Again</Button
+          >
+        {/if}
       </ErrorView>
     {/if}
 
