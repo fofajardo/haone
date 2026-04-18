@@ -232,7 +232,7 @@
     </div>
     <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
       <div class="flex items-center gap-2 text-sm font-medium">
-        <span>Show</span>
+        <span>Rows per page</span>
         <NativeSelect.Root
           value={table.getState().pagination.pageSize >= 1000000
             ? "all"
