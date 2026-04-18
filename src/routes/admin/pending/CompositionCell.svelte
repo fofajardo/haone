@@ -1,11 +1,16 @@
 <script lang="ts">
-  import { formatAmount } from "$lib/receipt-utils";
+  import { formatAccounting, translateType } from "$lib/receipt-utils";
   import type { JournalRecord } from "$lib/schemas";
 
   let {
     record,
-    variant
-  }: { record: JournalRecord; variant: "account" | "composition" | "mop" | "total" } = $props();
+    variant,
+    transactionTypes = []
+  }: {
+    record: JournalRecord;
+    variant: "account" | "composition" | "mop" | "total";
+    transactionTypes?: { value: string; label: string }[];
+  } = $props();
 
   const activeItems = $derived(
     [
@@ -20,13 +25,11 @@
   {#if variant === "account"}
     <div class="flex flex-col">
       <span class="font-medium">{record.name}</span>
-      <span class="text-muted-foreground">{record.type}</span>
+      <span class="text-muted-foreground">{translateType(record.type, transactionTypes)}</span>
     </div>
   {:else if variant === "total"}
     <div class="text-right">
-      <span class=""
-        >{record.amount.toLocaleString("en-PH", { style: "currency", currency: "PHP" })}</span
-      >
+      <span class="">{formatAccounting(record.amount)}</span>
     </div>
   {:else if variant === "mop"}
     <div class="flex flex-col">
@@ -41,7 +44,7 @@
     {#each activeItems as fee}
       <div class="flex items-center justify-between">
         <span class="">{fee.name}</span>
-        <span class="text-right">{formatAmount(fee.amount)}</span>
+        <span class="text-right">{formatAccounting(fee.amount)}</span>
       </div>
     {/each}
   {/if}

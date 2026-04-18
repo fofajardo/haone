@@ -1,6 +1,6 @@
 import { type ColumnDef } from "@tanstack/table-core";
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
-import { formatDate, formatCurrency } from "$lib/receipt-utils";
+import { formatDate, formatAccounting } from "$lib/receipt-utils";
 import CompositionCell from "./CompositionCell.svelte";
 import type { JournalRecord } from "$lib/schemas";
 import DataTableCheckbox from "$lib/components/ui/data-table/data-table-checkbox.svelte";
@@ -37,10 +37,12 @@ export const columns: ColumnDef<JournalRecord>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Account" }),
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       return renderComponent(CompositionCell, {
         record: row.original,
-        variant: "account"
+        variant: "account",
+        // @ts-ignore
+        transactionTypes: table.options.meta?.transactionTypes || []
       });
     }
   },
@@ -70,7 +72,7 @@ export const columns: ColumnDef<JournalRecord>[] = [
       renderComponent(DataTableColumnHeader, { column, title: "Total", class: "ml-auto" }),
     cell: ({ row }) => {
       const amountSnippet = createRawSnippet<[{ amount: number }]>((p) => ({
-        render: () => `<div class="text-right">${formatCurrency(p().amount)}</div>`
+        render: () => `<div class="text-right">${formatAccounting(p().amount)}</div>`
       }));
       return renderSnippet(amountSnippet, { amount: row.getValue("amount") as number });
     }

@@ -9,12 +9,11 @@
   import { fetchSheetRowsRaw, batchUpdateValues, invalidateCache } from "$lib/google-sheets";
   import { pluralize } from "$lib/receipt-utils";
   import { encryptJSON } from "$lib/crypto";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import { Search, RefreshCcw, FileCheck, Trash2, CircleCheckBig } from "lucide-svelte";
+  import { Search, RefreshCcw, FileCheck, CircleCheckBig } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -26,9 +25,9 @@
   import { mapRowToJournal } from "$lib/resident-logic";
 
   let queue = $state<JournalRecord[]>([]);
+  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let selectedIndices = $state<Set<string>>(new Set());
   let isLoading = $state(false);
-  let isDeleting = $state(false);
   let error = $state<string | null>(null);
 
   const tableSync = new TableSync({
@@ -56,11 +55,19 @@
     selectedIndices = new Set();
 
     try {
-      const rows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
-        "journal_general!A:W",
-        forceRefresh
-      );
+      const [rows, constRows] = await Promise.all([
+        fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W", forceRefresh),
+        fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C", forceRefresh)
+      ]);
+
+      transactionTypes = constRows
+        .slice(1)
+        .filter((r) => (r[0] || "").startsWith("PMT_"))
+        .map((r) => ({
+          value: r[1] || r[0],
+          label: r[2] || r[1] || r[0]
+        }));
+
       queue = rows
         .slice(1)
         .map((row, idx) => mapRowToJournal(row, idx + 2))
@@ -149,30 +156,6 @@
     goto("/admin/email-dispatcher");
   }
 
-  async function deleteSelected() {
-    if (selectedIndices.size === 0) return;
-    isDeleting = false;
-    isLoading = true;
-    error = null;
-
-    try {
-      const selectedRecords = queue.filter((r) => selectedIndices.has(r.ledgerIndex!.toString()));
-      const updates = selectedRecords.map((r) => ({
-        range: `journal_general!A${r.ledgerIndex}:W${r.ledgerIndex}`,
-        values: [new Array(23).fill("")]
-      }));
-
-      await batchUpdateValues(brandingState.spreadsheetId, updates);
-      invalidateCache();
-      await loadData(true);
-    } catch (e: any) {
-      error = `Deletion failed: ${e.message}`;
-    } finally {
-      isDeleting = false;
-      isLoading = false;
-    }
-  }
-
   function getActiveItems(r: JournalRecord) {
     return [
       { name: "Water Fee", amount: r.water },
@@ -200,28 +183,6 @@
           <FileCheck class="mr-2 h-4 w-4" />
           Settle ({selectedIndices.size})
         </Button>
-
-        <AlertDialog.Root>
-          <AlertDialog.Trigger>
-            <Button variant="outline" size="sm" disabled={isLoading || selectedIndices.size === 0}>
-              <Trash2 class="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </AlertDialog.Trigger>
-          <AlertDialog.Content>
-            <AlertDialog.Header>
-              <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
-              <AlertDialog.Description>
-                You are about to delete {pluralize(selectedIndices.size, "entry", "entries")}. This
-                will permanently clear the record from the journal. This action cannot be undone.
-              </AlertDialog.Description>
-            </AlertDialog.Header>
-            <AlertDialog.Footer>
-              <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-              <AlertDialog.Action onclick={deleteSelected}>Proceed</AlertDialog.Action>
-            </AlertDialog.Footer>
-          </AlertDialog.Content>
-        </AlertDialog.Root>
       </div>
     {/snippet}
   </SubpageHeader>
@@ -260,6 +221,7 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         onSelectionChange={(ids) => (selectedIndices = ids)}
+        meta={{ transactionTypes }}
         rowId="id"
       />
     {:else}
