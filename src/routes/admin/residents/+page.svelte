@@ -109,7 +109,7 @@
 
 <Tooltip.Provider>
   <div class="space-y-3">
-    <SubpageHeader title="Residents">
+    <SubpageHeader title="Residents" isTopLevel={true}>
       {#snippet actions()}
         <div class="flex gap-2">
           <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>

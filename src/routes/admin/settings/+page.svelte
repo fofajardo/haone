@@ -10,14 +10,13 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { setMode, resetMode, userPrefersMode } from "mode-watcher";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
 
   const brandingProfiles = Object.keys(branding);
 </script>
 
 <div class="space-y-6">
-  <div class="flex items-center gap-2">
-    <h1 class="text-3xl font-bold tracking-tight">Settings</h1>
-  </div>
+  <SubpageHeader title="Settings" isTopLevel={true} />
 
   <div class="flex flex-col gap-8 lg:flex-row">
     <!-- Left Column: Settings -->

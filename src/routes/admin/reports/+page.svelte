@@ -150,7 +150,7 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Reports">
+  <SubpageHeader title="Reports" isTopLevel={true}>
     {#snippet actions()}
       <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
         <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />

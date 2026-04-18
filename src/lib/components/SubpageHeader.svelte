@@ -8,7 +8,8 @@
     href = "",
     onBack = undefined,
     actions = undefined,
-    titleExtra = undefined
+    titleExtra = undefined,
+    isTopLevel = false
   }: {
     title: string;
     subtitle?: string;
@@ -16,12 +17,15 @@
     onBack?: () => void;
     actions?: Snippet;
     titleExtra?: Snippet;
+    isTopLevel?: boolean;
   } = $props();
 </script>
 
 <header class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
   <div class="flex items-center gap-4">
-    <BackButton {href} onclick={onBack} />
+    {#if !isTopLevel}
+      <BackButton {href} onclick={onBack} />
+    {/if}
     <div class="space-y-1">
       <div class="flex items-center gap-2">
         <h1 class="text-3xl font-bold tracking-tight text-foreground">{title}</h1>

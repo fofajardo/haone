@@ -183,7 +183,7 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Pending Receipts">
+  <SubpageHeader title="Pending Receipts" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
         <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
