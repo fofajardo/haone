@@ -63,6 +63,7 @@ export function patchCacheRange(spreadsheetId: string, range: string, values: an
   const startRow = parseInt(startMatch[2]) - 1;
 
   const prefix = `${spreadsheetId}:${sheetName}!`;
+
   for (const cacheKey in sheetsCache) {
     if (cacheKey.startsWith(prefix)) {
       const data = sheetsCache[cacheKey];
@@ -70,12 +71,30 @@ export function patchCacheRange(spreadsheetId: string, range: string, values: an
 
       for (let r = 0; r < values.length; r++) {
         const targetRow = startRow + r;
-        if (data[targetRow]) {
+
+        // Fill gaps if appending beyond current data length (e.g. empty rows in sheet)
+        while (targetRow > data.length) {
+          data.push(new Array(data[0]?.length || 0).fill(""));
+        }
+
+        if (targetRow === data.length) {
+          const rowLength = Math.max(data[0]?.length || 0, startCol + values[r].length);
+          const newRow = new Array(rowLength).fill("");
           for (let c = 0; c < values[r].length; c++) {
             const targetCol = startCol + c;
-            if (targetCol < data[targetRow].length) {
-              data[targetRow][targetCol] = String(values[r][c]);
-            }
+            newRow[targetCol] = String(values[r][c]);
+          }
+          data.push(newRow);
+        } else if (data[targetRow]) {
+          // Ensure row is long enough
+          const requiredLength = startCol + values[r].length;
+          if (data[targetRow].length < requiredLength) {
+            const padding = new Array(requiredLength - data[targetRow].length).fill("");
+            data[targetRow].push(...padding);
+          }
+          for (let c = 0; c < values[r].length; c++) {
+            const targetCol = startCol + c;
+            data[targetRow][targetCol] = String(values[r][c]);
           }
         }
       }
@@ -278,6 +297,7 @@ export async function appendSheetRow(spreadsheetId: string, range: string, value
   });
 
   const res = await resp.json();
+  console.log(`[appendSheetRow] API Response UpdatedRange: ${res.updates?.updatedRange}`);
   if (res.updates?.updatedRange) {
     patchCacheRange(spreadsheetId, res.updates.updatedRange, values);
   }
