@@ -140,3 +140,80 @@
     @apply font-sans;
   }
 }
+
+/* Design System Utilities */
+.font-archivo {
+  font-family: "Archivo", sans-serif;
+}
+.font-shantell {
+  font-family: "Shantell Sans", cursive;
+}
+
+/* Accessibility Global Overrides */
+.acc-reduced-motion * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Density Scaling */
+.acc-density-compact {
+  --density-spacing: 0.6;
+  --density-line-height: 1.25;
+  --density-radius: 0.5;
+}
+.acc-density-comfortable {
+  --density-spacing: 1.5;
+  --density-line-height: 2;
+  --density-radius: 1.5;
+}
+
+[class*="acc-density-"] * {
+  line-height: var(--density-line-height) !important;
+}
+
+[class*="acc-density-"] .rounded-xl,
+[class*="acc-density-"] [data-slot="card"] {
+  border-radius: calc(0.75rem * var(--density-radius)) !important;
+}
+[class*="acc-density-"] .rounded-2xl {
+  border-radius: calc(1rem * var(--density-radius)) !important;
+}
+
+[class*="acc-density-"] [data-slot="card-header"],
+[class*="acc-density-"] [data-slot="card-content"],
+[class*="acc-density-"] [data-slot="card-footer"] {
+  padding-top: calc(1.5rem * var(--density-spacing)) !important;
+  padding-bottom: calc(1.5rem * var(--density-spacing)) !important;
+}
+
+[class*="acc-density-"] [data-slot="sidebar-menu-button"] {
+  height: calc(2.25rem * var(--density-spacing)) !important;
+  padding-top: calc(0.5rem * var(--density-spacing)) !important;
+  padding-bottom: calc(0.5rem * var(--density-spacing)) !important;
+}
+[class*="acc-density-"] [data-slot="sidebar-group"] {
+  gap: calc(0.5rem * var(--density-spacing)) !important;
+}
+
+[class*="acc-density-"] .inline-flex.h-9,
+[class*="acc-density-"] .inline-flex.h-10 {
+  height: calc(2.5rem * var(--density-spacing)) !important;
+  padding-left: calc(1rem * var(--density-spacing)) !important;
+  padding-right: calc(1rem * var(--density-spacing)) !important;
+}
+
+.acc-density-compact [data-slot*="card-"] {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+.acc-density-comfortable [data-slot*="card-"] {
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+.acc-density-compact .gap-6 {
+  gap: 0.75rem !important;
+}
+.acc-density-comfortable .gap-6 {
+  gap: 2.25rem !important;
+}
