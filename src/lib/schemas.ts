@@ -24,7 +24,7 @@ export const JOURNAL_COL = {
   OUTGOING: 18,
   BALANCE: 19,
   WAS_AUDITED: 20,
-  LEGACY_RECEIPT_URL: 21,
+  RECEIPT_URL: 21,
   ID: 22
 } as const;
 
@@ -110,7 +110,7 @@ export interface JournalRecord {
   name: string; // ACCOUNT_NAME
   stno: string;
   wasAudited: boolean;
-  legacyReceiptUrl: string;
+  receiptUrl: string;
   id: string;
   raw: string[];
   dateWeight?: number;

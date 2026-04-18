@@ -93,7 +93,7 @@ export function mapRowToJournal(row: string[], index?: number): JournalRecord {
     name: (row[JOURNAL_COL.NAME] || "").trim(),
     stno: (row[JOURNAL_COL.STNO] || "").trim(),
     wasAudited: (row[JOURNAL_COL.WAS_AUDITED] || "").toString().toUpperCase() === "TRUE",
-    legacyReceiptUrl: (row[JOURNAL_COL.LEGACY_RECEIPT_URL] || "").trim(),
+    receiptUrl: (row[JOURNAL_COL.RECEIPT_URL] || "").trim(),
     id: (row[JOURNAL_COL.ID] || "").trim(),
     ledgerIndex: index
   };

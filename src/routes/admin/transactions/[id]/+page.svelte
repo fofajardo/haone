@@ -201,11 +201,11 @@
           </AlertDialog.Root>
         </div>
       {/if}
-      {#if transaction && transaction.legacyReceiptUrl}
+      {#if transaction && transaction.receiptUrl}
         <Button
           size="sm"
           class="h-8 gap-1.5 font-bold"
-          href={transaction.legacyReceiptUrl}
+          href={transaction.receiptUrl}
           target="_blank"
         >
           <ExternalLink class="h-3 w-3" />
