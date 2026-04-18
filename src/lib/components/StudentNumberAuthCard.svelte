@@ -10,12 +10,16 @@
     studentNo = $bindable(),
     rememberMe = $bindable(),
     isDecrypting,
-    onAuthenticate
+    onAuthenticate,
+    title = "Authentication Required",
+    description = "Please enter your UP Student Number to access this document."
   } = $props<{
     studentNo: string;
     rememberMe: boolean;
     isDecrypting: boolean;
     onAuthenticate: () => void;
+    title?: string;
+    description?: string;
   }>();
 </script>
 
@@ -24,9 +28,8 @@
     <div class="mx-auto mb-4 w-fit rounded-full bg-muted p-2.5">
       <Lock class="h-5 w-5 text-muted-foreground" />
     </div>
-    <Card.Title>Authentication Required</Card.Title>
-    <Card.Description>Please enter your UP Student Number to access this document.</Card.Description
-    >
+    <Card.Title>{title}</Card.Title>
+    <Card.Description>{description}</Card.Description>
   </Card.Header>
   <Card.Content class="space-y-4">
     <div class="space-y-2">

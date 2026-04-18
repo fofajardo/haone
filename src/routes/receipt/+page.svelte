@@ -8,7 +8,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import ReceiptExportTemplate from "$lib/components/receipt/ReceiptExportTemplate.svelte";
   import ReceiptWebView from "$lib/components/receipt/ReceiptWebView.svelte";
-  import ReceiptAuthCard from "$lib/components/receipt/ReceiptAuthCard.svelte";
+  import StudentNumberAuthCard from "$lib/components/StudentNumberAuthCard.svelte";
   import ReceiptErrorCard from "$lib/components/receipt/ReceiptErrorCard.svelte";
 
   import { LS_KEYS } from "$lib/constants";
@@ -244,7 +244,7 @@
   class="flex min-h-screen items-center justify-center bg-background p-4 text-foreground md:p-8"
 >
   {#if !receiptData && !error}
-    <ReceiptAuthCard
+    <StudentNumberAuthCard
       bind:studentNo
       bind:rememberMe
       {isDecrypting}
