@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="8.8167763mm"
+   height="8.189889mm"
+   viewBox="0 0 8.8167764 8.189889"
+   version="1.1"
+   id="svg1"
+   inkscape:export-filename="ha1.png"
+   inkscape:export-xdpi="1553.8145"
+   inkscape:export-ydpi="1553.8145"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   sodipodi:docname="ha1_bw.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="14.805458"
+     inkscape:cx="22.593019"
+     inkscape:cy="20.499197"
+     inkscape:window-width="1920"
+     inkscape:window-height="1028"
+     inkscape:window-x="0"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-35.968339,-63.123599)">
+    <path
+       style="font-weight:900;font-size:8.46667px;font-family:'Lapti Nek AF';-inkscape-font-specification:'Lapti Nek AF Heavy';letter-spacing:0px;fill:#291c0c;fill-opacity:1;stroke:#ffffff;stroke-width:0.529167;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 36.347098,67.459036 h 6.366936 v -3.183468 h -6.366936 z m 0,3.589868 h 6.366936 v -3.183468 h -6.366936 z"
+       id="text1"
+       aria-label="h" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.46667px;font-family:Maulobesh;-inkscape-font-specification:Maulobesh;text-align:start;letter-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#00b453;fill-opacity:1;stroke:none;stroke-width:0.499999;stroke-linecap:square;paint-order:stroke fill markers"
+       x="50.54586"
+       y="63.232872"
+       id="text5"><tspan
+         sodipodi:role="line"
+         id="tspan5"
+         style="stroke-width:0.5"
+         x="50.54586"
+         y="63.232872" /></text>
+    <path
+       style="font-size:5.01918px;font-family:'Lapti Nek AF';-inkscape-font-specification:'Lapti Nek AF';letter-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.529167;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 44.520532,70.285924 v -4.520802 h -1.808321 l -1.062389,2.124777 h 1.062389 v 2.396025 z"
+       id="text6"
+       aria-label="1" />
+    <path
+       style="font-weight:bold;font-size:7.76111px;font-family:MuseoModerno;-inkscape-font-specification:'MuseoModerno Bold';letter-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.529167;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 36.347181,68.914092 h 1.358194 l 0.357011,-1.04775 h 2.30505 l 0.341489,1.04775 h 1.404761 l -1.769533,-4.811888 c -0.178506,-0.48895 -0.613128,-0.714022 -1.1176,-0.714022 -0.504472,0 -0.939094,0.240594 -1.1176,0.721783 z m 2.048933,-2.126544 0.737306,-2.16535 c 0.01552,-0.05433 0.04657,-0.08537 0.100894,-0.08537 0.04657,0 0.08537,0.02328 0.108655,0.08537 l 0.690739,2.16535 z"
+       id="text7"
+       aria-label="A" />
+  </g>
+</svg>
