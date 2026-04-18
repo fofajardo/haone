@@ -275,7 +275,7 @@
     {/if}
 
     {#if isLoading}
-      <LoadingView text="Loading transaction details..." />
+      <LoadingView text="Loading transaction details…" />
     {:else if !error}
       <Card.Root>
         <Card.Content class="space-y-8">
@@ -331,7 +331,7 @@
                     bind:value={creatorSearch}
                     onfocus={() => (showCreatorSuggestions = true)}
                     onblur={() => setTimeout(() => (showCreatorSuggestions = false), 200)}
-                    placeholder="Search creator..."
+                    placeholder="Search creator…"
                     class="pl-10"
                   />
                 </div>
@@ -364,7 +364,7 @@
                     bind:value={accountSearch}
                     onfocus={() => (showAccountSuggestions = true)}
                     onblur={() => setTimeout(() => (showAccountSuggestions = false), 200)}
-                    placeholder="Search target account..."
+                    placeholder="Search target account…"
                     class="pl-10"
                   />
                 </div>

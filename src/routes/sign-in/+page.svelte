@@ -124,7 +124,7 @@
       >
         {#if isLoggingIn || isLoadingAuth}
           <LoaderCircle class="mr-2 h-5 w-5 animate-spin" />
-          {isLoadingAuth ? "Loading..." : "Signing in..."}
+          {isLoadingAuth ? "Loading…" : "Signing in…"}
         {:else}
           <LogIn class="mr-2 h-5 w-5" />
           Sign in with Google

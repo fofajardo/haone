@@ -227,7 +227,7 @@
   </SubpageHeader>
 
   {#if isLoading && queue.length === 0}
-    <LoadingView text="Loading records..." />
+    <LoadingView text="Loading records…" />
   {:else if error}
     <ErrorView {error} class="mb-3">
       <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
@@ -245,7 +245,7 @@
           />
           <Input
             bind:value={tableSync.filters!.search}
-            placeholder="Search by name, account, or notes..."
+            placeholder="Search by name, account, or notes…"
             class="h-9 pl-9 text-xs"
           />
         </div>

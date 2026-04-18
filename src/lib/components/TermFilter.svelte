@@ -75,7 +75,7 @@
   {:else}
     <Input
       bind:value={uiSettings.currentSemester}
-      placeholder="Term code..."
+      placeholder="Term code…"
       class="h-9 w-full text-xs"
       onblur={() => onSelect?.()}
     />

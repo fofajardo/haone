@@ -23,7 +23,7 @@
     RotateCcw
   } from "lucide-svelte";
 
-  let { content = $bindable(""), placeholder = "Start typing reminders..." } = $props<{
+  let { content = $bindable(""), placeholder = "Start typing reminders…" } = $props<{
     content: string;
     placeholder?: string;
   }>();

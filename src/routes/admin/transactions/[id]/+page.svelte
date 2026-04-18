@@ -216,7 +216,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading transaction..." />
+    <LoadingView text="Loading transaction…" />
   {:else if error}
     <Card.Root class="border-border bg-muted/30">
       <Card.Content class="flex flex-col items-center justify-center p-12 text-center">

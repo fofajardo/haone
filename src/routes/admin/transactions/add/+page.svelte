@@ -342,7 +342,7 @@
                   bind:value={creatorSearch}
                   onfocus={() => (showCreatorSuggestions = true)}
                   onblur={() => setTimeout(() => (showCreatorSuggestions = false), 200)}
-                  placeholder="Search resident email or name..."
+                  placeholder="Search resident email or name…"
                   class="pl-10"
                 />
               </div>
@@ -393,7 +393,7 @@
                   bind:value={accountSearch}
                   onfocus={() => (showAccountSuggestions = true)}
                   onblur={() => setTimeout(() => (showAccountSuggestions = false), 200)}
-                  placeholder="Search resident email or name..."
+                  placeholder="Search resident email or name…"
                   class="pl-10"
                 />
               </div>
@@ -536,7 +536,7 @@
               >
               <textarea
                 bind:value={formData.notes}
-                placeholder="Description for the resident..."
+                placeholder="Description for the resident…"
                 class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               ></textarea>
             </div>
@@ -546,7 +546,7 @@
               >
               <textarea
                 bind:value={formData.notesPrivate}
-                placeholder="Internal context only (not visible to resident)..."
+                placeholder="Internal context only (not visible to resident)…"
                 class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               ></textarea>
             </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { LoaderCircle } from "lucide-svelte";
 
-  let { text = "Loading records...", class: className = "" } = $props();
+  let { text = "Loading records…", class: className = "" } = $props();
 </script>
 
 <div class="flex flex-col items-center justify-center gap-3 py-12 {className}">

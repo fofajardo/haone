@@ -145,7 +145,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading transactions..." />
+    <LoadingView text="Loading transactions…" />
   {:else if error}
     <ErrorView {error}>
       <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
@@ -163,7 +163,7 @@
           />
           <Input
             bind:value={tableSync.filters!.search}
-            placeholder="Name, account, or notes..."
+            placeholder="Name, account, or notes…"
             class="h-9 pl-9 text-xs"
           />
         </div>

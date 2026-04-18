@@ -52,7 +52,7 @@
       </Label>
     </div>
     <Button onclick={onAuthenticate} class="w-full" disabled={isDecrypting || !studentNo}>
-      {isDecrypting ? "Verifying..." : "Unlock"}
+      {isDecrypting ? "Verifying…" : "Unlock"}
     </Button>
   </Card.Content>
 </Card.Root>

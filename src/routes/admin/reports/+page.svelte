@@ -160,7 +160,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Generating reports..." />
+    <LoadingView text="Generating reports…" />
   {:else if error}
     <ErrorView {error}>
       <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>

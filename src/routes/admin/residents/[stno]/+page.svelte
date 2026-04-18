@@ -200,7 +200,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading profile..." />
+    <LoadingView text="Loading profile…" />
   {:else if error}
     <ErrorView {error}>
       <Button variant="outline" class="mt-4" href="/admin/residents">Return to Hub</Button>

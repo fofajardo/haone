@@ -125,7 +125,7 @@
     </SubpageHeader>
 
     {#if isLoading}
-      <LoadingView text="Loading resident directory..." />
+      <LoadingView text="Loading resident directory…" />
     {:else if error}
       <ErrorView {error}>
         <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}
@@ -145,7 +145,7 @@
             />
             <Input
               bind:value={tableSync.filters!.search}
-              placeholder="Search by name, email, or room..."
+              placeholder="Search by name, email, or room…"
               class="h-9 pl-9 text-xs"
             />
           </div>
