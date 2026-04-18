@@ -142,33 +142,37 @@
       onSelectionChange(selected);
     }
   });
+
+  const hasSelection = $derived(!!table.getColumn("select"));
 </script>
 
 <div class={cn("w-full", className)}>
-  {#if table.getIsAllPageRowsSelected() && !table.getIsAllRowsSelected()}
-    <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
-      All <span class="font-bold">{table.getPaginationRowModel().rows.length}</span> items on this
-      page are selected.
-      <Button
-        variant="link"
-        class="h-auto p-0 font-bold"
-        onclick={() => table.toggleAllRowsSelected(true)}
-      >
-        Select all {table.getFilteredRowModel().rows.length} items in match
-      </Button>
-    </div>
-  {:else if table.getIsAllRowsSelected() && table.getFilteredRowModel().rows.length > table.getState().pagination.pageSize}
-    <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
-      All <span class="font-bold">{table.getFilteredRowModel().rows.length}</span> items are
-      selected.
-      <Button
-        variant="link"
-        class="h-auto p-0 font-bold text-destructive"
-        onclick={() => table.resetRowSelection()}
-      >
-        Clear selection
-      </Button>
-    </div>
+  {#if hasSelection}
+    {#if table.getIsAllPageRowsSelected() && !table.getIsAllRowsSelected()}
+      <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
+        All <span class="font-bold">{table.getPaginationRowModel().rows.length}</span> items on this
+        page are selected.
+        <Button
+          variant="link"
+          class="h-auto p-0 font-bold"
+          onclick={() => table.toggleAllRowsSelected(true)}
+        >
+          Select all {table.getFilteredRowModel().rows.length} items in match
+        </Button>
+      </div>
+    {:else if table.getIsAllRowsSelected() && table.getFilteredRowModel().rows.length > table.getState().pagination.pageSize}
+      <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
+        All <span class="font-bold">{table.getFilteredRowModel().rows.length}</span> items are
+        selected.
+        <Button
+          variant="link"
+          class="h-auto p-0 font-bold text-destructive"
+          onclick={() => table.resetRowSelection()}
+        >
+          Clear selection
+        </Button>
+      </div>
+    {/if}
   {/if}
 
   <div class="rounded-md border">
@@ -225,10 +229,16 @@
 
   <div class="flex flex-col items-center justify-between gap-4 py-4 md:flex-row">
     <div class="flex flex-col items-center gap-4 text-sm sm:flex-row sm:gap-6">
-      <span class="whitespace-nowrap">
-        {table.getFilteredSelectedRowModel().rows.length} of
-        {pluralize(table.getFilteredRowModel().rows.length, "row", "rows")} selected.
-      </span>
+      {#if hasSelection}
+        <span class="whitespace-nowrap">
+          {table.getFilteredSelectedRowModel().rows.length} of
+          {pluralize(table.getFilteredRowModel().rows.length, "row", "rows")} selected.
+        </span>
+      {:else}
+        <span class="whitespace-nowrap">
+          Total of {pluralize(table.getFilteredRowModel().rows.length, "entry", "entries")}.
+        </span>
+      {/if}
     </div>
     <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
       <div class="flex items-center gap-2 text-sm font-medium">
