@@ -1,94 +1,146 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
+  import { onMount, onDestroy } from "svelte";
   import { pageState } from "$lib/page-info.svelte";
-  import { ArrowRight } from "lucide-svelte";
+  import { auth } from "$lib/auth.svelte";
+  import { ArrowRight, LogIn, LayoutDashboard, ExternalLink, LoaderCircle } from "lucide-svelte";
+  import branding from "$lib/branding.json";
+  import { Button } from "$lib/components/ui/button";
+  import HeroVisual from "$lib/components/HeroVisual.svelte";
+
+  onMount(() => {
+    document.body.classList.add("overflow-hidden");
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.body.classList.remove("overflow-hidden");
+    }
+  });
 
   $effect(() => {
-    pageState.title = "Coming Soon";
+    pageState.title = "Welcome";
   });
 </script>
 
-<div
-  class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black px-4 text-white selection:bg-yellow-400/30"
->
-  <div class="starfield absolute inset-0 z-0"></div>
-  <div class="starfield-fast absolute inset-0 z-0"></div>
+<div class="relative flex min-h-screen flex-col bg-background md:flex-row">
+  <!-- Left Panel: Brand & Quote -->
+  <div
+    class="relative hidden flex-col justify-between overflow-hidden border-r border-white/5 bg-zinc-950 p-10 text-white lg:flex lg:w-1/2"
+  >
+    <div class="mesh-gradient"></div>
+    <HeroVisual />
+    <div class="vignette"></div>
 
-  <div class="relative z-10 flex flex-col items-center space-y-12 text-center">
-    <div>
-      <img src="/ha1.svg" alt="HAOne Logo" class="h-32 w-32" />
+    <div class="relative z-20 flex items-center text-xl font-bold tracking-tight">
+      <img src="/ha1_bw.svg" alt="HAOne" class="mr-3 h-8 w-8" />
+      HAOne
     </div>
+  </div>
 
-    <div class="space-y-6">
-      <div class="space-y-2">
-        <h1
-          class="font-['Archivo'] text-6xl font-black tracking-tighter text-[#FFE81F] sm:text-8xl md:drop-shadow-[0_0_10px_rgba(255,232,31,0.5)]"
-        >
-          HAOne
-        </h1>
-        <div
-          class="mx-auto h-[2px] w-32 bg-gradient-to-r from-transparent via-[#FFE81F] to-transparent"
-        ></div>
+  <!-- Right Panel: Main Content -->
+  <div class="relative flex flex-1 flex-col items-center justify-center p-8">
+    <div class="mx-auto flex w-full max-w-[400px] flex-col justify-center space-y-8">
+      <div class="flex flex-col space-y-4 text-center md:text-left">
+        <div class="flex justify-center md:justify-start lg:hidden">
+          <img src="/ha1.svg" alt="HAOne Logo" class="mb-4 h-16 w-16 dark:hidden" />
+          <img src="/ha1_bw.svg" alt="HAOne Logo" class="mb-4 hidden h-16 w-16 dark:block" />
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-baseline justify-center gap-3 md:justify-start">
+            <h1
+              class="font-['Archivo'] text-4xl font-black tracking-tighter text-foreground sm:text-6xl"
+            >
+              HAOne
+            </h1>
+            <div
+              class="inline-flex items-center rounded-full bg-[#7B1113]/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#7B1113] uppercase dark:bg-white/10 dark:text-white"
+            >
+              Beta
+            </div>
+          </div>
+          <p class="text-lg leading-relaxed text-muted-foreground">
+            The comprehensive administrative suite for UPLB Residence Hall Associations.
+          </p>
+        </div>
       </div>
 
-      <div
-        class="inline-flex items-center rounded-sm bg-[#FFE81F]/5 px-6 py-1.5 text-xs font-bold tracking-[0.3em] text-[#FFE81F] uppercase backdrop-blur-sm"
-      >
-        Coming Soon
-      </div>
-    </div>
+      <div class="grid min-h-[56px] gap-4">
+        {#if !auth.initialized}
+          <div class="flex items-center justify-center py-4">
+            <LoaderCircle class="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        {:else if !auth.accessToken}
+          <Button
+            href="/sign-in"
+            class="h-14 rounded-xl bg-[#7B1113] text-lg font-bold text-white transition-all hover:bg-[#7B1113]/90 active:scale-[0.98]"
+          >
+            <LogIn class="mr-2 h-5 w-5" />
+            Sign in
+          </Button>
+        {:else}
+          <Button
+            href="/admin"
+            class="h-14 rounded-xl bg-[#7B1113] text-lg font-bold text-white transition-all hover:bg-[#7B1113]/90 active:scale-[0.98]"
+          >
+            <ArrowRight class="mr-2 h-5 w-5" />
+            Go to Dashboard
+          </Button>
+        {/if}
 
-    <div class="pt-10">
-      <a
-        href="/admin"
-        class="group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-md border border-[#FFE81F]/20 bg-black px-10 py-4 text-sm font-bold tracking-widest text-[#FFE81F] uppercase transition-all duration-500 hover:border-[#FFE81F] hover:bg-[#FFE81F] hover:text-black hover:shadow-[0_0_20px_rgba(255,232,31,0.4)]"
-      >
-        <span>Enter Command Deck</span>
-        <ArrowRight
-          size={18}
-          strokeWidth={3}
-          class="transition-transform duration-300 group-hover:translate-x-1"
-        />
-      </a>
+        <p class="px-8 text-center text-xs text-muted-foreground md:px-0 md:text-left">
+          By entering, you agree to our <a
+            href="/terms"
+            class="underline underline-offset-2 transition-colors hover:text-foreground"
+            >Terms of Service</a
+          >
+          and
+          <a
+            href="/privacy"
+            class="underline underline-offset-2 transition-colors hover:text-foreground"
+            >Privacy Policy</a
+          >.
+        </p>
+      </div>
     </div>
   </div>
 </div>
 
 <style>
-  :global(body) {
-    background-color: black;
-    overflow: hidden;
+  .mesh-gradient {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, #7b1113 0%, transparent 40%),
+      radial-gradient(circle at 80% 20%, #4a0a0b 0%, transparent 40%),
+      radial-gradient(circle at 50% 80%, #2d0607 0%, transparent 50%),
+      radial-gradient(circle at 10% 90%, #7b1113 0%, transparent 40%),
+      radial-gradient(circle at 90% 90%, #4a0a0b 0%, transparent 40%);
+    filter: blur(60px);
+    opacity: 0.6;
+    animation: aurora 30s ease-in-out infinite alternate;
   }
 
-  .starfield {
-    background-image:
-      radial-gradient(1px 1px at 20px 30px, #fff, rgba(0, 0, 0, 0)),
-      radial-gradient(1.5px 1.5px at 40px 70px, #fff, rgba(0, 0, 0, 0)),
-      radial-gradient(1px 1px at 50px 160px, #fff, rgba(0, 0, 0, 0)),
-      radial-gradient(1.5px 1.5px at 90px 40px, #fff, rgba(0, 0, 0, 0)),
-      radial-gradient(1px 1px at 130px 80px, #fff, rgba(0, 0, 0, 0)),
-      radial-gradient(1.5px 1.5px at 160px 120px, #fff, rgba(0, 0, 0, 0));
-    background-repeat: repeat;
-    background-size: 200px 200px;
-    animation: stars-move 100s linear infinite;
-    opacity: 0.8;
+  .vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.6) 100%);
+    pointer-events: none;
   }
 
-  .starfield-fast {
-    background-image:
-      radial-gradient(1px 1px at 10px 10px, #fff, rgba(0, 0, 0, 0)),
-      radial-gradient(1.5px 1.5px at 150px 150px, #fff, rgba(0, 0, 0, 0));
-    background-repeat: repeat;
-    background-size: 300px 300px;
-    animation: stars-move 40s linear infinite;
-    opacity: 0.4;
-  }
-
-  @keyframes stars-move {
-    from {
-      transform: translateY(0);
+  @keyframes aurora {
+    0% {
+      transform: scale(1) rotate(0deg);
     }
-    to {
-      transform: translateY(-1000px);
+    33% {
+      transform: scale(1.2) rotate(2deg);
+    }
+    66% {
+      transform: scale(1.1) rotate(-2deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
     }
   }
 </style>

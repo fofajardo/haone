@@ -13,6 +13,7 @@ class AuthState {
   isRemembered = $state(false);
   lastError = $state<{ title: string; description: string } | null>(null);
   redirectTo = $state<string | null>(null);
+  initialized = $state(false);
 
   constructor() {
     if (browser) {
@@ -25,6 +26,7 @@ class AuthState {
         this.user = JSON.parse(savedUser);
         this.isRemembered = true;
       }
+      this.initialized = true;
     }
   }
 
