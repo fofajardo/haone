@@ -311,7 +311,7 @@
 </script>
 
 <div class="space-y-6 pb-20">
-  <SubpageHeader title="Export Resident List" />
+  <SubpageHeader title="Resident List" />
 
   {#if isLoading && allAccounts.length === 0}
     <LoadingView text="Preparing export data…" />

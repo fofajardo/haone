@@ -44,8 +44,8 @@
       icon: ChartPie
     },
     {
-      title: "Clearance",
-      url: "/admin/reports/clearance",
+      title: "Resident List",
+      url: "/admin/reports/resident-list",
       icon: FileSpreadsheet
     }
   ];
