@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { LayoutDashboard, ListFilter, Menu, CircleUser, Users } from "lucide-svelte";
+  import { LayoutDashboard, History, Menu, CircleUser, Users } from "lucide-svelte";
   import { useSidebar } from "$lib/components/ui/sidebar";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
@@ -16,7 +16,7 @@
     {
       label: "Transactions",
       href: "/admin/transactions",
-      icon: ListFilter
+      icon: History
     },
     {
       label: "Residents",

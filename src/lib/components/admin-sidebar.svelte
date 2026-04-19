@@ -4,14 +4,14 @@
     LayoutDashboard,
     Settings,
     Receipt,
-    ListFilter,
     Users,
     LogOut,
     ChartPie,
     Mail,
     FileSpreadsheet,
     HandCoins,
-    X
+    X,
+    History
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -32,7 +32,7 @@
     {
       title: "Transactions",
       url: "/admin/transactions",
-      icon: ListFilter
+      icon: History
     },
     {
       title: "Residents",
