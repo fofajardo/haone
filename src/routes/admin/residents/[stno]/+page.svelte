@@ -41,7 +41,8 @@
     ClipboardCheck,
     AwardIcon,
     ChevronDown,
-    FileCheck
+    FileCheck,
+    FileDown
   } from "lucide-svelte";
   import {
     ACCOUNT_COL as ACC,
@@ -269,23 +270,18 @@
 
       <div class="space-y-1 lg:col-span-9">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Actions</Label>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             href="/admin/transactions/add?account={account.email}"
-            class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
           >
-            <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" /> Add Transaction
+            <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" />
+            Add Transaction
           </Button>
 
           {#if (!account.ceIssued || account.ceIssued === "" || account.ceIssued === "#N/A") && account.bal <= 0 && account.totalBase > 0}
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={handleClear}
-              class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
-            >
+            <Button variant="outline" size="sm" onclick={handleClear}>
               <ShieldCheck class="mr-1.5 h-3.5 w-3.5" />
               Mark as Cleared
             </Button>
@@ -294,12 +290,7 @@
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               {#snippet child({ props })}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  {...props}
-                  class="h-9 border-primary/20 text-xs font-bold text-primary hover:bg-primary/5"
-                >
+                <Button variant="outline" size="sm" {...props}>
                   <Mail class="mr-1.5 h-3.5 w-3.5" />
                   Send
                   <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
@@ -317,11 +308,8 @@
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
-          <Button
-            variant="outline"
-            size="sm"
-            class="pointer-events-none h-9 text-xs font-bold opacity-50"
-          >
+          <Button variant="outline" size="sm" disabled>
+            <FileDown class="mr-1.5 h-3.5 w-3.5" />
             Export Statement (PDF)
           </Button>
         </div>
