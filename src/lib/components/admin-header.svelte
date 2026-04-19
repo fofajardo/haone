@@ -9,7 +9,10 @@
   class="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur transition-all supports-[backdrop-filter]:bg-background/60"
 >
   <div class="flex items-center gap-2">
-    <Sidebar.Trigger class="-ml-1" />
+    <Sidebar.Trigger
+      class="-ml-1 hidden md:flex {sidebar.isMobile ? 'size-10 [&_svg]:size-6' : ''}"
+      size={sidebar.isMobile ? "icon-lg" : "icon-sm"}
+    />
 
     <div class="flex items-center gap-2 px-2">
       <img

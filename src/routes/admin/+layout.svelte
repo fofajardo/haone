@@ -3,6 +3,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import AdminSidebar from "$lib/components/admin-sidebar.svelte";
   import AdminHeader from "$lib/components/admin-header.svelte";
+  import MobileNav from "$lib/components/mobile-nav.svelte";
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
@@ -66,9 +67,10 @@
     <AdminSidebar />
     <Sidebar.Inset>
       <AdminHeader />
-      <main class="flex-1 overflow-auto p-4 md:p-8">
+      <main class="flex-1 overflow-auto p-4 pb-24 md:p-8 md:pb-8">
         {@render children()}
       </main>
+      <MobileNav />
     </Sidebar.Inset>
   </Sidebar.Provider>
 {/if}
