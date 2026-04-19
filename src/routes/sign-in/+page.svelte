@@ -2,13 +2,13 @@
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
-  import { loadGisScript } from "$lib/gmail";
   import { testAccess } from "$lib/google-sheets";
   import { Button } from "$lib/components/ui/button";
   import { LogIn, LoaderCircle } from "lucide-svelte";
   import { goto } from "$app/navigation";
   import branding from "$lib/branding.json";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
 
   let isLoggingIn = $state(false);
   let isLoadingAuth = $state(true);
@@ -23,13 +23,36 @@
   }
 
   onMount(async () => {
-    try {
-      await loadGisScript();
-    } catch (e) {
-      console.error("Failed to load GIS script", e);
-    } finally {
-      isLoadingAuth = false;
+    // Check for OAuth2 callback hash
+    if (window.location.hash) {
+      const params = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = params.get("access_token");
+      const state = params.get("state");
+
+      if (accessToken) {
+        isLoggingIn = true;
+        try {
+          const userInfo = await auth.fetchUserInfo(accessToken);
+
+          const spreadsheetId = (branding.default as any).spreadsheetId;
+          await testAccess(spreadsheetId, accessToken);
+          auth.setSession(accessToken, userInfo, rememberMe);
+
+          // Redirect back or to state
+          goto(state || auth.redirectTo || "/admin");
+          auth.redirectTo = null;
+          return;
+        } catch (e: any) {
+          // Error is already handled by the auth service.
+        } finally {
+          isLoggingIn = false;
+          // Clear hash
+          window.history.replaceState(null, "", window.location.pathname);
+        }
+      }
     }
+
+    isLoadingAuth = false;
 
     // If already logged in, go to admin
     if (auth.accessToken) {
@@ -46,47 +69,27 @@
   });
 
   async function handleLogin() {
-    if (!(window as any).google) {
-      showError("Connection Error", "Google Identity Services not loaded. Check your connection.");
-      return;
-    }
-
     isLoggingIn = true;
-    try {
-      const tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
-        client_id: (branding.default as any).googleClientId,
-        scope:
-          "openid profile email https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly",
-        callback: async (response: any) => {
-          if (response.error) {
-            isLoggingIn = false;
-            showError("Sign-in Failed", response.error_description || response.error);
-            return;
-          }
-          if (response.access_token) {
-            try {
-              const userInfo = await auth.fetchUserInfo(response.access_token);
-              const spreadsheetId = (branding.default as any).spreadsheetId;
-              await testAccess(spreadsheetId, response.access_token);
-              auth.setSession(response.access_token, userInfo, rememberMe);
+    const clientId = PUBLIC_GI_CLIENT_ID;
+    const scopes = [
+      "openid",
+      "profile",
+      "email",
+      "https://www.googleapis.com/auth/gmail.send",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/drive.readonly"
+    ].join(" ");
 
-              // Redirect back
-              goto(auth.redirectTo || "/admin");
-              auth.redirectTo = null;
-            } catch (e: any) {
-              isLoggingIn = false;
-              // Error is already handled by the auth service.
-            }
-          } else {
-            isLoggingIn = false;
-          }
-        }
-      });
-      tokenClient.requestAccessToken();
-    } catch (e: any) {
-      isLoggingIn = false;
-      showError("System Error", e.message);
-    }
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: window.location.origin + "/sign-in",
+      response_type: "token",
+      scope: scopes,
+      state: auth.redirectTo || "/admin",
+      include_granted_scopes: "true"
+    });
+
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   }
 </script>
 

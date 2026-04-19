@@ -6,7 +6,6 @@
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
-  import { loadGisScript } from "$lib/gmail";
   import { LoaderCircle } from "lucide-svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
@@ -22,13 +21,7 @@
   }
 
   onMount(async () => {
-    try {
-      await loadGisScript();
-    } catch (e) {
-      console.error("Failed to load GIS script", e);
-    } finally {
-      isLoadingAuth = false;
-    }
+    isLoadingAuth = false;
   });
 
   // Handle errors from anywhere (e.g., session expired)
