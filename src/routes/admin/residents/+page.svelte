@@ -203,8 +203,6 @@
               {/snippet}
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="end" class="w-56">
-              <DropdownMenu.Label>Batch Dispatch</DropdownMenu.Label>
-              <DropdownMenu.Separator />
               <DropdownMenu.Item onclick={prepareDispatch}>
                 <Mail class="mr-2 h-4 w-4" />
                 <span>Send Payment Status</span>
