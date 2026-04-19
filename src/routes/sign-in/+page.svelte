@@ -3,9 +3,10 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
   import { testAccess } from "$lib/google-sheets";
+  import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/crypto";
   import { Button } from "$lib/components/ui/button";
   import { LogIn, LoaderCircle } from "lucide-svelte";
-  import { goto } from "$app/navigation";
+  import { goto, replaceState } from "$app/navigation";
   import branding from "$lib/branding.json";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
@@ -23,32 +24,61 @@
   }
 
   onMount(async () => {
-    // Check for OAuth2 callback hash
-    if (window.location.hash) {
-      const params = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = params.get("access_token");
-      const state = params.get("state");
+    // Check for PKCE Authorization Code callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    const state = urlParams.get("state");
 
-      if (accessToken) {
-        isLoggingIn = true;
-        try {
-          const userInfo = await auth.fetchUserInfo(accessToken);
-
-          const spreadsheetId = (branding.default as any).spreadsheetId;
-          await testAccess(spreadsheetId, accessToken);
-          auth.setSession(accessToken, userInfo, rememberMe);
-
-          // Redirect back or to state
-          goto(state || auth.redirectTo || "/admin");
-          auth.redirectTo = null;
-          return;
-        } catch (e: any) {
-          // Error is already handled by the auth service.
-        } finally {
-          isLoggingIn = false;
-          // Clear hash
-          window.history.replaceState(null, "", window.location.pathname);
+    if (code) {
+      isLoggingIn = true;
+      try {
+        const verifier = sessionStorage.getItem("pkce_verifier");
+        if (!verifier) {
+          throw new Error("Missing PKCE verifier");
         }
+
+        // Exchange code for token via our server-side API.
+        const tokenResp = await fetch("/api/auth/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code,
+            code_verifier: verifier,
+            redirect_uri: window.location.origin + "/sign-in"
+          })
+        });
+
+        if (!tokenResp.ok) {
+          const err = await tokenResp.json();
+          throw new Error(err.error_description || "Token exchange failed");
+        }
+
+        const tokenData = await tokenResp.json();
+        const accessToken = tokenData.access_token;
+
+        const userInfo = await auth.fetchUserInfo(accessToken);
+
+        const spreadsheetId = (branding.default as any).spreadsheetId;
+        await testAccess(spreadsheetId, accessToken);
+        auth.setSession(accessToken, userInfo, rememberMe);
+
+        sessionStorage.removeItem("pkce_verifier");
+
+        // Redirect back or to state
+        goto(state || auth.redirectTo || "/admin");
+        auth.redirectTo = null;
+        return;
+      } catch (e: any) {
+        // Only set error if not already handled by a service (which would open the alert)
+        if (!alertState.open) {
+          auth.lastError = {
+            title: "Sign-in Failed",
+            description: e.message || "An unexpected error occurred."
+          };
+        }
+      } finally {
+        isLoggingIn = false;
+        replaceState(window.location.pathname, {});
       }
     }
 
@@ -80,13 +110,20 @@
       "https://www.googleapis.com/auth/drive.readonly"
     ].join(" ");
 
+    // PKCE Setup
+    const verifier = generatePKCEVerifier();
+    sessionStorage.setItem("pkce_verifier", verifier);
+    const challenge = await generatePKCEChallenge(verifier);
+
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: window.location.origin + "/sign-in",
-      response_type: "token",
+      response_type: "code",
       scope: scopes,
       state: auth.redirectTo || "/admin",
-      include_granted_scopes: "true"
+      include_granted_scopes: "true",
+      code_challenge: challenge,
+      code_challenge_method: "S256"
     });
 
     window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;

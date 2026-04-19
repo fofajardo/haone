@@ -59,3 +59,26 @@ export async function decryptJSON(base64: string, passphrase: string): Promise<a
     throw new Error("Failed to decrypt. Data may be tampered with or key is incorrect.");
   }
 }
+
+/**
+ * PKCE (Proof Key for Code Exchange) Utilities
+ */
+
+export function generatePKCEVerifier(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode(...array))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+export async function generatePKCEChallenge(verifier: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
