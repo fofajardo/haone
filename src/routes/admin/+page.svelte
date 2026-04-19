@@ -84,7 +84,7 @@
     {
       title: "Reports",
       description: "Export collection summaries and payment status lists.",
-      href: "/admin/reports/resident-list",
+      href: "/admin/reports",
       icon: FileSpreadsheet,
       color: "text-brand",
       bg: "bg-brand/10",

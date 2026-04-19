@@ -9,7 +9,8 @@
     LogOut,
     ChartPie,
     Mail,
-    FileSpreadsheet
+    FileSpreadsheet,
+    HandCoins
   } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
@@ -39,14 +40,19 @@
 
   const reportItems = [
     {
-      title: "Demographics",
-      url: "/admin/reports/demographics",
-      icon: ChartPie
+      title: "Financial Report",
+      url: "/admin/reports/financial-report",
+      icon: HandCoins
     },
     {
       title: "Resident List",
       url: "/admin/reports/resident-list",
       icon: FileSpreadsheet
+    },
+    {
+      title: "Demographics",
+      url: "/admin/reports/demographics",
+      icon: ChartPie
     }
   ];
 

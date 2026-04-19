@@ -117,4 +117,6 @@ export interface JournalRecord {
   dateWeight?: number;
   ledgerIndex?: number;
   runningBalance?: number;
+  incoming?: number;
+  outgoing?: number;
 }
