@@ -22,7 +22,7 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { mapRowToResident } from "$lib/resident-logic";
+  import { mapRowToResident, matchesStatusFilter } from "$lib/resident-logic";
   import type { ResidentRecord } from "$lib/schemas";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { columns } from "./columns";
@@ -53,23 +53,7 @@
         r.stno.includes(searchQuery);
 
       if (!matchesSearch) return false;
-
-      const progress = r.totalBase > 0 ? (r.paid + r.waived) / r.totalBase : 0;
-
-      switch (activeTab) {
-        case "fully_paid":
-          return r.isFullyPaid || (r.bal <= 0 && r.totalBase > 0);
-        case "half_fully_paid":
-          return !r.isFullyPaid && progress >= 0.5 && (r.paid > 0 || r.waived > 0);
-        case "partially_paid":
-          return !r.isFullyPaid && progress < 0.5 && (r.paid > 0 || r.waived > 0);
-        case "no_payment":
-          return r.paid <= 0 && r.waived <= 0;
-        case "cleared":
-          return !!r.ceIssued && r.ceIssued !== "" && r.ceIssued !== "#N/A" && r.ceIssued !== "N/A";
-        default:
-          return true;
-      }
+      return matchesStatusFilter(r, activeTab.toUpperCase());
     })
   );
 

@@ -337,3 +337,29 @@ export async function clearResident(
 
   return { refNo, dateString, publicLink };
 }
+
+/**
+ * Standardized logic for matching a resident record against payment status filters.
+ */
+export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean {
+  if (filter === "ALL") return true;
+
+  const progress = r.totalBase > 0 ? (r.paid + r.waived) / r.totalBase : 0;
+
+  switch (filter) {
+    case "FULLY_PAID":
+      return r.isFullyPaid || (r.bal <= 0 && r.totalBase > 0);
+    case "HALF_FULLY_PAID":
+      return !r.isFullyPaid && progress >= 0.5 && (r.paid > 0 || r.waived > 0);
+    case "PARTIALLY_PAID":
+      return !r.isFullyPaid && progress < 0.5 && (r.paid > 0 || r.waived > 0);
+    case "NO_PAYMENT":
+      return r.paid <= 0 && r.waived <= 0;
+    case "CLEARED":
+      return !!r.ceIssued && r.ceIssued !== "" && r.ceIssued !== "#N/A" && r.ceIssued !== "N/A";
+    case "PENDING":
+      return !r.isFullyPaid;
+    default:
+      return true;
+  }
+}

@@ -7,7 +7,8 @@
   import {
     mapRowToResident,
     stageStatusEmailBatch,
-    stageClearanceEmailBatch
+    stageClearanceEmailBatch,
+    matchesStatusFilter
   } from "$lib/resident-logic";
   import { pluralize } from "$lib/receipt-utils";
   import { goto } from "$app/navigation";
@@ -103,12 +104,7 @@
         );
       })
       .filter((r) => tableSync.filters!.room === "ALL" || r.room === tableSync.filters!.room)
-      .filter((r) => {
-        if (tableSync.filters!.status === "ALL") return true;
-        if (tableSync.filters!.status === "FULLY_PAID") return r.isFullyPaid;
-        if (tableSync.filters!.status === "PENDING") return !r.isFullyPaid;
-        return true;
-      });
+      .filter((r) => matchesStatusFilter(r, tableSync.filters!.status));
   });
 
   const rooms = $derived([
@@ -277,7 +273,10 @@
           >
             <NativeSelect.Option value="ALL">All Statuses</NativeSelect.Option>
             <NativeSelect.Option value="FULLY_PAID">Fully Paid</NativeSelect.Option>
-            <NativeSelect.Option value="PENDING">Pending</NativeSelect.Option>
+            <NativeSelect.Option value="HALF_FULLY_PAID">Half-Fully Paid</NativeSelect.Option>
+            <NativeSelect.Option value="PARTIALLY_PAID">Partially Paid</NativeSelect.Option>
+            <NativeSelect.Option value="NO_PAYMENT">No Payment</NativeSelect.Option>
+            <NativeSelect.Option value="CLEARED">Cleared</NativeSelect.Option>
           </NativeSelect.Root>
         </div>
 
