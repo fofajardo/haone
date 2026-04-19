@@ -299,6 +299,7 @@
           onRowClick={(r) => goto(`/admin/residents/${r.stno}`)}
           onSelectionChange={(ids) => (selectedIndices = ids)}
           rowId="stno"
+          enableSelection
         />
       {:else}
         <div

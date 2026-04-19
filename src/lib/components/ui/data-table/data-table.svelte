@@ -32,6 +32,7 @@
     pagination?: PaginationState;
     onPaginationChange?: (pagination: PaginationState) => void;
     rowId: keyof TData | ((row: TData) => string);
+    enableSelection?: boolean;
   };
 
   let {
@@ -46,7 +47,8 @@
     meta,
     pagination = $bindable({ pageIndex: 0, pageSize: 20 }),
     onPaginationChange: onPaginationChangeProp,
-    rowId
+    rowId,
+    enableSelection = false
   }: DataTableProps<TData, TValue> & { meta?: any } = $props();
 
   let sorting = $state<SortingState>([]);
@@ -143,7 +145,7 @@
     }
   });
 
-  const hasSelection = $derived(!!table.getColumn("select"));
+  const hasSelection = $derived(enableSelection);
 </script>
 
 <div class={cn("w-full", className)}>

@@ -223,6 +223,7 @@
         onSelectionChange={(ids) => (selectedIndices = ids)}
         meta={{ transactionTypes }}
         rowId="id"
+        enableSelection
       />
     {:else}
       <div
