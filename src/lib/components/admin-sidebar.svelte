@@ -11,13 +11,15 @@
     FileSpreadsheet,
     HandCoins,
     X,
-    History
+    History,
+    CircleUser
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
 
   const sidebar = Sidebar.useSidebar();
+  let imgError = $state(false);
   const items = [
     {
       title: "Dashboard",
@@ -105,11 +107,16 @@
     {#if sidebar.isMobile && auth.user}
       <div class="flex flex-col gap-4 px-4 pt-2 pb-6">
         <div class="flex items-center gap-4">
-          <img
-            src={auth.user.picture}
-            alt={auth.user.name}
-            class="h-16 w-16 rounded-full border-2 border-primary/20 object-cover shadow-sm"
-          />
+          {#if !imgError}
+            <img
+              src={auth.cachedPicture || auth.user.picture}
+              alt={auth.user.name}
+              class="h-16 w-16 rounded-full border-2 border-primary/20 object-cover shadow-sm"
+              onerror={() => (imgError = true)}
+            />
+          {:else}
+            <CircleUser class="h-16 w-16 text-muted-foreground" />
+          {/if}
           <div class="flex flex-col">
             <span class="text-lg font-bold tracking-tight">{auth.user.name}</span>
             <span class="text-sm text-muted-foreground">{auth.user.email}</span>
@@ -193,11 +200,16 @@
       <Sidebar.MenuItem>
         {#if auth.user && !sidebar.isMobile}
           <div class="flex items-center gap-3 p-2 group-data-[collapsible=icon]:p-0">
-            <img
-              src={auth.user.picture}
-              alt={auth.user.name}
-              class="h-8 w-8 rounded-full border border-border"
-            />
+            {#if !imgError}
+              <img
+                src={auth.cachedPicture || auth.user.picture}
+                alt={auth.user.name}
+                class="h-8 w-8 rounded-full border border-border"
+                onerror={() => (imgError = true)}
+              />
+            {:else}
+              <CircleUser class="h-8 w-8 text-muted-foreground" />
+            {/if}
             <div class="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
               <span class="truncate text-xs font-semibold">{auth.user.name}</span>
               <span class="truncate text-[10px] text-muted-foreground">{auth.user.email}</span>

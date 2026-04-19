@@ -14,6 +14,7 @@ class AuthState {
   lastError = $state<{ title: string; description: string } | null>(null);
   redirectTo = $state<string | null>(null);
   initialized = $state(false);
+  cachedPicture = $state<string | null>(null);
 
   constructor() {
     if (browser) {
@@ -25,8 +26,32 @@ class AuthState {
         this.accessToken = savedToken;
         this.user = JSON.parse(savedUser);
         this.isRemembered = true;
+        this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
       }
       this.initialized = true;
+    }
+  }
+
+  async ensureCachedPicture() {
+    if (!this.user || !browser) return;
+
+    // If we already have a cached picture in memory, skip
+    if (this.cachedPicture) return;
+
+    try {
+      const response = await fetch(this.user.picture);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        this.cachedPicture = base64data;
+        if (this.isRemembered) {
+          localStorage.setItem(LS_KEYS.CACHED_PICTURE, base64data);
+        }
+      };
+      reader.readAsDataURL(blob);
+    } catch (e) {
+      console.error("Failed to cache profile picture:", e);
     }
   }
 
@@ -39,6 +64,7 @@ class AuthState {
       localStorage.setItem(LS_KEYS.ACCESS_TOKEN, token);
       localStorage.setItem(LS_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(LS_KEYS.REMEMBER, "true");
+      this.ensureCachedPicture();
     }
   }
 
@@ -51,6 +77,8 @@ class AuthState {
       localStorage.removeItem(LS_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(LS_KEYS.USER);
       localStorage.removeItem(LS_KEYS.REMEMBER);
+      localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
+      this.cachedPicture = null;
     }
   }
 

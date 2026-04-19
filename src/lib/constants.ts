@@ -11,5 +11,6 @@ export const LS_KEYS = {
   ACC_REDUCED_MOTION: "halsk.acc.reduced_motion",
   ACC_SPACIOUS_LAYOUT: "halsk.acc.spacious_layout",
   SPREADSHEET_ID: "halsk.branding.spreadsheet_id",
-  CLEARANCE_TITLE: "halsk.clearance.signatory_title"
+  CLEARANCE_TITLE: "halsk.clearance.signatory_title",
+  CACHED_PICTURE: "halsk.auth.cached_picture"
 } as const;
