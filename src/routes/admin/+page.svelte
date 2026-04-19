@@ -75,7 +75,7 @@
     {
       title: "Demographics",
       description: "Analyze resident distribution and historical trends.",
-      href: "/admin/demographics",
+      href: "/admin/reports/demographics",
       icon: ChartPie,
       color: "text-brand",
       bg: "bg-brand/10",

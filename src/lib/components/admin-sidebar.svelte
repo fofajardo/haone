@@ -40,7 +40,7 @@
   const reportItems = [
     {
       title: "Demographics",
-      url: "/admin/demographics",
+      url: "/admin/reports/demographics",
       icon: ChartPie
     },
     {
