@@ -1,7 +1,6 @@
 <script lang="ts">
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { brandingState } from "$lib/branding.svelte";
   import { onMount } from "svelte";
   import { loadGisScript } from "$lib/gmail";
   import { testAccess } from "$lib/google-sheets";
@@ -76,7 +75,7 @@
               auth.redirectTo = null;
             } catch (e: any) {
               isLoggingIn = false;
-              showError("Access Denied", e.message || "Could not verify spreadsheet access.");
+              // Error is already handled by the auth service.
             }
           } else {
             isLoggingIn = false;
