@@ -254,6 +254,9 @@ function mapResidentToStagedEmail(
       bal: resident.bal,
       isFullyPaid: resident.isFullyPaid,
       reminders: customReminders || "",
+      warnReservationCancellation: false,
+      warnClearance: false,
+      hideBedNotice: false,
       headerImageUrl: branding.emailHeaderUrl,
       replyTo: branding.replyTo
     },

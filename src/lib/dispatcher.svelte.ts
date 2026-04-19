@@ -17,6 +17,9 @@ export interface StagedEmail<T = any> {
 class DispatcherState {
   queue = $state<StagedEmail[]>([]);
   customReminders = $state(""); // For Payment Status updates
+  warnReservationCancellation = $state(false); // For Priority Reservation warning
+  warnClearance = $state(false); // For Clearance warning
+  hideBedNotice = $state(false); // For Registration Form notice
   configType = $state<"reminders" | null>(null);
   batchType = $state<"ACKNOWLEDGMENT" | "REMINDER" | "CLEARANCE" | null>(null);
 
@@ -31,6 +34,9 @@ class DispatcherState {
   clear() {
     this.queue = [];
     this.customReminders = "";
+    this.warnReservationCancellation = false;
+    this.warnClearance = false;
+    this.hideBedNotice = false;
     this.configType = null;
     this.batchType = null;
   }

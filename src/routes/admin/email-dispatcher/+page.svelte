@@ -24,8 +24,11 @@
     Info,
     Settings2,
     Calculator,
-    Users
+    Users,
+    TriangleAlert
   } from "lucide-svelte";
+  import { Checkbox } from "$lib/components/ui/checkbox";
+  import { Label } from "$lib/components/ui/label";
 
   let isSending = $state(false);
   let isSuccess = $state(false);
@@ -42,6 +45,15 @@
     const data = { ...currentEmail.data };
     if ("reminders" in data) {
       data.reminders = emailDispatcher.customReminders;
+    }
+    if ("warnReservationCancellation" in data) {
+      data.warnReservationCancellation = emailDispatcher.warnReservationCancellation;
+    }
+    if ("warnClearance" in data) {
+      data.warnClearance = emailDispatcher.warnClearance;
+    }
+    if ("hideBedNotice" in data) {
+      data.hideBedNotice = emailDispatcher.hideBedNotice;
     }
 
     return {
@@ -87,6 +99,15 @@
         const data = { ...item.data };
         if ("reminders" in data) {
           data.reminders = emailDispatcher.customReminders;
+        }
+        if ("warnReservationCancellation" in data) {
+          data.warnReservationCancellation = emailDispatcher.warnReservationCancellation;
+        }
+        if ("warnClearance" in data) {
+          data.warnClearance = emailDispatcher.warnClearance;
+        }
+        if ("hideBedNotice" in data) {
+          data.hideBedNotice = emailDispatcher.hideBedNotice;
         }
 
         const body = item.template.generateHtml(data, item.branding);
@@ -222,6 +243,61 @@
               <p class="mt-2 text-[10px] text-muted-foreground italic">
                 Globally applied to this batch.
               </p>
+
+              <Label
+                class="mt-8 block text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              >
+                NOTICE OPTIONS
+              </Label>
+              <div class="mt-2 flex flex-col gap-4 rounded-xl border border-border bg-muted/20 p-4">
+                <div class="flex items-start gap-4">
+                  <Checkbox
+                    id="warn-reservation"
+                    class="mt-0.5 h-5 w-5"
+                    bind:checked={emailDispatcher.warnReservationCancellation}
+                  />
+                  <div class="space-y-1 leading-none">
+                    <Label for="warn-reservation" class="flex items-center gap-2 text-sm font-bold">
+                      Priority Reservation Warning
+                    </Label>
+                    <p class="text-xs leading-tight text-muted-foreground">
+                      Warn residents with &lt; 50% payment about possible cancellation.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-4 border-t border-border pt-6">
+                  <Checkbox
+                    id="warn-clearance"
+                    class="mt-0.5 h-5 w-5"
+                    bind:checked={emailDispatcher.warnClearance}
+                  />
+                  <div class="space-y-1 leading-none">
+                    <Label for="warn-clearance" class="flex items-center gap-2 text-sm font-bold">
+                      Clearance Warning
+                    </Label>
+                    <p class="text-xs leading-tight text-muted-foreground">
+                      Warn residents that non-payment incurs accountability (Section 25).
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex items-start gap-4 border-t border-border pt-6">
+                  <Checkbox
+                    id="hide-bed"
+                    class="mt-0.5 h-5 w-5"
+                    bind:checked={emailDispatcher.hideBedNotice}
+                  />
+                  <div class="space-y-1 leading-none">
+                    <Label for="hide-bed" class="flex items-center gap-2 text-sm font-bold">
+                      Hide Bed Assignment Notice
+                    </Label>
+                    <p class="text-xs leading-tight text-muted-foreground">
+                      Suppress the semestral registration form reminder for this batch.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </Card.Content>
           </Card.Root>
         {/if}

@@ -20,6 +20,9 @@ export interface PaymentStatusData {
   bal: number;
   isFullyPaid: boolean;
   reminders: string;
+  warnReservationCancellation?: boolean;
+  warnClearance?: boolean;
+  hideBedNotice?: boolean;
 }
 
 /**
@@ -87,8 +90,9 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
         )
       : "";
 
-  const bedNotice = !data.bed
-    ? `
+  const bedNotice =
+    !data.bed && !data.hideBedNotice
+      ? `
     <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px; border: 2px solid #dc2626; background-color: #fef2f2; border-radius: 8px; text-align: center;">
       <p style="margin: 0; font-size: 16px; font-weight: bold; color: #991b1b; text-transform: uppercase;">Action Required</p>
       <p style="margin: 10px 0; font-size: 14px; color: #b91c1c; line-height: 1.5;">
@@ -98,12 +102,37 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
         <a href="${branding.regFormUrl || "#"}" style="display: inline-block; padding: 12px 25px; background-color: #dc2626; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">COMPLETE FORM</a>
       </div>
     </div>`
-    : "";
+      : "";
+
+  const reservationWarning =
+    data.warnReservationCancellation && data.paid < data.totalBase / 2
+      ? `
+    <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px; border: 2px solid #dc2626; background-color: #fef2f2; border-radius: 8px;">
+      <p style="margin: 0; font-size: 16px; font-weight: bold; color: #991b1b; text-transform: uppercase;">⚠️ Priority Reservation Warning</p>
+      <p style="margin: 10px 0 0 0; font-size: 14px; color: #b91c1c; line-height: 1.5;">
+        Our records indicate that your balance is not yet half-settled (at least 50% of the total fees). Please be advised that non-settlement or failure to submit a promissory note may lead to the <strong>cancellation of your priority reservation application</strong>.
+      </p>
+    </div>`
+      : "";
+
+  const clearanceWarning =
+    data.warnClearance && !data.isFullyPaid
+      ? `
+    <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px; border: 2px solid #dc2626; background-color: #fef2f2; border-radius: 8px;">
+      <p style="margin: 0; font-size: 16px; font-weight: bold; color: #991b1b; text-transform: uppercase;">⚠️ CLEARANCE WARNING</p>
+      <p style="margin: 10px 0 0 0; font-size: 14px; color: #b91c1c; line-height: 1.5; font-style: italic;">
+        25. The resident shall pay a semestral association fee to the Residence Hall Association and other fees (e.g. Water fees, Gas fees, etc.) determined and agreed upon by the Association and the hall residents. Non-payment or insufficient payment to the Association will incur an accountability and may be cause for holding the resident’s next dorm application and University clearance until settled.
+      </p>
+      <p style="margin: 10px 0 0 0; font-size: 11px; color: #7f1d1d; font-weight: bold;">SECTION 25 (NORMS OF CONDUCT AND RESPONSIBILITIES) OF THE RESIDENCE HALL AGREEMENT</p>
+    </div>`
+      : "";
 
   const content = `
     <p style="font-size: 16px; margin-bottom: 5px; font-weight: normal; display: block; color: #000;">Hi, <strong style="font-weight: bold;">${data.accountName}</strong> (Room ${data.room})</p>
     
     ${bedNotice}
+    ${reservationWarning}
+    ${clearanceWarning}
 
     <p style="font-size: 14px; color: #000; margin-bottom: 25px; line-height: 1.5; display: block;">Please review your payment status for the current semester below:</p>
 
