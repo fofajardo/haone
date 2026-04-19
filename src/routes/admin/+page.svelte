@@ -83,7 +83,7 @@
     },
     {
       title: "Reports",
-      description: "Export collection summaries and payment status lists.",
+      description: "Generate collection summaries, financial statements, and resident rosters.",
       href: "/admin/reports",
       icon: FileSpreadsheet,
       color: "text-brand",
