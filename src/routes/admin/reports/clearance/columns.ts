@@ -99,7 +99,7 @@ export const columns: ColumnDef<ResidentRecord>[] = [
       }),
     cell: ({ row }) => {
       const r = row.original;
-      const progress = r.totalBase > 0 ? (r.paid / r.totalBase) * 100 : 0;
+      const progress = r.totalBase > 0 ? ((r.paid + r.waived) / r.totalBase) * 100 : 0;
 
       const snippet = createRawSnippet<[{ r: ResidentRecord; progress: number }]>((p) => {
         const res = p().r;

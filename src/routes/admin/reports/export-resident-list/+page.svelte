@@ -106,17 +106,17 @@
 
   const filteredResidents = $derived(
     residents.filter((r) => {
-      const progress = r.totalBase > 0 ? r.paid / r.totalBase : 0;
+      const progress = r.totalBase > 0 ? (r.paid + r.waived) / r.totalBase : 0;
       return selectedCategories.some((cat) => {
         switch (cat) {
           case "fully_paid":
             return r.isFullyPaid || (r.bal <= 0 && r.totalBase > 0);
           case "half_fully_paid":
-            return !r.isFullyPaid && progress >= 0.5 && r.paid > 0;
+            return !r.isFullyPaid && progress >= 0.5 && (r.paid > 0 || r.waived > 0);
           case "partially_paid":
-            return !r.isFullyPaid && progress < 0.5 && r.paid > 0;
+            return !r.isFullyPaid && progress < 0.5 && (r.paid > 0 || r.waived > 0);
           case "no_payment":
-            return r.paid <= 0;
+            return r.paid <= 0 && r.waived <= 0;
           case "cleared":
             return (
               !!r.ceIssued && r.ceIssued !== "" && r.ceIssued !== "#N/A" && r.ceIssued !== "N/A"

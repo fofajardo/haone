@@ -110,7 +110,7 @@
         let status = "No Payment";
         if (res.isFullyPaid) {
           status = "Fully Paid";
-        } else if (res.paid > 0) {
+        } else if (res.paid > 0 || res.waived > 0) {
           status = "Partial Payment";
         }
         paidMap[status]++;
