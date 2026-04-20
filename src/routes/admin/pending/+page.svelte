@@ -7,7 +7,7 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw, batchUpdateValues, invalidateCache } from "$lib/google-sheets";
-  import { pluralize } from "$lib/receipt-utils";
+  import { parseDateWeight } from "$lib/receipt-utils";
   import { encryptJSON } from "$lib/crypto";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
@@ -70,7 +70,13 @@
 
       queue = rows
         .slice(1)
-        .map((row, idx) => mapRowToJournal(row, idx + 2))
+        .map((row, idx) => {
+          const journal = mapRowToJournal(row, idx + 2);
+          return {
+            ...journal,
+            dateWeight: parseDateWeight(journal.date)
+          };
+        })
         .filter((r) => {
           return (
             r.period === uiSettings.currentTerm.trim() &&
@@ -78,7 +84,8 @@
             r.prRefNo !== "N/A" &&
             r.prRefNo !== "#N/A"
           );
-        });
+        })
+        .sort((a, b) => b.dateWeight - a.dateWeight || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0));
     } catch (e: any) {
       error = e.message;
     } finally {
