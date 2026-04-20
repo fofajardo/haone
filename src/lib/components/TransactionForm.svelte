@@ -702,9 +702,7 @@
                     >
                     <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
                       {#if currentAssocBal < 0}
-                        <Badge variant="destructive" class="px-1.5 py-0 text-[8px] font-black">
-                          OVERPAID
-                        </Badge>
+                        <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
                       {:else}
                         <span></span>
                       {/if}
