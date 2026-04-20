@@ -134,7 +134,7 @@
       <div class="flex gap-2">
         <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
           <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
-          <span class="hidden sm:inline">Refresh</span>
+          Refresh
         </Button>
         <Button size="sm" href="/admin/transactions/add">
           <Plus class="mr-2 h-4 w-4" />

@@ -112,7 +112,7 @@
       <div class="flex gap-2">
         <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
           <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
-          <span class="hidden sm:inline">Refresh</span>
+          Refresh
         </Button>
 
         <DropdownMenu.Root>
@@ -120,7 +120,7 @@
             {#snippet child({ props })}
               <Button size="sm" {...props}>
                 <Plus class="h-4 w-4 sm:mr-2" />
-                <span class="hidden sm:inline">Add User</span>
+                Add
               </Button>
             {/snippet}
           </DropdownMenu.Trigger>

@@ -237,9 +237,9 @@
 <div class="space-y-6">
   <SubpageHeader title="Academic Terms" isTopLevel={true}>
     {#snippet actions()}
-      <Button size="sm" class="gap-2" onclick={() => (showAddDialog = true)}>
-        <Plus class="h-4 w-4" />
-        Add Term
+      <Button size="sm" onclick={() => (showAddDialog = true)}>
+        <Plus class="h-4 w-4 sm:mr-2" />
+        Add
       </Button>
     {/snippet}
   </SubpageHeader>
@@ -419,7 +419,7 @@
 
       <div class="space-y-4">
         <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-          >Collection Periods (Times per Semester)</Label
+          >Collection Periods (Times per Term)</Label
         >
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
