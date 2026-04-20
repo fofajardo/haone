@@ -1,0 +1,121 @@
+<script lang="ts">
+  import type { ColumnDef } from "@tanstack/table-core";
+  import { renderSnippet, renderComponent } from "$lib/components/ui/data-table/index.js";
+  import {
+    formatDate,
+    formatCurrency,
+    translateMop,
+    translateType,
+    pluralize
+  } from "$lib/receipt-utils";
+  import { type JournalRecord } from "$lib/schemas";
+  import { createRawSnippet } from "svelte";
+  import * as Card from "$lib/components/ui/card";
+  import { Badge } from "$lib/components/ui/badge";
+  import { History, Clock } from "lucide-svelte";
+  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+
+  interface Props {
+    history: JournalRecord[];
+    transactionTypes?: { value: string; label: string }[];
+    onRowClick?: (row: JournalRecord) => void;
+    class?: string;
+  }
+
+  let { history, transactionTypes = [], onRowClick, class: className }: Props = $props();
+
+  const columns: ColumnDef<JournalRecord>[] = [
+    {
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => {
+        const dateSnippet = createRawSnippet<[{ record: JournalRecord }]>((p) => {
+          const r = p().record;
+          return {
+            render: () => `
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-foreground"
+                  >${formatDate(r.date)}</span
+                >
+                <span class="text-sm text-muted-foreground">${r.creator}</span>
+              </div>
+            `
+          };
+        });
+        return renderSnippet(dateSnippet, { record: row.original });
+      }
+    },
+    {
+      accessorKey: "type",
+      header: "Type/MOP",
+      cell: ({ row }) => {
+        const typeSnippet = createRawSnippet<[{ record: JournalRecord }]>((p) => {
+          const r = p().record;
+          return {
+            render: () => `
+              <div class="flex flex-col">
+                <span class="text-sm font-medium">${translateType(r.type, transactionTypes)}</span>
+                <span class="text-sm text-muted-foreground">${translateMop(r.mop)}</span>
+              </div>
+            `
+          };
+        });
+        return renderSnippet(typeSnippet, { record: row.original });
+      }
+    },
+    {
+      accessorKey: "notes",
+      header: "Notes",
+      cell: ({ row }) => {
+        const notesSnippet = createRawSnippet<[{ notes: string }]>((p) => ({
+          render: () => `
+            <p class="max-w-[300px] truncate text-sm leading-tight text-muted-foreground" title="${p().notes || ""}">
+              ${p().notes || "—"}
+            </p>
+          `
+        }));
+        return renderSnippet(notesSnippet, { notes: row.original.notes });
+      }
+    },
+    {
+      accessorKey: "amount",
+      header: () => {
+        const headerSnippet = createRawSnippet(() => ({
+          render: () => `<div class="text-right text-sm font-medium">Amount</div>`
+        }));
+        return renderSnippet(headerSnippet);
+      },
+      cell: ({ row }) => {
+        const amountSnippet = createRawSnippet<[{ amount: number }]>((p) => ({
+          render: () =>
+            `<div class="text-right text-sm font-medium">${formatCurrency(p().amount || 0)}</div>`
+        }));
+        return renderSnippet(amountSnippet, { amount: row.original.amount });
+      }
+    }
+  ];
+</script>
+
+<Card.Root class="overflow-hidden {className}">
+  <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
+    <Card.Title class="flex items-center gap-2 text-lg">
+      <History class="h-5 w-5" />
+      Transaction History
+    </Card.Title>
+    <Badge variant="outline" class="font-bold"
+      >{pluralize(history.length, "entry", "entries")}</Badge
+    >
+  </Card.Header>
+  <Card.Content>
+    {#if history.length > 0}
+      <DataTable data={history} {columns} {onRowClick} rowId="id" />
+    {:else}
+      <div class="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center">
+        <Clock class="h-8 w-8 text-muted-foreground opacity-20" />
+        <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+          No transaction history found
+        </p>
+      </div>
+    {/if}
+  </Card.Content>
+</Card.Root>

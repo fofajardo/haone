@@ -1,0 +1,115 @@
+import { json } from "@sveltejs/kit";
+import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
+import { ACCOUNT_COL, USER_COL } from "$lib/schemas";
+import {
+  authenticateResident,
+  getSheetsClient,
+  getSheetValues,
+  serverError
+} from "$lib/server/api-helper";
+import type { RequestHandler } from "./$types";
+
+export const GET: RequestHandler = async ({ request }) => {
+  const { email, error } = await authenticateResident(request);
+  if (error) return error;
+
+  try {
+    const client = await getSheetsClient();
+
+    // 2. Fetch All Data
+    const [accRows, userRows, journalRows, constRows] = await Promise.all([
+      getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:I"),
+      getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P"),
+      getSheetValues(client, PUBLIC_GS_AW_ID, "journal_general!A:T"),
+      getSheetValues(client, PUBLIC_GS_AW_ID, "constants!A:C")
+    ]);
+
+    const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
+    if (!userRow) return json({ accounts: [] });
+
+    const userId = userRow[USER_COL.ID];
+
+    const parseAmount = (val: any) => {
+      if (!val) return 0;
+      const str = String(val).trim().replace(/[₱,]/g, "");
+      const isParen = str.startsWith("(") && str.endsWith(")");
+      const num = parseFloat(isParen ? str.slice(1, -1) : str);
+      return isNaN(num) ? 0 : isParen ? -num : num;
+    };
+
+    const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
+    const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
+
+    interface JournalEntry {
+      period: string;
+      water: number;
+      assoc: number;
+      misc: number;
+      type: string;
+    }
+
+    // Filter journal for this resident
+    const journal: JournalEntry[] = journalRows
+      .slice(1)
+      .filter((r: any) => (r[2] || "").toLowerCase() === email)
+      .map((r: any) => ({
+        period: (r[7] || "").trim(),
+        water: parseAmount(r[3]),
+        assoc: parseAmount(r[4]),
+        misc: parseAmount(r[5]),
+        type: (r[8] || "").trim()
+      }));
+
+    const accounts = accRows
+      .slice(1)
+      .filter((r: any) => r[ACCOUNT_COL.RESIDENT_ID] === userId)
+      .map((r: any) => {
+        const period = (r[ACCOUNT_COL.PERIOD] || "").trim();
+        const waterBase = parseAmount(getConstVal(`FEES_${period}_WATER`));
+        const assocBase = parseAmount(getConstVal(`FEES_${period}_ASSOC`));
+
+        const filtered = journal.filter((j: JournalEntry) => j.period === period);
+        const waterPaid = filtered
+          .filter((j: JournalEntry) => j.type !== pmtWaived)
+          .reduce((sum, j) => sum + j.water, 0);
+        const waterWaived = filtered
+          .filter((j: JournalEntry) => j.type === pmtWaived)
+          .reduce((sum, j) => sum + j.water, 0);
+        const assocPaid = filtered
+          .filter((j: JournalEntry) => j.type !== pmtWaived)
+          .reduce((sum, j) => sum + j.assoc, 0);
+        const assocWaived = filtered
+          .filter((j: JournalEntry) => j.type === pmtWaived)
+          .reduce((sum, j) => sum + j.assoc, 0);
+        const miscPaid = filtered.reduce((sum, j) => sum + j.misc, 0);
+
+        const totalBase = waterBase + assocBase;
+        const paid = waterPaid + assocPaid + miscPaid;
+        const waived = waterWaived + assocWaived;
+        const bal = totalBase - paid - waived;
+
+        return {
+          email: email,
+          period,
+          room: (r[ACCOUNT_COL.ROOM] || "").trim(),
+          bed: (r[ACCOUNT_COL.BED] || "").trim(),
+          ceRefNo: (r[ACCOUNT_COL.CE_REFNO] || "").trim(),
+          ceIssued: (r[ACCOUNT_COL.CE_ISSUED] || "").trim(),
+          ceLink: (r[ACCOUNT_COL.CE_LINK] || "").trim(),
+          stno: (userRow[USER_COL.STUDENT_NO] || "").trim(),
+          name: (userRow[USER_COL.DISPLAY_NAME] || "").trim(),
+          ledgerId: (r[ACCOUNT_COL.ID] || "").trim(),
+          totalBase,
+          paid,
+          waived,
+          bal,
+          raw: r
+        };
+      })
+      .sort((a: any, b: any) => b.period.localeCompare(a.period));
+
+    return json({ accounts });
+  } catch (e: any) {
+    return serverError(e, "Occupancy fetch");
+  }
+};

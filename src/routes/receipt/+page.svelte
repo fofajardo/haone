@@ -15,9 +15,18 @@
 
   import { pageState } from "$lib/page-info.svelte";
   import type { ReceiptData } from "$lib/types";
+  import type { PageData } from "./$types";
+
+  let { data } = $props<{ data: PageData }>();
 
   let receiptData = $state<ReceiptData | null>(null);
   let error = $state("");
+
+  $effect(() => {
+    receiptData = data.receiptData;
+    if (data.error) error = data.error;
+  });
+
   let studentNo = $state("");
   let rememberMe = $state(false);
   let isDecrypting = $state(false);
@@ -40,7 +49,16 @@
     alertState.open = true;
   }
 
-  onMount(() => {
+  onMount(async () => {
+    // Generate QR if we already have data from server
+    if (receiptData) {
+      qrDataUrl = await QRCode.toDataURL(window.location.href, {
+        margin: 1,
+        width: 200,
+        color: { dark: "#000000", light: "#ffffff" }
+      });
+    }
+
     // Load saved student number if "Remember Me" was checked
     const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
     if (savedId) {
@@ -78,20 +96,33 @@
     isDecrypting = true;
     error = "";
     try {
-      receiptData = await decryptJSON(encryptedData, studentNo);
+      const payload = await decryptJSON(encryptedData, studentNo);
+      const prRefNo = payload.seriesNumber;
 
-      // Save or clear student ID based on rememberMe preference
+      // Save student ID for persistence if requested
       if (rememberMe) {
         localStorage.setItem(LS_KEYS.STUDENT_NUMBER, studentNo);
       } else {
         localStorage.removeItem(LS_KEYS.STUDENT_NUMBER);
       }
 
-      qrDataUrl = await QRCode.toDataURL(window.location.href, {
-        margin: 1,
-        width: 200,
-        color: { dark: "#000000", light: "#ffffff" }
+      // Claim the secret ID via secure POST to avoid query param exposure
+      const resp = await fetch("/api/receipt/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pr_refno: prRefNo, stno: studentNo })
       });
+
+      const result = await resp.json();
+      if (!resp.ok) {
+        throw new Error(result.error || "Failed to verify receipt credentials.");
+      }
+
+      // Redirect to the clean secret ID URL
+      const url = new URL(window.location.href);
+      url.searchParams.set("id", result.id);
+      url.searchParams.delete("data");
+      window.location.href = url.toString();
     } catch (e: any) {
       error = e.message;
       receiptData = null;

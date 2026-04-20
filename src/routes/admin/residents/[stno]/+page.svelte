@@ -54,12 +54,13 @@
   } from "$lib/resident-logic";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
-  import { columns } from "./columns";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
+  import StudentProfileCard from "$lib/components/residents/StudentProfileCard.svelte";
+  import ClearanceCard from "$lib/components/residents/ClearanceCard.svelte";
   import ClearanceDialog from "$lib/components/residents/ClearanceDialog.svelte";
+  import TransactionHistoryCard from "$lib/components/residents/TransactionHistoryCard.svelte";
 
   const stno = $derived(page.params.stno);
 
@@ -315,97 +316,7 @@
     </div>
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Student Profile -->
-      <Card.Root class="flex h-full flex-col">
-        <Card.Header>
-          <Card.Title class="flex items-center gap-2 text-lg">
-            <User class="h-5 w-5" />
-            Student Profile
-          </Card.Title>
-        </Card.Header>
-        <Card.Content class="flex-1 space-y-4">
-          <div class="space-y-1">
-            <Label
-              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-              ><Mail class="h-3 w-3" /> Email Address</Label
-            >
-            <div class="flex items-center gap-2">
-              <p class="text-sm font-semibold text-foreground">{account.email}</p>
-              <a
-                href="mailto:{account.email}"
-                class="text-muted-foreground transition-colors hover:text-primary"
-                title="Send Email"
-              >
-                <Send class="h-3.5 w-3.5" />
-              </a>
-            </div>
-          </div>
-          <div class="space-y-1">
-            <Label
-              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-              ><IdCard class="h-3 w-3" /> Student Number</Label
-            >
-            <p class="text-sm font-semibold">{account.stno}</p>
-          </div>
-
-          <div class="space-y-1">
-            <Label
-              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-              ><Clock class="h-3 w-3" /> Terms Active</Label
-            >
-            <div class="text-sm font-semibold">
-              {semesterCount}
-              {semesterCount === 1 ? "Term" : "Terms"}
-            </div>
-          </div>
-
-          <div class="space-y-4">
-            <Label
-              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-            >
-              <GraduationCap class="h-3 w-3" /> Academic Program
-            </Label>
-            <div
-              class="relative mt-2 space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
-            >
-              {#each qualifications as q}
-                <div class="relative flex items-start gap-4 pl-8">
-                  <div
-                    class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-muted shadow-sm ring-1 ring-border"
-                  >
-                    <AwardIcon class="h-2.5 w-2.5 text-muted-foreground" />
-                  </div>
-                  <div class="flex flex-col gap-0.5">
-                    <span
-                      class="text-xs font-bold tracking-widest text-primary uppercase opacity-80"
-                      >{q.college}</span
-                    >
-                    <p class="text-sm leading-tight font-bold text-foreground">
-                      {q.program}
-                    </p>
-                  </div>
-                </div>
-              {/each}
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
-            <div class="space-y-1">
-              <Label
-                class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-                ><MapPin class="h-3 w-3" /> Room</Label
-              >
-              <div class="text-sm font-semibold">{account.room}</div>
-            </div>
-            <div class="space-y-1">
-              <Label
-                class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-                ><BedIcon class="h-3 w-3" /> Bed</Label
-              >
-              <p class="text-sm font-semibold">{account.bed}</p>
-            </div>
-          </div>
-        </Card.Content>
-      </Card.Root>
+      <StudentProfileCard {account} {semesterCount} />
 
       <!-- Financial & Clearance Info -->
       <div class="flex h-full flex-col gap-6">
@@ -426,110 +337,14 @@
           </Card.Root>
         {/if}
       </div>
-      <Card.Root class="flex h-full flex-col">
-        <Card.Header>
-          <Card.Title
-            class="flex items-center gap-2 text-lg {account.ceIssued ? 'text-primary' : ''}"
-          >
-            <ShieldCheck class="h-5 w-5" />
-            Clearance
-          </Card.Title>
-        </Card.Header>
-        <Card.Content class="flex-1 space-y-4">
-          {#if account.ceIssued}
-            <div class="space-y-3">
-              <div class="flex flex-col gap-1">
-                <Label
-                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-                >
-                  <ClipboardCheck class="h-3 w-3" /> Verification Status
-                </Label>
-                <Badge
-                  class="w-fit border-transparent bg-primary px-3 py-1 text-xs font-black text-primary-foreground"
-                  >VERIFIED</Badge
-                >
-              </div>
-              <div class="flex flex-col gap-1 pt-2">
-                <Label
-                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-                >
-                  <Calendar class="h-3 w-3" /> Issued Date
-                </Label>
-                <span class="text-sm font-bold text-foreground">{account.ceIssued}</span>
-              </div>
-              <div class="flex flex-col gap-1 pt-2">
-                <Label
-                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-                >
-                  <Hash class="h-3 w-3" /> Reference Number
-                </Label>
-                <span class="font-mono text-sm font-black text-foreground"
-                  >{account.ceRefNo || "—"}</span
-                >
-              </div>
-            </div>
-          {:else}
-            <div class="space-y-4">
-              <div class="flex flex-col gap-1">
-                <Label
-                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
-                >
-                  <ClipboardCheck class="h-3 w-3" /> Verification Status
-                </Label>
-                <Badge
-                  class="w-fit border-transparent bg-destructive px-3 py-1 text-xs font-black text-white"
-                  >NOT CLEARED</Badge
-                >
-              </div>
-            </div>
-          {/if}
-        </Card.Content>
-        {#if account.ceIssued && account.ceLink}
-          <Card.Footer>
-            <Button
-              variant="outline"
-              size="sm"
-              class="h-10 w-full border-primary/20 text-xs font-bold text-primary transition-all hover:bg-primary/5"
-              href={account.ceLink}
-              target="_blank"
-            >
-              View Certificate <ArrowUpRight class="ml-2 h-4 w-4" />
-            </Button>
-          </Card.Footer>
-        {/if}
-      </Card.Root>
+      <ClearanceCard {account} />
     </div>
 
-    <!-- Transaction History -->
-    <Card.Root class="overflow-hidden">
-      <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
-        <Card.Title class="flex items-center gap-2 text-lg">
-          <History class="h-5 w-5" />
-          Transaction History
-        </Card.Title>
-        <Badge variant="outline" class="font-bold"
-          >{pluralize(history.length, "entry", "entries")}</Badge
-        >
-      </Card.Header>
-      <Card.Content>
-        {#if history.length > 0}
-          <DataTable
-            data={history}
-            {columns}
-            meta={{ transactionTypes }}
-            onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
-            rowId="id"
-          />
-        {:else}
-          <div class="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center">
-            <Clock class="h-8 w-8 text-muted-foreground opacity-20" />
-            <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-              No transaction history found
-            </p>
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
+    <TransactionHistoryCard
+      {history}
+      {transactionTypes}
+      onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+    />
   {/if}
 </div>
 

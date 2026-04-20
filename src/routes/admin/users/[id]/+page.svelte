@@ -27,10 +27,9 @@
   import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$lib/resident-logic";
   import { pageState } from "$lib/page-info.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
-  import { columns } from "./semester-columns";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
+  import OccupancyHistoryCard from "$lib/components/residents/OccupancyHistoryCard.svelte";
 
   const userId = $derived(page.params.id);
 
@@ -338,31 +337,9 @@
     </div>
 
     <!-- Active Semesters History -->
-    <Card.Root class="overflow-hidden">
-      <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
-        <Card.Title class="flex items-center gap-2 text-lg">
-          <History class="h-5 w-5" />
-          Occupancy History
-        </Card.Title>
-        <Badge variant="outline" class="font-bold"
-          >{pluralize(accounts.length, "record", "records")}</Badge
-        >
-      </Card.Header>
-      <Card.Content>
-        {#if accounts.length > 0}
-          <DataTable
-            data={accounts}
-            {columns}
-            onRowClick={(r) => goto(`/admin/residents/${r.stno}?term=${r.period}`)}
-            rowId="ledgerId"
-          />
-        {:else}
-          <div class="flex flex-col items-center justify-center py-16 opacity-30">
-            <Clock class="mb-2 h-8 w-8" />
-            <p class="text-xs font-bold tracking-widest uppercase">No occupancy records</p>
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
+    <OccupancyHistoryCard
+      {accounts}
+      onRowClick={(r) => goto(`/admin/residents/${r.stno}?term=${r.period}`)}
+    />
   {/if}
 </div>

@@ -1,0 +1,232 @@
+import { json } from "@sveltejs/kit";
+import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
+import { JOURNAL_COL, ACCOUNT_COL, USER_COL, CURR_COL } from "$lib/schemas";
+import {
+  authenticateResident,
+  getSheetsClient,
+  getSheetValues,
+  serverError
+} from "$lib/server/api-helper";
+import type { RequestHandler } from "./$types";
+
+export const GET: RequestHandler = async ({ url, request }) => {
+  const { email, error } = await authenticateResident(request);
+  if (error) return error;
+
+  try {
+    const client = await getSheetsClient();
+
+    // 1. Fetch Constants to get TERM_CURR
+    const constRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "constants!A:C");
+    const activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
+
+    // 2. Fetch Users to find profile
+    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
+    const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
+
+    // 3. Fetch Transaction Types & MOPs
+    const jorRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "journal_general!A:T");
+
+    const transactionTypes = constRows
+      .slice(1)
+      .filter((r: any) => (r[0] || "").startsWith("PMT_"))
+      .map((r: any) => ({
+        value: r[1] || r[0],
+        label: r[2] || r[1] || r[0]
+      }));
+
+    const mopTypes = constRows
+      .slice(1)
+      .filter((r: any) => (r[0] || "").startsWith("MOP_"))
+      .map((r: any) => ({
+        value: r[1] || r[0],
+        label: r[2] || r[1] || r[0]
+      }));
+
+    // 4. Fetch Accounts for target term
+    const targetTerm = url.searchParams.get("term") || activeTerm;
+    const accRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:I");
+    const residentAccount = accRows.find(
+      (r: any) =>
+        r[ACCOUNT_COL.PERIOD] === targetTerm &&
+        userRow &&
+        r[ACCOUNT_COL.RESIDENT_ID] === userRow[USER_COL.ID]
+    );
+
+    // 5. Check CURR sheet for potential registration
+    const currRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "CURR!A:K");
+    const currEntry = currRows.find(
+      (r: any) => (r[CURR_COL.EMAIL] || "").trim().toLowerCase() === email
+    );
+    const isEvaluated = currEntry?.[CURR_COL.EVALUATED]?.toUpperCase() === "TRUE";
+
+    // 6. Fetch Transactions
+    const parseAmount = (val: any) => {
+      if (!val) return 0;
+      const cleaned = String(val).replace(/[₱,\s]/g, "");
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    };
+
+    const transactions = jorRows
+      .slice(1)
+      .filter(
+        (r: any) =>
+          (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email &&
+          (!url.searchParams.get("term") || r[JOURNAL_COL.PERIOD] === url.searchParams.get("term"))
+      )
+      .map((r: any, idx: number) => ({
+        id: r[JOURNAL_COL.ID] || `tr-${idx}`,
+        date: r[JOURNAL_COL.DATE],
+        type: r[JOURNAL_COL.TYPE],
+        amount:
+          parseAmount(r[JOURNAL_COL.WATER]) +
+          parseAmount(r[JOURNAL_COL.ASSOC]) +
+          parseAmount(r[JOURNAL_COL.MISC]),
+        period: r[JOURNAL_COL.PERIOD],
+        mop: r[JOURNAL_COL.MOP],
+        notes: r[JOURNAL_COL.NOTES],
+        creator: r[JOURNAL_COL.CREATOR],
+        prRefNo: r[JOURNAL_COL.PR_REFNO]
+      }));
+
+    // Calculate running balances
+    let globalBalance = 0;
+    const sortedTransactions = [...transactions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    for (const t of sortedTransactions) {
+      if (!t.type.toUpperCase().includes("WAIVED")) {
+        globalBalance += t.amount;
+      }
+      t.runningBalance = globalBalance;
+    }
+
+    // 7. Get all available terms for this resident (from journal only)
+    const allTerms = [
+      ...new Set(
+        jorRows
+          .slice(1)
+          .filter((r: any) => (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email)
+          .map((r: any) => r[JOURNAL_COL.PERIOD])
+      )
+    ].filter(Boolean);
+
+    // If no transactions yet, at least show the system active term
+    if (allTerms.length === 0) allTerms.push(activeTerm);
+
+    // Calculate financials
+    const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
+    const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
+
+    const filteredJor = jorRows
+      .slice(1)
+      .filter(
+        (r: any) =>
+          (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email &&
+          r[JOURNAL_COL.PERIOD] === targetTerm
+      );
+
+    const waterPaid = filteredJor
+      .filter((j: any) => j[JOURNAL_COL.TYPE] !== pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.WATER]), 0);
+    const waterWaived = filteredJor
+      .filter((j: any) => j[JOURNAL_COL.TYPE] === pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.WATER]), 0);
+
+    const assocPaid = filteredJor
+      .filter((j: any) => j[JOURNAL_COL.TYPE] !== pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.ASSOC]), 0);
+    const assocWaived = filteredJor
+      .filter((j: any) => j[JOURNAL_COL.TYPE] === pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.ASSOC]), 0);
+
+    const waterBase = parseAmount(getConstVal(`FEES_${targetTerm}_WATER`));
+    const assocBase = parseAmount(getConstVal(`FEES_${targetTerm}_ASSOC`));
+
+    const totalBase = waterBase + assocBase;
+    const paid =
+      waterPaid +
+      assocPaid +
+      filteredJor.reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.MISC]), 0);
+    const waived = waterWaived + assocWaived;
+    const bal = totalBase - paid - waived;
+
+    return json({
+      isRegistered: !!userRow,
+      hasActiveAccount: !!residentAccount,
+      waitingForConfirmation: !!(currEntry && !isEvaluated),
+      activeTerm: url.searchParams.get("term") || activeTerm,
+      systemActiveTerm: activeTerm,
+      allTerms: allTerms.sort().reverse(),
+      transactionTypes,
+      mopTypes,
+      profile: userRow
+        ? {
+            id: userRow[USER_COL.ID],
+            email: userRow[USER_COL.EMAIL],
+            firstName: userRow[USER_COL.FIRST_NAME],
+            lastName: userRow[USER_COL.LAST_NAME],
+            studentNo: userRow[USER_COL.STUDENT_NO],
+            college: userRow[USER_COL.COLLEGE],
+            program: userRow[USER_COL.DEGREE_PROGRAM]
+          }
+        : null,
+      account: residentAccount
+        ? {
+            email: (userRow?.[USER_COL.EMAIL] || "").trim(),
+            period: (residentAccount[ACCOUNT_COL.PERIOD] || "").trim(),
+            room: (residentAccount[ACCOUNT_COL.ROOM] || "").trim(),
+            bed: (residentAccount[ACCOUNT_COL.BED] || "").trim(),
+            name: (userRow?.[USER_COL.DISPLAY_NAME] || "").trim(),
+            stno: (userRow?.[USER_COL.STUDENT_NO] || "").trim(),
+            waterBase,
+            waterPaid,
+            waterWaived,
+            waterBal: waterBase - waterPaid - waterWaived,
+            assocBase,
+            assocPaid,
+            assocWaived,
+            assocBal: assocBase - assocPaid - assocWaived,
+            totalBase,
+            paid,
+            waived,
+            bal,
+            isFullyPaid: bal <= 0,
+            ceRefNo: (residentAccount[ACCOUNT_COL.CE_REFNO] || residentAccount[5] || "").trim(),
+            ceIssued: (residentAccount[ACCOUNT_COL.CE_ISSUED] || residentAccount[6] || "").trim(),
+            ceLink: (residentAccount[ACCOUNT_COL.CE_LINK] || residentAccount[7] || "").trim(),
+            college: (userRow?.[USER_COL.COLLEGE] || "").split(",").pop()?.trim() || "",
+            program: (userRow?.[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || ""
+          }
+        : null,
+      currEntry: currEntry
+        ? {
+            room: currEntry[CURR_COL.ROOM],
+            bed: currEntry[CURR_COL.BED],
+            lastName: currEntry[CURR_COL.LAST_NAME],
+            firstName: currEntry[CURR_COL.FIRST_NAME],
+            college: currEntry[CURR_COL.COLLEGE],
+            program: currEntry[CURR_COL.PROGRAM],
+            studentNo: currEntry[CURR_COL.STUDENT_NO],
+            isEvaluated
+          }
+        : null,
+      transactions: sortedTransactions.reverse(),
+      occupiedBeds: accRows
+        .filter(
+          (r: any) =>
+            r[ACCOUNT_COL.PERIOD] === targetTerm &&
+            r[ACCOUNT_COL.ROOM] &&
+            r[ACCOUNT_COL.BED] &&
+            (!userRow || r[ACCOUNT_COL.RESIDENT_ID] !== userRow[USER_COL.ID])
+        )
+        .map((r: any) => ({
+          room: (r[ACCOUNT_COL.ROOM] || "").trim(),
+          bed: (r[ACCOUNT_COL.BED] || "").trim()
+        }))
+    });
+  } catch (e: any) {
+    return serverError(e, "Status check");
+  }
+};

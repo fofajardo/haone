@@ -5,7 +5,7 @@ import {
   batchUpdateValues,
   appendSheetRow
 } from "./google-sheets";
-import { USER_COL, ACCOUNT_COL, type UserRecord, type ResidentRecord } from "./schemas";
+import { USER_COL, ACCOUNT_COL, CURR_COL, type UserRecord, type ResidentRecord } from "./schemas";
 import { fetchUsers, addUser, updateUser, computeDisplayNames } from "./resident-logic";
 import { roomsState } from "./rooms.svelte";
 
@@ -20,6 +20,8 @@ export interface CurrRecord {
   program: string;
   studentNo: string;
   checkInDate: string;
+  isEvaluated: boolean;
+  rowIndex: number; // 1-indexed
   raw: string[];
 }
 
@@ -32,6 +34,7 @@ export interface SyncPreviewAction {
   warning?: string;
   from?: string;
   to?: string;
+  currIndex?: number; // Row index in CURR sheet to mark as evaluated
   // Payload for applying
   payload: any;
 }
@@ -39,20 +42,22 @@ export interface SyncPreviewAction {
 export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]> {
   if (!uiSettings.residentRecordsId) return [];
 
-  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:J", forceRefresh);
+  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:K", forceRefresh);
   if (rows.length <= 1) return [];
 
-  return rows.slice(1).map((row) => ({
-    timestamp: row[0] || "",
-    email: (row[1] || "").trim().toLowerCase(),
-    room: (row[2] || "").trim().toUpperCase(),
-    bed: (row[3] || "").trim().toUpperCase(),
-    lastName: (row[4] || "").trim(),
-    firstName: (row[5] || "").trim(),
-    college: (row[6] || "").trim().toUpperCase(),
-    program: (row[7] || "").trim().toUpperCase(),
-    studentNo: (row[8] || "").trim(),
-    checkInDate: row[9] || "",
+  return rows.slice(1).map((row, idx) => ({
+    timestamp: row[CURR_COL.TIMESTAMP] || "",
+    email: (row[CURR_COL.EMAIL] || "").trim().toLowerCase(),
+    room: (row[CURR_COL.ROOM] || "").trim().toUpperCase(),
+    bed: (row[CURR_COL.BED] || "").trim().toUpperCase(),
+    lastName: (row[CURR_COL.LAST_NAME] || "").trim(),
+    firstName: (row[CURR_COL.FIRST_NAME] || "").trim(),
+    college: (row[CURR_COL.COLLEGE] || "").trim().toUpperCase(),
+    program: (row[CURR_COL.PROGRAM] || "").trim().toUpperCase(),
+    studentNo: (row[CURR_COL.STUDENT_NO] || "").trim(),
+    checkInDate: row[CURR_COL.CHECK_IN_DATE] || "",
+    isEvaluated: (row[CURR_COL.EVALUATED] || "").toUpperCase() === "TRUE",
+    rowIndex: idx + 2, // +1 for header, +1 for 1-indexing
     raw: row
   }));
 }
@@ -77,25 +82,37 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
 
   // Map: residentId -> accountRow
   const existingAccountMap = new Map<string, { row: string[]; index: number }>();
+  // Map: room-bed -> residentName
+  const currentOccupancyMap = new Map<string, string>();
+
   accRows.slice(1).forEach((row, idx) => {
     if (row[ACCOUNT_COL.PERIOD] === currentTerm) {
       existingAccountMap.set(row[ACCOUNT_COL.RESIDENT_ID], { row, index: idx + 1 });
+
+      if (row[ACCOUNT_COL.ROOM] && row[ACCOUNT_COL.BED]) {
+        const userId = row[ACCOUNT_COL.RESIDENT_ID];
+        const user = users.find((u) => u.id === userId);
+        const name = user ? `${user.lastName}, ${user.firstName}` : "Unknown";
+        currentOccupancyMap.set(`${row[ACCOUNT_COL.ROOM]}-${row[ACCOUNT_COL.BED]}`, name);
+      }
     }
   });
 
+  const plannedOccupancyMap = new Map<string, string>();
   const actions: SyncPreviewAction[] = [];
   // For tracking users planned to be created in this preview session
   const plannedUsersByStNo = new Map<string, string>();
   const plannedUsersByEmail = new Map<string, string>();
 
   for (const curr of currRecords) {
+    if (curr.isEvaluated) continue;
     if (!curr.studentNo && !curr.email) continue;
 
     let user = userMapByStNo.get(curr.studentNo) || userMapByEmail.get(curr.email);
     let userId = user?.id;
     let residentName = user
-      ? `${user.lastName}, ${user.firstName}`
-      : `${curr.lastName}, ${curr.firstName}`;
+      ? `${user.lastName.toUpperCase()}, ${user.firstName.toUpperCase()}`
+      : `${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`;
 
     // Check if target room is valid/available
     const targetRoom = roomsState.config.find((r) => r.room_number === curr.room);
@@ -104,6 +121,16 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       warning = `Room ${curr.room} not found in configuration.`;
     } else if (targetRoom.unavailable_reason) {
       warning = `Room ${curr.room} is marked as unavailable: ${targetRoom.unavailable_reason}`;
+    } else if (curr.room && curr.bed) {
+      const loc = `${curr.room}-${curr.bed}`;
+      const occupant = currentOccupancyMap.get(loc);
+      if (occupant && occupant !== residentName) {
+        warning = `Bed ${loc} is currently occupied by ${occupant} in ${currentTerm}.`;
+      } else if (plannedOccupancyMap.has(loc)) {
+        warning = `Bed ${loc} is already assigned to ${plannedOccupancyMap.get(loc)} in this sync.`;
+      } else {
+        plannedOccupancyMap.set(loc, residentName);
+      }
     }
 
     if (!user) {
@@ -120,15 +147,17 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           residentName,
           email: curr.email,
           studentNo: curr.studentNo,
-          details: `Create profile for ${curr.lastName}, ${curr.firstName}`,
+          currIndex: curr.rowIndex,
+          details: `Create profile for ${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`,
           payload: {
             id: userId,
             email: curr.email,
             studentNo: curr.studentNo,
             college: curr.college,
             program: curr.program,
-            firstName: curr.firstName,
-            lastName: curr.lastName
+            firstName: curr.firstName.toUpperCase(),
+            lastName: curr.lastName.toUpperCase(),
+            tags: "STUDENT"
           }
         });
       }
@@ -139,6 +168,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
         residentName,
         email: curr.email,
         studentNo: curr.studentNo,
+        currIndex: curr.rowIndex,
         details: `Assign to`,
         to: `${curr.room}-${curr.bed}`,
         warning,
@@ -151,18 +181,36 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       });
     } else {
       // User exists, check for updates or bed assignments
-      const needsUserUpdate = (!user.college && curr.college) || (!user.program && curr.program);
+      const lastCollege = (user.college || "").split(",").pop()?.trim() || "";
+      const lastProgram = (user.program || "").split(":").pop()?.trim() || "";
+      const needsUserUpdate = lastCollege !== curr.college || lastProgram !== curr.program;
+
       if (needsUserUpdate) {
+        // Append new academic info if different
+        const newCollege =
+          lastCollege === curr.college
+            ? user.college
+            : user.college
+              ? `${user.college},${curr.college}`
+              : curr.college;
+        const newProgram =
+          lastProgram === curr.program
+            ? user.program
+            : user.program
+              ? `${user.program}:${curr.program}`
+              : curr.program;
+
         actions.push({
           type: "UPDATE_USER",
           residentName,
           email: user.email,
           studentNo: user.studentNo,
+          currIndex: curr.rowIndex,
           details: `Update profile (College: ${curr.college}, Program: ${curr.program})`,
           payload: {
             id: user.id,
-            college: user.college || curr.college,
-            program: user.program || curr.program
+            college: newCollege,
+            program: newProgram
           }
         });
       }
@@ -183,6 +231,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             residentName,
             email: user.email,
             studentNo: user.studentNo,
+            currIndex: curr.rowIndex,
             details: `Change bed`,
             from: oldLoc,
             to: `${curr.room}-${curr.bed}`,
@@ -200,6 +249,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           residentName,
           email: user.email,
           studentNo: user.studentNo,
+          currIndex: curr.rowIndex,
           details: `New assignment`,
           to: `${curr.room}-${curr.bed}`,
           warning,
@@ -259,11 +309,22 @@ export async function applySync(actions: SyncPreviewAction[]) {
     await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:I", rows);
   }
 
+  // 5. Mark CURR as Evaluated
+  const currIndices = [...new Set(actions.map((a) => a.currIndex).filter(Boolean))];
+  if (currIndices.length > 0 && uiSettings.residentRecordsId) {
+    const updates = currIndices.map((idx) => ({
+      range: `CURR!K${idx}`,
+      values: [["TRUE"]]
+    }));
+    await batchUpdateValues(uiSettings.residentRecordsId, updates);
+  }
+
   return {
     usersCreated: userCreations.length,
     usersUpdated: userUpdates.length,
     accountsCreated: accountCreations.length,
-    accountsUpdated: accountUpdates.length
+    accountsUpdated: accountUpdates.length,
+    evaluated: currIndices.length
   };
 }
 

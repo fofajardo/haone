@@ -18,12 +18,12 @@
   };
 
   const styles: Record<string, string> = {
-    CLEARED: "bg-primary text-primary-foreground hover:bg-primary/90",
-    OVERPAID: "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100/80",
-    FULLY_PAID: "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100/80",
-    HALF_FULLY_PAID: "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100/80",
-    PARTIALLY_PAID: "bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100/80",
-    NO_PAYMENT: "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20",
+    CLEARED: "bg-primary text-primary-foreground",
+    OVERPAID: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-200/20",
+    FULLY_PAID: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200/20",
+    HALF_FULLY_PAID: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200/20",
+    PARTIALLY_PAID: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-200/20",
+    NO_PAYMENT: "bg-destructive/15 text-destructive border-destructive/20",
     NO_RECORD: "bg-muted text-muted-foreground border-transparent opacity-50"
   };
 </script>

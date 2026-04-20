@@ -1,29 +1,26 @@
 <script lang="ts">
-  import { LayoutDashboard, History, Menu, CircleUser, Users } from "lucide-svelte";
+  import { LayoutDashboard, History, CircleUser, Users, Settings } from "lucide-svelte";
   import { useSidebar } from "$lib/components/ui/sidebar";
-  import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
   import { cn } from "$lib/utils";
 
   const sidebar = useSidebar();
 
-  const navItems = [
-    {
-      label: "Dashboard",
-      href: "/admin",
-      icon: LayoutDashboard
-    },
-    {
-      label: "Transactions",
-      href: "/admin/transactions",
-      icon: History
-    },
-    {
-      label: "Residents",
-      href: "/admin/residents",
-      icon: Users
-    }
+  const isAdmin = $derived(page.url.pathname.startsWith("/admin"));
+
+  const adminItems = [
+    { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { label: "Transactions", href: "/admin/transactions", icon: History },
+    { label: "Residents", href: "/admin/residents", icon: Users }
   ];
+
+  const residentItems = [
+    { label: "Dashboard", href: "/resident", icon: LayoutDashboard },
+    { label: "Transactions", href: "/resident/transactions", icon: History },
+    { label: "Settings", href: "/resident/settings", icon: Settings }
+  ];
+
+  const navItems = $derived(isAdmin ? adminItems : residentItems);
 </script>
 
 <div class="fixed right-0 bottom-6 left-0 z-50 flex justify-center px-4 md:hidden">

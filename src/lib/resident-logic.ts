@@ -216,10 +216,10 @@ export async function fetchUserById(id: string): Promise<UserRecord | null> {
  * Computes standardized display names based on name parts.
  */
 export function computeDisplayNames(data: Partial<UserRecord>) {
-  const first = (data.firstName || "").trim();
-  const last = (data.lastName || "").trim();
-  const middle = (data.middleName || "").trim();
-  const suffix = (data.suffix || "").trim();
+  const first = (data.firstName || "").trim().toUpperCase();
+  const last = (data.lastName || "").trim().toUpperCase();
+  const middle = (data.middleName || "").trim().toUpperCase();
+  const suffix = (data.suffix || "").trim().toUpperCase();
 
   // Standard: First Last
   const displayName = `${first} ${last}`.trim();
@@ -265,11 +265,13 @@ export async function updateUser(userId: string, data: Partial<UserRecord>) {
 
   // Prepare the new row data
   const newRow = [...currentRow];
-  if (data.email !== undefined) newRow[USER_COL.EMAIL] = data.email;
-  if (data.lastName !== undefined) newRow[USER_COL.LAST_NAME] = data.lastName;
-  if (data.firstName !== undefined) newRow[USER_COL.FIRST_NAME] = data.firstName;
-  if (data.middleName !== undefined) newRow[USER_COL.MIDDLE_NAME] = data.middleName;
-  if (data.suffix !== undefined) newRow[USER_COL.SUFFIX] = data.suffix;
+  if (data.email !== undefined) newRow[USER_COL.EMAIL] = data.email.trim().toLowerCase();
+  if (data.lastName !== undefined) newRow[USER_COL.LAST_NAME] = data.lastName.trim().toUpperCase();
+  if (data.firstName !== undefined)
+    newRow[USER_COL.FIRST_NAME] = data.firstName.trim().toUpperCase();
+  if (data.middleName !== undefined)
+    newRow[USER_COL.MIDDLE_NAME] = data.middleName.trim().toUpperCase();
+  if (data.suffix !== undefined) newRow[USER_COL.SUFFIX] = data.suffix.trim().toUpperCase();
   if (data.overrideName !== undefined) newRow[USER_COL.OVERRIDE_NAME] = data.overrideName;
 
   // Recompute display names if parts changed
@@ -309,12 +311,12 @@ export async function addUser(data: Partial<UserRecord>) {
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
   const row = new Array(16).fill("");
-  row[USER_COL.EMAIL] = data.email || "";
-  row[USER_COL.LAST_NAME] = data.lastName || "";
-  row[USER_COL.FIRST_NAME] = data.firstName || "";
-  row[USER_COL.MIDDLE_NAME] = data.middleName || "";
-  row[USER_COL.SUFFIX] = data.suffix || "";
-  row[USER_COL.OVERRIDE_NAME] = data.overrideName || "";
+  row[USER_COL.EMAIL] = (data.email || "").trim().toLowerCase();
+  row[USER_COL.LAST_NAME] = (data.lastName || "").trim().toUpperCase();
+  row[USER_COL.FIRST_NAME] = (data.firstName || "").trim().toUpperCase();
+  row[USER_COL.MIDDLE_NAME] = (data.middleName || "").trim().toUpperCase();
+  row[USER_COL.SUFFIX] = (data.suffix || "").trim().toUpperCase();
+  row[USER_COL.OVERRIDE_NAME] = (data.overrideName || "").trim();
 
   const computed = computeDisplayNames(data);
   row[USER_COL.DISPLAY_NAME] = computed.displayName;

@@ -22,8 +22,8 @@
   let userTypes = $state<string[]>([]);
 
   function parseAcademic(colStr: string, progStr: string) {
-    const cols = (colStr || "").split(";").map((s) => s.trim());
-    const progs = (progStr || "").split(";").map((s) => s.trim());
+    const cols = (colStr || "").split(",").map((s) => s.trim());
+    const progs = (progStr || "").split(":").map((s) => s.trim());
     const count = Math.max(cols.length, progs.length);
     const items: { college: string; program: string }[] = [];
     for (let i = 0; i < count; i++) {
@@ -66,8 +66,8 @@
     isSaving = true;
     try {
       // Sync academic items back to formData
-      formData.college = academicItems.map((i) => i.college).join(";");
-      formData.program = academicItems.map((i) => i.program).join(";");
+      formData.college = academicItems.map((i) => i.college).join(",");
+      formData.program = academicItems.map((i) => i.program).join(":");
       formData.tags = userTypes.join(":");
 
       // Final validation

@@ -1,102 +1,46 @@
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar";
-  import {
-    LayoutDashboard,
-    Settings,
-    Receipt,
-    Users,
-    LogOut,
-    ChartPie,
-    Mail,
-    FileSpreadsheet,
-    HandCoins,
-    X,
-    History,
-    CircleUser,
-    GraduationCap,
-    Contact,
-    Bed
-  } from "lucide-svelte";
+  import { LayoutDashboard, Settings, LogOut, X, CircleUser, Wallet, House } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
+
   const items = [
     {
       title: "Dashboard",
-      url: "/admin",
+      url: "/resident",
       icon: LayoutDashboard
     },
     {
-      title: "Pending Receipts",
-      url: "/admin/pending",
-      icon: Receipt
+      title: "Finance",
+      url: "/resident/finance",
+      icon: Wallet
     },
     {
-      title: "Transactions",
-      url: "/admin/transactions",
-      icon: History
-    },
-    {
-      title: "Residents",
-      url: "/admin/residents",
-      icon: Users
-    },
-
-    {
-      title: "Rooms",
-      url: "/admin/rooms",
-      icon: Bed
-    },
-    {
-      title: "Users",
-      url: "/admin/users",
-      icon: Contact
-    },
-    {
-      title: "Academic Terms",
-      url: "/admin/academic-terms",
-      icon: GraduationCap
-    }
-  ];
-
-  const reportItems = [
-    {
-      title: "Financial Report",
-      url: "/admin/reports/financial-report",
-      icon: HandCoins
-    },
-    {
-      title: "Resident List",
-      url: "/admin/reports/resident-list",
-      icon: FileSpreadsheet
-    },
-    {
-      title: "Demographics",
-      url: "/admin/reports/demographics",
-      icon: ChartPie
+      title: "Occupancy",
+      url: "/resident/occupancy",
+      icon: House
     }
   ];
 
   const secondaryItems = [
     {
-      title: "Resident View",
-      url: "/resident",
-      icon: LayoutDashboard
-    },
-    {
-      title: "Email Dispatcher",
-      url: "/admin/email-dispatcher",
-      icon: Mail
-    },
-    {
       title: "Settings",
-      url: "/admin/settings",
+      url: "/resident/settings",
       icon: Settings
     }
   ];
+
+  if (auth.authType === "admin") {
+    secondaryItems.unshift({
+      title: "Back to Admin",
+      url: "/admin",
+      icon: House
+    });
+  }
 </script>
 
 <Sidebar.Root collapsible="icon" class="data-[mobile=true]:w-full!">
@@ -174,29 +118,6 @@
       </Sidebar.Menu>
     </Sidebar.Group>
 
-    <Sidebar.Group>
-      <Sidebar.GroupLabel>Reports</Sidebar.GroupLabel>
-      <Sidebar.GroupContent>
-        <Sidebar.Menu>
-          {#each reportItems as item}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton
-                size={sidebar.isMobile ? "lg" : "default"}
-                isActive={page.url.pathname === item.url}
-                onclick={() => sidebar.setOpenMobile(false)}
-              >
-                {#snippet child({ props })}
-                  <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-        </Sidebar.Menu>
-      </Sidebar.GroupContent>
-    </Sidebar.Group>
     <Sidebar.Group class="mt-auto">
       <Sidebar.Menu>
         {#each secondaryItems as item}

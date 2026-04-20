@@ -5,15 +5,16 @@
   import { testAccess } from "$lib/google-sheets";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/crypto";
   import { Button } from "$lib/components/ui/button";
-  import { LogIn, LoaderCircle } from "lucide-svelte";
+  import { LogIn, LoaderCircle, ShieldCheck, User } from "lucide-svelte";
   import { goto, replaceState } from "$app/navigation";
   import branding from "$lib/branding.json";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
+  import { PUBLIC_GI_CLIENT_ID, PUBLIC_RESIDENT_GI_CLIENT_ID } from "$env/static/public";
 
   let isLoggingIn = $state(false);
   let isLoadingAuth = $state(true);
   let rememberMe = $state(true);
+  let currentAuthType = $state<"admin" | "resident">("resident");
 
   let alertState = $state({ open: false, title: "", description: "" });
 
@@ -28,6 +29,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
+    const savedType =
+      (sessionStorage.getItem("pkce_auth_type") as "admin" | "resident") || "resident";
 
     if (code) {
       isLoggingIn = true;
@@ -37,6 +40,8 @@
           throw new Error("Missing PKCE verifier");
         }
 
+        const clientId = savedType === "admin" ? PUBLIC_GI_CLIENT_ID : PUBLIC_RESIDENT_GI_CLIENT_ID;
+
         // Exchange code for token via our server-side API.
         const tokenResp = await fetch("/api/auth/token", {
           method: "POST",
@@ -44,7 +49,8 @@
           body: JSON.stringify({
             code,
             code_verifier: verifier,
-            redirect_uri: window.location.origin + "/sign-in"
+            redirect_uri: window.location.origin + "/sign-in",
+            client_id: clientId
           })
         });
 
@@ -58,18 +64,25 @@
 
         const userInfo = await auth.fetchUserInfo(accessToken);
 
-        const spreadsheetId = uiSettings.accountingWorkbookId;
-        await testAccess(spreadsheetId, accessToken);
-        auth.setSession(accessToken, userInfo, rememberMe);
+        if (savedType === "resident" && !userInfo.email.endsWith("@up.edu.ph")) {
+          throw new Error("Only UP Mail accounts (@up.edu.ph) are allowed for residents.");
+        }
+
+        if (savedType === "admin") {
+          const spreadsheetId = uiSettings.accountingWorkbookId;
+          await testAccess(spreadsheetId, accessToken);
+        }
+
+        auth.setSession(accessToken, userInfo, rememberMe, savedType);
 
         sessionStorage.removeItem("pkce_verifier");
+        sessionStorage.removeItem("pkce_auth_type");
 
         // Redirect back or to state
-        goto(state || auth.redirectTo || "/admin");
+        goto(state || auth.redirectTo || (savedType === "admin" ? "/admin" : "/resident"));
         auth.redirectTo = null;
         return;
       } catch (e: any) {
-        // Only set error if not already handled by a service (which would open the alert)
         if (!alertState.open) {
           auth.lastError = {
             title: "Sign-in Failed",
@@ -84,9 +97,9 @@
 
     isLoadingAuth = false;
 
-    // If already logged in, go to admin
+    // If already logged in, go to appropriate dashboard
     if (auth.accessToken) {
-      goto(auth.redirectTo || "/admin");
+      goto(auth.redirectTo || (auth.authType === "admin" ? "/admin" : "/resident"));
       auth.redirectTo = null;
     }
   });
@@ -98,21 +111,28 @@
     }
   });
 
-  async function handleLogin() {
+  async function handleLogin(type: "admin" | "resident" = "resident") {
     isLoggingIn = true;
-    const clientId = PUBLIC_GI_CLIENT_ID;
-    const scopes = [
+    currentAuthType = type;
+    const clientId = type === "admin" ? PUBLIC_GI_CLIENT_ID : PUBLIC_RESIDENT_GI_CLIENT_ID;
+
+    const adminScopes = [
       "openid",
       "profile",
       "email",
       "https://www.googleapis.com/auth/gmail.send",
       "https://www.googleapis.com/auth/spreadsheets",
       "https://www.googleapis.com/auth/drive.readonly"
-    ].join(" ");
+    ];
+
+    const residentScopes = ["openid", "profile", "email"];
+
+    const scopes = (type === "admin" ? adminScopes : residentScopes).join(" ");
 
     // PKCE Setup
     const verifier = generatePKCEVerifier();
     sessionStorage.setItem("pkce_verifier", verifier);
+    sessionStorage.setItem("pkce_auth_type", type);
     const challenge = await generatePKCEChallenge(verifier);
 
     const params = new URLSearchParams({
@@ -120,7 +140,7 @@
       redirect_uri: window.location.origin + "/sign-in",
       response_type: "code",
       scope: scopes,
-      state: auth.redirectTo || "/admin",
+      state: auth.redirectTo || (type === "admin" ? "/admin" : "/resident"),
       include_granted_scopes: "true",
       code_challenge: challenge,
       code_challenge_method: "S256"
@@ -141,7 +161,7 @@
   class:font-shantell={uiSettings.fontFamily === "shantell"}
   class:acc-reduced-motion={uiSettings.reducedMotion}
 >
-  <div class="relative z-10 w-full max-w-sm space-y-4">
+  <div class="relative z-10 w-full max-w-sm space-y-6">
     <div class="flex flex-col items-center space-y-8 text-center">
       <img
         src={branding.default.logoUrl}
@@ -155,18 +175,35 @@
       />
     </div>
 
-    <div class="animate-in pt-6 duration-1000 fade-in slide-in-from-bottom-4">
+    <div class="animate-in space-y-3 pt-6 duration-1000 fade-in slide-in-from-bottom-4">
       <Button
-        onclick={handleLogin}
+        onclick={() => handleLogin("resident")}
         disabled={isLoggingIn || isLoadingAuth}
         class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
       >
-        {#if isLoggingIn || isLoadingAuth}
+        {#if isLoggingIn && currentAuthType === "resident"}
           <LoaderCircle class="mr-2 h-5 w-5 animate-spin" />
-          {isLoadingAuth ? "Loading…" : "Signing in…"}
+          Signing in…
+        {:else if isLoadingAuth}
+          <LoaderCircle class="mr-2 h-5 w-5 animate-spin" />
+          Loading…
         {:else}
-          <LogIn class="mr-2 h-5 w-5" />
-          Sign in with Google
+          <User class="mr-2 h-5 w-5" />
+          Sign In
+        {/if}
+      </Button>
+
+      <Button
+        variant="ghost"
+        onclick={() => handleLogin("admin")}
+        disabled={isLoggingIn || isLoadingAuth}
+        class="h-12 w-full rounded-xl text-sm font-bold transition-all hover:bg-muted active:scale-[0.98]"
+      >
+        {#if isLoggingIn && currentAuthType === "admin"}
+          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
+          Signing in…
+        {:else}
+          Sign In as House Council Officer
         {/if}
       </Button>
     </div>

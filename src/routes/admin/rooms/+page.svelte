@@ -4,6 +4,7 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { roomsState } from "$lib/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$lib/resident-logic";
+  import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import {
     getSyncPreview,
     applySync,
@@ -11,6 +12,7 @@
     manualAssignBed
   } from "$lib/rooms-logic.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/schemas";
+  import { pluralize } from "$lib/receipt-utils";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -42,6 +44,7 @@
   let isLoading = $state(false);
   let isSyncing = $state(false);
   let error = $state<string | null>(null);
+  let activeTerm = $state("");
 
   let selectedUnit = $state("ALL");
   let isCompact = $state(true);
@@ -63,13 +66,13 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData] = await Promise.all([
+      const [resData, userData, constRows] = await Promise.all([
         fetchResidents(forceRefresh),
-        fetchUsers(forceRefresh)
+        fetchUsers(forceRefresh),
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
       ]);
-      residents = resData.filter(
-        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
-      );
+      activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
+      residents = resData.filter((r) => r.period === activeTerm);
       users = userData;
     } catch (e: any) {
       error = e.message;
@@ -134,13 +137,13 @@
   );
 
   async function handleSync() {
-    if (!uiSettings.currentTerm) {
-      showAlert("Term Required", "Please select a current academic term first.", "error");
+    if (!activeTerm) {
+      showAlert("Term Required", "Active academic term (TERM_CURR) not found.", "error");
       return;
     }
     isSyncing = true;
     try {
-      previewActions = await getSyncPreview(uiSettings.currentTerm);
+      previewActions = await getSyncPreview(activeTerm);
       if (previewActions.length === 0) {
         showAlert("Sync", "All records are already up to date.");
       } else {
@@ -160,7 +163,7 @@
       const result = await applySync(previewActions);
       showAlert(
         "Sync Complete",
-        `Created ${result.usersCreated} users and ${result.accountsCreated} assignments. Updated ${result.usersUpdated} users and ${result.accountsUpdated} assignments.`
+        `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
       );
       await loadData(true);
     } catch (e: any) {
@@ -194,7 +197,7 @@
         assignmentDialog.userId,
         assignmentDialog.room,
         assignmentDialog.bed,
-        uiSettings.currentTerm
+        activeTerm
       );
       showAlert("Success", "Bed assignment updated.");
       assignmentDialog.open = false;

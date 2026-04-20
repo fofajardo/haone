@@ -26,8 +26,8 @@
     isSaving = true;
     try {
       // Sync academic items back to formData
-      formData.college = academicItems.map((i) => i.college).join(";");
-      formData.program = academicItems.map((i) => i.program).join(";");
+      formData.college = academicItems.map((i) => i.college).join(",");
+      formData.program = academicItems.map((i) => i.program).join(":");
       formData.tags = userTypes.join(":");
 
       // Final validation

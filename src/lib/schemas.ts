@@ -56,6 +56,20 @@ export const USER_COL = {
   ID: 15
 } as const;
 
+export const CURR_COL = {
+  TIMESTAMP: 0,
+  EMAIL: 1,
+  ROOM: 2,
+  BED: 3,
+  PROGRAM: 4,
+  STUDENT_NO: 5,
+  CHECK_IN_DATE: 6,
+  LAST_NAME: 7,
+  FIRST_NAME: 8,
+  COLLEGE: 9,
+  EVALUATED: 10
+} as const;
+
 export interface ResidentRecord {
   email: string;
   period: string;
