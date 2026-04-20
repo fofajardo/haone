@@ -20,7 +20,7 @@
     onSelect
   }: {
     value: string;
-    options: { value: string; label: string }[];
+    options: { value: string; label: string; disabled?: boolean }[];
     placeholder?: string;
     searchPlaceholder?: string;
     emptyMessage?: string;
@@ -86,6 +86,8 @@
               <Command.Item
                 value={opt.label + " " + opt.value}
                 onSelect={() => handleSelect(opt.value)}
+                disabled={opt.disabled}
+                class={cn(opt.disabled && "opacity-50")}
               >
                 <Check class={cn("mr-2 h-4 w-4", value !== opt.value && "text-transparent")} />
                 {opt.label}
@@ -124,6 +126,8 @@
                 <Command.Item
                   value={opt.label + " " + opt.value}
                   onSelect={() => handleSelect(opt.value)}
+                  disabled={opt.disabled}
+                  class={cn(opt.disabled && "opacity-50")}
                 >
                   <Check class={cn("mr-2 h-4 w-4", value !== opt.value && "text-transparent")} />
                   {opt.label}
