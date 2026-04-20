@@ -14,6 +14,6 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(appVersion)
   },
   ssr: {
-    noExternal: ["layerchart"]
+    noExternal: ["layerchart", "svelte-sonner"]
   }
 });

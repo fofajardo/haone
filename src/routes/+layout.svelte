@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { pageState } from "$lib/page-info.svelte";
+  import { Toaster } from "$lib/components/ui/sonner";
   import { ModeWatcher } from "mode-watcher";
   import "./layout.css";
   import favicon from "$lib/assets/favicon.svg";
@@ -15,6 +16,7 @@
 </script>
 
 <ModeWatcher />
+<Toaster />
 
 <svelte:head>
   <title>{pageState.title ? pageState.title + " - HAOne" : "HAOne"}</title>
