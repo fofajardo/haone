@@ -25,8 +25,10 @@
     Wallet,
     StickyNote,
     Eye,
-    ArrowLeftToLine
+    ArrowLeftToLine,
+    TriangleAlert
   } from "lucide-svelte";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -59,6 +61,8 @@
   let selectedResident = $state<ResidentRecord | null>(null);
   let isStandingOpen = $state(false);
   let allowOverpayment = $state(false);
+  let isTermWarningOpen = $state(false);
+  let hasConfirmedTerm = $state(false);
 
   // Form State
   let formData = $state({
@@ -142,6 +146,11 @@
       accountSearch = "Association Funds";
       selectedResident = accounts.find((a) => a.email === "_funds") || null;
     }
+  });
+
+  $effect(() => {
+    formData.period;
+    hasConfirmedTerm = false;
   });
 
   // Display initial creator if set (for "add" mode mostly)
@@ -348,6 +357,11 @@
       }
     }
 
+    if (formData.period !== uiSettings.currentTerm && !hasConfirmedTerm) {
+      isTermWarningOpen = true;
+      return;
+    }
+
     error = null;
 
     try {
@@ -376,33 +390,45 @@
           ? `-${Math.abs(parseFloat(formData.assocFee))}`
           : formData.assocFee || "0";
       row[JOR.MISC] =
-        isNegative && parseFloat(formData.miscFee) !== 0
-          ? `-${Math.abs(parseFloat(formData.miscFee))}`
-          : formData.miscFee || "0";
-      row[JOR.MOP] = formData.mop;
+        formData.type === "PMT_WAIVED"
+          ? "0"
+          : isNegative && parseFloat(formData.miscFee) !== 0
+            ? `-${Math.abs(parseFloat(formData.miscFee))}`
+            : formData.miscFee || "0";
+      row[JOR.MOP] =
+        formData.type === "PMT_WAIVED" || formData.type === "PMT_DISCREPANCY" ? "" : formData.mop;
       row[JOR.PERIOD] = formData.period;
-      row[JOR.TYPE] = transactionTypes.find((t) => t.value === formData.type)?.val || formData.type;
+      const mappedType =
+        transactionTypes.find((t) => t.value === formData.type)?.val || formData.type;
+      row[JOR.TYPE] = mappedType;
       row[JOR.NOTES] = formData.notes;
       row[JOR.NOTES_PRIVATE] = formData.notesPrivate;
-      row[JOR.MOP_REFNO] = formData.instapayInvoice
-        ? `${formData.mopRefNo};${formData.instapayInvoice}`
-        : formData.mopRefNo;
+      row[JOR.MOP_REFNO] =
+        formData.type === "PMT_WAIVED" || formData.type === "PMT_DISCREPANCY"
+          ? ""
+          : formData.instapayInvoice
+            ? `${formData.mopRefNo};${formData.instapayInvoice}`
+            : formData.mopRefNo;
       row[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
 
       // PR_REFNO logic based on TYPE and Account
-      const prTypes = ["WAIVED", "COLLECTION", "COLLECTION_REFUND", "REFUND"];
+      const prTypes = ["WAIVED", "COLLECTION"];
       const conditionalPrTypes = [
         "RECLASSIFY",
         "COLLECTION_OTHERS",
         "TRANSFER_TO",
-        "TRANSFER_FROM"
+        "TRANSFER_FROM",
+        "COLLECTION_REFUND",
+        "REFUND"
       ];
 
       let prRef = formData.prRefNo;
       const isFunds = formData.accountEmail.toLowerCase().includes("_funds");
+      const isRefund = mappedType.toUpperCase().includes("REFUND");
 
       const needsPr =
-        prTypes.includes(formData.type) || (conditionalPrTypes.includes(formData.type) && !isFunds);
+        prTypes.includes(mappedType) ||
+        ((conditionalPrTypes.includes(mappedType) || isRefund) && !isFunds);
 
       if (!needsPr) {
         prRef = "N/A";
@@ -471,6 +497,14 @@
                   options={academicTerms}
                   class="h-10 w-full"
                 />
+                {#if formData.period !== uiSettings.currentTerm}
+                  <div
+                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] font-bold text-amber-600 uppercase dark:bg-amber-500/20 dark:text-amber-500"
+                  >
+                    <TriangleAlert class="h-3 w-3" />
+                    Caution: Inactive term
+                  </div>
+                {/if}
               </div>
             </div>
             <div class="space-y-2">
@@ -708,19 +742,21 @@
                 {/if}
               </div>
 
-              <!-- Misc Fee Row -->
-              <div class="space-y-1.5">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Misc</Label
-                >
-                <Input
-                  type="number"
-                  step="0.01"
-                  bind:value={formData.miscFee}
-                  disabled={!formData.accountEmail || isSubmitting}
-                  class="text-right font-mono"
-                />
-              </div>
+              {#if formData.type !== "PMT_WAIVED"}
+                <!-- Misc Fee Row -->
+                <div class="space-y-1.5">
+                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+                    >Misc</Label
+                  >
+                  <Input
+                    type="number"
+                    step="0.01"
+                    bind:value={formData.miscFee}
+                    disabled={!formData.accountEmail || isSubmitting}
+                    class="text-right font-mono"
+                  />
+                </div>
+              {/if}
 
               {#if isCollection && selectedResident && selectedResident.email !== "_funds"}
                 <div
@@ -737,42 +773,46 @@
               {/if}
             </div>
 
-            <div class="grid gap-6 pt-2">
-              <div class="space-y-1.5">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Payment Processor</Label
-                >
-                <Combobox
-                  bind:value={formData.mop}
-                  options={mopOptions}
-                  disabled={!formData.accountEmail || isSubmitting}
-                  class="h-10 w-full"
-                />
+            {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
+              <div class="grid gap-6 pt-2">
+                <div class="space-y-1.5">
+                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+                    >Payment Processor</Label
+                  >
+                  <Combobox
+                    bind:value={formData.mop}
+                    options={mopOptions}
+                    disabled={!formData.accountEmail || isSubmitting}
+                    class="h-10 w-full"
+                  />
+                </div>
               </div>
-            </div>
+            {/if}
 
-            <div class="grid gap-6 md:grid-cols-2">
-              <div class="space-y-1.5">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Reference Number</Label
-                >
-                <Input
-                  bind:value={formData.mopRefNo}
-                  disabled={!formData.accountEmail || isSubmitting}
-                  placeholder="e.g., Transaction ID"
-                />
+            {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
+              <div class="grid gap-6 md:grid-cols-2">
+                <div class="space-y-1.5">
+                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+                    >Reference Number</Label
+                  >
+                  <Input
+                    bind:value={formData.mopRefNo}
+                    disabled={!formData.accountEmail || isSubmitting}
+                    placeholder="e.g., Transaction ID"
+                  />
+                </div>
+                <div class="space-y-1.5">
+                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+                    >InstaPay Invoice Number</Label
+                  >
+                  <Input
+                    bind:value={formData.instapayInvoice}
+                    disabled={!formData.accountEmail || isSubmitting}
+                    placeholder="Optional"
+                  />
+                </div>
               </div>
-              <div class="space-y-1.5">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >InstaPay Invoice Number</Label
-                >
-                <Input
-                  bind:value={formData.instapayInvoice}
-                  disabled={!formData.accountEmail || isSubmitting}
-                  placeholder="Optional"
-                />
-              </div>
-            </div>
+            {/if}
           </div>
 
           <!-- Notes -->
@@ -814,7 +854,7 @@
               class="min-w-[120px]"
             >
               {#if isSubmitting}
-                <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving...
+                <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving…
               {:else}
                 Save
               {/if}
@@ -825,3 +865,30 @@
     {/if}
   </div>
 </div>
+
+<AlertDialog.Root bind:open={isTermWarningOpen}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Non-Active Term Warning</AlertDialog.Title>
+      <AlertDialog.Description>
+        You are recording a transaction for <span class="font-bold text-foreground"
+          >{translatePeriod(formData.period)}</span
+        >, which is not the currently active term (<span class="font-bold text-foreground"
+          >{translatePeriod(uiSettings.currentTerm)}</span
+        >). Are you sure you want to proceed?
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Review Entry</AlertDialog.Cancel>
+      <AlertDialog.Action
+        onclick={() => {
+          hasConfirmedTerm = true;
+          handleSubmit();
+        }}
+        class="bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600"
+      >
+        Yes, Proceed
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
