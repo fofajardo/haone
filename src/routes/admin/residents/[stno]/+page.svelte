@@ -36,7 +36,8 @@
     AwardIcon,
     ChevronDown,
     FileCheck,
-    FileDown
+    FileDown,
+    UserCog
   } from "lucide-svelte";
   import {
     ACCOUNT_COL as ACC,
@@ -300,6 +301,11 @@
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
+          <Button variant="outline" size="sm" href="/admin/users/{account.residentId}">
+            <UserCog class="mr-1.5 h-3.5 w-3.5" />
+            View User Profile
+          </Button>
+
           <Button variant="outline" size="sm" disabled>
             <FileDown class="mr-1.5 h-3.5 w-3.5" />
             Export Statement (PDF)
