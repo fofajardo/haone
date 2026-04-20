@@ -12,7 +12,7 @@
   import { PieChart } from "layerchart";
   import { translateCollege, translateProgram } from "$lib/receipt-utils";
 
-  import { fetchResidents } from "$lib/resident-logic";
+  import { fetchResidents, getPaymentStatus } from "$lib/resident-logic";
 
   interface DataItem {
     label: string;
@@ -66,10 +66,13 @@
       const collegesMap: Record<string, number> = {};
       const degreesMap: Record<string, number> = {};
       const batchesMap: Record<string, number> = {};
-      const paidMap: Record<string, number> = {
-        "Fully Paid": 0,
-        "Partial Payment": 0,
-        "No Payment": 0
+      const statusMap: Record<string, number> = {
+        CLEARED: 0,
+        OVERPAID: 0,
+        FULLY_PAID: 0,
+        HALF_FULLY_PAID: 0,
+        PARTIALLY_PAID: 0,
+        NO_PAYMENT: 0
       };
 
       accounts.forEach((res) => {
@@ -93,13 +96,10 @@
         }
 
         // Payment status processing
-        let status = "No Payment";
-        if (res.isFullyPaid) {
-          status = "Fully Paid";
-        } else if (res.paid > 0 || res.waived > 0) {
-          status = "Partial Payment";
+        const status = getPaymentStatus(res);
+        if (status !== "NO_RECORD") {
+          statusMap[status] = (statusMap[status] || 0) + 1;
         }
-        paidMap[status]++;
       });
 
       const mapToItems = (map: Record<string, number>, limit = 0) => {
@@ -119,11 +119,23 @@
         }));
       };
 
+      const statusLabels: Record<string, string> = {
+        CLEARED: "Cleared",
+        OVERPAID: "Overpaid",
+        FULLY_PAID: "Fully Paid",
+        HALF_FULLY_PAID: "Half-Fully Paid",
+        PARTIALLY_PAID: "Partial Payment",
+        NO_PAYMENT: "No Payment"
+      };
+
       reportData = {
         colleges: mapToItems(collegesMap),
         degrees: mapToItems(degreesMap),
         batches: mapToItems(batchesMap).sort((a, b) => b.label.localeCompare(a.label)),
-        paymentStatus: mapToItems(paidMap).sort((a, b) => b.label.localeCompare(a.label)) // Pending then Fully Paid or vice versa
+        paymentStatus: mapToItems(statusMap).map((item) => ({
+          ...item,
+          label: statusLabels[item.label] || item.label
+        }))
       };
     } catch (e: any) {
       error = e.message;
@@ -192,7 +204,7 @@
                 </div>
                 <div class="flex shrink-0 items-center gap-2 italic">
                   <span class="text-xs font-bold text-foreground">{item.value}</span>
-                  <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
+                  <span class="text-xs text-muted-foreground">({item.percentage})</span>
                 </div>
               </div>
             {/each}
@@ -235,7 +247,7 @@
                 </div>
                 <div class="flex shrink-0 items-center gap-2 italic">
                   <span class="text-xs font-bold text-foreground">{item.value}</span>
-                  <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
+                  <span class="text-xs text-muted-foreground">({item.percentage})</span>
                 </div>
               </div>
             {/each}
@@ -277,7 +289,7 @@
                 </div>
                 <div class="flex shrink-0 items-center gap-2 italic">
                   <span class="text-xs font-bold text-foreground">{item.value}</span>
-                  <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
+                  <span class="text-xs text-muted-foreground">({item.percentage})</span>
                 </div>
               </div>
             {/each}
@@ -325,7 +337,7 @@
                   </div>
                   <div class="flex shrink-0 items-center gap-2 italic">
                     <span class="text-xs font-bold text-foreground">{item.value}</span>
-                    <span class="text-[10px] text-muted-foreground">({item.percentage})</span>
+                    <span class="text-xs text-muted-foreground">({item.percentage})</span>
                   </div>
                 </div>
               {/each}

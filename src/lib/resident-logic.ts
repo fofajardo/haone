@@ -675,26 +675,53 @@ export async function clearResident(
 }
 
 /**
+ * Returns a standardized status string for a resident record based on payment progress.
+ */
+export function getPaymentStatus(r: ResidentRecord): string {
+  if (r.ceIssued && r.ceIssued !== "" && r.ceIssued !== "#N/A" && r.ceIssued !== "N/A") {
+    return "CLEARED";
+  }
+  if (r.bal < 0) {
+    return "OVERPAID";
+  }
+  if (r.totalBase > 0 && r.bal <= 0) {
+    return "FULLY_PAID";
+  }
+  if (r.totalBase === 0) {
+    return "NO_RECORD";
+  }
+
+  const progress = (r.paid + r.waived) / r.totalBase;
+  if (progress >= 0.5) {
+    return "HALF_FULLY_PAID";
+  }
+  if (progress > 0) {
+    return "PARTIALLY_PAID";
+  }
+  return "NO_PAYMENT";
+}
+
+/**
  * Standardized logic for matching a resident record against payment status filters.
  */
 export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean {
   if (filter === "ALL") return true;
 
-  const progress = r.totalBase > 0 ? (r.paid + r.waived) / r.totalBase : 0;
+  const status = getPaymentStatus(r);
 
   switch (filter) {
     case "FULLY_PAID":
-      return r.isFullyPaid || (r.bal <= 0 && r.totalBase > 0);
+      return status === "FULLY_PAID" || status === "CLEARED" || status === "OVERPAID";
     case "HALF_FULLY_PAID":
-      return !r.isFullyPaid && progress >= 0.5 && (r.paid > 0 || r.waived > 0);
+      return status === "HALF_FULLY_PAID";
     case "PARTIALLY_PAID":
-      return !r.isFullyPaid && progress < 0.5 && (r.paid > 0 || r.waived > 0);
+      return status === "PARTIALLY_PAID";
     case "NO_PAYMENT":
-      return r.paid <= 0 && r.waived <= 0;
+      return status === "NO_PAYMENT";
     case "CLEARED":
-      return !!r.ceIssued && r.ceIssued !== "" && r.ceIssued !== "#N/A" && r.ceIssued !== "N/A";
+      return status === "CLEARED";
     case "PENDING":
-      return !r.isFullyPaid;
+      return status !== "CLEARED" && status !== "FULLY_PAID" && status !== "OVERPAID";
     default:
       return true;
   }
