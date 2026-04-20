@@ -12,7 +12,8 @@
     HandCoins,
     X,
     History,
-    CircleUser
+    CircleUser,
+    GraduationCap
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -40,6 +41,11 @@
       title: "Residents",
       url: "/admin/residents",
       icon: Users
+    },
+    {
+      title: "Academic Terms",
+      url: "/admin/academic-terms",
+      icon: GraduationCap
     }
   ];
 

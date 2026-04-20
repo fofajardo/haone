@@ -88,7 +88,7 @@
 
       const joinedLabels = labels.length > 3 ? "Consolidated" : labels.join(" & ");
 
-      const semester = translatePeriod(uiSettings.currentSemester);
+      const semester = translatePeriod(uiSettings.currentTerm);
       const shortName = brandingState.profile.shortName;
       newSheetTitle = `[${shortName}] Resident List (${joinedLabels}) - ${semester}`;
     }
@@ -115,7 +115,7 @@
     isLoading = true;
     try {
       const mapped = await fetchResidents();
-      const currentSem = uiSettings.currentSemester.trim();
+      const currentSem = uiSettings.currentTerm.trim();
 
       allAccounts = mapped;
       residents = mapped.filter((r) => r.period === currentSem);
@@ -167,7 +167,7 @@
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `report_${selectedCategories.join("_")}_${uiSettings.currentSemester}.csv`;
+    link.download = `report_${selectedCategories.join("_")}_${uiSettings.currentTerm}.csv`;
     link.click();
   }
 
@@ -231,7 +231,7 @@
   async function syncToSheets() {
     isProcessing = true;
     try {
-      const baseName = `REPORT_${selectedCategories.join("_")}_${uiSettings.currentSemester}`;
+      const baseName = `REPORT_${selectedCategories.join("_")}_${uiSettings.currentTerm}`;
       const sheetName = (isPublic ? `PUBLIC_${baseName}` : baseName).toUpperCase().slice(0, 31);
 
       let targetId = "";
@@ -286,7 +286,7 @@
         await exportReportPDF({
           residents: filteredResidents,
           categoryLabel: combinedCategoryLabel,
-          semester: translatePeriod(uiSettings.currentSemester),
+          semester: translatePeriod(uiSettings.currentTerm),
           brandingKey: brandingState.selectedKey,
           isPublic: isPublic,
           issuedBy,
@@ -589,7 +589,7 @@
               label="Issued By"
               accounts={allAccounts}
               bind:value={issuedBy}
-              filter={(a) => a.period === uiSettings.currentSemester}
+              filter={(a) => a.period === uiSettings.currentTerm}
               onSelect={(a) => {
                 issuedBy = a.name;
                 issuedByEmail = a.email;
@@ -618,7 +618,7 @@
               label="Assessed By"
               accounts={allAccounts}
               bind:value={assessedBy}
-              filter={(a) => a.period === uiSettings.currentSemester}
+              filter={(a) => a.period === uiSettings.currentTerm}
               onSelect={(a) => {
                 assessedBy = a.name;
                 assessedByEmail = a.email;
@@ -648,7 +648,7 @@
               label="Certified By"
               accounts={allAccounts}
               bind:value={certifiedBy}
-              filter={(a) => a.period === uiSettings.currentSemester}
+              filter={(a) => a.period === uiSettings.currentTerm}
               onSelect={(a) => {
                 certifiedBy = a.name;
                 certifiedByEmail = a.email;

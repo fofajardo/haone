@@ -73,7 +73,7 @@
         .map((row, idx) => mapRowToJournal(row, idx + 2))
         .filter((r) => {
           return (
-            r.period === uiSettings.currentSemester.trim() &&
+            r.period === uiSettings.currentTerm.trim() &&
             (!r.prDateIssued || r.prDateIssued === "#N/A") &&
             r.prRefNo !== "N/A" &&
             r.prRefNo !== "#N/A"

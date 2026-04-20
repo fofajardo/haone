@@ -73,7 +73,7 @@
     try {
       residents = await fetchResidents(forceRefresh);
       residents = residents.filter(
-        (r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester
+        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
       );
     } catch (e: any) {
       error = e.message;

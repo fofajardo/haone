@@ -107,7 +107,7 @@
         <AccountAutocomplete
           label="Signatory Name"
           accounts={allAccounts}
-          filter={(a) => !uiSettings.currentSemester || a.period === uiSettings.currentSemester}
+          filter={(a) => !uiSettings.currentTerm || a.period === uiSettings.currentTerm}
           useOfficialName={true}
           bind:value={signatoryName}
           onSelect={(a) => {

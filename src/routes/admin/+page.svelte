@@ -120,7 +120,7 @@
         }));
 
       // Stats from Accounts
-      const currentSem = uiSettings.currentSemester.trim();
+      const currentSem = uiSettings.currentTerm.trim();
       const accounts = allResidents.filter(
         (r) => r.period === currentSem && r.email && r.email !== "_vacant"
       );
@@ -183,7 +183,7 @@
       <p class="max-w-[600px] text-lg text-brand-foreground md:text-xl">
         Manage residents, track collections, and automate communications for <span
           class="font-semibold text-brand-foreground"
-          >{translatePeriod(uiSettings.currentSemester) || "Active Term"}</span
+          >{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
         >.
       </p>
     </div>

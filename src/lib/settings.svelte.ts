@@ -9,7 +9,7 @@ class UISettings {
   #fontFamily = $state<UIFont>("inter");
   #reducedMotion = $state(false);
   #displayDensity = $state<DisplayDensity>("default");
-  #currentSemester = $state<string>("");
+  #currentTerm = $state<string>("");
   #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");
   #residentRecordsId = $state<string>(PUBLIC_GS_RR_ID || "");
 
@@ -17,7 +17,7 @@ class UISettings {
     if (browser) {
       this.#fontFamily = (localStorage.getItem(LS_KEYS.UI_FONT) as UIFont) || "inter";
       this.#reducedMotion = localStorage.getItem(LS_KEYS.ACC_REDUCED_MOTION) === "true";
-      this.#currentSemester = localStorage.getItem("halsk.ui.current_semester") || "";
+      this.#currentTerm = localStorage.getItem("halsk.ui.current_term") || "";
       this.#displayDensity =
         (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
       this.#accountingWorkbookId = localStorage.getItem(LS_KEYS.GS_AW_ID) || PUBLIC_GS_AW_ID || "";
@@ -25,12 +25,12 @@ class UISettings {
     }
   }
 
-  get currentSemester() {
-    return this.#currentSemester;
+  get currentTerm() {
+    return this.#currentTerm;
   }
-  set currentSemester(v: string) {
-    this.#currentSemester = v;
-    if (browser) localStorage.setItem("halsk.ui.current_semester", v);
+  set currentTerm(v: string) {
+    this.#currentTerm = v;
+    if (browser) localStorage.setItem("halsk.ui.current_term", v);
   }
 
   get fontFamily() {

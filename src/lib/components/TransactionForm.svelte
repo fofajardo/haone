@@ -9,7 +9,8 @@
     translateMop,
     parseRef,
     formatAmount,
-    formatAccounting
+    formatAccounting,
+    sortPeriods
   } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -50,7 +51,7 @@
 
   let accounts = $state<ResidentRecord[]>([]);
   let transactionTypes = $state<{ value: string; val: string; label: string }[]>([]);
-  let academicPeriods = $state<{ value: string; label: string }[]>([]);
+  let academicTerms = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -71,7 +72,7 @@
     assocFee: "0",
     miscFee: "0",
     mop: "CASH",
-    period: uiSettings.currentSemester || "",
+    period: uiSettings.currentTerm || "",
     type: "PMT_COLLECTION",
     notes: "",
     notesPrivate: "",
@@ -210,14 +211,18 @@
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
 
-      academicPeriods = constRows
+      const termValues = constRows
         .slice(1)
-        .filter((r) => (r[0] || "").startsWith("SEM_"))
-        .filter((r) => !r[1]?.includes("DO_NOT_USE") && !r[2]?.includes("DO_NOT_USE"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: r[1] || r[0]
-        }));
+        .filter(
+          (r) =>
+            (r[0] || "").startsWith("TERM_") && r[0] !== "TERM_CURR" && r[0] !== "TERM_RESERVED"
+        )
+        .map((r) => r[1] || r[0]);
+
+      academicTerms = sortPeriods(termValues).map((val) => ({
+        value: val,
+        label: val
+      }));
 
       mopTypes = [
         { value: "", label: "N/A" },
@@ -464,7 +469,7 @@
                   bind:value={formData.period}
                   class="h-10 w-full text-xs font-semibold"
                 >
-                  {#each academicPeriods as term}
+                  {#each academicTerms as term}
                     <NativeSelect.Option value={term.value}
                       >{translatePeriod(term.value)}</NativeSelect.Option
                     >

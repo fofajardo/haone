@@ -3,56 +3,66 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { translatePeriod } from "$lib/receipt-utils";
+  import { translatePeriod, sortPeriods } from "$lib/receipt-utils";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
 
   let { onSelect } = $props<{ onSelect?: () => void }>();
 
-  interface SemesterOption {
+  interface TermOption {
     value: string;
     label: string;
     description: string;
   }
 
-  let semesters = $state<SemesterOption[]>([]);
+  let terms = $state<TermOption[]>([]);
   let isLoading = $state(false);
 
-  async function loadSemesters() {
+  async function loadTerms() {
     if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
       const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
       if (rows.length <= 1) return;
 
-      const allSemesters = rows
+      const allTerms = rows
         .slice(1)
-        .filter((row) => row[0]?.startsWith("SEM_"))
-        .filter((row) => !row[1]?.includes("DO_NOT_USE") && !row[2]?.includes("DO_NOT_USE"))
+        .filter(
+          (row) =>
+            row[0]?.startsWith("TERM_") && row[0] !== "TERM_CURR" && row[0] !== "TERM_RESERVED"
+        )
         .map((row) => ({
           value: row[1] || "",
           label: row[1] || "",
           description: row[2] || ""
         }));
 
-      semesters = allSemesters.filter((v, i, a) => a.findIndex((t) => t.value === v.value) === i);
+      const sortedValues = sortPeriods(allTerms.map((t) => t.value));
+      terms = sortedValues.map((val) => {
+        const found = allTerms.find((t) => t.value === val)!;
+        return {
+          value: val,
+          label: val,
+          description: found.description
+        };
+      });
 
-      if (!uiSettings.currentSemester && semesters.length > 0) {
-        uiSettings.currentSemester = semesters[semesters.length - 1].value;
+      if (!uiSettings.currentTerm && terms.length > 0) {
+        uiSettings.currentTerm = terms[0].value;
       }
     } catch (e) {
-      console.error("Failed to load semesters:", e);
+      console.error("Failed to load terms:", e);
     } finally {
       isLoading = false;
     }
   }
 
-  onMount(loadSemesters);
+  onMount(loadTerms);
 
   function handleChange(val: string | undefined) {
     if (val) {
-      uiSettings.currentSemester = val;
+      uiSettings.currentTerm = val;
       onSelect?.();
     }
   }
@@ -62,19 +72,19 @@
   <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
     >Academic Term</Label
   >
-  {#if semesters.length > 0}
+  {#if terms.length > 0}
     <NativeSelect.Root
-      bind:value={uiSettings.currentSemester}
+      bind:value={uiSettings.currentTerm}
       class="h-9 w-full text-xs font-semibold"
       onchange={(e) => handleChange(e.currentTarget.value)}
     >
-      {#each semesters as sem}
-        <NativeSelect.Option value={sem.value}>{translatePeriod(sem.value)}</NativeSelect.Option>
+      {#each terms as term}
+        <NativeSelect.Option value={term.value}>{translatePeriod(term.value)}</NativeSelect.Option>
       {/each}
     </NativeSelect.Root>
   {:else}
     <Input
-      bind:value={uiSettings.currentSemester}
+      bind:value={uiSettings.currentTerm}
       placeholder="Term code…"
       class="h-9 w-full text-xs"
       onblur={() => onSelect?.()}

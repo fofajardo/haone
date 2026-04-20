@@ -54,7 +54,7 @@
     try {
       const allResidents = await fetchResidents(forceRefresh);
       const accounts = allResidents.filter(
-        (r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester
+        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
       );
 
       const totalResidents = accounts.length;

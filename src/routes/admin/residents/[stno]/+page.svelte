@@ -110,11 +110,11 @@
       semesterCount = allRowsForStno.length;
 
       const matchedResident = allRowsForStno.find(
-        (r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester
+        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
       );
 
       if (!matchedResident) {
-        error = `This person is not a resident for the selected semester (${uiSettings.currentSemester || "All Term"}).`;
+        error = `This person is not a resident for the selected semester (${uiSettings.currentTerm || "All Term"}).`;
         showAlert("Semester Error", error, "error");
         return;
       }
@@ -133,7 +133,7 @@
           (r) =>
             r[JOR.ACCOUNT]?.trim().toLowerCase() === account?.email.toLowerCase() &&
             r[JOR.STNO]?.trim() === stno &&
-            (!uiSettings.currentSemester || r[JOR.PERIOD] === uiSettings.currentSemester)
+            (!uiSettings.currentTerm || r[JOR.PERIOD] === uiSettings.currentTerm)
         )
         .map((r, idx) => {
           const journal = mapRowToJournal(r, idx);
@@ -342,11 +342,11 @@
           <div class="space-y-1">
             <Label
               class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-              ><Clock class="h-3 w-3" /> Semesters Active</Label
+              ><Clock class="h-3 w-3" /> Terms Active</Label
             >
             <div class="text-sm font-semibold">
               {semesterCount}
-              {semesterCount === 1 ? "Semester" : "Semesters"}
+              {semesterCount === 1 ? "Term" : "Terms"}
             </div>
           </div>
 

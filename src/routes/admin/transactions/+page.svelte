@@ -84,7 +84,7 @@
             dateWeight: parseDateWeight(res.date)
           };
         })
-        .filter((r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester)
+        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
         .sort(
           (a, b) =>
             (b.dateWeight ?? 0) - (a.dateWeight ?? 0) || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0)

@@ -24,11 +24,9 @@
   let allJournal = $state<JournalRecord[]>([]);
   let allAccounts = $state<ResidentRecord[]>([]);
   let journal = $derived(
-    allJournal.filter((j) => j.period === uiSettings.currentSemester.trim() && j.type !== "EOS")
+    allJournal.filter((j) => j.period === uiSettings.currentTerm.trim() && j.type !== "EOS")
   );
-  let accounts = $derived(
-    allAccounts.filter((r) => r.period === uiSettings.currentSemester.trim())
-  );
+  let accounts = $derived(allAccounts.filter((r) => r.period === uiSettings.currentTerm.trim()));
   let allAccountsForAutocomplete = $state<ResidentRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let availableMops = $state<{ value: string; label: string }[]>([]);
@@ -137,7 +135,7 @@
       await exportFinancialReportPDF({
         journal,
         accounts,
-        semester: translatePeriod(uiSettings.currentSemester),
+        semester: translatePeriod(uiSettings.currentTerm),
         brandingKey: brandingState.selectedKey,
         issuedBy: issuedBy ? `${issuedBy} <${issuedByEmail}>` : "—",
         assessedBy: assessedBy ? `${assessedBy} <${assessedByEmail}>` : "—",
@@ -219,7 +217,7 @@
               label="Issued By"
               accounts={allAccountsForAutocomplete}
               bind:value={issuedBy}
-              filter={(a) => a.period === uiSettings.currentSemester}
+              filter={(a) => a.period === uiSettings.currentTerm}
               onSelect={(a) => {
                 issuedBy = a.name;
                 issuedByEmail = a.email;
@@ -248,7 +246,7 @@
               label="Assessed By"
               accounts={allAccountsForAutocomplete}
               bind:value={assessedBy}
-              filter={(a) => a.period === uiSettings.currentSemester}
+              filter={(a) => a.period === uiSettings.currentTerm}
               onSelect={(a) => {
                 assessedBy = a.name;
                 assessedByEmail = a.email;
@@ -278,7 +276,7 @@
               label="Certified By"
               accounts={allAccountsForAutocomplete}
               bind:value={certifiedBy}
-              filter={(a) => a.period === uiSettings.currentSemester}
+              filter={(a) => a.period === uiSettings.currentTerm}
               onSelect={(a) => {
                 certifiedBy = a.name;
                 certifiedByEmail = a.email;
