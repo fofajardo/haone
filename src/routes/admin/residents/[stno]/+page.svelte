@@ -68,6 +68,7 @@
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let localTerm = $state(page.url.searchParams.get("term") || uiSettings.currentTerm);
 
   const qualifications = $derived(
     account
@@ -109,9 +110,7 @@
 
       semesterCount = allRowsForStno.length;
 
-      const matchedResident = allRowsForStno.find(
-        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
-      );
+      const matchedResident = allRowsForStno.find((r) => !localTerm || r.period === localTerm);
 
       if (!matchedResident) {
         error = `This person is not a resident for the selected semester (${uiSettings.currentTerm || "All Term"}).`;
@@ -133,7 +132,7 @@
           (r) =>
             r[JOR.ACCOUNT]?.trim().toLowerCase() === account?.email.toLowerCase() &&
             r[JOR.STNO]?.trim() === stno &&
-            (!uiSettings.currentTerm || r[JOR.PERIOD] === uiSettings.currentTerm)
+            (!localTerm || r[JOR.PERIOD] === localTerm)
         )
         .map((r, idx) => {
           const journal = mapRowToJournal(r, idx);
@@ -165,7 +164,10 @@
     }
   }
 
-  onMount(loadResidentProfile);
+  onMount(async () => {
+    // Initial load will use the localTerm which already took the query param into account
+    await loadResidentProfile();
+  });
 
   function sendStatusEmail() {
     if (!account) return;
@@ -255,7 +257,7 @@
   {:else if account}
     <div class="grid gap-4 lg:grid-cols-12">
       <div class="lg:col-span-3">
-        <TermFilter onSelect={loadResidentProfile} />
+        <TermFilter bind:value={localTerm} onSelect={loadResidentProfile} />
       </div>
 
       <div class="space-y-1 lg:col-span-9">
