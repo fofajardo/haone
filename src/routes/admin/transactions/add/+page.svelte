@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { brandingState } from "$lib/branding.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
   import { appendSheetRow } from "$lib/google-sheets";
   import TransactionForm from "$lib/components/TransactionForm.svelte";
 

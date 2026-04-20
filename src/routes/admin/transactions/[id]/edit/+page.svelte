@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { brandingState } from "$lib/branding.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw, updateSheetValue } from "$lib/google-sheets";
   import { JOURNAL_COL as JOR } from "$lib/schemas";
   import { mapRowToJournal } from "$lib/resident-logic";
