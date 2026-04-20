@@ -499,7 +499,7 @@
                 />
                 {#if formData.period !== uiSettings.currentTerm}
                   <div
-                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] font-bold text-amber-600 uppercase dark:bg-amber-500/20 dark:text-amber-500"
+                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs font-bold text-amber-600 uppercase dark:bg-amber-500/20 dark:text-amber-500"
                   >
                     <TriangleAlert class="h-3 w-3" />
                     Caution: Inactive term
