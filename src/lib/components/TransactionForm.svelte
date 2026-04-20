@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
-  import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
+  import { SYSTEM_IDS } from "$lib/constants";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import {
     translatePeriod,
@@ -33,7 +33,7 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Badge } from "$lib/components/ui/badge";
-  import { mapRowToResident } from "$lib/resident-logic";
+  import { fetchResidents } from "$lib/resident-logic";
   import type { ResidentRecord, JournalRecord } from "$lib/schemas";
   import { JOURNAL_COL as JOR } from "$lib/schemas";
 
@@ -155,15 +155,12 @@
     if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
-      const [accRows, constRows] = await Promise.all([
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:AD"),
+      const [allResidents, constRows] = await Promise.all([
+        fetchResidents(),
         fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C")
       ]);
 
-      const rawAccounts = accRows
-        .slice(1)
-        .map((row) => mapRowToResident(row))
-        .filter((a) => a.email && a.email.toLowerCase() !== "email");
+      const rawAccounts = allResidents;
 
       const fundsAccount: ResidentRecord = {
         email: "_funds",
@@ -192,6 +189,8 @@
         ceRefNo: "",
         ceLink: "",
         ceFullName: "",
+        residentId: SYSTEM_IDS.FUNDS,
+        ledgerId: SYSTEM_IDS.FUNDS,
         raw: []
       };
 
@@ -335,7 +334,7 @@
     error = null;
 
     try {
-      const row = new Array(23).fill("");
+      const row = new Array(20).fill("");
       row[JOR.DATE] = formData.date;
       row[JOR.CREATOR] = formData.creatorEmail;
       row[JOR.ACCOUNT] = formData.accountEmail;

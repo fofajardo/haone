@@ -27,7 +27,7 @@
     try {
       const journalRows = await fetchSheetRowsRaw(
         uiSettings.accountingWorkbookId,
-        "journal_general!A:W"
+        "journal_general!A:T"
       );
       const idx = journalRows.findIndex((row) => row[JOR.ID] === id);
       if (idx === -1) {
@@ -58,7 +58,7 @@
     try {
       // Range is 1-indexed. rowIndex 0 is header. data starts at rowIndex 1 -> Row 2.
       const sheetRow = rowIndex + 1;
-      const range = `journal_general!A${sheetRow}:W${sheetRow}`;
+      const range = `journal_general!A${sheetRow}:T${sheetRow}`;
 
       await updateSheetValue(uiSettings.accountingWorkbookId, range, [row]);
       goto(`/admin/transactions/${id}`);

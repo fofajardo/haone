@@ -20,45 +20,39 @@ export const JOURNAL_COL = {
   CREATOR_NAME: 14,
   NAME: 15, // ACCOUNT_NAME
   STNO: 16, // ST_NO
-  INCOMING: 17,
-  OUTGOING: 18,
-  BALANCE: 19,
-  WAS_AUDITED: 20,
-  RECEIPT_URL: 21,
-  ID: 22
+  WAS_AUDITED: 17,
+  RECEIPT_URL: 18,
+  ID: 19
 } as const;
 
 export const ACCOUNT_COL = {
+  ID: 0,
+  RESIDENT_ID: 1,
+  PERIOD: 2,
+  ROOM: 3,
+  BED: 4,
+  CE_REFNO: 5,
+  CE_ISSUED: 6,
+  CE_LINK: 7,
+  NOTES: 8
+} as const;
+
+export const USER_COL = {
   EMAIL: 0,
-  PERIOD: 1,
-  ROOM: 2,
-  BED: 3,
-  WATER_BASE: 4,
-  WATER_PAID: 5,
-  WATER_WAIVED: 6,
-  WATER_BAL: 7,
-  ASSOC_BASE: 8,
-  ASSOC_PAID: 9,
-  ASSOC_WAIVED: 10,
-  ASSOC_BAL: 11,
-  BASE: 12, // TOTAL_BASE
-  PAID: 13,
-  WAIVED: 14,
-  BAL: 15,
-  CE_REFNO: 16,
-  CE_ISSUED: 17,
-  IS_FULLY_PAID: 18,
-  NAME: 19,
-  W_CP: 20,
-  A_CP: 21,
-  W_MONTHLY: 22,
-  A_MONTHLY: 23,
-  STNO: 24, // CE_STNO
-  CE_FULL_NAME: 25,
-  CE_LINK: 26,
-  NOTES: 27, // ACCOUNT_NOTES
-  COLLEGE: 28,
-  PROGRAM: 29
+  LAST_NAME: 1,
+  FIRST_NAME: 2,
+  MIDDLE_NAME: 3,
+  SUFFIX: 4,
+  OVERRIDE_NAME: 5,
+  DISPLAY_NAME: 6,
+  DISPLAY_NAME_FL: 7,
+  STUDENT_NO: 8,
+  SECONDARY_CONTACT: 9,
+  COLLEGE: 10,
+  DEGREE_PROGRAM: 11,
+  TYPE: 12,
+  NOTES: 13,
+  ID: 14
 } as const;
 
 export interface ResidentRecord {
@@ -88,6 +82,8 @@ export interface ResidentRecord {
   ceRefNo: string;
   ceLink: string;
   ceFullName: string;
+  residentId: string;
+  ledgerId: string;
   raw: string[];
 }
 

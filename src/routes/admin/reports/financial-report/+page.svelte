@@ -13,7 +13,7 @@
   import { Label } from "$lib/components/ui/label";
   import { HandCoins, RefreshCcw } from "lucide-svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { mapRowToResident, mapRowToJournal } from "$lib/resident-logic";
+  import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
   import { parseDateWeight, translatePeriod, pluralize } from "$lib/receipt-utils";
   import { exportFinancialReportPDF } from "$lib/financial-report-pdf";
   import type { JournalRecord, ResidentRecord } from "$lib/schemas";
@@ -64,12 +64,10 @@
     error = null;
 
     try {
-      const currentSem = uiSettings.currentSemester.trim();
-
       // Fetch Journal
       const journalRows = await fetchSheetRowsRaw(
         uiSettings.accountingWorkbookId,
-        "journal_general!A:W"
+        "journal_general!A:T"
       );
       allJournal = journalRows.slice(1).map((row, idx) => {
         const res = mapRowToJournal(row, idx);
@@ -80,11 +78,7 @@
       });
 
       // Fetch Accounts
-      const accountRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:Z");
-      const mappedAccounts = accountRows
-        .slice(1)
-        .map(mapRowToResident)
-        .filter((r) => r.email && r.email !== "_vacant");
+      const mappedAccounts = await fetchResidents();
 
       allAccounts = mappedAccounts;
       allAccountsForAutocomplete = mappedAccounts;

@@ -56,7 +56,7 @@
 
     try {
       const [rows, constRows] = await Promise.all([
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:W", forceRefresh),
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", forceRefresh),
         fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
       ]);
 
@@ -143,7 +143,7 @@
               range: `journal_general!M${record.ledgerIndex}:N${record.ledgerIndex}`,
               values: [[dateIssued, prRefNo]]
             },
-            { range: `journal_general!V${record.ledgerIndex}`, values: [[url]] }
+            { range: `journal_general!R${record.ledgerIndex}`, values: [[url]] }
           ];
           await batchUpdateValues(uiSettings.accountingWorkbookId!, updates);
           invalidateCache();

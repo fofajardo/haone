@@ -3,8 +3,13 @@ import { PaymentStatusTemplate } from "./templates/payment-status";
 import { ClearanceCertificateTemplate } from "./templates/clearance";
 import type { BrandingProfile } from "./templates/types";
 import { goto } from "$app/navigation";
-import { ACCOUNT_COL, JOURNAL_COL, type ResidentRecord, type JournalRecord } from "./schemas";
-import { formatCurrency, formatAmount, formatDate } from "./receipt-utils";
+import {
+  ACCOUNT_COL,
+  JOURNAL_COL,
+  USER_COL,
+  type ResidentRecord,
+  type JournalRecord
+} from "./schemas";
 
 /**
  * Robust financial parsing for spreadsheet values.
@@ -32,38 +37,133 @@ export function parseAmount(val: any): number {
 }
 
 /**
- * Maps a raw Google Sheets row to a typed ResidentRecord.
+ * Maps a raw Google Sheets row to a typed ResidentRecord, optionally joining with user data.
  */
-export function mapRowToResident(row: string[]): ResidentRecord {
+export function mapRowToResident(
+  row: string[],
+  userRow?: string[],
+  financials?: any
+): ResidentRecord {
+  const waterBase = financials?.waterBase || 0;
+  const waterPaid = financials?.waterPaid || 0;
+  const waterWaived = financials?.waterWaived || 0;
+  const assocBase = financials?.assocBase || 0;
+  const assocPaid = financials?.assocPaid || 0;
+  const assocWaived = financials?.assocWaived || 0;
+  const paid = waterPaid + assocPaid + (financials?.miscPaid || 0);
+  const waived = waterWaived + assocWaived;
+  const totalBase = waterBase + assocBase;
+  const bal = totalBase - paid - waived;
+
   return {
     raw: row,
-    email: (row[ACCOUNT_COL.EMAIL] || "").trim(),
+    email: userRow ? (userRow[USER_COL.EMAIL] || "").trim() : "",
     period: (row[ACCOUNT_COL.PERIOD] || "").trim(),
     room: (row[ACCOUNT_COL.ROOM] || "").trim(),
     bed: (row[ACCOUNT_COL.BED] || "").trim(),
-    name: (row[ACCOUNT_COL.NAME] || "").trim(),
-    stno: (row[ACCOUNT_COL.STNO] || "").trim(),
-    waterBase: parseAmount(row[ACCOUNT_COL.WATER_BASE]),
-    waterPaid: parseAmount(row[ACCOUNT_COL.WATER_PAID]),
-    waterWaived: parseAmount(row[ACCOUNT_COL.WATER_WAIVED]),
-    waterBal: parseAmount(row[ACCOUNT_COL.WATER_BAL]),
-    assocBase: parseAmount(row[ACCOUNT_COL.ASSOC_BASE]),
-    assocPaid: parseAmount(row[ACCOUNT_COL.ASSOC_PAID]),
-    assocWaived: parseAmount(row[ACCOUNT_COL.ASSOC_WAIVED]),
-    assocBal: parseAmount(row[ACCOUNT_COL.ASSOC_BAL]),
-    totalBase: parseAmount(row[ACCOUNT_COL.BASE]),
-    paid: parseAmount(row[ACCOUNT_COL.PAID]),
-    waived: parseAmount(row[ACCOUNT_COL.WAIVED]),
-    bal: parseAmount(row[ACCOUNT_COL.BAL]),
-    isFullyPaid: (row[ACCOUNT_COL.IS_FULLY_PAID] || "").toString().toUpperCase() === "YES",
+    name: userRow ? (userRow[USER_COL.DISPLAY_NAME] || "").trim() : "",
+    stno: userRow ? (userRow[USER_COL.STUDENT_NO] || "").trim() : "",
+    waterBase,
+    waterPaid,
+    waterWaived,
+    waterBal: waterBase - waterPaid - waterWaived,
+    assocBase,
+    assocPaid,
+    assocWaived,
+    assocBal: assocBase - assocPaid - assocWaived,
+    totalBase,
+    paid,
+    waived,
+    bal,
+    isFullyPaid: bal <= 0,
     ceRefNo: (row[ACCOUNT_COL.CE_REFNO] || "").trim(),
     ceIssued: (row[ACCOUNT_COL.CE_ISSUED] || "").trim(),
     ceLink: (row[ACCOUNT_COL.CE_LINK] || "").trim(),
-    ceFullName: (row[ACCOUNT_COL.CE_FULL_NAME] || "").trim(),
+    ceFullName: userRow ? (userRow[USER_COL.DISPLAY_NAME_FL] || "").trim() : "",
     notes: (row[ACCOUNT_COL.NOTES] || "").trim(),
-    college: (row[ACCOUNT_COL.COLLEGE] || "").trim(),
-    program: (row[ACCOUNT_COL.PROGRAM] || "").trim()
+    college: userRow ? (userRow[USER_COL.COLLEGE] || "").trim() : "",
+    program: userRow ? (userRow[USER_COL.DEGREE_PROGRAM] || "").trim() : "",
+    residentId: (row[ACCOUNT_COL.RESIDENT_ID] || "").trim(),
+    ledgerId: (row[ACCOUNT_COL.ID] || "").trim()
   };
+}
+
+/**
+ * Fetches joined resident data from Accounts and ResidentRecords spreadsheets.
+ */
+export async function fetchResidents(forceRefresh = false): Promise<ResidentRecord[]> {
+  const { uiSettings } = await import("./settings.svelte");
+  const { fetchSheetRowsRaw } = await import("./google-sheets");
+
+  if (!uiSettings.accountingWorkbookId || !uiSettings.residentRecordsId) {
+    return [];
+  }
+
+  const [accRows, userRows, journalRows, constRows] = await Promise.all([
+    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:I", forceRefresh),
+    fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:O", forceRefresh),
+    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", forceRefresh),
+    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
+  ]);
+
+  const userMap = new Map<string, string[]>();
+  userRows.slice(1).forEach((row) => {
+    const id = (row[USER_COL.ID] || "").trim();
+    if (id) userMap.set(id, row);
+  });
+
+  const journal = journalRows.slice(1).map((r, idx) => mapRowToJournal(r, idx + 2));
+
+  // Helper for constant lookups
+  const getConst = (key: string) => constRows.find((r) => r[0] === key)?.[1] || "0";
+  const pmtWaived = getConst("PMT_WAIVED") || "PMT_WAIVED";
+
+  return accRows
+    .slice(1)
+    .map((row) => {
+      const resId = (row[ACCOUNT_COL.RESIDENT_ID] || "").trim();
+      const userRow = resId ? userMap.get(resId) : undefined;
+      const period = (row[ACCOUNT_COL.PERIOD] || "").trim();
+      const email = userRow ? (userRow[USER_COL.EMAIL] || "").trim().toLowerCase() : "";
+
+      // Compute financials
+      const filtered = journal.filter(
+        (j) => j.account.toLowerCase() === email && j.period === period
+      );
+
+      const waterPaid = filtered
+        .filter((j) => j.type !== pmtWaived)
+        .reduce((sum, j) => sum + j.water, 0);
+      const waterWaived = filtered
+        .filter((j) => j.type === pmtWaived)
+        .reduce((sum, j) => sum + j.water, 0);
+
+      const assocPaid = filtered
+        .filter((j) => j.type !== pmtWaived)
+        .reduce((sum, j) => sum + j.assoc, 0);
+      const assocWaived = filtered
+        .filter((j) => j.type === pmtWaived)
+        .reduce((sum, j) => sum + j.assoc, 0);
+
+      const miscPaid = filtered.reduce((sum, j) => sum + j.misc, 0);
+
+      // Sourced from constants with period prefix
+      const waterBase = parseAmount(getConst(`FEES_${period}_WATER`));
+      const assocBase = parseAmount(getConst(`FEES_${period}_ASSOC`));
+
+      const financials = {
+        waterBase,
+        waterPaid,
+        waterWaived,
+        assocBase,
+        assocPaid,
+        assocWaived,
+        miscPaid
+      };
+
+      return mapRowToResident(row, userRow, financials);
+    })
+    .filter((r) => r.residentId && r.residentId !== "");
 }
 
 /**
@@ -320,9 +420,11 @@ export async function clearResident(
   const encrypted = await encryptJSON(clearanceData, resident.stno);
   const publicLink = `${window.location.origin}/clearance?data=${encodeURIComponent(encrypted)}`;
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "accounts!A:B");
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "accounts!A:C");
   const rowIndex = rows.findIndex(
-    (r) => r[0]?.trim() === resident.email && r[1]?.trim() === resident.period
+    (r) =>
+      r[ACCOUNT_COL.RESIDENT_ID]?.trim() === resident.residentId &&
+      r[ACCOUNT_COL.PERIOD]?.trim() === resident.period
   );
 
   if (rowIndex === -1) throw new Error("Resident not found in sheet");
@@ -330,9 +432,9 @@ export async function clearResident(
   const actualRow = rowIndex + 1;
 
   await Promise.all([
-    updateSheetValue(spreadsheetId, `accounts!Q${actualRow}`, [[refNo]]),
-    updateSheetValue(spreadsheetId, `accounts!R${actualRow}`, [[dateString]]),
-    updateSheetValue(spreadsheetId, `accounts!AA${actualRow}`, [[publicLink]])
+    updateSheetValue(spreadsheetId, `accounts!F${actualRow}`, [[refNo]]),
+    updateSheetValue(spreadsheetId, `accounts!G${actualRow}`, [[dateString]]),
+    updateSheetValue(spreadsheetId, `accounts!H${actualRow}`, [[publicLink]])
   ]);
 
   return { refNo, dateString, publicLink };

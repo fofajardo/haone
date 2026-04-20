@@ -34,7 +34,7 @@
     formatReportSheet
   } from "$lib/google-sheets";
   import { loadGapiScript } from "$lib/gmail";
-  import { mapRowToResident, matchesStatusFilter } from "$lib/resident-logic";
+  import { matchesStatusFilter, fetchResidents } from "$lib/resident-logic";
   import type { ResidentRecord } from "$lib/schemas";
   import { translatePeriod } from "$lib/receipt-utils";
   import { exportReportPDF } from "$lib/report-pdf";
@@ -114,13 +114,9 @@
     if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
-      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:Z");
+      const mapped = await fetchResidents();
       const currentSem = uiSettings.currentSemester.trim();
 
-      const mapped = rows
-        .slice(1)
-        .map(mapRowToResident)
-        .filter((r) => r.email && r.email !== "_vacant");
       allAccounts = mapped;
       residents = mapped.filter((r) => r.period === currentSem);
 

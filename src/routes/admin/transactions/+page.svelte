@@ -42,7 +42,7 @@
     try {
       const rows = await fetchSheetRowsRaw(
         uiSettings.accountingWorkbookId,
-        "journal_general!A:W",
+        "journal_general!A:T",
         forceRefresh
       );
       if (rows.length === 0) {

@@ -17,11 +17,10 @@
     FileSpreadsheet
   } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
-  import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { formatCurrency, formatDate, translatePeriod, translateType } from "$lib/receipt-utils";
-  import { mapRowToResident, mapRowToJournal } from "$lib/resident-logic";
+  import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
   import { onMount } from "svelte";
 
   let stats = $state({
@@ -106,9 +105,9 @@
     isLoading = true;
 
     try {
-      const [journalRows, accountRows, constRows] = await Promise.all([
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:W"),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:Z"),
+      const [journalRows, allResidents, constRows] = await Promise.all([
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T"),
+        fetchResidents(),
         fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C")
       ]);
 
@@ -122,10 +121,9 @@
 
       // Stats from Accounts
       const currentSem = uiSettings.currentSemester.trim();
-      const accounts = accountRows
-        .slice(1)
-        .map((r) => mapRowToResident(r))
-        .filter((r) => r.period === currentSem && r.email && r.email !== "_vacant");
+      const accounts = allResidents.filter(
+        (r) => r.period === currentSem && r.email && r.email !== "_vacant"
+      );
 
       stats.activeResidents = accounts.length;
 

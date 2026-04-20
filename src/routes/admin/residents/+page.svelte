@@ -6,6 +6,7 @@
   import { type ResidentRecord as Resident } from "$lib/schemas";
   import {
     mapRowToResident,
+    fetchResidents,
     stageStatusEmailBatch,
     stageClearanceEmailBatch,
     matchesStatusFilter
@@ -70,20 +71,10 @@
     error = null;
     selectedIndices = new Set();
     try {
-      const rows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "accounts!A:AD",
-        forceRefresh
+      residents = await fetchResidents(forceRefresh);
+      residents = residents.filter(
+        (r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester
       );
-      residents = rows
-        .slice(1)
-        .map((row) => mapRowToResident(row))
-        .filter(
-          (r) =>
-            r.email &&
-            r.email !== "_vacant" &&
-            (!uiSettings.currentSemester || r.period === uiSettings.currentSemester)
-        );
     } catch (e: any) {
       error = e.message;
     } finally {

@@ -6,8 +6,6 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import {
-    formatCurrency,
-    formatAmount,
     translateCollege,
     translateProgram,
     parseDateWeight,
@@ -22,7 +20,6 @@
     RefreshCcw,
     User,
     ShieldCheck,
-    CreditCard,
     History,
     Info,
     ArrowUpRight,
@@ -33,9 +30,6 @@
     Send,
     IdCard,
     Bed as BedIcon,
-    Droplets,
-    Users,
-    Wallet,
     Calendar,
     Hash,
     ClipboardCheck,
@@ -54,7 +48,7 @@
   import {
     stageStatusEmail,
     stageClearanceEmail,
-    mapRowToResident,
+    fetchResidents,
     mapRowToJournal
   } from "$lib/resident-logic";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
@@ -104,12 +98,8 @@
     error = null;
 
     try {
-      const accRows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "accounts!A:AD",
-        forceRefresh
-      );
-      const allRowsForStno = accRows.filter((r) => r[ACC.STNO]?.trim() === stno);
+      const allResidents = await fetchResidents(forceRefresh);
+      const allRowsForStno = allResidents.filter((r) => r.stno === stno);
 
       if (allRowsForStno.length === 0) {
         error = `Resident with ID ${stno} not found in the database.`;
@@ -119,22 +109,22 @@
 
       semesterCount = allRowsForStno.length;
 
-      const matchedRow = allRowsForStno.find(
-        (r) => !uiSettings.currentSemester || r[ACC.PERIOD] === uiSettings.currentSemester
+      const matchedResident = allRowsForStno.find(
+        (r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester
       );
 
-      if (!matchedRow) {
+      if (!matchedResident) {
         error = `This person is not a resident for the selected semester (${uiSettings.currentSemester || "All Term"}).`;
         showAlert("Semester Error", error, "error");
         return;
       }
 
-      account = mapRowToResident(matchedRow);
+      account = matchedResident;
 
       // 2. Fetch Transaction History
       const jorRows = await fetchSheetRowsRaw(
         uiSettings.accountingWorkbookId,
-        "journal_general!A:W",
+        "journal_general!A:T",
         forceRefresh
       );
       history = jorRows
@@ -207,8 +197,7 @@
 
   onMount(async () => {
     if (uiSettings.accountingWorkbookId) {
-      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:AD");
-      allAccounts = rows.slice(1).map((row) => mapRowToResident(row));
+      allAccounts = await fetchResidents();
     }
   });
 

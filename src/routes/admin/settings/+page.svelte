@@ -9,7 +9,7 @@
   import branding from "$lib/branding.json";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { PUBLIC_GS_AW_ID } from "$env/static/public";
+  import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
   import { setMode, resetMode, userPrefersMode } from "mode-watcher";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
 
@@ -162,7 +162,13 @@
         <Card.Root>
           <Card.Header>
             <Card.Title>Development Configuration</Card.Title>
-            <Card.Description>Manage spreadsheet IDs overrides for testing.</Card.Description>
+            <Card.Description
+              >Manage spreadsheet IDs overrides for testing. <p
+                class="mt-2 text-[10px] text-muted-foreground italic"
+              >
+                Found in the sheet URL: docs.google.com/spreadsheets/d/<b>ID_HERE</b>/edit
+              </p>
+            </Card.Description>
           </Card.Header>
           <Card.Content>
             <div class="space-y-4">
@@ -183,9 +189,27 @@
                     >
                   </div>
                 {/if}
-                <p class="text-[10px] text-muted-foreground italic">
-                  Found in the sheet URL: docs.google.com/spreadsheets/d/<b>ID_HERE</b>/edit
-                </p>
+              </div>
+
+              <div class="h-px bg-border/30"></div>
+
+              <div class="space-y-2">
+                <Label>Resident Records</Label>
+                <Input
+                  placeholder="Enter Resident Records ID (GS_RR_ID)"
+                  bind:value={uiSettings.residentRecordsId}
+                />
+                {#if uiSettings.residentRecordsId && uiSettings.residentRecordsId !== PUBLIC_GS_RR_ID}
+                  <div
+                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] text-amber-600"
+                  >
+                    <TriangleAlert class="h-3.5 w-3.5" />
+                    <span
+                      >Manual override active. This will target a different sheet than the
+                      organization default.</span
+                    >
+                  </div>
+                {/if}
               </div>
             </div>
           </Card.Content>

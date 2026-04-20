@@ -1,6 +1,6 @@
 import { browser, dev } from "$app/environment";
 import { LS_KEYS } from "./constants";
-import { PUBLIC_GS_AW_ID, PUBLIC_APP_ENV } from "$env/static/public";
+import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID, PUBLIC_APP_ENV } from "$env/static/public";
 
 export type UIFont = "inter" | "archivo" | "shantell";
 export type DisplayDensity = "default" | "compact" | "comfortable";
@@ -11,6 +11,7 @@ class UISettings {
   #displayDensity = $state<DisplayDensity>("default");
   #currentSemester = $state<string>("");
   #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");
+  #residentRecordsId = $state<string>(PUBLIC_GS_RR_ID || "");
 
   constructor() {
     if (browser) {
@@ -20,6 +21,7 @@ class UISettings {
       this.#displayDensity =
         (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
       this.#accountingWorkbookId = localStorage.getItem(LS_KEYS.GS_AW_ID) || PUBLIC_GS_AW_ID || "";
+      this.#residentRecordsId = localStorage.getItem(LS_KEYS.GS_RR_ID) || PUBLIC_GS_RR_ID || "";
     }
   }
 
@@ -61,6 +63,14 @@ class UISettings {
   set accountingWorkbookId(v: string) {
     this.#accountingWorkbookId = v;
     if (browser) localStorage.setItem(LS_KEYS.GS_AW_ID, v);
+  }
+
+  get residentRecordsId() {
+    return this.#residentRecordsId;
+  }
+  set residentRecordsId(v: string) {
+    this.#residentRecordsId = v;
+    if (browser) localStorage.setItem(LS_KEYS.GS_RR_ID, v);
   }
 
   get isDev() {

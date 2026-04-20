@@ -1,7 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/branding.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -12,11 +10,9 @@
   import * as Card from "$lib/components/ui/card";
   import * as Chart from "$lib/components/ui/chart";
   import { PieChart } from "layerchart";
-  import ChartPie from "lucide-svelte/icons/chart-pie";
-  import { translateCollege, translateProgram, parseCSVAmount } from "$lib/receipt-utils";
+  import { translateCollege, translateProgram } from "$lib/receipt-utils";
 
-  import { ACCOUNT_COL as ACC } from "$lib/schemas";
-  import { mapRowToResident } from "$lib/resident-logic";
+  import { fetchResidents } from "$lib/resident-logic";
 
   interface DataItem {
     label: string;
@@ -56,20 +52,10 @@
     error = null;
 
     try {
-      const rows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "accounts!A:AD",
-        forceRefresh
+      const allResidents = await fetchResidents(forceRefresh);
+      const accounts = allResidents.filter(
+        (r) => !uiSettings.currentSemester || r.period === uiSettings.currentSemester
       );
-      const accounts = rows
-        .slice(1)
-        .map((row) => mapRowToResident(row))
-        .filter(
-          (r) =>
-            r.email &&
-            r.email !== "_vacant" &&
-            (!uiSettings.currentSemester || r.period === uiSettings.currentSemester)
-        );
 
       const totalResidents = accounts.length;
       if (totalResidents === 0) {

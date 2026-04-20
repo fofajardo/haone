@@ -39,7 +39,7 @@
   const id = $derived(page.params.id);
 
   import { JOURNAL_COL as JOR, ACCOUNT_COL as ACC, type JournalRecord } from "$lib/schemas";
-  import { mapRowToJournal } from "$lib/resident-logic";
+  import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorStNo = $state<string | null>(null);
@@ -57,7 +57,7 @@
     error = null;
 
     try {
-      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:W");
+      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T");
       const idx = rows.findIndex((row, i) => row[JOR.ID] === id || (i + 1).toString() === id);
       const match = rows[idx];
 
@@ -69,12 +69,10 @@
 
         // Fetch accounts to resolve creator details
         try {
-          const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:AD");
-          const creatorMatch = accRows.find(
-            (r) => (r[ACC.EMAIL] || "").trim() === match[JOR.CREATOR]
-          );
+          const allResidents = await fetchResidents();
+          const creatorMatch = allResidents.find((r) => r.email === match[JOR.CREATOR]);
           if (creatorMatch) {
-            creatorStNo = creatorMatch[ACC.STNO] || null;
+            creatorStNo = creatorMatch.stno;
           }
         } catch (e) {
           console.warn("Could not resolve creator student number:", e);
