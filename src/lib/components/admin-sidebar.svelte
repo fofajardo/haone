@@ -14,7 +14,8 @@
     History,
     CircleUser,
     GraduationCap,
-    Contact
+    Contact,
+    Bed
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -44,6 +45,11 @@
       icon: Users
     },
 
+    {
+      title: "Rooms",
+      url: "/admin/rooms",
+      icon: Bed
+    },
     {
       title: "Users",
       url: "/admin/users",

@@ -14,7 +14,8 @@
     Clock,
     ListFilter,
     CircleCheck,
-    FileSpreadsheet
+    FileSpreadsheet,
+    Bed
   } from "lucide-svelte";
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
@@ -94,6 +95,15 @@
       description: "Generate collection summaries, financial statements, and resident rosters.",
       href: "/admin/reports",
       icon: FileSpreadsheet,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
+    },
+    {
+      title: "Rooms",
+      description: "Manage room inventory, bed assignments, and occupancy.",
+      href: "/admin/rooms",
+      icon: Bed,
       color: "text-brand",
       bg: "bg-brand/10",
       border: "hover:border-brand/50"
