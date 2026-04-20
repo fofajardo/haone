@@ -92,7 +92,7 @@
     },
     {
       title: "Settings",
-      description: "Configure branding, semesters, and UI preferences.",
+      description: "Personalize your interface, manage accessibility, and view system information.",
       href: "/admin/settings",
       icon: Settings,
       color: "text-brand",
