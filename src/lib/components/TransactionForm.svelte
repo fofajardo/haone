@@ -9,6 +9,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
+  import { Textarea } from "$lib/components/ui/textarea";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import { LoaderCircle, Calendar, Users, Wallet, StickyNote } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -119,11 +120,12 @@
 
       transactionTypes = constRows
         .slice(1)
-        .filter((r) => (r[0] || "").startsWith("PMT_"))
+        .filter((r) => (r[0] || "").startsWith("PMT_") && r[0] !== "PMT_TYPE_RESERVED")
         .map((r) => ({
           value: r[1] || r[0],
           label: r[2] || r[1] || r[0]
-        }));
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
 
       academicPeriods = constRows
         .slice(1)
@@ -328,6 +330,19 @@
                 </NativeSelect.Root>
               </div>
             </div>
+            <div class="space-y-2">
+              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                >Type</Label
+              >
+              <NativeSelect.Root
+                bind:value={formData.type}
+                class="h-10 w-full text-xs font-semibold"
+              >
+                {#each transactionTypes as type}
+                  <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
+                {/each}
+              </NativeSelect.Root>
+            </div>
           </div>
 
           <div class="space-y-4 border-t pt-4">
@@ -455,19 +470,6 @@
                   {/each}
                 </NativeSelect.Root>
               </div>
-              <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
-                  >Type</Label
-                >
-                <NativeSelect.Root
-                  bind:value={formData.type}
-                  class="h-10 w-full text-xs font-semibold"
-                >
-                  {#each transactionTypes as type}
-                    <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
-                  {/each}
-                </NativeSelect.Root>
-              </div>
             </div>
 
             <div class="grid gap-6 md:grid-cols-2">
@@ -498,21 +500,21 @@
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >Public Remarks</Label
                 >
-                <textarea
+                <Textarea
                   bind:value={formData.notes}
                   placeholder="Description for the resident…"
-                  class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                ></textarea>
+                  class="h-[120px] text-xs"
+                />
               </div>
               <div class="space-y-2">
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >Private Notes</Label
                 >
-                <textarea
+                <Textarea
                   bind:value={formData.notesPrivate}
                   placeholder="Internal context only (not visible to resident)…"
-                  class="h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                ></textarea>
+                  class="h-[120px] text-xs"
+                />
               </div>
             </div>
           </div>
