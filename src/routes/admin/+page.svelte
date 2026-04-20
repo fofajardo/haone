@@ -63,6 +63,15 @@
       border: "hover:border-brand/50"
     },
     {
+      title: "Users",
+      description: "Master directory of all residents across all terms.",
+      href: "/admin/users",
+      icon: Users,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
+    },
+    {
       title: "Transactions",
       description: "Full transaction history and manual entry management.",
       href: "/admin/transactions",

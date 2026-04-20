@@ -48,11 +48,12 @@ export const USER_COL = {
   DISPLAY_NAME_FL: 7,
   STUDENT_NO: 8,
   SECONDARY_CONTACT: 9,
-  COLLEGE: 10,
-  DEGREE_PROGRAM: 11,
-  TYPE: 12,
-  NOTES: 13,
-  ID: 14
+  ADDRESS: 10,
+  COLLEGE: 11,
+  DEGREE_PROGRAM: 12,
+  TAGS: 13,
+  NOTES: 14,
+  ID: 15
 } as const;
 
 export interface ResidentRecord {
@@ -116,3 +117,47 @@ export interface JournalRecord {
   incoming?: number;
   outgoing?: number;
 }
+
+export interface UserRecord {
+  email: string;
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  suffix: string;
+  overrideName: string;
+  displayName: string;
+  displayNameFormal: string;
+  studentNo: string;
+  secondaryContact: string;
+  address: string;
+  college: string;
+  program: string;
+  tags: string;
+  notes: string;
+  id: string;
+  raw: string[];
+}
+export enum UserTag {
+  STUDENT = "STUDENT",
+  ALUMNUS = "ALUMNUS",
+  FACULTY = "FACULTY",
+  INTERNAL = "INTERNAL",
+  DECEASED = "DECEASED",
+  BACKED_OUT = "BACKED-OUT",
+  RETURNING = "RETURNING",
+  HRDO = "HRDO",
+  GUEST = "GUEST"
+}
+
+export const USER_TAG_COLORS: Record<string, string> = {
+  [UserTag.STUDENT]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [UserTag.ALUMNUS]: "bg-blue-100 text-blue-700 border-blue-200",
+  [UserTag.FACULTY]: "bg-purple-100 text-purple-700 border-purple-200",
+  [UserTag.INTERNAL]: "bg-amber-100 text-amber-700 border-amber-200",
+  [UserTag.DECEASED]: "bg-red-100 text-red-700 border-red-200",
+  [UserTag.BACKED_OUT]: "bg-red-100 text-red-700 border-red-200",
+  [UserTag.RETURNING]: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  [UserTag.HRDO]: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  [UserTag.GUEST]: "bg-slate-100 text-slate-700 border-slate-200",
+  DEFAULT: "bg-muted text-muted-foreground border-border"
+};

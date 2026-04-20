@@ -13,7 +13,8 @@
     X,
     History,
     CircleUser,
-    GraduationCap
+    GraduationCap,
+    Contact
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -41,6 +42,12 @@
       title: "Residents",
       url: "/admin/residents",
       icon: Users
+    },
+
+    {
+      title: "Users",
+      url: "/admin/users",
+      icon: Contact
     },
     {
       title: "Academic Terms",

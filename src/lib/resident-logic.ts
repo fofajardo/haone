@@ -8,7 +8,8 @@ import {
   JOURNAL_COL,
   USER_COL,
   type ResidentRecord,
-  type JournalRecord
+  type JournalRecord,
+  type UserRecord
 } from "./schemas";
 
 /**
@@ -101,7 +102,7 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
 
   const [accRows, userRows, journalRows, constRows] = await Promise.all([
     fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:I", forceRefresh),
-    fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:O", forceRefresh),
+    fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P", forceRefresh),
     fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", forceRefresh),
     fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
   ]);
@@ -164,6 +165,239 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
       return mapRowToResident(row, userRow, financials);
     })
     .filter((r) => r.residentId && r.residentId !== "");
+}
+
+/**
+ * Fetches all users from the ResidentRecords spreadsheet.
+ */
+export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
+  const { uiSettings } = await import("./settings.svelte");
+  const { fetchSheetRowsRaw } = await import("./google-sheets");
+
+  if (!uiSettings.residentRecordsId) {
+    return [];
+  }
+
+  const userRows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P", forceRefresh);
+
+  return userRows
+    .slice(1)
+    .map((row) => ({
+      email: (row[USER_COL.EMAIL] || "").trim(),
+      lastName: (row[USER_COL.LAST_NAME] || "").trim(),
+      firstName: (row[USER_COL.FIRST_NAME] || "").trim(),
+      middleName: (row[USER_COL.MIDDLE_NAME] || "").trim(),
+      suffix: (row[USER_COL.SUFFIX] || "").trim(),
+      overrideName: (row[USER_COL.OVERRIDE_NAME] || "").trim(),
+      displayName: (row[USER_COL.DISPLAY_NAME] || "").trim(),
+      displayNameFormal: (row[USER_COL.DISPLAY_NAME_FL] || "").trim(),
+      studentNo: (row[USER_COL.STUDENT_NO] || "").trim(),
+      secondaryContact: (row[USER_COL.SECONDARY_CONTACT] || "").trim(),
+      address: (row[USER_COL.ADDRESS] || "").trim(),
+      college: (row[USER_COL.COLLEGE] || "").trim(),
+      program: (row[USER_COL.DEGREE_PROGRAM] || "").trim(),
+      tags: (row[USER_COL.TAGS] || "").trim(),
+      notes: (row[USER_COL.NOTES] || "").trim(),
+      id: (row[USER_COL.ID] || "").trim(),
+      raw: row
+    }))
+    .filter((u) => u.id !== "");
+}
+
+/**
+ * Fetches a single user by their ID.
+ */
+export async function fetchUserById(id: string): Promise<UserRecord | null> {
+  const users = await fetchUsers();
+  return users.find((u) => u.id === id) || null;
+}
+
+/**
+ * Computes standardized display names based on name parts.
+ */
+export function computeDisplayNames(data: Partial<UserRecord>) {
+  const first = (data.firstName || "").trim();
+  const last = (data.lastName || "").trim();
+  const middle = (data.middleName || "").trim();
+  const suffix = (data.suffix || "").trim();
+
+  // Standard: First Last
+  const displayName = `${first} ${last}`.trim();
+
+  // Formal/Full: Last, First Middle Suffix
+  const formalParts = [];
+  if (last) {
+    formalParts.push(`${last},`);
+  }
+  if (first) {
+    formalParts.push(first);
+  }
+  if (middle) {
+    formalParts.push(middle);
+  }
+  if (suffix) {
+    formalParts.push(suffix);
+  }
+
+  const displayNameFormal = formalParts.join(" ").replace(/, /, ", ").trim();
+
+  return {
+    displayName: data.displayName || displayName,
+    displayNameFormal: data.displayNameFormal || displayNameFormal
+  };
+}
+
+/**
+ * Updates a user record in the ResidentRecords spreadsheet.
+ */
+export async function updateUser(userId: string, data: Partial<UserRecord>) {
+  const { uiSettings } = await import("./settings.svelte");
+  const { fetchSheetRowsRaw, updateSheetValue } = await import("./google-sheets");
+
+  if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
+
+  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P");
+  const rowIndex = rows.findIndex((r) => (r[USER_COL.ID] || "").trim() === userId);
+  if (rowIndex === -1) throw new Error("User not found");
+
+  const actualRow = rowIndex + 1;
+  const currentRow = rows[rowIndex];
+
+  // Prepare the new row data
+  const newRow = [...currentRow];
+  if (data.email !== undefined) newRow[USER_COL.EMAIL] = data.email;
+  if (data.lastName !== undefined) newRow[USER_COL.LAST_NAME] = data.lastName;
+  if (data.firstName !== undefined) newRow[USER_COL.FIRST_NAME] = data.firstName;
+  if (data.middleName !== undefined) newRow[USER_COL.MIDDLE_NAME] = data.middleName;
+  if (data.suffix !== undefined) newRow[USER_COL.SUFFIX] = data.suffix;
+  if (data.overrideName !== undefined) newRow[USER_COL.OVERRIDE_NAME] = data.overrideName;
+
+  // Recompute display names if parts changed
+  const computed = computeDisplayNames({
+    firstName: data.firstName ?? currentRow[USER_COL.FIRST_NAME],
+    lastName: data.lastName ?? currentRow[USER_COL.LAST_NAME],
+    middleName: data.middleName ?? currentRow[USER_COL.MIDDLE_NAME],
+    suffix: data.suffix ?? currentRow[USER_COL.SUFFIX],
+    displayName: data.displayName,
+    displayNameFormal: data.displayNameFormal
+  });
+
+  newRow[USER_COL.DISPLAY_NAME] = computed.displayName;
+  newRow[USER_COL.DISPLAY_NAME_FL] = computed.displayNameFormal;
+
+  if (data.studentNo !== undefined) newRow[USER_COL.STUDENT_NO] = data.studentNo;
+  if (data.secondaryContact !== undefined)
+    newRow[USER_COL.SECONDARY_CONTACT] = data.secondaryContact;
+  if (data.address !== undefined) newRow[USER_COL.ADDRESS] = data.address;
+  if (data.college !== undefined) newRow[USER_COL.COLLEGE] = data.college;
+  if (data.program !== undefined) newRow[USER_COL.DEGREE_PROGRAM] = data.program;
+  if (data.tags !== undefined) newRow[USER_COL.TAGS] = data.tags;
+  if (data.notes !== undefined) newRow[USER_COL.NOTES] = data.notes;
+
+  await updateSheetValue(uiSettings.residentRecordsId, `users!A${actualRow}:P${actualRow}`, [
+    newRow
+  ]);
+}
+
+/**
+ * Adds a new user record to the ResidentRecords spreadsheet.
+ */
+export async function addUser(data: Partial<UserRecord>) {
+  const { uiSettings } = await import("./settings.svelte");
+  const { appendSheetRow } = await import("./google-sheets");
+
+  if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
+
+  const row = new Array(16).fill("");
+  row[USER_COL.EMAIL] = data.email || "";
+  row[USER_COL.LAST_NAME] = data.lastName || "";
+  row[USER_COL.FIRST_NAME] = data.firstName || "";
+  row[USER_COL.MIDDLE_NAME] = data.middleName || "";
+  row[USER_COL.SUFFIX] = data.suffix || "";
+  row[USER_COL.OVERRIDE_NAME] = data.overrideName || "";
+
+  const computed = computeDisplayNames(data);
+  row[USER_COL.DISPLAY_NAME] = computed.displayName;
+  row[USER_COL.DISPLAY_NAME_FL] = computed.displayNameFormal;
+
+  row[USER_COL.STUDENT_NO] = data.studentNo || "";
+  row[USER_COL.SECONDARY_CONTACT] = data.secondaryContact || "";
+  row[USER_COL.ADDRESS] = data.address || "";
+  row[USER_COL.COLLEGE] = data.college || "";
+  row[USER_COL.DEGREE_PROGRAM] = data.program || "";
+  row[USER_COL.TAGS] = data.tags || "";
+  row[USER_COL.NOTES] = data.notes || "";
+  row[USER_COL.ID] = data.id || crypto.randomUUID();
+
+  await appendSheetRow(uiSettings.residentRecordsId, "users!A:P", [row]);
+}
+
+/**
+ * Adds multiple user records in a single operation.
+ */
+export async function addUsersBatch(users: Partial<UserRecord>[]) {
+  const { uiSettings } = await import("./settings.svelte");
+  const { appendSheetRow } = await import("./google-sheets");
+
+  if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
+
+  const rows = users.map((data) => {
+    const row = new Array(16).fill("");
+    row[USER_COL.EMAIL] = data.email || "";
+    row[USER_COL.LAST_NAME] = data.lastName || "";
+    row[USER_COL.FIRST_NAME] = data.firstName || "";
+    row[USER_COL.MIDDLE_NAME] = data.middleName || "";
+    row[USER_COL.SUFFIX] = data.suffix || "";
+    row[USER_COL.OVERRIDE_NAME] = data.overrideName || "";
+
+    const computed = computeDisplayNames(data);
+    row[USER_COL.DISPLAY_NAME] = computed.displayName;
+    row[USER_COL.DISPLAY_NAME_FL] = computed.displayNameFormal;
+
+    row[USER_COL.STUDENT_NO] = data.studentNo || "";
+    row[USER_COL.SECONDARY_CONTACT] = data.secondaryContact || "";
+    row[USER_COL.ADDRESS] = data.address || "";
+    row[USER_COL.COLLEGE] = data.college || "";
+    row[USER_COL.DEGREE_PROGRAM] = data.program || "";
+    row[USER_COL.TAGS] = data.tags || "";
+    row[USER_COL.NOTES] = data.notes || "";
+    row[USER_COL.ID] = data.id || crypto.randomUUID();
+    return row;
+  });
+
+  await appendSheetRow(uiSettings.residentRecordsId, "users!A:P", rows);
+}
+
+/**
+ * Fetches all account records for a specific user ID.
+ */
+export async function fetchAccountsByUserId(userId: string): Promise<ResidentRecord[]> {
+  const allResidents = await fetchResidents();
+  return allResidents.filter((r) => r.residentId === userId);
+}
+
+/**
+ * Deletes a user record only if they have no linked accounts.
+ */
+export async function deleteUser(userId: string) {
+  const { uiSettings } = await import("./settings.svelte");
+  const { fetchSheetRowsRaw, deleteSheetRow } = await import("./google-sheets");
+
+  if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
+
+  // 1. Safety Check: Check for linked accounts
+  const accounts = await fetchAccountsByUserId(userId);
+  if (accounts.length > 0) {
+    throw new Error(`Cannot delete user: ${accounts.length} linked account(s) found.`);
+  }
+
+  // 2. Find row index in users sheet
+  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P");
+  const rowIndex = rows.findIndex((r) => (r[USER_COL.ID] || "").trim() === userId);
+  if (rowIndex === -1) throw new Error("User not found in spreadsheet");
+
+  // 3. Delete row
+  await deleteSheetRow(uiSettings.residentRecordsId, "users", rowIndex);
 }
 
 /**
