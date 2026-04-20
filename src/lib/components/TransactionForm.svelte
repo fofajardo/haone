@@ -26,6 +26,7 @@
     Eye,
     ArrowLeftToLine
   } from "lucide-svelte";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
@@ -55,6 +56,7 @@
   let error = $state<string | null>(null);
   let selectedResident = $state<ResidentRecord | null>(null);
   let isStandingOpen = $state(false);
+  let allowOverpayment = $state(false);
 
   // Form State
   let formData = $state({
@@ -243,7 +245,8 @@
           miscFee: initialData.misc.toString(),
           mop: initialData.mop,
           period: initialData.period,
-          type: initialData.type,
+          type:
+            transactionTypes.find((t) => t.val === initialData!.type)?.value || initialData.type,
           notes: initialData.notes,
           notesPrivate: initialData.notesPrivate,
           mopRefNo: mopRefInfo.reference || initialData.mopRefNo,
@@ -256,6 +259,14 @@
         selectedResident =
           accounts.find((a) => a.email.toLowerCase() === initialData!.account.toLowerCase()) ||
           null;
+
+        if (selectedResident) {
+          const limitW = selectedResident.waterBal + initialData.water;
+          const limitA = selectedResident.assocBal + initialData.assoc;
+          if (initialData.water > limitW + 0.01 || initialData.assoc > limitA + 0.01) {
+            allowOverpayment = true;
+          }
+        }
 
         // Resolve creator student number
         const creatorAcc = accounts.find(
@@ -320,7 +331,7 @@
       return;
     }
 
-    if (isCollection) {
+    if (isCollection && !allowOverpayment) {
       if (water > waterLimit + 0.01) {
         error = `Water payment exceeds remaining balance limit (${formatAmount(waterLimit)}).`;
         return;
@@ -593,7 +604,7 @@
                       type="number"
                       step="0.01"
                       bind:value={formData.waterFee}
-                      max={waterLimit}
+                      max={allowOverpayment ? undefined : waterLimit}
                       disabled={!formData.accountEmail || isSubmitting}
                       class="text-right font-mono"
                     />
@@ -656,7 +667,7 @@
                       type="number"
                       step="0.01"
                       bind:value={formData.assocFee}
-                      max={assocLimit}
+                      max={allowOverpayment ? undefined : assocLimit}
                       disabled={!formData.accountEmail || isSubmitting}
                       class="text-right font-mono"
                     />
@@ -722,6 +733,20 @@
                   class="text-right font-mono"
                 />
               </div>
+
+              {#if isCollection && selectedResident && selectedResident.email !== "_funds"}
+                <div
+                  class="flex items-center gap-3 rounded-lg border border-border bg-muted/20 p-3"
+                >
+                  <Checkbox id="allowOverpayment" bind:checked={allowOverpayment} />
+                  <div class="grid gap-0.5">
+                    <Label for="allowOverpayment" class="cursor-pointer">Allow Overpayment</Label>
+                    <p class="text-xs leading-tight text-muted-foreground">
+                      Override balance validation for water and association fees.
+                    </p>
+                  </div>
+                </div>
+              {/if}
             </div>
 
             <div class="grid gap-6 pt-2">
