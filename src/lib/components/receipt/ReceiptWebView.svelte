@@ -22,6 +22,7 @@
     translateMop,
     translatePeriod
   } from "$lib/receipt-utils";
+  import { Badge } from "../ui/badge";
 
   interface Props {
     receiptData: ReceiptData;
@@ -128,11 +129,9 @@
                 <Table.Cell class="block py-2 sm:table-cell sm:py-2.5">
                   {item.name}
                   {#if item.amount < 0}
-                    <span
-                      class="ml-2 rounded border px-1.5 py-0.5 text-[8px] font-medium tracking-tighter text-destructive uppercase"
-                    >
+                    <Badge variant="destructive">
                       {receiptData.transactionType === "RECLASSIFY" ? "Reclassified" : "Refund"}
-                    </span>
+                    </Badge>
                   {/if}
                 </Table.Cell>
                 <Table.Cell class="block pt-0 pb-3 text-right font-medium sm:table-cell sm:py-2.5"
@@ -153,10 +152,10 @@
       </div>
       <div>
         {#if receiptData.transactionType === "WAIVED"}
-          <p class="text-[11px] leading-relaxed font-medium text-primary">
+          <p class="text-sm leading-relaxed font-medium text-primary">
             Acknowledgment of Waiver of Amount
           </p>
-          <p class="text-[11px] leading-relaxed text-primary">
+          <p class="text-sm leading-relaxed text-primary">
             The above-mentioned amount has been waived for all intents and purposes, and no further
             claims shall be made in this regard.
           </p>
@@ -172,7 +171,7 @@
             </div>
             <div class="space-y-4 px-1">
               {#if receiptData.notes}
-                <p class="text-[11px] leading-relaxed text-muted-foreground">
+                <p class="text-sm leading-relaxed text-muted-foreground">
                   {receiptData.notes}
                 </p>
               {/if}

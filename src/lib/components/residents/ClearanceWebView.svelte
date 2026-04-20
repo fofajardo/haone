@@ -112,7 +112,7 @@
           <h3 class="text-xs font-semibold tracking-widest uppercase">Certification Statement</h3>
         </div>
         <div class="space-y-4 px-1">
-          <p class="text-[11px] leading-relaxed text-muted-foreground">
+          <p class="text-sm leading-relaxed text-muted-foreground">
             This certifies that <span class="font-bold text-foreground">{clearanceData.name}</span>
             has been cleared of any liability regarding association and water fees for the
             <span class="font-bold text-foreground">{translatePeriod(clearanceData.period)}</span>.
