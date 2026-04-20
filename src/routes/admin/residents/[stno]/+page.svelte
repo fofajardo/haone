@@ -63,6 +63,7 @@
   import { columns } from "./columns";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
+  import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
   import ClearanceDialog from "$lib/components/residents/ClearanceDialog.svelte";
 
   const stno = $derived(page.params.stno);
@@ -411,100 +412,7 @@
 
       <!-- Financial & Clearance Info -->
       <div class="flex h-full flex-col gap-6">
-        <Card.Root class="flex h-full flex-col">
-          <Card.Header>
-            <Card.Title class="flex items-center gap-2 text-lg">
-              <CreditCard class="h-5 w-5" />
-              Financial Standing
-            </Card.Title>
-          </Card.Header>
-          <Card.Content class="flex-1 space-y-6">
-            <!-- Water Fee Section -->
-            <div class="space-y-3">
-              <div class="pb-1">
-                <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                >
-                  <Droplets class="h-3 w-3" /> Water Fee
-                </Label>
-              </div>
-              <div
-                class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-muted-foreground uppercase"
-              >
-                <div class="flex flex-col gap-0.5">
-                  <span>Base</span>
-                  <span class="text-foreground">{formatAmount(account.waterBase)}</span>
-                </div>
-                <div class="flex flex-col gap-0.5">
-                  <span>Paid</span>
-                  <span class="text-foreground text-primary">{formatAmount(account.waterPaid)}</span
-                  >
-                </div>
-                <div class="flex flex-col gap-0.5">
-                  <span>Waived</span>
-                  <span class="text-foreground">{formatAmount(account.waterWaived)}</span>
-                </div>
-                <div class="flex flex-col gap-0.5">
-                  <span>Balance</span>
-                  <span class="text-foreground {account.waterBal < 0 ? 'text-primary' : ''}"
-                    >{formatAmount(account.waterBal)}</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <!-- Association Fee Section -->
-            <div class="space-y-3">
-              <div class="pb-1">
-                <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-                >
-                  <Users class="h-3 w-3" /> Association Fee
-                </Label>
-              </div>
-              <div
-                class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-muted-foreground uppercase"
-              >
-                <div class="flex flex-col gap-0.5">
-                  <span>Base</span>
-                  <span class="text-foreground">{formatAmount(account.assocBase)}</span>
-                </div>
-                <div class="flex flex-col gap-0.5">
-                  <span>Paid</span>
-                  <span class="text-foreground text-primary">{formatAmount(account.assocPaid)}</span
-                  >
-                </div>
-                <div class="flex flex-col gap-0.5">
-                  <span>Waived</span>
-                  <span class="text-foreground">{formatAmount(account.assocWaived)}</span>
-                </div>
-                <div class="flex flex-col gap-0.5">
-                  <span>Balance</span>
-                  <span class="text-foreground {account.assocBal < 0 ? 'text-primary' : ''}"
-                    >{formatAmount(account.assocBal)}</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-1 pt-2">
-              <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
-              >
-                <Wallet class="h-3 w-3" /> Total Amount Due
-              </Label>
-              <div class="text-left">
-                <p
-                  class="text-xl font-bold tabular-nums {account.bal < 0
-                    ? 'text-primary'
-                    : 'text-foreground'}"
-                >
-                  {formatCurrency(account.bal)}
-                </p>
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
+        <FinancialStandingCard {account} />
 
         {#if account.raw[ACC.NOTES]?.trim()}
           <Card.Root class="border-amber-200 bg-amber-50/30">
