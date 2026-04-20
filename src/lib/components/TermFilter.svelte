@@ -8,7 +8,13 @@
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
 
-  let { onSelect } = $props<{ onSelect?: () => void }>();
+  let { value = $bindable(), onSelect } = $props<{
+    value?: string;
+    onSelect?: () => void;
+  }>();
+
+  // If value is not provided, we fall back to global uiSettings.currentTerm
+  let activeTerm = $derived(value !== undefined ? value : uiSettings.currentTerm);
 
   interface TermOption {
     value: string;
@@ -48,8 +54,12 @@
         };
       });
 
-      if (!uiSettings.currentTerm && terms.length > 0) {
-        uiSettings.currentTerm = terms[0].value;
+      if (!activeTerm && terms.length > 0) {
+        if (value !== undefined) {
+          value = terms[0].value;
+        } else {
+          uiSettings.currentTerm = terms[0].value;
+        }
       }
     } catch (e) {
       console.error("Failed to load terms:", e);
@@ -62,7 +72,11 @@
 
   function handleChange(val: string | undefined) {
     if (val) {
-      uiSettings.currentTerm = val;
+      if (value !== undefined) {
+        value = val;
+      } else {
+        uiSettings.currentTerm = val;
+      }
       onSelect?.();
     }
   }
@@ -74,7 +88,7 @@
   >
   {#if terms.length > 0}
     <NativeSelect.Root
-      bind:value={uiSettings.currentTerm}
+      value={activeTerm}
       class="h-9 w-full text-xs font-semibold"
       onchange={(e) => handleChange(e.currentTarget.value)}
     >
@@ -84,9 +98,10 @@
     </NativeSelect.Root>
   {:else}
     <Input
-      bind:value={uiSettings.currentTerm}
+      value={activeTerm}
       placeholder="Term code…"
       class="h-9 w-full text-xs"
+      onchange={(e) => handleChange(e.currentTarget.value)}
       onblur={() => onSelect?.()}
     />
   {/if}
