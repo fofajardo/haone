@@ -359,7 +359,7 @@
           <Loader class="mr-2 h-4 w-4 animate-spin" />
           Creating…
         {:else}
-          Create Term
+          Create
         {/if}
       </Button>
     </Dialog.Footer>
@@ -440,7 +440,7 @@
           Saving…
         {:else}
           <Save class="h-4 w-4" />
-          Save Changes
+          Save
         {/if}
       </Button>
     </Dialog.Footer>

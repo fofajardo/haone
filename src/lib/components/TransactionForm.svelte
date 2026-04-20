@@ -820,7 +820,7 @@
               {#if isSubmitting}
                 <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving...
               {:else}
-                {mode === "add" ? "Save" : "Save Changes"}
+                Save
               {/if}
             </Button>
           </div>
