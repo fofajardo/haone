@@ -1,7 +1,6 @@
-import { browser } from "$app/environment";
+import { browser, dev } from "$app/environment";
 import { LS_KEYS } from "./constants";
-import { PUBLIC_GS_AW_ID } from "$env/static/public";
-import branding from "./branding.json";
+import { PUBLIC_GS_AW_ID, PUBLIC_APP_ENV } from "$env/static/public";
 
 export type UIFont = "inter" | "archivo" | "shantell";
 export type DisplayDensity = "default" | "compact" | "comfortable";
@@ -62,6 +61,10 @@ class UISettings {
   set accountingWorkbookId(v: string) {
     this.#accountingWorkbookId = v;
     if (browser) localStorage.setItem(LS_KEYS.GS_AW_ID, v);
+  }
+
+  get isDev() {
+    return dev || PUBLIC_APP_ENV === "development";
   }
 }
 
