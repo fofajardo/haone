@@ -48,7 +48,7 @@
   let { mode, initialData = null, isSubmitting, onSave, onCancel }: Props = $props();
 
   let accounts = $state<ResidentRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
+  let transactionTypes = $state<{ value: string; val: string; label: string }[]>([]);
   let academicPeriods = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
@@ -70,7 +70,7 @@
     miscFee: "0",
     mop: "CASH",
     period: uiSettings.currentSemester || "",
-    type: "COLLECTION",
+    type: "PMT_COLLECTION",
     notes: "",
     notesPrivate: "",
     mopRefNo: "",
@@ -82,7 +82,10 @@
   const isCollection = $derived.by(() => {
     const type = formData.type;
     return (
-      type?.toUpperCase().includes("COLLECTION") || type?.toUpperCase().startsWith("PMT_") || false
+      type === "PMT_COLLECTION" ||
+      type === "PMT_COLLECTION_OTHERS" ||
+      type === "PMT_CN_REFUND" ||
+      type === "PMT_WAIVED"
     );
   });
 
@@ -110,6 +113,31 @@
     if (!isCollection || !selectedResident) return selectedResident?.assocBal || 0;
     const fee = Number(formData.assocFee) || 0;
     return assocLimit - fee;
+  });
+
+  const fundsOnlyTypes = [
+    "PMT_CARRYOVER",
+    "PMT_DISCREPANCY",
+    "PMT_EOS",
+    "PMT_EOS_UNSETTLED",
+    "PMT_PURCHASE",
+    "PMT_REFUND",
+    "PMT_TRANSPORTATION",
+    "PMT_UPLB_ADA_FEE",
+    "PMT_WATER_AA",
+    "PMT_WATER"
+  ];
+
+  const isFundsOnly = $derived(fundsOnlyTypes.includes(formData.type));
+
+  $effect(() => {
+    if (isFundsOnly && formData.accountEmail !== "_funds") {
+      formData.accountEmail = "_funds";
+      formData.accountName = "Association Funds";
+      formData.accountStNo = "SYSTEM";
+      accountSearch = "Association Funds";
+      selectedResident = accounts.find((a) => a.email === "_funds") || null;
+    }
   });
 
   // Display initial creator if set (for "add" mode mostly)
@@ -175,7 +203,8 @@
         .slice(1)
         .filter((r) => (r[0] || "").startsWith("PMT_") && r[0] !== "PMT_TYPE_RESERVED")
         .map((r) => ({
-          value: r[1] || r[0],
+          value: r[0],
+          val: r[1] || r[0],
           label: r[2] || r[1] || r[0]
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
@@ -310,12 +339,33 @@
       row[JOR.DATE] = formData.date;
       row[JOR.CREATOR] = formData.creatorEmail;
       row[JOR.ACCOUNT] = formData.accountEmail;
-      row[JOR.WATER] = formData.waterFee || "0";
-      row[JOR.ASSOC] = formData.assocFee || "0";
-      row[JOR.MISC] = formData.miscFee || "0";
+      const negativeTypes = [
+        "PMT_REFUND",
+        "PMT_CN_REFUND",
+        "PMT_PURCHASE",
+        "PMT_WATER",
+        "PMT_WATER_AA",
+        "PMT_TRANSACTION_FEE",
+        "PMT_UPLB_ADA_FEE",
+        "PMT_TRANSPORTATION"
+      ];
+      const isNegative = negativeTypes.includes(formData.type);
+
+      row[JOR.WATER] =
+        isNegative && parseFloat(formData.waterFee) !== 0
+          ? `-${Math.abs(parseFloat(formData.waterFee))}`
+          : formData.waterFee || "0";
+      row[JOR.ASSOC] =
+        isNegative && parseFloat(formData.assocFee) !== 0
+          ? `-${Math.abs(parseFloat(formData.assocFee))}`
+          : formData.assocFee || "0";
+      row[JOR.MISC] =
+        isNegative && parseFloat(formData.miscFee) !== 0
+          ? `-${Math.abs(parseFloat(formData.miscFee))}`
+          : formData.miscFee || "0";
       row[JOR.MOP] = formData.mop;
       row[JOR.PERIOD] = formData.period;
-      row[JOR.TYPE] = formData.type;
+      row[JOR.TYPE] = transactionTypes.find((t) => t.value === formData.type)?.val || formData.type;
       row[JOR.NOTES] = formData.notes;
       row[JOR.NOTES_PRIVATE] = formData.notesPrivate;
       row[JOR.MOP_REFNO] = formData.instapayInvoice
@@ -463,62 +513,64 @@
                 </div>
               </div>
 
-              <div class="relative space-y-3">
-                <AccountAutocomplete
-                  label="Account"
-                  placeholder="Search resident email or name…"
-                  {accounts}
-                  filter={(a) =>
-                    a.email === "_funds" || !formData.period || a.period === formData.period}
-                  onSelect={selectAccount}
-                  bind:value={accountSearch}
-                />
-                <div
-                  class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
-                >
-                  <div class="flex flex-col">
-                    <span
-                      class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
-                      >Current Selection</span
-                    >
-                    <span class="text-xs font-bold text-foreground/80"
-                      >{formData.accountName || "None selected"}</span
-                    >
-                    {#if formData.accountStNo}
-                      <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
-                        >{formData.accountStNo}</span
+              {#if !isFundsOnly}
+                <div class="relative space-y-3">
+                  <AccountAutocomplete
+                    label="Account"
+                    placeholder="Search resident email or name…"
+                    {accounts}
+                    filter={(a) =>
+                      a.email === "_funds" || !formData.period || a.period === formData.period}
+                    onSelect={selectAccount}
+                    bind:value={accountSearch}
+                  />
+                  <div
+                    class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
+                  >
+                    <div class="flex flex-col">
+                      <span
+                        class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+                        >Current Selection</span
                       >
+                      <span class="text-xs font-bold text-foreground/80"
+                        >{formData.accountName || "None selected"}</span
+                      >
+                      {#if formData.accountStNo}
+                        <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
+                          >{formData.accountStNo}</span
+                        >
+                      {/if}
+                    </div>
+
+                    {#if formData.type === "PMT_COLLECTION" && selectedResident && selectedResident.email !== "_funds"}
+                      <Dialog.Root bind:open={isStandingOpen}>
+                        <Dialog.Trigger>
+                          {#snippet child({ props })}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              class="h-8 w-8 text-muted-foreground transition-colors hover:text-primary"
+                              {...props}
+                              title="View Financial Standing"
+                            >
+                              <Eye class="h-4 w-4" />
+                            </Button>
+                          {/snippet}
+                        </Dialog.Trigger>
+                        <Dialog.Content class="sm:max-w-[425px]">
+                          <Dialog.Header>
+                            <Dialog.Title>Financial Standing</Dialog.Title>
+                            <Dialog.Description>
+                              Current account balances for {selectedResident.name}.
+                            </Dialog.Description>
+                          </Dialog.Header>
+                          <FinancialStandingCard account={selectedResident} hideCard={true} />
+                        </Dialog.Content>
+                      </Dialog.Root>
                     {/if}
                   </div>
-
-                  {#if formData.type === "COLLECTION" && selectedResident && selectedResident.email !== "_funds"}
-                    <Dialog.Root bind:open={isStandingOpen}>
-                      <Dialog.Trigger>
-                        {#snippet child({ props })}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            class="h-8 w-8 text-muted-foreground transition-colors hover:text-primary"
-                            {...props}
-                            title="View Financial Standing"
-                          >
-                            <Eye class="h-4 w-4" />
-                          </Button>
-                        {/snippet}
-                      </Dialog.Trigger>
-                      <Dialog.Content class="sm:max-w-[425px]">
-                        <Dialog.Header>
-                          <Dialog.Title>Financial Standing</Dialog.Title>
-                          <Dialog.Description>
-                            Current account balances for {selectedResident.name}.
-                          </Dialog.Description>
-                        </Dialog.Header>
-                        <FinancialStandingCard account={selectedResident} hideCard={true} />
-                      </Dialog.Content>
-                    </Dialog.Root>
-                  {/if}
                 </div>
-              </div>
+              {/if}
             </div>
           </div>
 
