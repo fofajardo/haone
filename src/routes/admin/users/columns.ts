@@ -14,7 +14,7 @@ export const columns: ColumnDef<User>[] = [
         render: () => `
           <div class="flex flex-col">
             <span class="text-sm text-foreground font-medium">${p().name}</span>
-            <span class="text-[11px] text-muted-foreground">${p().email}</span>
+            <span class="text-sm text-muted-foreground">${p().email}</span>
           </div>
         `
       }));

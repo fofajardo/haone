@@ -41,7 +41,7 @@
         )}
       >
         <item.icon class="h-6 w-6" />
-        <span class="text-[10px] font-medium">{item.label}</span>
+        <span class="text-xs font-medium">{item.label}</span>
       </a>
     {/each}
 
@@ -50,7 +50,7 @@
       class="flex flex-col items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
     >
       <CircleUser class="h-6 w-6" />
-      <span class="text-[10px] font-medium">You</span>
+      <span class="text-xs font-medium">You</span>
     </button>
   </nav>
 </div>

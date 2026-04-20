@@ -158,7 +158,7 @@
         <TermFilter onSelect={() => loadData()} />
       </div>
       <div class="space-y-1 lg:col-span-4">
-        <Label class="text-[10px] font-bold text-muted-foreground uppercase">Search</Label>
+        <Label class="text-xs font-bold text-muted-foreground uppercase">Search</Label>
         <div class="relative">
           <Search
             class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -172,15 +172,12 @@
       </div>
 
       <div class="space-y-1 lg:col-span-2">
-        <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label
-        >
+        <Label class="text-xs font-bold text-muted-foreground uppercase">Transaction Type</Label>
         <Combobox bind:value={tableSync.filters!.type} options={transactionOptions} class="h-9" />
       </div>
 
       <div class="space-y-1 lg:col-span-2">
-        <Label class="text-[10px] font-bold text-muted-foreground uppercase"
-          >Payment Processor</Label
-        >
+        <Label class="text-xs font-bold text-muted-foreground uppercase">Payment Processor</Label>
         <Combobox bind:value={tableSync.filters!.mop} options={mopOptions} class="h-9" />
       </div>
 

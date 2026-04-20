@@ -363,7 +363,7 @@
                 >
                   <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-bold text-foreground">{tx.name}</p>
-                    <p class="truncate text-[10px] font-bold text-muted-foreground uppercase">
+                    <p class="truncate text-xs font-bold text-muted-foreground uppercase">
                       {translateType(tx.type, transactionTypes)} • {formatDate(tx.date)}
                     </p>
                   </div>

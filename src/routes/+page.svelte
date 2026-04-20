@@ -51,7 +51,7 @@
               HAOne
             </h1>
             <div
-              class="inline-flex items-center rounded-full bg-[#7B1113]/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#7B1113] uppercase dark:bg-white/10 dark:text-white"
+              class="inline-flex items-center rounded-full bg-[#7B1113]/10 px-2.5 py-0.5 text-xs font-bold tracking-wider text-[#7B1113] uppercase dark:bg-white/10 dark:text-white"
             >
               Beta
             </div>

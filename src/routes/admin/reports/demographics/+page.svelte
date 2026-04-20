@@ -202,7 +202,7 @@
                     >{item.label}</span
                   >
                 </div>
-                <div class="flex shrink-0 items-center gap-2 italic">
+                <div class="flex shrink-0 items-center gap-2">
                   <span class="text-xs font-bold text-foreground">{item.value}</span>
                   <span class="text-xs text-muted-foreground">({item.percentage})</span>
                 </div>
@@ -245,7 +245,7 @@
                     >{item.label}</span
                   >
                 </div>
-                <div class="flex shrink-0 items-center gap-2 italic">
+                <div class="flex shrink-0 items-center gap-2">
                   <span class="text-xs font-bold text-foreground">{item.value}</span>
                   <span class="text-xs text-muted-foreground">({item.percentage})</span>
                 </div>
@@ -287,7 +287,7 @@
                   <span class="truncate text-xs font-semibold text-foreground/80">{item.label}</span
                   >
                 </div>
-                <div class="flex shrink-0 items-center gap-2 italic">
+                <div class="flex shrink-0 items-center gap-2">
                   <span class="text-xs font-bold text-foreground">{item.value}</span>
                   <span class="text-xs text-muted-foreground">({item.percentage})</span>
                 </div>
@@ -331,11 +331,11 @@
                   <div class="flex items-center gap-2 truncate">
                     <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
                     <span
-                      class="truncate text-[11px] font-semibold text-foreground/80"
+                      class="truncate text-xs font-semibold text-foreground/80"
                       title={item.label}>{item.label}</span
                     >
                   </div>
-                  <div class="flex shrink-0 items-center gap-2 italic">
+                  <div class="flex shrink-0 items-center gap-2">
                     <span class="text-xs font-bold text-foreground">{item.value}</span>
                     <span class="text-xs text-muted-foreground">({item.percentage})</span>
                   </div>

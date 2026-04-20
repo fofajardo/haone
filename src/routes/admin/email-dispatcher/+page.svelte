@@ -196,7 +196,7 @@
           </Card.Header>
           <Card.Content class="space-y-4">
             <div class="rounded-lg border bg-muted/20 p-4">
-              <p class="text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
+              <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 Emails in Queue
               </p>
               <p class="text-2xl font-bold text-foreground">{emailDispatcher.queue.length}</p>
@@ -240,12 +240,12 @@
             </Card.Header>
             <Card.Content>
               <RichEditor bind:content={emailDispatcher.customReminders} />
-              <p class="mt-2 text-[10px] text-muted-foreground italic">
+              <p class="mt-2 text-xs text-muted-foreground italic">
                 Globally applied to this batch.
               </p>
 
               <Label
-                class="mt-8 block text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                class="mt-8 block text-xs font-bold tracking-widest text-muted-foreground uppercase"
               >
                 NOTICE OPTIONS
               </Label>
@@ -324,7 +324,7 @@
               </div>
 
               <div class="rounded-xl border border-border bg-muted/30 p-4">
-                <p class="text-[9px] font-medium tracking-widest text-muted-foreground uppercase">
+                <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                   Total Batch Confirmation
                 </p>
                 <p class="text-2xl font-bold text-foreground tabular-nums">
@@ -354,7 +354,7 @@
                 >
                   <div class="flex min-w-0 flex-col">
                     <span class="truncate text-xs font-bold">{item.recipientName}</span>
-                    <span class="truncate text-[10px] text-muted-foreground">{item.to}</span>
+                    <span class="truncate text-xs text-muted-foreground">{item.to}</span>
                   </div>
                 </button>
               {/each}
@@ -380,7 +380,7 @@
               >
                 <ChevronLeft class="h-4 w-4" />
               </Button>
-              <span class="text-[10px] font-bold tabular-nums"
+              <span class="text-xs font-bold tabular-nums"
                 >{previewIndex + 1} / {emailDispatcher.queue.length}</span
               >
               <Button
@@ -400,15 +400,11 @@
             {#if currentEmail}
               <div class="mb-4 space-y-2 rounded-md border bg-muted/20 p-3">
                 <div class="flex justify-between">
-                  <span class="text-xs font-bold tracking-tighter text-muted-foreground uppercase"
-                    >Recipient</span
-                  >
+                  <span class="text-xs font-bold text-muted-foreground uppercase">Recipient</span>
                   <span class="text-xs font-bold text-foreground">{currentEmail.to}</span>
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-xs font-bold tracking-tighter text-muted-foreground uppercase"
-                    >Subject</span
-                  >
+                  <span class="text-xs font-bold text-muted-foreground uppercase">Subject</span>
                   <span class="text-xs font-semibold text-foreground">{emailPreview.subject}</span>
                 </div>
               </div>

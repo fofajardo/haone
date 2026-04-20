@@ -121,14 +121,14 @@
           class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
         >
           <div class="flex flex-col">
-            <span class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+            <span class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
               >Current Selection</span
             >
             <span class="text-xs font-bold text-foreground/80"
               >{signatoryName || "None selected"}</span
             >
             {#if signatoryStNo}
-              <span class="mt-0.5 font-mono text-[9px] text-muted-foreground">{signatoryStNo}</span>
+              <span class="mt-0.5 font-mono text-xs text-muted-foreground">{signatoryStNo}</span>
             {/if}
           </div>
         </div>
@@ -136,7 +136,7 @@
       <div class="space-y-1">
         <Label
           for="clearance-title"
-          class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Title</Label
+          class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Title</Label
         >
         <Input id="clearance-title" bind:value={signatoryTitle} class="h-9 text-xs" />
       </div>

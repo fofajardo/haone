@@ -161,13 +161,13 @@
         <Card.Content class="flex-1 space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >First Name</Label
               >
               <p class="text-sm font-semibold">{user.firstName}</p>
             </div>
             <div class="space-y-1">
-              <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >Last Name</Label
               >
               <p class="text-sm font-semibold">{user.lastName}</p>
@@ -176,13 +176,13 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1">
-              <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >Middle Name</Label
               >
               <p class="text-sm font-semibold">{user.middleName || "—"}</p>
             </div>
             <div class="space-y-1">
-              <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >Suffix</Label
               >
               <p class="text-sm font-semibold">{user.suffix || "—"}</p>
@@ -191,7 +191,7 @@
 
           {#if user.overrideName}
             <div class="space-y-1">
-              <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >Override Name</Label
               >
               <p class="text-sm font-semibold text-primary">{user.overrideName}</p>
@@ -200,7 +200,7 @@
 
           <div class="space-y-1">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               <Mail class="h-3 w-3" /> Email Address
             </Label>
@@ -218,7 +218,7 @@
           {#if user.secondaryContact}
             <div class="space-y-1">
               <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
               >
                 <Contact class="h-3 w-3" /> Secondary Contact
               </Label>
@@ -228,7 +228,7 @@
 
           <div class="space-y-1">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               <IdCard class="h-3 w-3" /> Student Number
             </Label>
@@ -237,7 +237,7 @@
 
           <div class="space-y-1">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               <UserIcon class="h-3 w-3" /> User Tags
             </Label>
@@ -269,7 +269,7 @@
         <Card.Content class="flex-1 space-y-6">
           <div class="space-y-4">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               Programs & Colleges
             </Label>
@@ -285,10 +285,10 @@
                   </div>
                   <div class="flex flex-col gap-0.5">
                     <span
-                      class="text-[9px] font-bold tracking-widest text-primary uppercase opacity-80"
+                      class="text-xs font-bold tracking-widest text-primary uppercase opacity-80"
                       >{q.college}</span
                     >
-                    <p class="text-[13px] leading-tight font-bold text-foreground">{q.program}</p>
+                    <p class="text-sm leading-tight font-bold text-foreground">{q.program}</p>
                   </div>
                 </div>
               {/each}
@@ -303,7 +303,7 @@
 
           <div class="space-y-1">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               <Clock class="h-3 w-3" /> Terms active
             </Label>

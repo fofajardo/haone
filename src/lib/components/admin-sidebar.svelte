@@ -225,7 +225,7 @@
             {/if}
             <div class="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
               <span class="truncate text-xs font-semibold">{auth.user.name}</span>
-              <span class="truncate text-[10px] text-muted-foreground">{auth.user.email}</span>
+              <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
             </div>
             <button
               onclick={() => auth.logout()}

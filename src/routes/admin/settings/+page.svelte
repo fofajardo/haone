@@ -38,7 +38,7 @@
                 onclick={() => (uiSettings.displayDensity = "compact")}
               >
                 <span class="text-sm font-bold">Compact</span>
-                <span class="text-[9px] opacity-60">Tight</span>
+                <span class="text-xs opacity-60">Tight</span>
               </Button>
               <Button
                 variant={uiSettings.displayDensity === "default" ? "default" : "outline"}
@@ -46,7 +46,7 @@
                 onclick={() => (uiSettings.displayDensity = "default")}
               >
                 <span class="text-sm font-bold">Default</span>
-                <span class="text-[9px] opacity-60">Balanced</span>
+                <span class="text-xs opacity-60">Balanced</span>
               </Button>
               <Button
                 variant={uiSettings.displayDensity === "comfortable" ? "default" : "outline"}
@@ -54,7 +54,7 @@
                 onclick={() => (uiSettings.displayDensity = "comfortable")}
               >
                 <span class="text-sm font-bold">Comfortable</span>
-                <span class="text-[9px] opacity-60">Open</span>
+                <span class="text-xs opacity-60">Open</span>
               </Button>
             </div>
           </div>
@@ -71,7 +71,7 @@
                 onclick={() => (uiSettings.fontFamily = "inter")}
               >
                 <span class="text-sm font-bold">Default</span>
-                <span class="text-[9px] opacity-60">Inter Sans</span>
+                <span class="text-xs opacity-60">Inter Sans</span>
               </Button>
               <Button
                 variant={uiSettings.fontFamily === "archivo" ? "default" : "outline"}
@@ -79,7 +79,7 @@
                 onclick={() => (uiSettings.fontFamily = "archivo")}
               >
                 <span class="text-sm font-bold">Standard</span>
-                <span class="font-sans text-[9px] opacity-60">Archivo</span>
+                <span class="font-sans text-xs opacity-60">Archivo</span>
               </Button>
               <Button
                 variant={uiSettings.fontFamily === "shantell" ? "default" : "outline"}
@@ -87,7 +87,7 @@
                 onclick={() => (uiSettings.fontFamily = "shantell")}
               >
                 <span class="text-sm font-bold">Friendly</span>
-                <span class="font-sans text-[9px] opacity-60">Shantell</span>
+                <span class="font-sans text-xs opacity-60">Shantell</span>
               </Button>
             </div>
           </div>
@@ -165,7 +165,7 @@
             <Card.Title>Development Configuration</Card.Title>
             <Card.Description
               >Manage spreadsheet IDs overrides for testing. <p
-                class="mt-2 text-[10px] text-muted-foreground italic"
+                class="mt-2 text-xs text-muted-foreground italic"
               >
                 Found in the sheet URL: docs.google.com/spreadsheets/d/<b>ID_HERE</b>/edit
               </p>
@@ -181,7 +181,7 @@
                 />
                 {#if uiSettings.accountingWorkbookId && uiSettings.accountingWorkbookId !== PUBLIC_GS_AW_ID}
                   <div
-                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] text-amber-600"
+                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
                   >
                     <TriangleAlert class="h-3.5 w-3.5" />
                     <span
@@ -202,7 +202,7 @@
                 />
                 {#if uiSettings.residentRecordsId && uiSettings.residentRecordsId !== PUBLIC_GS_RR_ID}
                   <div
-                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] text-amber-600"
+                    class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
                   >
                     <TriangleAlert class="h-3.5 w-3.5" />
                     <span
@@ -228,7 +228,7 @@
 
             <div class="space-y-4">
               <div
-                class="flex flex-col items-start gap-4 text-[11px] font-semibold text-foreground sm:flex-row sm:items-center sm:gap-x-8 sm:gap-y-2"
+                class="flex flex-col items-start gap-4 text-xs font-semibold text-foreground sm:flex-row sm:items-center sm:gap-x-8 sm:gap-y-2"
               >
                 <div class="flex items-center gap-2">
                   <span class="tracking-widest uppercase">Version</span>
@@ -254,7 +254,7 @@
         </Card.Content>
       </Card.Root>
 
-      <div class="flex items-center gap-2 px-1 text-[10px] font-medium text-muted-foreground/60">
+      <div class="flex items-center gap-2 px-1 text-xs font-medium text-muted-foreground/60">
         <CircleCheckBig class="h-3.5 w-3.5 text-green-600/50" />
         Settings persist in this browser.
       </div>
@@ -301,7 +301,7 @@
                 </div>
               </div>
 
-              <div class="rounded-lg bg-muted/50 p-4 text-[10px] text-muted-foreground italic">
+              <div class="rounded-lg bg-muted/50 p-4 text-xs text-muted-foreground italic">
                 This is a reactive preview showing current branding, typography, and density
                 settings.
               </div>

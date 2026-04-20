@@ -457,13 +457,13 @@
             </Label>
             <div class="grid gap-6 md:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Transaction Date</Label
                 >
                 <Input type="date" bind:value={formData.date} />
               </div>
               <div class="space-y-2">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Academic Term</Label
                 >
                 <Combobox
@@ -474,7 +474,7 @@
               </div>
             </div>
             <div class="space-y-2">
-              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                 >Type</Label
               >
               <Combobox bind:value={formData.type} options={transactionTypes} class="h-10 w-full" />
@@ -502,14 +502,14 @@
                 >
                   <div class="flex flex-col">
                     <span
-                      class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+                      class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
                       >Current Selection</span
                     >
                     <span class="text-xs font-bold text-foreground/80"
                       >{formData.creatorName || "None selected"}</span
                     >
                     {#if formData.creatorStNo}
-                      <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
+                      <span class="mt-0.5 font-mono text-xs text-muted-foreground"
                         >{formData.creatorStNo}</span
                       >
                     {/if}
@@ -533,14 +533,14 @@
                   >
                     <div class="flex flex-col">
                       <span
-                        class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+                        class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
                         >Current Selection</span
                       >
                       <span class="text-xs font-bold text-foreground/80"
                         >{formData.accountName || "None selected"}</span
                       >
                       {#if formData.accountStNo}
-                        <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
+                        <span class="mt-0.5 font-mono text-xs text-muted-foreground"
                           >{formData.accountStNo}</span
                         >
                       {/if}
@@ -589,8 +589,7 @@
               <!-- Water Fee Row -->
               <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
                 <div class="space-y-1.5">
-                  <Label
-                    class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                     >Water Fee</Label
                   >
                   <div class="flex items-center gap-2">
@@ -619,7 +618,7 @@
                           {/snippet}
                         </Tooltip.Trigger>
                         <Tooltip.Content>
-                          <p class="text-[10px] font-bold">Set to Maximum</p>
+                          <p class="text-xs font-bold">Set to Maximum</p>
                         </Tooltip.Content>
                       </Tooltip.Root>
                     {/if}
@@ -627,8 +626,7 @@
                 </div>
                 {#if isCollection && selectedResident}
                   <div class="space-y-1.5">
-                    <Label
-                      class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                    <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                       >Remaining Water Balance</Label
                     >
                     <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
@@ -652,8 +650,7 @@
               <!-- Association Fee Row -->
               <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
                 <div class="space-y-1.5">
-                  <Label
-                    class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                     >Association Fee</Label
                   >
                   <div class="flex items-center gap-2">
@@ -682,7 +679,7 @@
                           {/snippet}
                         </Tooltip.Trigger>
                         <Tooltip.Content>
-                          <p class="text-[10px] font-bold">Set to Maximum</p>
+                          <p class="text-xs font-bold">Set to Maximum</p>
                         </Tooltip.Content>
                       </Tooltip.Root>
                     {/if}
@@ -690,8 +687,7 @@
                 </div>
                 {#if isCollection && selectedResident}
                   <div class="space-y-1.5">
-                    <Label
-                      class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                    <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                       >Remaining Association Balance</Label
                     >
                     <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
@@ -714,7 +710,7 @@
 
               <!-- Misc Fee Row -->
               <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Misc</Label
                 >
                 <Input
@@ -743,7 +739,7 @@
 
             <div class="grid gap-6 pt-2">
               <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Payment Processor</Label
                 >
                 <Combobox
@@ -757,7 +753,7 @@
 
             <div class="grid gap-6 md:grid-cols-2">
               <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Reference Number</Label
                 >
                 <Input
@@ -767,7 +763,7 @@
                 />
               </div>
               <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >InstaPay Invoice Number</Label
                 >
                 <Input
@@ -788,7 +784,7 @@
             </Label>
             <div class="grid gap-6 md:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Public Remarks</Label
                 >
                 <Textarea
@@ -798,7 +794,7 @@
                 />
               </div>
               <div class="space-y-2">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Private Notes</Label
                 >
                 <Textarea

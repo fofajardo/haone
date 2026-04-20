@@ -4,8 +4,8 @@
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { LoaderCircle, Save, X, FileUp, Info, AlertCircle, CheckCircle2 } from "lucide-svelte";
-  import { type UserRecord, UserTag } from "$lib/schemas";
+  import { LoaderCircle, Save, FileUp, Info, CircleAlert } from "lucide-svelte";
+  import { type UserRecord } from "$lib/schemas";
   import { addUsersBatch } from "$lib/resident-logic";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import Papa from "papaparse";
@@ -115,7 +115,7 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
               <Button
                 variant="ghost"
                 size="sm"
-                class="h-6 text-[10px]"
+                class="h-6 text-xs"
                 onclick={() => (csvData = exampleCsv)}
               >
                 Load Example
@@ -194,7 +194,7 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
                 <div
                   class="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-xs text-destructive"
                 >
-                  <AlertCircle class="h-4 w-4" />
+                  <CircleAlert class="h-4 w-4" />
                   {err}
                 </div>
               {/each}
@@ -221,9 +221,7 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
                       <td class="p-2">
                         <div class="flex flex-wrap gap-1">
                           {#each (row.tags || "").split(":").filter(Boolean) as t}
-                            <span class="rounded-full border px-1.5 py-0.5 text-[9px] font-semibold"
-                              >{t}</span
-                            >
+                            <span class="rounded-full border px-1.5 py-0.5 font-semibold">{t}</span>
                           {/each}
                         </div>
                       </td>

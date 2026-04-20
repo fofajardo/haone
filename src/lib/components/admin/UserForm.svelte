@@ -18,7 +18,8 @@
     StickyNote,
     Plus,
     Trash2,
-    MapPin
+    MapPin,
+    AwardIcon
   } from "lucide-svelte";
   import { type UserRecord, UserTag } from "$lib/schemas";
   import { translateCollege, translateProgram } from "$lib/receipt-utils";
@@ -177,7 +178,7 @@
               bind:value={formData.overrideName}
               placeholder="Leave blank to use default"
             />
-            <p class="text-[10px] text-muted-foreground italic">
+            <p class="text-xs text-muted-foreground italic">
               Useful for residents who prefer a different name on certificates.
             </p>
           </div>
@@ -205,16 +206,16 @@
                 <div
                   class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-muted shadow-sm ring-1 ring-border"
                 >
-                  <GraduationCap class="h-2.5 w-2.5 text-muted-foreground" />
+                  <AwardIcon class="h-2.5 w-2.5 text-muted-foreground" />
                 </div>
                 <div class="flex flex-1 items-start justify-between gap-4">
                   <div class="flex flex-col gap-0.5">
                     <span
-                      class="text-[9px] font-bold tracking-widest text-primary uppercase opacity-80"
+                      class="text-xs font-bold tracking-widest text-primary uppercase opacity-80"
                     >
                       {translateCollege(item.college)[0] || item.college || "No College"}
                     </span>
-                    <p class="text-[13px] leading-tight font-bold text-foreground">
+                    <p class="text-sm leading-tight font-bold text-foreground">
                       {translateProgram(item.program)[0] || item.program || "No Program"}
                     </p>
                   </div>
@@ -242,7 +243,7 @@
             {#if academicItems.length === 0}
               <div class="flex flex-col items-center justify-center py-6 pl-8 opacity-40">
                 <GraduationCap class="mb-2 h-8 w-8" />
-                <p class="text-[10px] font-bold tracking-widest uppercase">No academic records</p>
+                <p class="text-xs font-bold tracking-widest uppercase">No academic records</p>
               </div>
             {/if}
           </div>
@@ -308,7 +309,7 @@
               validate={validateTag}
               placeholder="Add tags…"
             />
-            <p class="text-[10px] text-muted-foreground italic">Press enter to add custom tags.</p>
+            <p class="text-xs text-muted-foreground italic">Press enter to add custom tags.</p>
           </div>
 
           <div class="space-y-2 pt-2">

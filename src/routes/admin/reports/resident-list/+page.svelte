@@ -331,7 +331,7 @@
             <TermFilter onSelect={() => loadData()} />
 
             <div class="space-y-3">
-              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                 >Report Categories</Label
               >
               <div class="grid gap-3 sm:grid-cols-2">
@@ -369,13 +369,13 @@
 
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Period Start</Label
                 >
                 <Input type="date" bind:value={periodStart} class="h-10 text-sm font-medium" />
               </div>
               <div class="space-y-2">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Period End</Label
                 >
                 <Input type="date" bind:value={periodEnd} class="h-10 text-sm font-medium" />
@@ -383,7 +383,7 @@
             </div>
 
             <div class="space-y-4">
-              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                 >Privacy</Label
               >
               <div class="flex flex-col gap-4">
@@ -496,7 +496,7 @@
             class="mt-4 grid animate-in gap-6 rounded-2xl border bg-muted/30 p-6 fade-in slide-in-from-top-2"
           >
             <div class="space-y-3">
-              <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                 >Destination</Label
               >
               <div class="grid gap-2">
@@ -533,7 +533,7 @@
 
             {#if sheetsTarget === "new"}
               <div class="animate-in space-y-2 fade-in slide-in-from-top-1">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >New Spreadsheet Title</Label
                 >
                 <Input
@@ -605,7 +605,7 @@
                 <span class="text-sm font-bold text-foreground/80"
                   >{issuedBy || "None selected"}</span
                 >
-                <span class="mt-0.5 font-mono text-[10px] text-muted-foreground"
+                <span class="mt-0.5 font-mono text-xs text-muted-foreground"
                   >{issuedByEmail || "No email"}</span
                 >
               </div>
@@ -628,14 +628,13 @@
               class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
             >
               <div class="flex flex-col">
-                <span
-                  class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+                <span class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
                   >Current Selection</span
                 >
                 <span class="text-xs font-bold text-foreground/80"
                   >{assessedBy || "None selected"}</span
                 >
-                <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
+                <span class="mt-0.5 font-mono text-xs text-muted-foreground"
                   >{assessedByEmail || "No email"}</span
                 >
               </div>
@@ -658,14 +657,13 @@
               class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
             >
               <div class="flex flex-col">
-                <span
-                  class="mb-1 text-[10px] leading-none font-bold text-muted-foreground uppercase"
+                <span class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
                   >Current Selection</span
                 >
                 <span class="text-xs font-bold text-foreground/80"
                   >{certifiedBy || "None selected"}</span
                 >
-                <span class="mt-0.5 font-mono text-[9px] text-muted-foreground"
+                <span class="mt-0.5 font-mono text-xs text-muted-foreground"
                   >{certifiedByEmail || "No email"}</span
                 >
               </div>

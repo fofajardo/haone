@@ -139,7 +139,7 @@
   <SubpageHeader title="View Transaction">
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}
-        <Badge class="border-transparent bg-primary px-2 py-0 text-[10px] font-black text-white"
+        <Badge class="border-transparent bg-primary px-2 py-0 text-xs font-black text-white"
           >AUDITED</Badge
         >
       {/if}
@@ -227,7 +227,7 @@
       <Card.Header class="border-b p-8 transition-colors {headerColors()}">
         <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div class="space-y-1">
-            <span class="text-[10px] font-bold tracking-widest text-primary uppercase"
+            <span class="text-xs font-bold tracking-widest text-primary uppercase"
               >{translateType(transaction.type, transactionTypes)}</span
             >
             <div class="flex items-center gap-3">
@@ -243,17 +243,17 @@
                 {:else if (transaction.mop || "").toUpperCase() === "GCASH" || (transaction.mop || "").toUpperCase() === "MAYA"}
                   <Smartphone class="h-3.5 w-3.5 opacity-60" />
                 {/if}
-                <span class="text-[10px]">{translateMop(transaction.mop)}</span>
+                <span class="text-xs">{translateMop(transaction.mop)}</span>
               </div>
             </div>
           </div>
           <div class="flex gap-10">
             <div class="flex flex-col items-end gap-1">
-              <Label class="text-[10px] font-bold text-muted-foreground uppercase">Date</Label>
+              <Label class="text-xs font-bold text-muted-foreground uppercase">Date</Label>
               <p class="text-sm font-bold text-foreground">{formatDate(transaction.date)}</p>
             </div>
             <div class="flex flex-col items-end gap-1">
-              <Label class="text-[10px] font-bold text-muted-foreground uppercase">Term</Label>
+              <Label class="text-xs font-bold text-muted-foreground uppercase">Term</Label>
               <p class="text-sm font-bold text-foreground">
                 {translatePeriod(transaction.period)}
               </p>
@@ -271,7 +271,7 @@
               class="group block space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
             >
               <Label
-                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
+                class="flex cursor-pointer items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
               >
                 <ShieldCheck class="h-3.5 w-3.5" /> Recorder
               </Label>
@@ -282,7 +282,7 @@
                 <p class="text-xs font-medium text-muted-foreground">
                   {transaction.creator}
                 </p>
-                <p class="mt-1 font-mono text-[10px] font-bold text-muted-foreground/80">
+                <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
                   {creatorStNo}
                 </p>
               </div>
@@ -293,7 +293,7 @@
               class="group block w-full cursor-pointer space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
             >
               <Label
-                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
+                class="flex cursor-pointer items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
               >
                 <ShieldCheck class="h-3.5 w-3.5" /> Recorder
               </Label>
@@ -309,7 +309,7 @@
           {:else}
             <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
               <Label
-                class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                class="flex items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase"
               >
                 <ShieldCheck class="h-3.5 w-3.5" /> Recorder
               </Label>
@@ -330,7 +330,7 @@
               class="group block space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
             >
               <Label
-                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
+                class="flex cursor-pointer items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
               >
                 <User class="h-3.5 w-3.5" /> Account
               </Label>
@@ -341,7 +341,7 @@
                 <p class="text-xs font-medium text-muted-foreground">
                   {transaction.account}
                 </p>
-                <p class="mt-1 font-mono text-[10px] font-bold text-muted-foreground/80">
+                <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
                   {transaction.stno}
                 </p>
               </div>
@@ -352,7 +352,7 @@
               class="group block w-full cursor-pointer space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
             >
               <Label
-                class="flex cursor-pointer items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
+                class="flex cursor-pointer items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase transition-colors group-hover:text-primary"
               >
                 <User class="h-3.5 w-3.5" /> Account
               </Label>
@@ -368,7 +368,7 @@
           {:else}
             <div class="space-y-4 rounded-xl border border-border bg-muted/20 p-5">
               <Label
-                class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                class="flex items-center gap-2 text-xs font-bold tracking-widest text-muted-foreground uppercase"
               >
                 <User class="h-3.5 w-3.5" /> Account
               </Label>
@@ -388,7 +388,7 @@
         <div class="grid gap-12 md:grid-cols-2">
           <div class="space-y-6">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               <ListFilterIcon class="h-3 w-3" /> Particulars
             </Label>
@@ -410,13 +410,13 @@
 
           <div class="space-y-6">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               <Hash class="h-3 w-3" /> Reference Identifiers
             </Label>
             <div class="grid grid-cols-1 gap-6">
               <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold text-muted-foreground uppercase"
+                <Label class="text-xs font-bold text-muted-foreground uppercase"
                   >Series Number</Label
                 >
                 <p class="font-mono text-sm leading-none font-bold text-primary">
@@ -426,19 +426,19 @@
               {#if mopInfo}
                 <div class="grid grid-cols-2 gap-4 border-t border-border pt-4">
                   <div class="space-y-1.5">
-                    <Label class="text-[10px] font-bold text-muted-foreground uppercase"
+                    <Label class="text-xs font-bold text-muted-foreground uppercase"
                       >Reference Number</Label
                     >
-                    <p class="font-mono text-[11px] leading-none font-bold text-foreground/80">
+                    <p class="font-mono text-sm leading-none font-bold text-foreground/80">
                       {mopInfo.reference}
                     </p>
                   </div>
                   {#if mopInfo.invoice}
                     <div class="space-y-1.5">
-                      <Label class="text-[10px] font-bold text-muted-foreground uppercase"
+                      <Label class="text-xs font-bold text-muted-foreground uppercase"
                         >InstaPay Invoice Number</Label
                       >
-                      <p class="font-mono text-[11px] leading-none font-bold text-foreground/80">
+                      <p class="font-mono text-sm leading-none font-bold text-foreground/80">
                         {mopInfo.invoice}
                       </p>
                     </div>
@@ -456,7 +456,7 @@
               {#if transaction.notes?.trim()}
                 <div class="space-y-3">
                   <Label
-                    class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                    class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
                   >
                     <Info class="h-3 w-3" /> Public Remarks
                   </Label>
@@ -470,7 +470,7 @@
               {#if transaction.notesPrivate?.trim()}
                 <div class="space-y-3">
                   <Label
-                    class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-primary uppercase"
+                    class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-primary uppercase"
                   >
                     <Lock class="h-3 w-3" /> Private Notes
                   </Label>

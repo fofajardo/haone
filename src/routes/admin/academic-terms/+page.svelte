@@ -272,7 +272,7 @@
                   {#if activeTermCode === term.value}
                     <Badge
                       variant="outline"
-                      class="gap-1 border-emerald-500/20 bg-emerald-500/10 text-[10px] font-bold text-emerald-600 uppercase"
+                      class="gap-1 border-emerald-500/20 bg-emerald-500/10 text-xs font-bold text-emerald-600 uppercase"
                     >
                       <CircleCheck class="h-3 w-3" />
                       Active
@@ -286,7 +286,7 @@
                   <Button
                     variant="ghost"
                     size="sm"
-                    class="h-8 gap-2 text-[10px] font-bold tracking-wider uppercase"
+                    class="h-8 gap-2 text-xs font-bold tracking-wider uppercase"
                     onclick={() => (confirmActiveCode = term.value)}
                     disabled={isSaving}
                   >
@@ -414,7 +414,7 @@
       <div class="h-px bg-border/50"></div>
 
       <div class="space-y-4">
-        <Label class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+        <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
           >Collection Periods (Times per Term)</Label
         >
         <div class="grid grid-cols-2 gap-4">

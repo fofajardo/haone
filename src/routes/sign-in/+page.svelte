@@ -177,7 +177,7 @@
   >
     <div class="h-px w-8 bg-border"></div>
     <div class="flex cursor-default items-center gap-2">
-      <span class="text-[9px] font-bold tracking-widest text-muted-foreground uppercase"
+      <span class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
         >Powered by</span
       >
       <div class="flex items-center gap-1.5">

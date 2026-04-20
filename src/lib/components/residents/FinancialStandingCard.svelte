@@ -20,13 +20,13 @@
     <div class="space-y-3">
       <div class="pb-1">
         <Label
-          class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+          class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
         >
           <Droplets class="h-3 w-3" /> Water Fee
         </Label>
       </div>
       <div
-        class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-muted-foreground uppercase"
+        class="grid grid-cols-4 gap-2 text-center text-xs font-bold text-muted-foreground uppercase"
       >
         <div class="flex flex-col gap-0.5">
           <span>Base</span>
@@ -53,13 +53,13 @@
     <div class="space-y-3">
       <div class="pb-1">
         <Label
-          class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+          class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
         >
           <Users class="h-3 w-3" /> Association Fee
         </Label>
       </div>
       <div
-        class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold text-muted-foreground uppercase"
+        class="grid grid-cols-4 gap-2 text-center text-xs font-bold text-muted-foreground uppercase"
       >
         <div class="flex flex-col gap-0.5">
           <span>Base</span>
@@ -84,7 +84,7 @@
 
     <div class="flex flex-col gap-1 pt-2">
       <Label
-        class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+        class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
       >
         <Wallet class="h-3 w-3" /> Total Amount Due
       </Label>

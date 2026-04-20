@@ -219,14 +219,14 @@
           {#if account.bal < 0}
             <Badge
               variant="outline"
-              class="border-primary/20 bg-primary/5 text-[10px] font-black tracking-tighter text-primary uppercase"
+              class="border-primary/20 bg-primary/5 text-xs font-black tracking-tighter text-primary uppercase"
               >Overpaid</Badge
             >
           {/if}
           {#if account.bal === 0 && (account.waterBal < 0 || account.assocBal < 0)}
             <Badge
               variant="outline"
-              class="border-amber-200 bg-amber-100 text-[10px] font-black tracking-tighter text-amber-700 uppercase"
+              class="border-amber-200 bg-amber-100 text-xs font-black tracking-tighter text-amber-700 uppercase"
               >Potential Misassignment</Badge
             >
           {/if}
@@ -262,7 +262,7 @@
       </div>
 
       <div class="space-y-1 lg:col-span-9">
-        <Label class="text-[10px] font-bold text-muted-foreground uppercase">Actions</Label>
+        <Label class="text-xs font-bold text-muted-foreground uppercase">Actions</Label>
         <div class="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
@@ -325,7 +325,7 @@
         <Card.Content class="flex-1 space-y-4">
           <div class="space-y-1">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
               ><Mail class="h-3 w-3" /> Email Address</Label
             >
             <div class="flex items-center gap-2">
@@ -341,7 +341,7 @@
           </div>
           <div class="space-y-1">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
               ><IdCard class="h-3 w-3" /> Student Number</Label
             >
             <p class="text-sm font-semibold">{account.stno}</p>
@@ -349,7 +349,7 @@
 
           <div class="space-y-1">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
               ><Clock class="h-3 w-3" /> Terms Active</Label
             >
             <div class="text-sm font-semibold">
@@ -360,7 +360,7 @@
 
           <div class="space-y-4">
             <Label
-              class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+              class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
             >
               <GraduationCap class="h-3 w-3" /> Academic Program
             </Label>
@@ -376,10 +376,10 @@
                   </div>
                   <div class="flex flex-col gap-0.5">
                     <span
-                      class="text-[9px] font-bold tracking-widest text-primary uppercase opacity-80"
+                      class="text-xs font-bold tracking-widest text-primary uppercase opacity-80"
                       >{q.college}</span
                     >
-                    <p class="text-[13px] leading-tight font-bold text-foreground">
+                    <p class="text-sm leading-tight font-bold text-foreground">
                       {q.program}
                     </p>
                   </div>
@@ -391,14 +391,14 @@
           <div class="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
             <div class="space-y-1">
               <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 ><MapPin class="h-3 w-3" /> Room</Label
               >
               <div class="text-sm font-semibold">{account.room}</div>
             </div>
             <div class="space-y-1">
               <Label
-                class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 ><BedIcon class="h-3 w-3" /> Bed</Label
               >
               <p class="text-sm font-semibold">{account.bed}</p>
@@ -440,18 +440,18 @@
             <div class="space-y-3">
               <div class="flex flex-col gap-1">
                 <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >
                   <ClipboardCheck class="h-3 w-3" /> Verification Status
                 </Label>
                 <Badge
-                  class="w-fit border-transparent bg-primary px-3 py-1 text-[10px] font-black text-primary-foreground"
+                  class="w-fit border-transparent bg-primary px-3 py-1 text-xs font-black text-primary-foreground"
                   >VERIFIED</Badge
                 >
               </div>
               <div class="flex flex-col gap-1 pt-2">
                 <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >
                   <Calendar class="h-3 w-3" /> Issued Date
                 </Label>
@@ -459,7 +459,7 @@
               </div>
               <div class="flex flex-col gap-1 pt-2">
                 <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >
                   <Hash class="h-3 w-3" /> Reference Number
                 </Label>
@@ -472,12 +472,12 @@
             <div class="space-y-4">
               <div class="flex flex-col gap-1">
                 <Label
-                  class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+                  class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
                 >
                   <ClipboardCheck class="h-3 w-3" /> Verification Status
                 </Label>
                 <Badge
-                  class="w-fit border-transparent bg-destructive px-3 py-1 text-[10px] font-black text-white"
+                  class="w-fit border-transparent bg-destructive px-3 py-1 text-xs font-black text-white"
                   >NOT CLEARED</Badge
                 >
               </div>
