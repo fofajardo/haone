@@ -4,17 +4,35 @@
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { translatePeriod, translateMop, parseRef } from "$lib/receipt-utils";
+  import {
+    translatePeriod,
+    translateMop,
+    parseRef,
+    formatAmount,
+    formatAccounting
+  } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Textarea } from "$lib/components/ui/textarea";
   import * as NativeSelect from "$lib/components/ui/native-select";
-  import { LoaderCircle, Calendar, Users, Wallet, StickyNote } from "lucide-svelte";
+  import {
+    LoaderCircle,
+    Calendar,
+    Users,
+    Wallet,
+    StickyNote,
+    Eye,
+    ArrowLeftToLine
+  } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
+  import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import * as Tooltip from "$lib/components/ui/tooltip";
+  import { Badge } from "$lib/components/ui/badge";
   import { mapRowToResident } from "$lib/resident-logic";
   import type { ResidentRecord, JournalRecord } from "$lib/schemas";
   import { JOURNAL_COL as JOR } from "$lib/schemas";
@@ -35,6 +53,8 @@
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let selectedResident = $state<ResidentRecord | null>(null);
+  let isStandingOpen = $state(false);
 
   // Form State
   let formData = $state({
@@ -57,6 +77,39 @@
     instapayInvoice: "",
     prDateIssued: "",
     prRefNo: ""
+  });
+
+  const isCollection = $derived.by(() => {
+    const type = formData.type;
+    return (
+      type?.toUpperCase().includes("COLLECTION") || type?.toUpperCase().startsWith("PMT_") || false
+    );
+  });
+
+  const waterLimit = $derived.by(() => {
+    if (!isCollection || !selectedResident) return 0;
+    const base = selectedResident.waterBal;
+    const original = mode === "edit" && initialData ? initialData.water : 0;
+    return base + original;
+  });
+
+  const assocLimit = $derived.by(() => {
+    if (!isCollection || !selectedResident) return 0;
+    const base = selectedResident.assocBal;
+    const original = mode === "edit" && initialData ? initialData.assoc : 0;
+    return base + original;
+  });
+
+  const currentWaterBal = $derived.by(() => {
+    if (!isCollection || !selectedResident) return selectedResident?.waterBal || 0;
+    const fee = Number(formData.waterFee) || 0;
+    return waterLimit - fee;
+  });
+
+  const currentAssocBal = $derived.by(() => {
+    if (!isCollection || !selectedResident) return selectedResident?.assocBal || 0;
+    const fee = Number(formData.assocFee) || 0;
+    return assocLimit - fee;
   });
 
   // Display initial creator if set (for "add" mode mostly)
@@ -172,6 +225,9 @@
         };
         creatorSearch = initialData.creator;
         accountSearch = initialData.account;
+        selectedResident =
+          accounts.find((a) => a.email.toLowerCase() === initialData!.account.toLowerCase()) ||
+          null;
 
         // Resolve creator student number
         const creatorAcc = accounts.find(
@@ -213,12 +269,38 @@
     formData.accountName = a.name;
     formData.accountStNo = a.stno;
     accountSearch = a.name;
+    selectedResident = a;
   }
 
   async function handleSubmit() {
     if (!formData.creatorEmail || !formData.accountEmail) {
-      error = "Please select both a Creator and an Account.";
+      error = "Please select both a Recorder and an Account.";
       return;
+    }
+
+    const water = parseFloat(formData.waterFee) || 0;
+    const assoc = parseFloat(formData.assocFee) || 0;
+    const misc = parseFloat(formData.miscFee) || 0;
+
+    if (water === 0 && assoc === 0 && misc === 0) {
+      error = "Transaction must have at least one non-zero amount.";
+      return;
+    }
+
+    if (misc > 0 && !formData.notes.trim()) {
+      error = "Public remarks are required for miscellaneous payments.";
+      return;
+    }
+
+    if (isCollection) {
+      if (water > waterLimit + 0.01) {
+        error = `Water payment exceeds remaining balance limit (${formatAmount(waterLimit)}).`;
+        return;
+      }
+      if (assoc > assocLimit + 0.01) {
+        error = `Association payment exceeds remaining balance limit (${formatAmount(assocLimit)}).`;
+        return;
+      }
     }
 
     error = null;
@@ -408,6 +490,33 @@
                       >
                     {/if}
                   </div>
+
+                  {#if formData.type === "COLLECTION" && selectedResident && selectedResident.email !== "_funds"}
+                    <Dialog.Root bind:open={isStandingOpen}>
+                      <Dialog.Trigger>
+                        {#snippet child({ props })}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            class="h-8 w-8 text-muted-foreground transition-colors hover:text-primary"
+                            {...props}
+                            title="View Financial Standing"
+                          >
+                            <Eye class="h-4 w-4" />
+                          </Button>
+                        {/snippet}
+                      </Dialog.Trigger>
+                      <Dialog.Content class="sm:max-w-[425px]">
+                        <Dialog.Header>
+                          <Dialog.Title>Financial Standing</Dialog.Title>
+                          <Dialog.Description>
+                            Current account balances for {selectedResident.name}.
+                          </Dialog.Description>
+                        </Dialog.Header>
+                        <FinancialStandingCard account={selectedResident} hideCard={true} />
+                      </Dialog.Content>
+                    </Dialog.Root>
+                  {/if}
                 </div>
               </div>
             </div>
@@ -420,29 +529,136 @@
             >
               <Wallet class="h-3.5 w-3.5" /> Payment Details
             </Label>
-            <div class="grid gap-6 md:grid-cols-3">
-              <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
-                  >Water Fee</Label
-                >
-                <Input
-                  type="number"
-                  step="0.01"
-                  bind:value={formData.waterFee}
-                  class="text-right font-mono"
-                />
+            <div class="space-y-4">
+              <!-- Water Fee Row -->
+              <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
+                <div class="space-y-1.5">
+                  <Label
+                    class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                    >Water Fee</Label
+                  >
+                  <div class="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      bind:value={formData.waterFee}
+                      max={waterLimit}
+                      disabled={!formData.accountEmail || isSubmitting}
+                      class="text-right font-mono"
+                    />
+                    {#if isCollection && selectedResident}
+                      <Tooltip.Root>
+                        <Tooltip.Trigger>
+                          {#snippet child({ props })}
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              class="h-9 w-9 shrink-0"
+                              {...props}
+                              onclick={() => (formData.waterFee = waterLimit.toString())}
+                              disabled={waterLimit <= 0 || isSubmitting}
+                            >
+                              <ArrowLeftToLine class="h-4 w-4" />
+                            </Button>
+                          {/snippet}
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          <p class="text-[10px] font-bold">Set to Maximum</p>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    {/if}
+                  </div>
+                </div>
+                {#if isCollection && selectedResident}
+                  <div class="space-y-1.5">
+                    <Label
+                      class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                      >Remaining Water Balance</Label
+                    >
+                    <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
+                      {#if currentWaterBal < 0}
+                        <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
+                      {:else}
+                        <span></span>
+                      {/if}
+                      <div
+                        class="font-mono text-sm font-bold {currentWaterBal > 0
+                          ? 'text-destructive'
+                          : 'text-primary'}"
+                      >
+                        {formatAccounting(currentWaterBal)}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
               </div>
-              <div class="space-y-1.5">
-                <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
-                  >Association Fee</Label
-                >
-                <Input
-                  type="number"
-                  step="0.01"
-                  bind:value={formData.assocFee}
-                  class="text-right font-mono"
-                />
+
+              <!-- Association Fee Row -->
+              <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
+                <div class="space-y-1.5">
+                  <Label
+                    class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                    >Association Fee</Label
+                  >
+                  <div class="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      bind:value={formData.assocFee}
+                      max={assocLimit}
+                      disabled={!formData.accountEmail || isSubmitting}
+                      class="text-right font-mono"
+                    />
+                    {#if isCollection && selectedResident}
+                      <Tooltip.Root>
+                        <Tooltip.Trigger>
+                          {#snippet child({ props })}
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              class="h-9 w-9 shrink-0"
+                              {...props}
+                              onclick={() => (formData.assocFee = assocLimit.toString())}
+                              disabled={assocLimit <= 0 || isSubmitting}
+                            >
+                              <ArrowLeftToLine class="h-4 w-4" />
+                            </Button>
+                          {/snippet}
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          <p class="text-[10px] font-bold">Set to Maximum</p>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    {/if}
+                  </div>
+                </div>
+                {#if isCollection && selectedResident}
+                  <div class="space-y-1.5">
+                    <Label
+                      class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
+                      >Remaining Association Balance</Label
+                    >
+                    <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
+                      {#if currentAssocBal < 0}
+                        <Badge variant="destructive" class="px-1.5 py-0 text-[8px] font-black">
+                          OVERPAID
+                        </Badge>
+                      {:else}
+                        <span></span>
+                      {/if}
+                      <div
+                        class="font-mono text-sm font-bold {currentAssocBal > 0
+                          ? 'text-destructive'
+                          : 'text-primary'}"
+                      >
+                        {formatAccounting(currentAssocBal)}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
               </div>
+
+              <!-- Misc Fee Row -->
               <div class="space-y-1.5">
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >Misc</Label
@@ -451,18 +667,20 @@
                   type="number"
                   step="0.01"
                   bind:value={formData.miscFee}
+                  disabled={!formData.accountEmail || isSubmitting}
                   class="text-right font-mono"
                 />
               </div>
             </div>
 
-            <div class="grid gap-6 pt-2 md:grid-cols-2">
+            <div class="grid gap-6 pt-2">
               <div class="space-y-1.5">
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >Payment Processor</Label
                 >
                 <NativeSelect.Root
                   bind:value={formData.mop}
+                  disabled={!formData.accountEmail || isSubmitting}
                   class="h-10 w-full text-xs font-semibold"
                 >
                   {#each mopTypes as mop}
@@ -477,13 +695,21 @@
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >Reference Number</Label
                 >
-                <Input bind:value={formData.mopRefNo} placeholder="e.g., Transaction ID" />
+                <Input
+                  bind:value={formData.mopRefNo}
+                  disabled={!formData.accountEmail || isSubmitting}
+                  placeholder="e.g., Transaction ID"
+                />
               </div>
               <div class="space-y-1.5">
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >InstaPay Invoice Number</Label
                 >
-                <Input bind:value={formData.instapayInvoice} placeholder="Optional" />
+                <Input
+                  bind:value={formData.instapayInvoice}
+                  disabled={!formData.accountEmail || isSubmitting}
+                  placeholder="Optional"
+                />
               </div>
             </div>
           </div>
@@ -521,7 +747,11 @@
 
           <div class="flex justify-end gap-3 border-t pt-4">
             <Button variant="outline" onclick={onCancel} disabled={isSubmitting}>Cancel</Button>
-            <Button onclick={handleSubmit} disabled={isSubmitting} class="min-w-[120px]">
+            <Button
+              onclick={handleSubmit}
+              disabled={!formData.accountEmail || isSubmitting}
+              class="min-w-[120px]"
+            >
               {#if isSubmitting}
                 <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving...
               {:else}
