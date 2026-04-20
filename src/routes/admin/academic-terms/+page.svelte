@@ -12,7 +12,7 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { Combobox } from "$lib/components/ui/combobox";
   import {
     Plus,
     GraduationCap,
@@ -346,11 +346,7 @@
 
       <div class="space-y-2">
         <Label>Term Type</Label>
-        <NativeSelect.Root bind:value={newTerm} class="w-full">
-          {#each termOptions as opt}
-            <NativeSelect.Option value={opt.value}>{opt.label}</NativeSelect.Option>
-          {/each}
-        </NativeSelect.Root>
+        <Combobox bind:value={newTerm} options={termOptions} class="w-full" />
       </div>
     </div>
 

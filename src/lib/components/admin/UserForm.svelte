@@ -4,7 +4,6 @@
   import { Label } from "$lib/components/ui/label";
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Card from "$lib/components/ui/card";
-  import * as NativeSelect from "$lib/components/ui/native-select";
   import * as Dialog from "$lib/components/ui/dialog";
   import {
     LoaderCircle,

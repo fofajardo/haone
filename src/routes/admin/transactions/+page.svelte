@@ -2,11 +2,10 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { translateMop, parseDateWeight } from "$lib/receipt-utils";
-  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { Combobox } from "$lib/components/ui/combobox";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -108,6 +107,9 @@
 
   onMount(loadData);
 
+  const transactionOptions = $derived([{ value: "ALL", label: "All Types" }, ...transactionTypes]);
+  const mopOptions = $derived([{ value: "ALL", label: "All Methods" }, ...mopTypes]);
+
   const filteredJournal = $derived.by(() => {
     return journal
       .filter((r) => {
@@ -172,30 +174,14 @@
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Transaction Type</Label
         >
-        <NativeSelect.Root
-          bind:value={tableSync.filters!.type}
-          class="h-10 w-full text-xs font-semibold"
-        >
-          <NativeSelect.Option value="ALL">All Types</NativeSelect.Option>
-          {#each transactionTypes as type}
-            <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
-          {/each}
-        </NativeSelect.Root>
+        <Combobox bind:value={tableSync.filters!.type} options={transactionOptions} class="h-9" />
       </div>
 
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase"
           >Payment Processor</Label
         >
-        <NativeSelect.Root
-          bind:value={tableSync.filters!.mop}
-          class="h-10 w-full text-xs font-semibold"
-        >
-          <NativeSelect.Option value="ALL">All Methods</NativeSelect.Option>
-          {#each mopTypes as mop}
-            <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>
-          {/each}
-        </NativeSelect.Root>
+        <Combobox bind:value={tableSync.filters!.mop} options={mopOptions} class="h-9" />
       </div>
 
       <div class="flex items-end lg:col-span-1">

@@ -16,7 +16,8 @@
     searchPlaceholder = "Search item...",
     emptyMessage = "No item found.",
     disabled = false,
-    class: className = ""
+    class: className = "",
+    onSelect
   }: {
     value: string;
     options: { value: string; label: string }[];
@@ -25,6 +26,7 @@
     emptyMessage?: string;
     disabled?: boolean;
     class?: string;
+    onSelect?: (value: string) => void;
   } = $props();
 
   let open = $state(false);
@@ -48,6 +50,7 @@
   function handleSelect(val: string) {
     value = val;
     open = false;
+    onSelect?.(val);
     if (isDesktop) {
       tick().then(() => triggerRef?.focus());
     }

@@ -7,7 +7,7 @@
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
-  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { Combobox } from "$lib/components/ui/combobox";
   import { Label } from "$lib/components/ui/label";
   import { RefreshCcw, Users, Search, FunnelX } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -161,32 +161,38 @@
 
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">College</Label>
-        <NativeSelect.Root bind:value={tableSync.filters!.college}>
-          <NativeSelect.Option value="ALL">All Colleges</NativeSelect.Option>
-          {#each collegeOptions as opt}
-            <NativeSelect.Option value={opt}>{opt}</NativeSelect.Option>
-          {/each}
-        </NativeSelect.Root>
+        <Combobox
+          bind:value={tableSync.filters!.college}
+          options={[
+            { value: "ALL", label: "All Colleges" },
+            ...collegeOptions.map((c) => ({ value: c, label: c }))
+          ]}
+          class="h-9"
+        />
       </div>
 
       <div class="space-y-1 lg:col-span-3">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Program</Label>
-        <NativeSelect.Root bind:value={tableSync.filters!.program}>
-          <NativeSelect.Option value="ALL">All Programs</NativeSelect.Option>
-          {#each programOptions as opt}
-            <NativeSelect.Option value={opt}>{opt}</NativeSelect.Option>
-          {/each}
-        </NativeSelect.Root>
+        <Combobox
+          bind:value={tableSync.filters!.program}
+          options={[
+            { value: "ALL", label: "All Programs" },
+            ...programOptions.map((p) => ({ value: p, label: p }))
+          ]}
+          class="h-9"
+        />
       </div>
 
       <div class="space-y-1 lg:col-span-2">
         <Label class="text-[10px] font-bold text-muted-foreground uppercase">Tags</Label>
-        <NativeSelect.Root bind:value={tableSync.filters!.tags}>
-          <NativeSelect.Option value="ALL">All Tags</NativeSelect.Option>
-          {#each tagsOptions as opt}
-            <NativeSelect.Option value={opt}>{opt}</NativeSelect.Option>
-          {/each}
-        </NativeSelect.Root>
+        <Combobox
+          bind:value={tableSync.filters!.tags}
+          options={[
+            { value: "ALL", label: "All Tags" },
+            ...tagsOptions.map((t) => ({ value: t, label: t }))
+          ]}
+          class="h-9"
+        />
       </div>
 
       <div class="flex items-end lg:col-span-1">

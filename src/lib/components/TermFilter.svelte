@@ -4,7 +4,7 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { translatePeriod, sortPeriods } from "$lib/receipt-utils";
-  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { Combobox } from "$lib/components/ui/combobox";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";
 
@@ -23,6 +23,13 @@
   }
 
   let terms = $state<TermOption[]>([]);
+
+  const termOptions = $derived(
+    terms.map((t) => ({
+      value: t.value,
+      label: translatePeriod(t.value)
+    }))
+  );
   let isLoading = $state(false);
 
   async function loadTerms() {
@@ -87,15 +94,12 @@
     >Academic Term</Label
   >
   {#if terms.length > 0}
-    <NativeSelect.Root
+    <Combobox
       value={activeTerm}
-      class="h-9 w-full text-xs font-semibold"
-      onchange={(e) => handleChange(e.currentTarget.value)}
-    >
-      {#each terms as term}
-        <NativeSelect.Option value={term.value}>{translatePeriod(term.value)}</NativeSelect.Option>
-      {/each}
-    </NativeSelect.Root>
+      options={termOptions}
+      class="h-9 w-full"
+      onSelect={(val) => handleChange(val)}
+    />
   {:else}
     <Input
       value={activeTerm}

@@ -14,7 +14,8 @@
   import { pluralize } from "$lib/receipt-utils";
   import { goto } from "$app/navigation";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { Combobox } from "$lib/components/ui/combobox";
+
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -107,6 +108,19 @@
         .sort()
     )
   ]);
+
+  const roomOptions = $derived(
+    rooms.map((r) => ({ value: r, label: r === "ALL" ? "All Rooms" : r }))
+  );
+
+  const statusOptions = [
+    { value: "ALL", label: "All Statuses" },
+    { value: "FULLY_PAID", label: "Fully Paid" },
+    { value: "HALF_FULLY_PAID", label: "Half-Fully Paid" },
+    { value: "PARTIALLY_PAID", label: "Partially Paid" },
+    { value: "NO_PAYMENT", label: "No Payment" },
+    { value: "CLEARED", label: "Cleared" }
+  ];
 
   function resetFilters() {
     tableSync.reset();
@@ -243,32 +257,13 @@
 
         <div class="space-y-1 lg:col-span-2">
           <Label class="text-[10px] font-bold text-muted-foreground uppercase">Room</Label>
-          <NativeSelect.Root
-            bind:value={tableSync.filters!.room}
-            class="h-10 w-full text-xs font-semibold"
-          >
-            {#each rooms as room}
-              <NativeSelect.Option value={room}
-                >{room === "ALL" ? "All Rooms" : room}</NativeSelect.Option
-              >
-            {/each}
-          </NativeSelect.Root>
+          <Combobox bind:value={tableSync.filters!.room} options={roomOptions} class="h-9" />
         </div>
 
         <div class="space-y-1 lg:col-span-2">
           <Label class="text-[10px] font-bold text-muted-foreground uppercase">Payment Status</Label
           >
-          <NativeSelect.Root
-            bind:value={tableSync.filters!.status}
-            class="h-10 w-full text-xs font-semibold"
-          >
-            <NativeSelect.Option value="ALL">All Statuses</NativeSelect.Option>
-            <NativeSelect.Option value="FULLY_PAID">Fully Paid</NativeSelect.Option>
-            <NativeSelect.Option value="HALF_FULLY_PAID">Half-Fully Paid</NativeSelect.Option>
-            <NativeSelect.Option value="PARTIALLY_PAID">Partially Paid</NativeSelect.Option>
-            <NativeSelect.Option value="NO_PAYMENT">No Payment</NativeSelect.Option>
-            <NativeSelect.Option value="CLEARED">Cleared</NativeSelect.Option>
-          </NativeSelect.Root>
+          <Combobox bind:value={tableSync.filters!.status} options={statusOptions} class="h-9" />
         </div>
 
         <div class="flex items-end lg:col-span-1">

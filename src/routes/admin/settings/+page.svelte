@@ -2,7 +2,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";
-  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { Combobox } from "$lib/components/ui/combobox";
   import { Switch } from "$lib/components/ui/switch";
   import { Input } from "$lib/components/ui/input";
   import { Monitor, Sun, Moon, CircleCheckBig, TriangleAlert } from "lucide-svelte";
@@ -146,13 +146,14 @@
             <div class="space-y-4">
               <div class="space-y-2">
                 <Label for="branding">Active Profile</Label>
-                <NativeSelect.Root bind:value={brandingState.selectedKey} class="h-10 w-full">
-                  {#each brandingProfiles as key}
-                    <NativeSelect.Option value={key}
-                      >{(branding as any)[key].name}</NativeSelect.Option
-                    >
-                  {/each}
-                </NativeSelect.Root>
+                <Combobox
+                  bind:value={brandingState.selectedKey}
+                  options={brandingProfiles.map((key) => ({
+                    value: key,
+                    label: (branding as any)[key].name
+                  }))}
+                  class="h-10 w-full"
+                />
               </div>
             </div>
           </Card.Content>

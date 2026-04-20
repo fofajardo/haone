@@ -17,7 +17,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Textarea } from "$lib/components/ui/textarea";
-  import * as NativeSelect from "$lib/components/ui/native-select";
+  import { Combobox } from "$lib/components/ui/combobox";
   import {
     LoaderCircle,
     Calendar,
@@ -53,6 +53,7 @@
   let transactionTypes = $state<{ value: string; val: string; label: string }[]>([]);
   let academicTerms = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
+  const mopOptions = $derived(mopTypes);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let selectedResident = $state<ResidentRecord | null>(null);
@@ -221,7 +222,7 @@
 
       academicTerms = sortPeriods(termValues).map((val) => ({
         value: val,
-        label: val
+        label: translatePeriod(val)
       }));
 
       mopTypes = [
@@ -465,30 +466,18 @@
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >Academic Term</Label
                 >
-                <NativeSelect.Root
+                <Combobox
                   bind:value={formData.period}
-                  class="h-10 w-full text-xs font-semibold"
-                >
-                  {#each academicTerms as term}
-                    <NativeSelect.Option value={term.value}
-                      >{translatePeriod(term.value)}</NativeSelect.Option
-                    >
-                  {/each}
-                </NativeSelect.Root>
+                  options={academicTerms}
+                  class="h-10 w-full"
+                />
               </div>
             </div>
             <div class="space-y-2">
               <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                 >Type</Label
               >
-              <NativeSelect.Root
-                bind:value={formData.type}
-                class="h-10 w-full text-xs font-semibold"
-              >
-                {#each transactionTypes as type}
-                  <NativeSelect.Option value={type.value}>{type.label}</NativeSelect.Option>
-                {/each}
-              </NativeSelect.Root>
+              <Combobox bind:value={formData.type} options={transactionTypes} class="h-10 w-full" />
             </div>
           </div>
 
@@ -757,15 +746,12 @@
                 <Label class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase"
                   >Payment Processor</Label
                 >
-                <NativeSelect.Root
+                <Combobox
                   bind:value={formData.mop}
+                  options={mopOptions}
                   disabled={!formData.accountEmail || isSubmitting}
-                  class="h-10 w-full text-xs font-semibold"
-                >
-                  {#each mopTypes as mop}
-                    <NativeSelect.Option value={mop.value}>{mop.label}</NativeSelect.Option>
-                  {/each}
-                </NativeSelect.Root>
+                  class="h-10 w-full"
+                />
               </div>
             </div>
 
