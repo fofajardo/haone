@@ -9,7 +9,7 @@
   import type { JournalRecord } from "$lib/schemas";
   import TransactionForm from "$lib/components/TransactionForm.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
-  import { AlertCircle } from "lucide-svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
 
   const id = $derived(page.params.id);
 
@@ -73,20 +73,9 @@
 </script>
 
 {#if isLoading}
-  <div class="space-y-6">
-    <LoadingView text="Loading transaction details…" />
-  </div>
+  <LoadingView text="Loading transaction details…" />
 {:else if error}
-  <div class="space-y-6">
-    <div class="mx-auto max-w-3xl">
-      <div
-        class="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-4 font-medium text-foreground"
-      >
-        <AlertCircle class="mt-0.5 h-4 w-4 text-muted-foreground" />
-        <span class="text-sm">{error}</span>
-      </div>
-    </div>
-  </div>
+  <ErrorView {error} />
 {:else}
   <TransactionForm
     mode="edit"
