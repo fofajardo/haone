@@ -58,7 +58,7 @@
 
         const userInfo = await auth.fetchUserInfo(accessToken);
 
-        const spreadsheetId = (branding.default as any).spreadsheetId;
+        const spreadsheetId = uiSettings.accountingWorkbookId;
         await testAccess(spreadsheetId, accessToken);
         auth.setSession(accessToken, userInfo, rememberMe);
 

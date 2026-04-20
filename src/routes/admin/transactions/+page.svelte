@@ -35,13 +35,13 @@
   import { mapRowToJournal } from "$lib/resident-logic";
 
   async function loadData(forceRefresh = false) {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
 
     try {
       const rows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "journal_general!A:W",
         forceRefresh
       );
@@ -51,7 +51,7 @@
       }
 
       const constRows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "constants!A:C",
         forceRefresh
       );

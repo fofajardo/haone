@@ -111,10 +111,10 @@
   );
 
   async function loadData() {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:Z");
+      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:Z");
       const currentSem = uiSettings.currentSemester.trim();
 
       const mapped = rows
@@ -126,7 +126,7 @@
 
       // Auto-Period
       const journalRows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "journal_general!A:H"
       );
       const currentSemJournal = journalRows

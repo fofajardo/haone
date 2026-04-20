@@ -9,6 +9,7 @@
   import branding from "$lib/branding.json";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
+  import { PUBLIC_GS_AW_ID } from "$env/static/public";
   import { setMode, resetMode, userPrefersMode } from "mode-watcher";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
 
@@ -153,12 +154,12 @@
               </NativeSelect.Root>
             </div>
             <div class="space-y-2">
-              <Label>Google Spreadsheet ID</Label>
+              <Label>Accounting Workbook ID</Label>
               <Input
-                placeholder="Enter Spreadsheet ID (from URL)"
-                bind:value={brandingState.spreadsheetId}
+                placeholder="Enter Accounting Workbook ID (GS_AW_ID)"
+                bind:value={uiSettings.accountingWorkbookId}
               />
-              {#if brandingState.spreadsheetId && brandingState.spreadsheetId !== (branding as any)[brandingState.selectedKey].spreadsheetId}
+              {#if uiSettings.accountingWorkbookId && uiSettings.accountingWorkbookId !== PUBLIC_GS_AW_ID}
                 <div
                   class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-[10px] text-amber-600"
                 >

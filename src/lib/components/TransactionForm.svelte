@@ -71,12 +71,12 @@
   let accountSearch = $state("");
 
   async function loadData() {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
       const [accRows, constRows] = await Promise.all([
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD"),
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C")
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:AD"),
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C")
       ]);
 
       const rawAccounts = accRows

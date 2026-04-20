@@ -49,15 +49,15 @@
   });
 
   async function loadData(forceRefresh = false) {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
     selectedIndices = new Set();
 
     try {
       const [rows, constRows] = await Promise.all([
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W", forceRefresh),
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C", forceRefresh)
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:W", forceRefresh),
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
       ]);
 
       transactionTypes = constRows
@@ -145,7 +145,7 @@
             },
             { range: `journal_general!V${record.ledgerIndex}`, values: [[url]] }
           ];
-          await batchUpdateValues(brandingState.spreadsheetId!, updates);
+          await batchUpdateValues(uiSettings.accountingWorkbookId!, updates);
           invalidateCache();
         }
       });

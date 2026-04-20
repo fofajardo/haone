@@ -10,7 +10,7 @@ export const LS_KEYS = {
   UI_FONT: "halsk.ui_font",
   ACC_REDUCED_MOTION: "halsk.acc.reduced_motion",
   ACC_SPACIOUS_LAYOUT: "halsk.acc.spacious_layout",
-  SPREADSHEET_ID: "halsk.branding.spreadsheet_id",
+  GS_AW_ID: "halsk.gs.aw_id",
   CLEARANCE_TITLE: "halsk.clearance.signatory_title",
   CACHED_PICTURE: "halsk.auth.cached_picture"
 } as const;

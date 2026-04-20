@@ -1,5 +1,6 @@
 import { browser } from "$app/environment";
 import { LS_KEYS } from "./constants";
+import { PUBLIC_GS_AW_ID } from "$env/static/public";
 import branding from "./branding.json";
 
 export type UIFont = "inter" | "archivo" | "shantell";
@@ -10,6 +11,7 @@ class UISettings {
   #reducedMotion = $state(false);
   #displayDensity = $state<DisplayDensity>("default");
   #currentSemester = $state<string>("");
+  #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");
 
   constructor() {
     if (browser) {
@@ -18,6 +20,7 @@ class UISettings {
       this.#currentSemester = localStorage.getItem("halsk.ui.current_semester") || "";
       this.#displayDensity =
         (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
+      this.#accountingWorkbookId = localStorage.getItem(LS_KEYS.GS_AW_ID) || PUBLIC_GS_AW_ID || "";
     }
   }
 
@@ -51,6 +54,14 @@ class UISettings {
   set displayDensity(v: DisplayDensity) {
     this.#displayDensity = v;
     if (browser) localStorage.setItem(LS_KEYS.ACC_SPACIOUS_LAYOUT, v);
+  }
+
+  get accountingWorkbookId() {
+    return this.#accountingWorkbookId;
+  }
+  set accountingWorkbookId(v: string) {
+    this.#accountingWorkbookId = v;
+    if (browser) localStorage.setItem(LS_KEYS.GS_AW_ID, v);
   }
 }
 

@@ -59,7 +59,7 @@
   });
 
   async function loadData() {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
 
@@ -68,7 +68,7 @@
 
       // Fetch Journal
       const journalRows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "journal_general!A:W"
       );
       allJournal = journalRows.slice(1).map((row, idx) => {
@@ -80,7 +80,7 @@
       });
 
       // Fetch Accounts
-      const accountRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:Z");
+      const accountRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:Z");
       const mappedAccounts = accountRows
         .slice(1)
         .map(mapRowToResident)
@@ -90,7 +90,7 @@
       allAccountsForAutocomplete = mappedAccounts;
 
       // Fetch Constants (Transaction Types & MOPs)
-      const constRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C");
+      const constRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
       transactionTypes = constRows
         .slice(1)
         .filter((r) => (r[0] || "").startsWith("PMT_"))

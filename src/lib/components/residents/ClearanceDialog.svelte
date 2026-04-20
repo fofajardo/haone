@@ -58,7 +58,7 @@
   });
 
   async function handleConfirm() {
-    if (!brandingState.spreadsheetId || residents.length === 0) return;
+    if (!uiSettings.accountingWorkbookId || residents.length === 0) return;
 
     isClearing = true;
     try {
@@ -67,7 +67,7 @@
       for (const res of residents) {
         const result = await clearResident(
           res,
-          brandingState.spreadsheetId,
+          uiSettings.accountingWorkbookId,
           brandingState.selectedKey,
           signatoryName,
           signatoryTitle

@@ -52,12 +52,12 @@
   let isSystemAlertOpen = $state(false);
 
   async function loadTransaction() {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
 
     try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W");
+      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:W");
       const idx = rows.findIndex((row, i) => row[JOR.ID] === id || (i + 1).toString() === id);
       const match = rows[idx];
 
@@ -69,7 +69,7 @@
 
         // Fetch accounts to resolve creator details
         try {
-          const accRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
+          const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:AD");
           const creatorMatch = accRows.find(
             (r) => (r[ACC.EMAIL] || "").trim() === match[JOR.CREATOR]
           );
@@ -81,7 +81,7 @@
         }
 
         // 3. Fetch Transaction Types
-        const constRows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C");
+        const constRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
         transactionTypes = constRows
           .slice(1)
           .filter((r) => (r[0] || "").startsWith("PMT_"))
@@ -98,12 +98,12 @@
   }
 
   async function handleDelete() {
-    if (rowIndex === null || !brandingState.spreadsheetId) return;
+    if (rowIndex === null || !uiSettings.accountingWorkbookId) return;
 
     isDialogOpen = false;
     isDeleting = true;
     try {
-      await deleteSheetRow(brandingState.spreadsheetId, "journal_general", rowIndex);
+      await deleteSheetRow(uiSettings.accountingWorkbookId, "journal_general", rowIndex);
       goto("/admin/transactions");
     } catch (e: any) {
       error = `Deletion failed: ${e.message}`;

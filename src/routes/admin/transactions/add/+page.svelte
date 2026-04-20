@@ -9,7 +9,7 @@
   async function handleSave(row: any[]) {
     isSubmitting = true;
     try {
-      await appendSheetRow(brandingState.spreadsheetId, "journal_general!A:W", [row]);
+      await appendSheetRow(uiSettings.accountingWorkbookId, "journal_general!A:W", [row]);
       goto("/admin/transactions");
     } finally {
       isSubmitting = false;

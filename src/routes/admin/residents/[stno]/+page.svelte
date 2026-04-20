@@ -98,13 +98,13 @@
   }
 
   async function loadResidentProfile(forceRefresh = false) {
-    if (!brandingState.spreadsheetId || !stno) return;
+    if (!uiSettings.accountingWorkbookId || !stno) return;
     isLoading = true;
     error = null;
 
     try {
       const accRows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "accounts!A:AD",
         forceRefresh
       );
@@ -132,7 +132,7 @@
 
       // 2. Fetch Transaction History
       const jorRows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "journal_general!A:W",
         forceRefresh
       );
@@ -155,7 +155,7 @@
 
       // 3. Fetch Transaction Types
       const constRows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "constants!A:C",
         forceRefresh
       );
@@ -205,8 +205,8 @@
   let allAccounts = $state<ResidentRecord[]>([]);
 
   onMount(async () => {
-    if (brandingState.spreadsheetId) {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:AD");
+    if (uiSettings.accountingWorkbookId) {
+      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:AD");
       allAccounts = rows.slice(1).map((row) => mapRowToResident(row));
     }
   });

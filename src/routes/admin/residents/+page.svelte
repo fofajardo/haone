@@ -65,13 +65,13 @@
   }
 
   async function loadData(forceRefresh = false) {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
     selectedIndices = new Set();
     try {
       const rows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "accounts!A:AD",
         forceRefresh
       );
@@ -150,7 +150,7 @@
   let residentsToClear = $state<Resident[]>([]);
 
   async function handleBatchClear() {
-    if (selectedIndices.size === 0 || !brandingState.spreadsheetId) return;
+    if (selectedIndices.size === 0 || !uiSettings.accountingWorkbookId) return;
     const eligible = residents.filter(
       (r) =>
         selectedIndices.has(r.stno) &&

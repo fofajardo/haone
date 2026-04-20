@@ -20,10 +20,10 @@
   let isLoading = $state(false);
 
   async function loadSemesters() {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
-      const rows = await fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C");
+      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
       if (rows.length <= 1) return;
 
       const allSemesters = rows

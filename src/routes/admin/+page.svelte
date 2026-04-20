@@ -102,14 +102,14 @@
   ];
 
   async function loadDashboardData() {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
 
     try {
       const [journalRows, accountRows, constRows] = await Promise.all([
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "journal_general!A:W"),
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "accounts!A:Z"),
-        fetchSheetRowsRaw(brandingState.spreadsheetId, "constants!A:C")
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:W"),
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:Z"),
+        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C")
       ]);
 
       transactionTypes = constRows

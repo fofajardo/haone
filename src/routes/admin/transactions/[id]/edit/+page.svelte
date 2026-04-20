@@ -20,13 +20,13 @@
   let error = $state<string | null>(null);
 
   async function loadTransaction() {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
 
     try {
       const journalRows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "journal_general!A:W"
       );
       const idx = journalRows.findIndex((row) => row[JOR.ID] === id);
@@ -60,7 +60,7 @@
       const sheetRow = rowIndex + 1;
       const range = `journal_general!A${sheetRow}:W${sheetRow}`;
 
-      await updateSheetValue(brandingState.spreadsheetId, range, [row]);
+      await updateSheetValue(uiSettings.accountingWorkbookId, range, [row]);
       goto(`/admin/transactions/${id}`);
     } finally {
       isSubmitting = false;

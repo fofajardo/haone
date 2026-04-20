@@ -51,13 +51,13 @@
   } as const;
 
   async function loadData(forceRefresh = false) {
-    if (!brandingState.spreadsheetId) return;
+    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
 
     try {
       const rows = await fetchSheetRowsRaw(
-        brandingState.spreadsheetId,
+        uiSettings.accountingWorkbookId,
         "accounts!A:AD",
         forceRefresh
       );
