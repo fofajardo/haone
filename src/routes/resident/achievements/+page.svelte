@@ -12,6 +12,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
   import { pageState } from "$lib/page-info.svelte";
+  import EmptyView from "$lib/components/EmptyView.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -113,9 +114,16 @@
           </Card.Root>
         </a>
       {:else}
-        <p class="text-center py-12 text-muted-foreground italic col-span-full">
-          No achievements available.
-        </p>
+        <div class="col-span-full">
+          <EmptyView
+            title="No Achievements Available"
+            description="Keep participating in dormitory activities to unlock rewards."
+          >
+            {#snippet icon()}
+              <Trophy class="h-12 w-12 text-muted-foreground" />
+            {/snippet}
+          </EmptyView>
+        </div>
       {/each}
     </div>
   {/if}
