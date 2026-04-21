@@ -71,9 +71,9 @@
   {#if account.ceIssued && account.ceLink && account.ceLink !== "N/A" && account.ceLink !== ""}
     <Card.Footer>
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
-        class="h-10 w-full border-primary/20 text-xs font-bold text-primary transition-all hover:bg-primary/5"
+        class="h-10 w-full"
         href={account.ceLink}
         target="_blank"
       >
