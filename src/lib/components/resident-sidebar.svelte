@@ -71,7 +71,7 @@
 
   if (auth.authType === "admin") {
     secondaryItems.unshift({
-      title: "Back to Admin",
+      title: "Admin View",
       url: "/admin",
       icon: House
     });
