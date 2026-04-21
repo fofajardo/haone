@@ -206,6 +206,24 @@ export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
 }
 
 /**
+ * Fetches the current active term from constants.
+ */
+export async function fetchTermCurr(forceRefresh = false): Promise<string> {
+  const { uiSettings } = await import("./settings.svelte");
+  const { fetchSheetRowsRaw } = await import("./google-sheets");
+
+  if (!uiSettings.accountingWorkbookId) return "";
+
+  const rows = await fetchSheetRowsRaw(
+    uiSettings.accountingWorkbookId,
+    "constants!A:C",
+    forceRefresh
+  );
+  const found = rows.find((r) => r[0] === "TERM_CURR");
+  return found?.[1] || "";
+}
+
+/**
  * Fetches a single user by their ID.
  */
 export async function fetchUserById(id: string): Promise<UserRecord | null> {

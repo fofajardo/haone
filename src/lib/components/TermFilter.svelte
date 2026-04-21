@@ -61,11 +61,14 @@
         };
       });
 
+      const termCurr = rows.find((r) => r[0] === "TERM_CURR")?.[1] || "";
+
       if (!activeTerm && terms.length > 0) {
+        const defaultTerm = termCurr || terms[0].value;
         if (value !== undefined) {
-          value = terms[0].value;
+          value = defaultTerm;
         } else {
-          uiSettings.currentTerm = terms[0].value;
+          uiSettings.currentTerm = defaultTerm;
         }
       }
     } catch (e) {

@@ -72,6 +72,9 @@
         fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
       ]);
       activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
+      if (!activeTerm) {
+        throw new Error("Active academic term (TERM_CURR) not found in constants.");
+      }
       residents = resData.filter((r) => r.period === activeTerm);
       users = userData;
     } catch (e: any) {

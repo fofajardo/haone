@@ -1,7 +1,7 @@
 <script lang="ts">
   import { uiSettings } from "$lib/settings.svelte";
   import { roomsState } from "$lib/rooms.svelte";
-  import { fetchResidents, fetchUsers } from "$lib/resident-logic";
+  import { fetchResidents, fetchUsers, fetchTermCurr } from "$lib/resident-logic";
   import { manualAssignBed } from "$lib/rooms-logic.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/schemas";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -30,6 +30,7 @@
   let users = $state<UserRecord[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
+  let activeTerm = $state("");
 
   $effect(() => {
     loadData();
@@ -39,14 +40,16 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData] = await Promise.all([
+      const [resData, userData, term] = await Promise.all([
         fetchResidents(forceRefresh),
-        fetchUsers(forceRefresh)
+        fetchUsers(forceRefresh),
+        fetchTermCurr(forceRefresh)
       ]);
-      residents = resData.filter(
-        (r) =>
-          (!uiSettings.currentTerm || r.period === uiSettings.currentTerm) && r.room === roomNumber
-      );
+      activeTerm = term;
+      if (!activeTerm) {
+        throw new Error("Active academic term (TERM_CURR) not found in constants.");
+      }
+      residents = resData.filter((r) => r.period === activeTerm && r.room === roomNumber);
       users = userData;
     } catch (e: any) {
       error = e.message;
@@ -113,12 +116,7 @@
     if (!assignmentDialog.userId || !assignmentDialog.bed) return;
     isLoading = true;
     try {
-      await manualAssignBed(
-        assignmentDialog.userId,
-        roomNumber,
-        assignmentDialog.bed,
-        uiSettings.currentTerm
-      );
+      await manualAssignBed(assignmentDialog.userId, roomNumber, assignmentDialog.bed, activeTerm);
       showAlert("Success", "Bed assignment updated.");
       assignmentDialog.open = false;
       await loadData(true);
