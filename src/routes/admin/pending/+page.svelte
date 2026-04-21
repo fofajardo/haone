@@ -8,7 +8,6 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw, batchUpdateValues, invalidateCache } from "$lib/google-sheets";
   import { parseDateWeight } from "$lib/receipt-utils";
-  import { encryptJSON } from "$lib/crypto";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -99,7 +98,6 @@
     if (selectedIndices.size === 0) {
       return;
     }
-    const baseUrl = window.location.origin + "/legacy/receipt";
     const stagedEmails = [];
 
     const selectedRows = queue.filter((item) => selectedIndices.has(item.id!.toString()));
@@ -124,11 +122,11 @@
         notes: record.notes,
         transactionType: record.type,
         branding: brandingState.selectedKey,
+        stno: record.stno.toString(),
         items: getActiveItems(record)
       };
 
-      const encrypted = await encryptJSON(receipt, record.stno.toString().trim());
-      const url = `${baseUrl}?data=${encrypted}`;
+      const url = `${window.location.origin}/receipt/${record.id}`;
 
       stagedEmails.push({
         id: record.id.toString(),

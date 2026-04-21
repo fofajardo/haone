@@ -19,6 +19,7 @@ export interface ReceiptData {
   notes: string;
   transactionType: string;
   branding: string;
+  stno: string;
   items: ReceiptItem[];
 }
 

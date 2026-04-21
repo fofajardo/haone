@@ -38,6 +38,7 @@
       >
       <Input
         id="stno"
+        name="stno"
         type="text"
         bind:value={studentNo}
         placeholder="e.g., 2021-0001"
@@ -46,7 +47,7 @@
       />
     </div>
     <div class="flex items-center space-x-2">
-      <Checkbox id="remember" bind:checked={rememberMe} />
+      <Checkbox id="remember" name="remember" bind:checked={rememberMe} />
       <Label
         for="remember"
         class="text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -54,7 +55,12 @@
         Remember student ID
       </Label>
     </div>
-    <Button onclick={onAuthenticate} class="w-full" disabled={isDecrypting || !studentNo}>
+    <Button
+      type="submit"
+      onclick={onAuthenticate}
+      class="w-full"
+      disabled={isDecrypting || !studentNo}
+    >
       {isDecrypting ? "Verifying…" : "Unlock"}
     </Button>
   </Card.Content>
