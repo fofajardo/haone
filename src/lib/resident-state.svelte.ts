@@ -9,6 +9,7 @@ class ResidentState {
   async refresh() {
     if (!auth.accessToken) return;
     this.isLoading = true;
+    this.error = null;
     try {
       this.status = await fetchServer("/api/resident/check-status");
     } catch (e: any) {

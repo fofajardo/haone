@@ -13,12 +13,17 @@
 
   import { goto } from "$app/navigation";
 
-  onMount(() => {
-    pageState.title = "Onboarding";
+  $effect(() => {
+    pageState.title = residentState.status?.waitingForConfirmation
+      ? "Registration Pending"
+      : "Onboarding";
   });
 
   async function handleSuccess() {
     await residentState.refresh();
+    if (residentState.error) {
+      throw new Error(residentState.error);
+    }
     if (!residentState.needsOnboarding) {
       goto("/resident");
     }
