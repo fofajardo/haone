@@ -1,6 +1,18 @@
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar";
-  import { LayoutDashboard, Settings, LogOut, X, CircleUser, Wallet, House } from "lucide-svelte";
+  import {
+    LayoutDashboard,
+    Settings,
+    LogOut,
+    X,
+    CircleUser,
+    Wallet,
+    House,
+    WashingMachine,
+    Banknote,
+    Megaphone,
+    Trophy
+  } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
@@ -8,7 +20,7 @@
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
 
-  const items = [
+  const mgmtItems = [
     {
       title: "Dashboard",
       url: "/resident",
@@ -23,6 +35,29 @@
       title: "Occupancy",
       url: "/resident/occupancy",
       icon: House
+    }
+  ];
+
+  const serviceItems = [
+    {
+      title: "Laundry",
+      url: "/resident/laundry",
+      icon: WashingMachine
+    },
+    {
+      title: "Payment Requests",
+      url: "/resident/payment-requests",
+      icon: Banknote
+    },
+    {
+      title: "Announcements",
+      url: "/resident/announcements",
+      icon: Megaphone
+    },
+    {
+      title: "Achievements",
+      url: "/resident/achievements",
+      icon: Trophy
     }
   ];
 
@@ -99,7 +134,29 @@
     <Sidebar.Group>
       <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
       <Sidebar.Menu>
-        {#each items as item}
+        {#each mgmtItems as item}
+          <Sidebar.MenuItem>
+            <Sidebar.MenuButton
+              size={sidebar.isMobile ? "lg" : "default"}
+              isActive={page.url.pathname === item.url}
+              onclick={() => sidebar.setOpenMobile(false)}
+            >
+              {#snippet child({ props })}
+                <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </a>
+              {/snippet}
+            </Sidebar.MenuButton>
+          </Sidebar.MenuItem>
+        {/each}
+      </Sidebar.Menu>
+    </Sidebar.Group>
+
+    <Sidebar.Group>
+      <Sidebar.GroupLabel>Services</Sidebar.GroupLabel>
+      <Sidebar.Menu>
+        {#each serviceItems as item}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton
               size={sidebar.isMobile ? "lg" : "default"}

@@ -47,9 +47,17 @@
     isSubmitting: boolean;
     onSave: (row: any[]) => Promise<void>;
     onCancel: () => void;
+    hideHeader?: boolean;
   }
 
-  let { mode, initialData = null, isSubmitting, onSave, onCancel }: Props = $props();
+  let {
+    mode,
+    initialData = null,
+    isSubmitting,
+    onSave,
+    onCancel,
+    hideHeader = false
+  }: Props = $props();
 
   let accounts = $state<ResidentRecord[]>([]);
   let transactionTypes = $state<{ value: string; val: string; label: string }[]>([]);
@@ -204,6 +212,7 @@
         ceFullName: "",
         residentId: SYSTEM_IDS.FUNDS,
         ledgerId: SYSTEM_IDS.FUNDS,
+        checkInDate: "",
         raw: []
       };
 
@@ -245,7 +254,7 @@
           }))
       ];
 
-      if (mode === "edit" && initialData) {
+      if (initialData) {
         const mopRefInfo = parseRef(initialData.mopRefNo);
         formData = {
           date: initialData.date,
@@ -269,15 +278,18 @@
           prDateIssued: initialData.prDateIssued,
           prRefNo: initialData.prRefNo
         };
-        creatorSearch = initialData.creator;
-        accountSearch = initialData.account;
+        creatorSearch = initialData.creatorName || initialData.creator;
+        accountSearch = initialData.name || initialData.account;
         selectedResident =
-          accounts.find((a) => a.email.toLowerCase() === initialData!.account.toLowerCase()) ||
-          null;
+          accounts.find(
+            (a) =>
+              a.email.toLowerCase() === initialData!.account.toLowerCase() ||
+              a.residentId === initialData!.account
+          ) || null;
 
         if (selectedResident) {
-          const limitW = selectedResident.waterBal + initialData.water;
-          const limitA = selectedResident.assocBal + initialData.assoc;
+          const limitW = selectedResident.waterBal + (mode === "edit" ? initialData.water : 0);
+          const limitA = selectedResident.assocBal + (mode === "edit" ? initialData.assoc : 0);
           if (initialData.water > limitW + 0.01 || initialData.assoc > limitA + 0.01) {
             allowOverpayment = true;
           }
@@ -454,7 +466,9 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title={mode === "add" ? "Add Transaction" : "Edit Transaction"} />
+  {#if !hideHeader}
+    <SubpageHeader title={mode === "add" ? "Add Transaction" : "Edit Transaction"} />
+  {/if}
 
   <div class="mx-auto max-w-3xl space-y-6">
     {#if error}

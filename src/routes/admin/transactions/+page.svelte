@@ -12,6 +12,7 @@
   import TermFilter from "$lib/components/TermFilter.svelte";
   import { RefreshCcw, ListFilter, Plus, Search, FunnelX } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { columns } from "./columns";
@@ -199,15 +200,11 @@
         rowId="id"
       />
     {:else}
-      <div
-        class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
-      >
-        <ListFilter class="h-8 w-8 text-muted-foreground" />
-        <div class="text-center">
-          <p class="font-semibold text-foreground">No records found.</p>
-          <p class="text-xs text-muted-foreground">Try adjusting your filters or search query.</p>
-        </div>
-      </div>
+      <EmptyView>
+        {#snippet icon()}
+          <ListFilter class="h-8 w-8 text-muted-foreground" />
+        {/snippet}
+      </EmptyView>
     {/if}
   {/if}
 </div>

@@ -7,6 +7,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Progress } from "$lib/components/ui/progress";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
@@ -173,17 +174,14 @@
   </SubpageHeader>
 
   {#if emailDispatcher.queue.length === 0 && !isSuccess}
-    <div
-      class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
+    <EmptyView
+      title="Queue is empty."
+      description="Select records from Resident Directory or Pending Receipts to begin."
     >
-      <Mail class="h-8 w-8 text-muted-foreground" />
-      <div class="text-center">
-        <p class="font-semibold text-foreground">Queue is empty.</p>
-        <p class="text-xs text-muted-foreground">
-          Select records from Resident Directory or Pending Receipts to begin.
-        </p>
-      </div>
-    </div>
+      {#snippet icon()}
+        <Mail class="h-8 w-8 text-muted-foreground" />
+      {/snippet}
+    </EmptyView>
   {:else}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Info Panel -->

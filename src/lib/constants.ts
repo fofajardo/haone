@@ -12,6 +12,7 @@ export const LS_KEYS = {
   ACC_SPACIOUS_LAYOUT: "halsk.acc.spacious_layout",
   GS_AW_ID: "halsk.gs.aw_id",
   GS_RR_ID: "halsk.gs.rr_id",
+  GS_SR_ID: "halsk.gs.sr_id",
   CLEARANCE_TITLE: "halsk.clearance.signatory_title",
   CACHED_PICTURE: "halsk.auth.cached_picture"
 } as const;

@@ -195,7 +195,8 @@ export interface SheetRow {
 export async function fetchSheetRowsRaw(
   spreadsheetId: string,
   range: string,
-  forceRefresh = false
+  forceRefresh = false,
+  explicitToken?: string
 ): Promise<string[][]> {
   const cacheKey = `${spreadsheetId}:${range}`;
   if (!forceRefresh && sheetsCache[cacheKey]) {
@@ -203,7 +204,7 @@ export async function fetchSheetRowsRaw(
   }
 
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
-  const resp = await fetchWithAuth(url, "Failed to fetch sheet data");
+  const resp = await fetchWithAuth(url, "Failed to fetch sheet data", {}, explicitToken);
 
   const data = await resp.json();
   const values = data.values || [];

@@ -12,6 +12,7 @@
   import { RefreshCcw, Users, Search, FunnelX } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
+  import EmptyView from "$lib/components/EmptyView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Plus, UserPlus, FileUp } from "lucide-svelte";
@@ -212,15 +213,11 @@
         rowId="id"
       />
     {:else}
-      <div
-        class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
-      >
-        <Users class="h-8 w-8 text-muted-foreground" />
-        <div class="text-center">
-          <p class="font-semibold text-foreground">No users found.</p>
-          <p class="text-xs text-muted-foreground">Adjust filters or search query.</p>
-        </div>
-      </div>
+      <EmptyView title="No users found." description="Try adjusting your filters or search query.">
+        {#snippet icon()}
+          <Users class="h-8 w-8 text-muted-foreground" />
+        {/snippet}
+      </EmptyView>
     {/if}
   {/if}
 </div>

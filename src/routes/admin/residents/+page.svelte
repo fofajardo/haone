@@ -35,6 +35,7 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { columns } from "./columns";
@@ -289,15 +290,14 @@
           enableSelection
         />
       {:else}
-        <div
-          class="flex h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-muted/10"
+        <EmptyView
+          title="No residents found."
+          description="Try adjusting your filters or search query."
         >
-          <Users class="h-8 w-8 text-muted-foreground" />
-          <div class="text-center">
-            <p class="font-semibold text-foreground">No residents found.</p>
-            <p class="text-xs text-muted-foreground">Adjust filters or search query.</p>
-          </div>
-        </div>
+          {#snippet icon()}
+            <Users class="h-8 w-8 text-muted-foreground" />
+          {/snippet}
+        </EmptyView>
       {/if}
     {/if}
   </div>

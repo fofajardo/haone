@@ -179,3 +179,148 @@ export const USER_TAG_COLORS: Record<string, string> = {
   [UserTag.GUEST]: "bg-slate-100 text-slate-700 border-slate-200",
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };
+
+export enum PaymentRequestStatus {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  DECLINED = "DECLINED",
+  CANCELLED = "CANCELLED"
+}
+
+export const PAYMENT_REQUEST_STATUS_COLORS: Record<string, string> = {
+  [PaymentRequestStatus.PENDING]: "bg-amber-100 text-amber-700 border-amber-200",
+  [PaymentRequestStatus.APPROVED]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [PaymentRequestStatus.DECLINED]: "bg-rose-100 text-rose-700 border-rose-200",
+  [PaymentRequestStatus.CANCELLED]: "bg-slate-100 text-slate-700 border-slate-200",
+  DEFAULT: "bg-muted text-muted-foreground border-border"
+};
+
+export const LAUNDRY_COL = {
+  ID: 0,
+  RESIDENT_ID: 1,
+  DATE: 2,
+  TIME_START: 3,
+  TIME_END: 4,
+  STATUS: 5,
+  CANCEL_REASON: 6,
+  CREATION_TIMESTAMP: 7,
+  CANCEL_TIMESTAMP: 8
+} as const;
+
+export const PAYMENT_REQUEST_COL = {
+  ID: 0,
+  RESIDENT_ID: 1,
+  DATE: 2,
+  WATER_FEE: 3,
+  ASSOC_FEE: 4,
+  MISC: 5,
+  MOP: 6,
+  TYPE: 7,
+  PROOF_LINK: 8,
+  STATUS: 9,
+  NOTES: 10,
+  STATUS_REASON: 11
+} as const;
+
+export const ANNOUNCEMENT_COL = {
+  ID: 0,
+  CREATOR_ID: 1,
+  DATE_CREATED: 2,
+  START_DATE: 3,
+  EXPIRY_DATE: 4,
+  IS_INDEFINITE: 5,
+  IS_ADMIN_ONLY: 6,
+  TAGS: 7,
+  TITLE: 8,
+  CONTENT: 9
+} as const;
+
+export const ACHIEVEMENT_COL = {
+  ID: 0,
+  CREATOR_ID: 1,
+  NAME: 2,
+  DESCRIPTION: 3,
+  ICON: 4,
+  EXTRA_URL: 5
+} as const;
+
+export const ACHIEVEMENT_RECORD_COL = {
+  ID: 0,
+  RECORDER_ID: 1,
+  ACCOUNT_ID: 2,
+  DATE: 3,
+  ACHIEVEMENT_ID: 4
+} as const;
+
+export const USER_SETTINGS_COL = {
+  RESIDENT_ID: 0,
+  IS_PUBLIC_ACHIEVEMENT_LIST: 1
+} as const;
+
+export interface LaundryRecord {
+  id: string;
+  residentId: string;
+  date: string;
+  timeStart: string;
+  timeEnd: string;
+  status: string;
+  cancelReason: string;
+  creationTimestamp?: string;
+  cancelTimestamp?: string;
+  raw: string[];
+}
+
+export interface PaymentRequestRecord {
+  id: string;
+  residentId: string;
+  date: string;
+  waterFee: number;
+  assocFee: number;
+  misc: number;
+  mop: string;
+  type: string;
+  proofLink: string;
+  status: string;
+  notes: string;
+  statusReason?: string;
+  raw: string[];
+}
+
+export interface AnnouncementRecord {
+  id: string;
+  creatorId: string;
+  dateCreated: string;
+  startDate: string;
+  expiryDate: string;
+  isIndefinite: boolean;
+  isAdminOnly: boolean;
+  tags: string;
+  title: string;
+  content: string;
+  raw: string[];
+}
+
+export interface AchievementRecord {
+  id: string;
+  creatorId: string;
+  name: string;
+  description: string;
+  icon: string;
+  extraUrl: string;
+  raw: string[];
+}
+
+export interface AchievementLogRecord {
+  id: string;
+  recorderId: string;
+  accountId: string;
+  date: string;
+  achievementId: string;
+  raw: string[];
+}
+
+export interface UserSettingsRecord {
+  residentId: string;
+  isPublicAchievementList: boolean;
+  raw: string[];
+}

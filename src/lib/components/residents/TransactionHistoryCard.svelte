@@ -14,6 +14,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { History, Clock } from "lucide-svelte";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import EmptyView from "$lib/components/EmptyView.svelte";
 
   interface Props {
     history: JournalRecord[];
@@ -110,12 +111,14 @@
     {#if history.length > 0}
       <DataTable data={history} {columns} {onRowClick} rowId="id" />
     {:else}
-      <div class="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center">
-        <Clock class="h-8 w-8 text-muted-foreground opacity-20" />
-        <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-          No transaction history found
-        </p>
-      </div>
+      <EmptyView
+        title="No transaction history found."
+        description="Transactions for this term will appear here."
+      >
+        {#snippet icon()}
+          <Clock class="h-8 w-8 text-muted-foreground" />
+        {/snippet}
+      </EmptyView>
     {/if}
   </Card.Content>
 </Card.Root>

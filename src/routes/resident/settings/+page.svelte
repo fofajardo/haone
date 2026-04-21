@@ -3,6 +3,7 @@
   import AppearanceSettings from "$lib/components/AppearanceSettings.svelte";
   import VersionCard from "$lib/components/VersionCard.svelte";
   import SettingsPreview from "$lib/components/SettingsPreview.svelte";
+  import SocialSettings from "$lib/components/residents/SocialSettings.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$lib/page-info.svelte";
 
@@ -17,6 +18,7 @@
   <div class="flex flex-col gap-8 lg:flex-row">
     <div class="flex-1 space-y-8">
       <AppearanceSettings />
+      <SocialSettings />
       <VersionCard />
     </div>
 

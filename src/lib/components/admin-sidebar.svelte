@@ -15,7 +15,11 @@
     CircleUser,
     GraduationCap,
     Contact,
-    Bed
+    Bed,
+    WashingMachine,
+    Banknote,
+    Megaphone,
+    Trophy
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -97,6 +101,29 @@
       icon: Settings
     }
   ];
+
+  const serviceItems = [
+    {
+      title: "Laundry",
+      url: "/admin/laundry",
+      icon: WashingMachine
+    },
+    {
+      title: "Payment Requests",
+      url: "/admin/payment-requests",
+      icon: Banknote
+    },
+    {
+      title: "Announcements",
+      url: "/admin/announcements",
+      icon: Megaphone
+    },
+    {
+      title: "Achievements",
+      url: "/admin/achievements",
+      icon: Trophy
+    }
+  ];
 </script>
 
 <Sidebar.Root collapsible="icon" class="data-[mobile=true]:w-full!">
@@ -156,6 +183,28 @@
       <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
       <Sidebar.Menu>
         {#each items as item}
+          <Sidebar.MenuItem>
+            <Sidebar.MenuButton
+              size={sidebar.isMobile ? "lg" : "default"}
+              isActive={page.url.pathname === item.url}
+              onclick={() => sidebar.setOpenMobile(false)}
+            >
+              {#snippet child({ props })}
+                <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </a>
+              {/snippet}
+            </Sidebar.MenuButton>
+          </Sidebar.MenuItem>
+        {/each}
+      </Sidebar.Menu>
+    </Sidebar.Group>
+
+    <Sidebar.Group>
+      <Sidebar.GroupLabel>Services</Sidebar.GroupLabel>
+      <Sidebar.Menu>
+        {#each serviceItems as item}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton
               size={sidebar.isMobile ? "lg" : "default"}

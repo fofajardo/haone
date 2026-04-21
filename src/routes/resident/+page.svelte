@@ -11,8 +11,14 @@
     ArrowRight,
     History,
     TrendingUp,
-    TrendingDown
+    TrendingDown,
+    WashingMachine,
+    Banknote,
+    Trophy,
+    House,
+    Settings
   } from "lucide-svelte";
+  import AnnouncementsSection from "$lib/components/residents/AnnouncementsSection.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { formatCurrency, translatePeriod, translateType, formatDate } from "$lib/receipt-utils";
@@ -161,6 +167,8 @@
       </Card.Root>
     </div>
 
+    <AnnouncementsSection />
+
     <div class="grid gap-8 lg:grid-cols-3">
       <!-- Quick Access Section -->
       <div class="lg:col-span-2">
@@ -189,16 +197,96 @@
           </a>
 
           <a
+            href="/resident/laundry"
+            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
+          >
+            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
+              <WashingMachine class="h-6 w-6" />
+            </div>
+            <div>
+              <h3 class="font-bold text-foreground">Laundry</h3>
+              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                Book and manage your laundry reservations.
+              </p>
+            </div>
+            <div
+              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+            >
+              <ArrowRight class="h-5 w-5 text-brand" />
+            </div>
+          </a>
+
+          <a
+            href="/resident/payment-requests"
+            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
+          >
+            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
+              <Banknote class="h-6 w-6" />
+            </div>
+            <div>
+              <h3 class="font-bold text-foreground">Payment Requests</h3>
+              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                Upload your transaction entries for verification.
+              </p>
+            </div>
+            <div
+              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+            >
+              <ArrowRight class="h-5 w-5 text-brand" />
+            </div>
+          </a>
+
+          <a
+            href="/resident/achievements"
+            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
+          >
+            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
+              <Trophy class="h-6 w-6" />
+            </div>
+            <div>
+              <h3 class="font-bold text-foreground">Achievements</h3>
+              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                View your earned achievements and leaderboard.
+              </p>
+            </div>
+            <div
+              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+            >
+              <ArrowRight class="h-5 w-5 text-brand" />
+            </div>
+          </a>
+
+          <a
             href="/resident/occupancy"
             class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
           >
             <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
-              <MapPin class="h-6 w-6" />
+              <House class="h-6 w-6" />
             </div>
             <div>
               <h3 class="font-bold text-foreground">Occupancy</h3>
               <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                Track your past room assignments.
+                View your current room details and history.
+              </p>
+            </div>
+            <div
+              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+            >
+              <ArrowRight class="h-5 w-5 text-brand" />
+            </div>
+          </a>
+
+          <a
+            href="/resident/settings"
+            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
+          >
+            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
+              <Settings class="h-6 w-6" />
+            </div>
+            <div>
+              <h3 class="font-bold text-foreground">Settings</h3>
+              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                Customize your profile and application preferences.
               </p>
             </div>
             <div

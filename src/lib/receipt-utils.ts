@@ -174,3 +174,26 @@ export function sortPeriods(periods: string[]) {
     return getWeight(termB) - getWeight(termA);
   });
 }
+
+export function parseTime(timeStr: string): number {
+  if (!timeStr) return 0;
+  const str = timeStr.trim().toUpperCase();
+  const match = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+  if (!match) {
+    return parseInt(str.split(":")[0]) || 0;
+  }
+
+  const hours = parseInt(match[1]);
+  const ampm = match[3];
+
+  let h = hours;
+  if (ampm === "PM" && h < 12) h += 12;
+  if (ampm === "AM" && h === 12) h = 0;
+  return h;
+}
+
+export function formatTime(hour: number): string {
+  const h = hour % 12 || 12;
+  const ampm = hour >= 12 ? "PM" : "AM";
+  return `${h}:00 ${ampm}`;
+}

@@ -130,7 +130,7 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
 
       // Compute financials
       const filtered = journal.filter(
-        (j) => j.account.toLowerCase() === email && j.period === period
+        (j) => (j.account || "").toLowerCase() === email && j.period === period
       );
 
       const waterPaid = filtered
