@@ -1,6 +1,5 @@
 import { json } from "@sveltejs/kit";
 import { PUBLIC_GS_AW_ID } from "$env/static/public";
-import type { JWT } from "google-auth-library";
 import { JOURNAL_COL } from "$lib/schemas";
 import type { RequestHandler } from "./$types";
 
@@ -14,8 +13,8 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const client = await getSheetsClient();
-    const jorRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "journal_general!A:T");
+    const token = await getSheetsClient();
+    const jorRows = await getSheetValues(token, PUBLIC_GS_AW_ID, "journal_general!A:T");
 
     const row = jorRows
       .slice(1)

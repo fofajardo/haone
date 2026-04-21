@@ -1,45 +1,143 @@
 import { json } from "@sveltejs/kit";
 import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
-import { JWT } from "google-auth-library";
 
 /**
- * Creates an authorized Google Sheets client using the service account.
+ * Base64url encoding helper
+ */
+function base64url(buffer: ArrayBuffer | string): string {
+  const bytes =
+    typeof buffer === "string" ? new TextEncoder().encode(buffer) : new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/**
+ * Signs a payload using RS256 with a private key.
+ */
+async function sign(input: string, pem: string): Promise<string> {
+  const pemHeader = "-----BEGIN PRIVATE KEY-----";
+  const pemFooter = "-----END PRIVATE KEY-----";
+  const pemContents = pem.substring(
+    pem.indexOf(pemHeader) + pemHeader.length,
+    pem.indexOf(pemFooter)
+  );
+  const binaryKey = Uint8Array.from(atob(pemContents.replace(/\s/g, "")), (c) => c.charCodeAt(0));
+
+  const key = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryKey,
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: { name: "SHA-256" }
+    },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    key,
+    new TextEncoder().encode(input)
+  );
+
+  return base64url(signature);
+}
+
+/**
+ * Generates a Google Access Token using a service account JWT.
+ */
+async function getServiceAccountToken(email: string, privateKey: string, scopes: string[]) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    iss: email,
+    scope: scopes.join(" "),
+    aud: "https://oauth2.googleapis.com/token",
+    exp: now + 3600,
+    iat: now
+  };
+
+  const encodedHeader = base64url(JSON.stringify(header));
+  const encodedPayload = base64url(JSON.stringify(payload));
+  const input = `${encodedHeader}.${encodedPayload}`;
+  const signature = await sign(input, privateKey);
+  const jwt = `${input}.${signature}`;
+
+  const resp = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: jwt
+    })
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Failed to get Google access token: ${err}`);
+  }
+
+  const data = await resp.json();
+  return data.access_token;
+}
+
+/**
+ * Creates an authorized Google Sheets client (token) using the service account.
  */
 export async function getSheetsClient() {
   const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
-  const client = new JWT({
-    email: keys.client_email,
-    key: keys.private_key,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-  });
-  return client;
+  const token = await getServiceAccountToken(keys.client_email, keys.private_key, [
+    "https://www.googleapis.com/auth/spreadsheets"
+  ]);
+  return token;
 }
 
 /**
  * Fetches values from a spreadsheet range.
  */
-export async function getSheetValues(client: JWT, spreadsheetId: string, range: string) {
+export async function getSheetValues(token: string, spreadsheetId: string, range: string) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
-  const resp = await client.request({ url });
-  return (resp.data as any).values || [];
+  const resp = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Sheets API error: ${err}`);
+  }
+
+  const data = await resp.json();
+  return data.values || [];
 }
 
 /**
  * Appends values to a spreadsheet range.
  */
 export async function appendSheetValue(
-  client: JWT,
+  token: string,
   spreadsheetId: string,
   range: string,
   values: any[][]
 ) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
-  const resp = await client.request({
-    url,
+  const resp = await fetch(url, {
     method: "POST",
-    data: { values }
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ values })
   });
-  return resp.data;
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Sheets API error: ${err}`);
+  }
+
+  return await resp.json();
 }
 
 /**

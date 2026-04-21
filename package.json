@@ -64,7 +64,6 @@
     "@tiptap/starter-kit": "^3.22.3",
     "d3-array": "^3.2.4",
     "d3-scale": "^4.0.2",
-    "google-auth-library": "^10.6.2",
     "html2canvas": "^1.4.1",
     "lucide-svelte": "^1.0.1",
     "mode-watcher": "^1.1.0",
