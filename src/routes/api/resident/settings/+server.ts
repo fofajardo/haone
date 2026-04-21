@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
   try {
     const client = await getSheetsClient();
-    
+
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
@@ -28,8 +28,8 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:B");
     const settings = rows.find(
-(r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
-);
+      (r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
+    );
 
     return json({
       isPublicAchievementList: settings
@@ -53,7 +53,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
     const { isPublicAchievementList } = data;
 
     const client = await getSheetsClient();
-    
+
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
@@ -61,7 +61,9 @@ export const PATCH: RequestHandler = async ({ request }) => {
     const residentId = user[USER_COL.ID];
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:B");
-    const rowIndex = rows.findIndex((r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId);
+    const rowIndex = rows.findIndex(
+      (r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
+    );
 
     const val = String(isPublicAchievementList).toUpperCase();
 
@@ -72,7 +74,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
       // Update existing row
       const actualRow = rowIndex + 1;
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/settings!B${actualRow}?valueInputOption=USER_ENTERED`;
-      
+
       await fetch(url, {
         method: "PUT",
         headers: {

@@ -1,11 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { PUBLIC_GS_SR_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import {
-  ACHIEVEMENT_COL,
-  ACHIEVEMENT_RECORD_COL,
-  USER_COL,
-  USER_SETTINGS_COL
-} from "$lib/schemas";
+import { ACHIEVEMENT_COL, ACHIEVEMENT_RECORD_COL, USER_COL, USER_SETTINGS_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
@@ -49,7 +44,10 @@ export const GET: RequestHandler = async ({ request }) => {
     // 4. Map Settings & Users for Privacy
     const settingsMap = new Map();
     settingRows.slice(1).forEach((r: any) => {
-      settingsMap.set((r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim(), (r[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() === "TRUE");
+      settingsMap.set(
+        (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim(),
+        (r[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() === "TRUE"
+      );
     });
 
     const userMap = new Map();
@@ -61,7 +59,7 @@ export const GET: RequestHandler = async ({ request }) => {
     const logs = logRows.slice(1).map((row: any) => {
       const accountId = (row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] || "").trim();
       const isPublic = settingsMap.get(accountId) || accountId === currentResidentId;
-      
+
       return {
         id: (row[ACHIEVEMENT_RECORD_COL.ID] || "").trim(),
         accountId: accountId,

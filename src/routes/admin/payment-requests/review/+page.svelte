@@ -301,33 +301,33 @@
           mode="add"
           hideHeader={true}
           initialData={{
-                date: currentPayment.date,
-                creator: auth.user?.email || "",
-                account: currentResident?.email || currentPayment.residentId,
-                water: currentPayment.waterFee,
-                assoc: currentPayment.assocFee,
-                misc: currentPayment.misc,
-                mop: currentPayment.mop,
-                period: currentTerm,
-                type: "PMT_COLLECTION",
-                notes: currentPayment.notes || "Payment Request",
-                notesPrivate: "",
-                mopRefNo: "",
-                prDateIssued: "",
-                prRefNo: "",
-                creatorName: auth.user?.name || "",
-                name: currentResident?.name || "",
-                stno: currentResident?.stno || "",
-                wasAudited: false,
-                receiptUrl: "",
-                id: "",
-                amount: currentPayment.waterFee + currentPayment.assocFee + currentPayment.misc,
-                raw: []
-              }}
-              isSubmitting={isProcessing}
-              onSave={handleSaveReview}
-              onCancel={() => goto("/admin/payment-requests")}
-            />
+            date: currentPayment.date,
+            creator: auth.user?.email || "",
+            account: currentResident?.email || currentPayment.residentId,
+            water: currentPayment.waterFee,
+            assoc: currentPayment.assocFee,
+            misc: currentPayment.misc,
+            mop: currentPayment.mop,
+            period: currentTerm,
+            type: "PMT_COLLECTION",
+            notes: currentPayment.notes || "Payment Request",
+            notesPrivate: "",
+            mopRefNo: "",
+            prDateIssued: "",
+            prRefNo: "",
+            creatorName: auth.user?.name || "",
+            name: currentResident?.name || "",
+            stno: currentResident?.stno || "",
+            wasAudited: false,
+            receiptUrl: "",
+            id: "",
+            amount: currentPayment.waterFee + currentPayment.assocFee + currentPayment.misc,
+            raw: []
+          }}
+          isSubmitting={isProcessing}
+          onSave={handleSaveReview}
+          onCancel={() => goto("/admin/payment-requests")}
+        />
       </div>
     </div>
   {/if}

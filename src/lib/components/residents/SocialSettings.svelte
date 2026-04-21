@@ -22,7 +22,7 @@
         (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
       );
       residentId = me?.id || "";
-      
+
       if (auth.authType === "resident") {
         isPublic = allSettings[0]?.isPublicAchievementList ?? false;
       } else {

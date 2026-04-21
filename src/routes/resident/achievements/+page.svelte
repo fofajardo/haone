@@ -29,7 +29,7 @@
         fetchAchievementLogs(true),
         fetchUsers(true)
       ]);
-      
+
       if (Array.isArray(achResult)) {
         achievements = achResult;
       } else {

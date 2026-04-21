@@ -164,7 +164,9 @@ export async function cancelLaundryReservation(
  */
 export async function fetchPaymentRequests(
   forceRefresh = false
-): Promise<PaymentRequestRecord[] | { requests: PaymentRequestRecord[]; currentResidentId: string }> {
+): Promise<
+  PaymentRequestRecord[] | { requests: PaymentRequestRecord[]; currentResidentId: string }
+> {
   if (auth.authType === "resident") {
     const data = await fetchServer("/api/resident/payment-requests");
     return {

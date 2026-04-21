@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
   try {
     const client = await getSheetsClient();
-    
+
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
@@ -71,7 +71,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const { date, waterFee, assocFee, misc, mop, type, proofLink, notes } = data;
 
     const client = await getSheetsClient();
-    
+
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
@@ -112,7 +112,7 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
 
   try {
     const client = await getSheetsClient();
-    
+
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
@@ -121,7 +121,9 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
 
     // Find row
     const prRows = await getSheetValues(client, PUBLIC_GS_SR_ID, "payment_requests!A:L");
-    const rowIndex = prRows.findIndex((r: any) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === requestId);
+    const rowIndex = prRows.findIndex(
+      (r: any) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === requestId
+    );
     if (rowIndex === -1) return json({ error: "Payment request not found" }, { status: 404 });
 
     const targetRow = prRows[rowIndex];
@@ -136,7 +138,7 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
     // Update row (J: Status)
     const actualRow = rowIndex + 1;
     const urlBase = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/payment_requests!J${actualRow}?valueInputOption=USER_ENTERED`;
-    
+
     await fetch(urlBase, {
       method: "PUT",
       headers: {

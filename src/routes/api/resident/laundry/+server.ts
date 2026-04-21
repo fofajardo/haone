@@ -20,7 +20,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
   try {
     const client = await getSheetsClient();
-    
+
     const [resRows, accRows, userRows] = await Promise.all([
       getSheetValues(client, PUBLIC_GS_SR_ID, "laundry!A:I"),
       getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:E"),
@@ -67,7 +67,9 @@ export const GET: RequestHandler = async ({ request }) => {
     });
 
     // Find current resident ID
-    const me = userRows.slice(1).find((u: any) => (u[USER_COL.EMAIL] || "").toLowerCase() === authEmail.toLowerCase());
+    const me = userRows
+      .slice(1)
+      .find((u: any) => (u[USER_COL.EMAIL] || "").toLowerCase() === authEmail.toLowerCase());
     const currentResidentId = me ? (me[USER_COL.ID] || "").trim() : "";
 
     return json({ reservations, currentResidentId });
@@ -88,7 +90,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const { date, timeStart, timeEnd } = data;
 
     const client = await getSheetsClient();
-    
+
     // Resolve residentId from email
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
@@ -105,7 +107,11 @@ export const POST: RequestHandler = async ({ request }) => {
     // Overlap Check
     const resRows = await getSheetValues(client, PUBLIC_GS_SR_ID, "laundry!A:I");
     const isOverlapping = resRows.slice(1).some((r: any) => {
-      if ((r[LAUNDRY_COL.STATUS] || "").trim() !== "ACTIVE" || (r[LAUNDRY_COL.DATE] || "").trim() !== date) return false;
+      if (
+        (r[LAUNDRY_COL.STATUS] || "").trim() !== "ACTIVE" ||
+        (r[LAUNDRY_COL.DATE] || "").trim() !== date
+      )
+        return false;
       const rStart = parseTime(r[LAUNDRY_COL.TIME_START]);
       const rEnd = parseTime(r[LAUNDRY_COL.TIME_END]);
       return startH < rEnd && endH > rStart;
@@ -146,7 +152,7 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
 
   try {
     const client = await getSheetsClient();
-    
+
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
@@ -155,7 +161,9 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
 
     // Find row
     const resRows = await getSheetValues(client, PUBLIC_GS_SR_ID, "laundry!A:I");
-    const rowIndex = resRows.findIndex((r: any) => (r[LAUNDRY_COL.ID] || "").trim() === reservationId);
+    const rowIndex = resRows.findIndex(
+      (r: any) => (r[LAUNDRY_COL.ID] || "").trim() === reservationId
+    );
     if (rowIndex === -1) return json({ error: "Reservation not found" }, { status: 404 });
 
     const targetRow = resRows[rowIndex];
@@ -166,7 +174,7 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
     // Update row (F: Status, G: Cancel Reason, I: Cancel Timestamp)
     const actualRow = rowIndex + 1;
     const urlBase = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/laundry!F${actualRow}:I${actualRow}?valueInputOption=USER_ENTERED`;
-    
+
     await fetch(urlBase, {
       method: "PUT",
       headers: {

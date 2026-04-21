@@ -61,7 +61,7 @@
       if (!achievement) throw new Error("Achievement not found");
 
       const achievementLogs = allL.filter((l) => l.achievementId === id);
-      
+
       earners = achievementLogs.map((l) => {
         return {
           residentId: l.accountId,

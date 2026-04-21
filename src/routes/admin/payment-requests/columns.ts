@@ -78,7 +78,9 @@ export const columns: ColumnDef<PaymentRequestRecord>[] = [
       const statusSnippet = createRawSnippet<[{ status: string }]>((p) => ({
         render: () => {
           const s = p().status;
-          const cls = PAYMENT_REQUEST_STATUS_COLORS[s as keyof typeof PAYMENT_REQUEST_STATUS_COLORS] || PAYMENT_REQUEST_STATUS_COLORS.DEFAULT;
+          const cls =
+            PAYMENT_REQUEST_STATUS_COLORS[s as keyof typeof PAYMENT_REQUEST_STATUS_COLORS] ||
+            PAYMENT_REQUEST_STATUS_COLORS.DEFAULT;
           return `<div class="text-xs font-bold px-2 py-0.5 rounded-full uppercase w-fit ${cls}">${s}</div>`;
         }
       }));

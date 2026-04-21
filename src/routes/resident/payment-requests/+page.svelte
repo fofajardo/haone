@@ -33,7 +33,7 @@
         fetchPaymentRequests(true),
         fetchUsers(true)
       ]);
-      
+
       if (Array.isArray(pmtResult)) {
         payments = pmtResult;
       } else {
