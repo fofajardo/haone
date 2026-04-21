@@ -30,7 +30,9 @@
       ]);
       achievements = a;
       logs = l;
-      const me = allU.find((u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase());
+      const me = allU.find(
+        (u: any) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
+      );
       currentResidentId = me?.id || "";
     } catch (e: any) {
       error = e.message;
@@ -47,7 +49,10 @@
   let earnedIds = $derived(
     new Set(
       logs
-        .filter((l) => currentResidentId && l.accountId === currentResidentId)
+        .filter((l) => {
+          if (!currentResidentId && !auth.user?.email) return false;
+          return l.accountId === currentResidentId || l.accountId === auth.user?.email;
+        })
         .map((l) => l.achievementId)
     )
   );

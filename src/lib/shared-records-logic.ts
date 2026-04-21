@@ -17,11 +17,18 @@ import {
 } from "./schemas";
 import { parseAmount } from "./resident-logic";
 import { parseTime } from "./receipt-utils";
+import { auth } from "./auth.svelte";
+import { fetchServer } from "./utils";
 
 /**
  * Laundry Reservations
  */
 export async function fetchLaundryReservations(forceRefresh = false): Promise<LaundryRecord[]> {
+  if (auth.authType === "resident") {
+    const data = await fetchServer("/api/resident/laundry");
+    return data.reservations;
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
@@ -41,6 +48,13 @@ export async function fetchLaundryReservations(forceRefresh = false): Promise<La
 }
 
 export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
+  if (auth.authType === "resident") {
+    return await fetchServer("/api/resident/laundry", {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
@@ -118,6 +132,12 @@ export async function cancelLaundryReservation(
   reason: string,
   status: "CANCELLED_BY_USER" | "CANCELLED_BY_ADMIN" = "CANCELLED_BY_USER"
 ) {
+  if (auth.authType === "resident") {
+    return await fetchServer(`/api/resident/laundry?id=${reservationId}`, {
+      method: "DELETE"
+    });
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
@@ -137,6 +157,10 @@ export async function cancelLaundryReservation(
  * Self-service Payments
  */
 export async function fetchPaymentRequests(forceRefresh = false): Promise<PaymentRequestRecord[]> {
+  if (auth.authType === "resident") {
+    return await fetchServer("/api/resident/payment-requests");
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
@@ -159,6 +183,13 @@ export async function fetchPaymentRequests(forceRefresh = false): Promise<Paymen
 }
 
 export async function addPaymentRequest(data: Omit<PaymentRequestRecord, "raw">) {
+  if (auth.authType === "resident") {
+    return await fetchServer("/api/resident/payment-requests", {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
@@ -253,6 +284,12 @@ export async function declinePaymentRequest(paymentId: string, reason: string) {
 }
 
 export async function cancelPaymentRequest(paymentId: string) {
+  if (auth.authType === "resident") {
+    return await fetchServer(`/api/resident/payment-requests?id=${paymentId}`, {
+      method: "DELETE"
+    });
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
@@ -274,6 +311,10 @@ export async function cancelPaymentRequest(paymentId: string) {
  * Announcements
  */
 export async function fetchAnnouncements(forceRefresh = false): Promise<AnnouncementRecord[]> {
+  if (auth.authType === "resident") {
+    return await fetchServer("/api/resident/announcements");
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
@@ -361,6 +402,11 @@ export async function expireAnnouncement(id: string) {
  * Achievements
  */
 export async function fetchAchievements(forceRefresh = false): Promise<AchievementRecord[]> {
+  if (auth.authType === "resident") {
+    const data = await fetchServer("/api/resident/achievements");
+    return data.achievements;
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
@@ -392,6 +438,11 @@ export async function addAchievement(data: Omit<AchievementRecord, "raw">) {
 }
 
 export async function fetchAchievementLogs(forceRefresh = false): Promise<AchievementLogRecord[]> {
+  if (auth.authType === "resident") {
+    const data = await fetchServer("/api/resident/achievements");
+    return data.logs;
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
@@ -424,6 +475,17 @@ export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) 
  * User Settings
  */
 export async function fetchUserSettings(forceRefresh = false): Promise<UserSettingsRecord[]> {
+  if (auth.authType === "resident") {
+    const data = await fetchServer("/api/resident/settings");
+    return [
+      {
+        residentId: auth.user?.email || "",
+        isPublicAchievementList: data.isPublicAchievementList,
+        raw: []
+      }
+    ];
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
@@ -437,6 +499,13 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
 }
 
 export async function updateUserSettings(residentId: string, isPublic: boolean) {
+  if (auth.authType === "resident") {
+    return await fetchServer("/api/resident/settings", {
+      method: "PATCH",
+      body: JSON.stringify({ isPublicAchievementList: isPublic })
+    });
+  }
+
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 

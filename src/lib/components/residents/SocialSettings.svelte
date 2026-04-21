@@ -17,13 +17,18 @@
   async function loadData() {
     if (!auth.user?.email) return;
     try {
-      const [all, allUsers] = await Promise.all([fetchUserSettings(), fetchUsers()]);
+      const [allSettings, allUsers] = await Promise.all([fetchUserSettings(), fetchUsers()]);
       const me = allUsers.find(
         (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
       );
       residentId = me?.id || "";
-      const my = residentId ? all.find((s) => s.residentId === residentId) : undefined;
-      isPublic = my?.isPublicAchievementList ?? false;
+      
+      if (auth.authType === "resident") {
+        isPublic = allSettings[0]?.isPublicAchievementList ?? false;
+      } else {
+        const my = residentId ? allSettings.find((s) => s.residentId === residentId) : undefined;
+        isPublic = my?.isPublicAchievementList ?? false;
+      }
     } catch (e) {
       console.error(e);
     } finally {

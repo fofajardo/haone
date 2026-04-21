@@ -13,7 +13,6 @@
     cancelLaundryReservation
   } from "$lib/shared-records-logic";
   import { fetchUsers } from "$lib/resident-logic";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { formatDate } from "$lib/receipt-utils";
   import { uiSettings } from "$lib/settings.svelte";
   import { ACCOUNT_COL } from "$lib/schemas";
@@ -50,27 +49,13 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData, accRows] = await Promise.all([
+      const [resData, userData] = await Promise.all([
         fetchLaundryReservations(true),
-        fetchUsers(true),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:E", true)
+        fetchUsers(true)
       ]);
 
-      const roomMap = new Map<string, string>();
-      accRows.slice(1).forEach((row) => {
-        const rid = (row[ACCOUNT_COL.RESIDENT_ID] || "").trim();
-        const room = (row[ACCOUNT_COL.ROOM] || "").trim();
-        if (rid && room) {
-          roomMap.set(rid, room);
-          roomMap.set(rid.toLowerCase(), room);
-        }
-      });
-
       reservations = resData;
-      users = userData.map((u) => ({
-        ...u,
-        room: roomMap.get(u.id) || roomMap.get((u.email || "").toLowerCase()) || ""
-      }));
+      users = userData;
 
       const me = userData.find(
         (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()

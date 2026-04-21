@@ -3,6 +3,8 @@ import { PaymentStatusTemplate } from "./templates/payment-status";
 import { ClearanceCertificateTemplate } from "./templates/clearance";
 import type { BrandingProfile } from "./templates/types";
 import { goto } from "$app/navigation";
+import { auth } from "./auth.svelte";
+import { fetchServer } from "./utils";
 import {
   ACCOUNT_COL,
   JOURNAL_COL,
@@ -94,6 +96,11 @@ export function mapRowToResident(
  * Fetches joined resident data from Accounts and ResidentRecords spreadsheets.
  */
 export async function fetchResidents(forceRefresh = false): Promise<ResidentRecord[]> {
+  if (auth.authType === "resident") {
+    const data = await fetchServer("/api/resident/occupancy");
+    return data.accounts;
+  }
+
   const { uiSettings } = await import("./settings.svelte");
   const { fetchSheetRowsRaw } = await import("./google-sheets");
 
@@ -172,6 +179,11 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
  * Fetches all users from the ResidentRecords spreadsheet.
  */
 export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
+  if (auth.authType === "resident") {
+    const data = await fetchServer("/api/resident/laundry");
+    return data.users;
+  }
+
   const { uiSettings } = await import("./settings.svelte");
   const { fetchSheetRowsRaw } = await import("./google-sheets");
 
