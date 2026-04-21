@@ -139,7 +139,12 @@
   function prepareClearanceDispatch() {
     if (selectedIndices.size === 0) return;
     const selectedResidents = residents.filter(
-      (r) => selectedIndices.has(r.stno) && r.ceLink && r.ceIssued
+      (r) =>
+        selectedIndices.has(r.stno) &&
+        r.ceLink &&
+        r.ceLink !== "N/A" &&
+        r.ceLink !== "" &&
+        r.ceIssued
     );
     if (selectedResidents.length === 0) {
       showAlert("Dispatch Blocked", "No cleared residents found among the selection.", "error");

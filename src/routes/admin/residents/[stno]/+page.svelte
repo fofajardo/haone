@@ -296,7 +296,10 @@
                 <Mail class="mr-2 h-4 w-4" />
                 <span>Send Payment Status</span>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onclick={sendClearanceEmail} disabled={!account.ceLink}>
+              <DropdownMenu.Item
+                onclick={sendClearanceEmail}
+                disabled={!account.ceLink || account.ceLink === "N/A" || account.ceLink === ""}
+              >
                 <FileCheck class="mr-2 h-4 w-4" />
                 <span>Send Clearance Certificate</span>
               </DropdownMenu.Item>
