@@ -23,9 +23,14 @@
     RotateCcw
   } from "lucide-svelte";
 
-  let { content = $bindable(""), placeholder = "Start typing reminders…" } = $props<{
+  let {
+    content = $bindable(""),
+    placeholder = "Start typing reminders…",
+    editable = true
+  } = $props<{
     content: string;
     placeholder?: string;
+    editable?: boolean;
   }>();
 
   let element: HTMLElement;
@@ -39,6 +44,7 @@
   onMount(() => {
     editor = new Editor({
       element,
+      editable,
       extensions: [
         StarterKit.configure({
           bulletList: false,
@@ -84,8 +90,7 @@
       },
       editorProps: {
         attributes: {
-          class:
-            "prose prose-sm max-w-none focus:outline-none min-h-[400px] p-6 text-sm text-foreground leading-relaxed"
+          class: `prose prose-sm max-w-none focus:outline-none ${editable ? "min-h-[400px] p-6" : "min-h-0 p-0"} text-sm text-foreground leading-relaxed`
         }
       }
     });
@@ -111,10 +116,12 @@
 </script>
 
 <div
-  class="overflow-hidden rounded-xl border bg-card shadow-sm transition-all focus-within:ring-1 focus-within:ring-ring"
+  class={editable
+    ? "overflow-hidden rounded-xl border bg-card transition-all focus-within:ring-1 focus-within:ring-ring"
+    : "w-full"}
 >
   <!-- Fixed Toolbar -->
-  {#if editor}
+  {#if editable && editor}
     {#key selectionState}
       <div class="flex flex-wrap items-center gap-1 border-b bg-muted/50 p-2">
         <Button
@@ -210,7 +217,10 @@
   {/if}
 
   <!-- Editor Container -->
-  <div bind:this={element} class="tiptap-container min-h-[400px] border-0"></div>
+  <div
+    bind:this={element}
+    class="tiptap-container border-0 {editable ? 'min-h-[400px]' : 'min-h-0'}"
+  ></div>
 </div>
 
 <!-- Link Dialog -->
