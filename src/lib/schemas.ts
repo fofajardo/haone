@@ -267,6 +267,8 @@ export interface LaundryRecord {
   cancelReason: string;
   creationTimestamp?: string;
   cancelTimestamp?: string;
+  displayName?: string;
+  room?: string;
   raw: string[];
 }
 
@@ -316,6 +318,8 @@ export interface AchievementLogRecord {
   accountId: string;
   date: string;
   achievementId: string;
+  displayName?: string;
+  isPublic?: boolean;
   raw: string[];
 }
 

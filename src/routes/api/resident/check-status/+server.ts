@@ -29,7 +29,10 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     const transactionTypes = constRows
       .slice(1)
-      .filter((r: any) => (r[0] || "").startsWith("PMT_"))
+      .filter((r: any) => {
+        const key = (r[0] || "").trim();
+        return key.startsWith("PMT_");
+      })
       .map((r: any) => ({
         value: r[1] || r[0],
         label: r[2] || r[1] || r[0]
@@ -37,7 +40,10 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     const mopTypes = constRows
       .slice(1)
-      .filter((r: any) => (r[0] || "").startsWith("MOP_"))
+      .filter((r: any) => {
+        const key = (r[0] || "").trim();
+        return key.startsWith("MOP_");
+      })
       .map((r: any) => ({
         value: r[1] || r[0],
         label: r[2] || r[1] || r[0]

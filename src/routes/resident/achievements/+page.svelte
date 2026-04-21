@@ -23,17 +23,24 @@
     isLoading = true;
     error = null;
     try {
-      const [a, l, allU] = await Promise.all([
+      const [achResult, logResult, allU] = await Promise.all([
         fetchAchievements(true),
         fetchAchievementLogs(true),
         fetchUsers(true)
       ]);
-      achievements = a;
-      logs = l;
-      const me = allU.find(
-        (u: any) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
-      );
-      currentResidentId = me?.id || "";
+      
+      if (Array.isArray(achResult)) {
+        achievements = achResult;
+      } else {
+        achievements = achResult.achievements;
+        currentResidentId = achResult.currentResidentId;
+      }
+
+      if (Array.isArray(logResult)) {
+        logs = logResult;
+      } else {
+        logs = logResult.logs;
+      }
     } catch (e: any) {
       error = e.message;
     } finally {

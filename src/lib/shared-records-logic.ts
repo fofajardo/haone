@@ -23,10 +23,15 @@ import { fetchServer } from "./utils";
 /**
  * Laundry Reservations
  */
-export async function fetchLaundryReservations(forceRefresh = false): Promise<LaundryRecord[]> {
+export async function fetchLaundryReservations(
+  forceRefresh = false
+): Promise<LaundryRecord[] | { reservations: LaundryRecord[]; currentResidentId: string }> {
   if (auth.authType === "resident") {
     const data = await fetchServer("/api/resident/laundry");
-    return data.reservations;
+    return {
+      reservations: data.reservations,
+      currentResidentId: data.currentResidentId
+    };
   }
 
   const spreadsheetId = uiSettings.sharedRecordsId;
@@ -100,7 +105,8 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   }
 
   // 5. Overlap Check
-  const existing = await fetchLaundryReservations(true);
+  const resResult = await fetchLaundryReservations(true);
+  const existing = Array.isArray(resResult) ? resResult : resResult.reservations;
   const isOverlapping = existing.some((r) => {
     if (r.status !== "ACTIVE" || r.date !== data.date) return false;
     const rStart = new Date(`${r.date}T${r.timeStart}`);
@@ -156,9 +162,15 @@ export async function cancelLaundryReservation(
 /**
  * Self-service Payments
  */
-export async function fetchPaymentRequests(forceRefresh = false): Promise<PaymentRequestRecord[]> {
+export async function fetchPaymentRequests(
+  forceRefresh = false
+): Promise<PaymentRequestRecord[] | { requests: PaymentRequestRecord[]; currentResidentId: string }> {
   if (auth.authType === "resident") {
-    return await fetchServer("/api/resident/payment-requests");
+    const data = await fetchServer("/api/resident/payment-requests");
+    return {
+      requests: data.requests,
+      currentResidentId: data.currentResidentId
+    };
   }
 
   const spreadsheetId = uiSettings.sharedRecordsId;
@@ -401,10 +413,19 @@ export async function expireAnnouncement(id: string) {
 /**
  * Achievements
  */
-export async function fetchAchievements(forceRefresh = false): Promise<AchievementRecord[]> {
+export async function fetchAchievements(
+  forceRefresh = false
+): Promise<
+  | AchievementRecord[]
+  | { achievements: AchievementRecord[]; logs: AchievementLogRecord[]; currentResidentId: string }
+> {
   if (auth.authType === "resident") {
     const data = await fetchServer("/api/resident/achievements");
-    return data.achievements;
+    return {
+      achievements: data.achievements,
+      logs: data.logs,
+      currentResidentId: data.currentResidentId
+    };
   }
 
   const spreadsheetId = uiSettings.sharedRecordsId;
@@ -437,10 +458,19 @@ export async function addAchievement(data: Omit<AchievementRecord, "raw">) {
   await appendSheetRow(spreadsheetId, "achievements!A:F", [row]);
 }
 
-export async function fetchAchievementLogs(forceRefresh = false): Promise<AchievementLogRecord[]> {
+export async function fetchAchievementLogs(
+  forceRefresh = false
+): Promise<
+  | AchievementLogRecord[]
+  | { achievements: AchievementRecord[]; logs: AchievementLogRecord[]; currentResidentId: string }
+> {
   if (auth.authType === "resident") {
     const data = await fetchServer("/api/resident/achievements");
-    return data.logs;
+    return {
+      achievements: data.achievements,
+      logs: data.logs,
+      currentResidentId: data.currentResidentId
+    };
   }
 
   const spreadsheetId = uiSettings.sharedRecordsId;

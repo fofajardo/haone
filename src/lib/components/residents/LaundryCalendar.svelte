@@ -131,8 +131,8 @@
           startHour: start,
           endHour: end,
           duration: end - start,
-          name: (user as any)?.name || "Resident",
-          room: (user as any)?.room || ""
+          name: (user as any)?.name || r.displayName || "Resident",
+          room: (user as any)?.room || r.room || ""
         };
       });
   }

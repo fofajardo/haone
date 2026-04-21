@@ -34,30 +34,40 @@
     isLoading = true;
     error = null;
     try {
-      const [allA, allL, allU, allS] = await Promise.all([
+      const [achResult, logResult, allU, allS] = await Promise.all([
         fetchAchievements(true),
         fetchAchievementLogs(true),
         fetchUsers(true),
         fetchUserSettings(true)
       ]);
 
+      let allA: AchievementRecord[];
+      let allL: AchievementLogRecord[];
+
+      if (Array.isArray(achResult)) {
+        allA = achResult;
+      } else {
+        allA = achResult.achievements;
+        currentResidentId = achResult.currentResidentId;
+      }
+
+      if (Array.isArray(logResult)) {
+        allL = logResult;
+      } else {
+        allL = logResult.logs;
+      }
+
       achievement = allA.find((a) => a.id === id) || null;
       if (!achievement) throw new Error("Achievement not found");
 
-      const me = allU.find((u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase());
-      currentResidentId = me?.id || "";
-
       const achievementLogs = allL.filter((l) => l.achievementId === id);
-      const settingsMap = new Map(allS.map((s) => [s.residentId, s.isPublicAchievementList]));
-      const userMap = new Map(allU.map((u) => [u.id, u.displayName]));
-
+      
       earners = achievementLogs.map((l) => {
-        const isPublic = settingsMap.get(l.accountId) ?? false;
         return {
           residentId: l.accountId,
-          name: isPublic ? userMap.get(l.accountId) || l.accountId : "Private Resident",
+          name: l.displayName || "Private Resident",
           date: l.date,
-          isPublic
+          isPublic: l.isPublic ?? false
         };
       });
     } catch (e: any) {

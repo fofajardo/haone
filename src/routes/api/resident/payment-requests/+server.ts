@@ -53,7 +53,7 @@ export const GET: RequestHandler = async ({ request }) => {
       }))
       .reverse();
 
-    return json(requests);
+    return json({ requests, currentResidentId: residentId });
   } catch (e: any) {
     return serverError(e, "Payment requests fetch");
   }

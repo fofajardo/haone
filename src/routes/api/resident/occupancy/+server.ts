@@ -102,8 +102,7 @@ export const GET: RequestHandler = async ({ request }) => {
           totalBase,
           paid,
           waived,
-          bal,
-          raw: r
+          bal
         };
       })
       .sort((a: any, b: any) => b.period.localeCompare(a.period));

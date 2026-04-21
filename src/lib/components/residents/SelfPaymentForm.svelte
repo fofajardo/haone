@@ -1,7 +1,7 @@
 <script lang="ts">
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
+  import { fetchServer } from "$lib/utils";
   import { translateMop } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
@@ -32,16 +32,9 @@
   });
 
   async function loadData() {
-    if (!uiSettings.accountingWorkbookId) return;
     try {
-      const constRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
-      mopTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("MOP_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: translateMop(r[1] || r[0])
-        }));
+      const statusData = await fetchServer("/api/resident/check-status");
+      mopTypes = statusData.mopTypes || [];
     } catch (e) {
       console.error(e);
     } finally {

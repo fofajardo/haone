@@ -180,8 +180,9 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
  */
 export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
   if (auth.authType === "resident") {
-    const data = await fetchServer("/api/resident/laundry");
-    return data.users;
+    // Laundry API no longer exposes full user list for residents.
+    // Individual user mapping is now merged into reservations server-side.
+    return [];
   }
 
   const { uiSettings } = await import("./settings.svelte");

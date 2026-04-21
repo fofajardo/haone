@@ -29,15 +29,17 @@
     isLoading = true;
     error = null;
     try {
-      const [allPayments, allUsers] = await Promise.all([
+      const [pmtResult, allUsers] = await Promise.all([
         fetchPaymentRequests(true),
         fetchUsers(true)
       ]);
-      payments = allPayments;
-      const me = allUsers.find(
-        (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
-      );
-      currentResidentId = me?.id || "";
+      
+      if (Array.isArray(pmtResult)) {
+        payments = pmtResult;
+      } else {
+        payments = pmtResult.requests;
+        currentResidentId = pmtResult.currentResidentId;
+      }
     } catch (e: any) {
       error = e.message;
     } finally {

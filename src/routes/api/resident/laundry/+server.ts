@@ -15,7 +15,7 @@ import type { RequestHandler } from "./$types";
  * GET: Fetch all reservations + user room mapping
  */
 export const GET: RequestHandler = async ({ request }) => {
-  const { error } = await authenticateResident(request);
+  const { email: authEmail, error } = await authenticateResident(request);
   if (error) return error;
 
   try {
@@ -27,37 +27,50 @@ export const GET: RequestHandler = async ({ request }) => {
       getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P")
     ]);
 
-    // Build room map
+    // Build user map
+    const userMap = new Map<string, any>();
+    userRows.slice(1).forEach((u: any) => {
+      const id = (u[USER_COL.ID] || "").trim();
+      if (id) {
+        userMap.set(id, {
+          displayName: (u[USER_COL.DISPLAY_NAME] || "").trim()
+        });
+      }
+    });
+
+    // Resolve room map
     const roomMap = new Map<string, string>();
     accRows.slice(1).forEach((row: any) => {
       const rid = (row[ACCOUNT_COL.RESIDENT_ID] || "").trim();
       const room = (row[ACCOUNT_COL.ROOM] || "").trim();
       if (rid && room) {
         roomMap.set(rid, room);
-        roomMap.set(rid.toLowerCase(), room);
       }
     });
 
-    const users = userRows.slice(1).map((u: any) => ({
-      id: (u[USER_COL.ID] || "").trim(),
-      email: (u[USER_COL.EMAIL] || "").trim(),
-      displayName: (u[USER_COL.DISPLAY_NAME] || "").trim(),
-      room: roomMap.get((u[USER_COL.ID] || "").trim()) || roomMap.get((u[USER_COL.EMAIL] || "").trim().toLowerCase()) || ""
-    }));
+    const reservations = resRows.slice(1).map((row: any) => {
+      const resId = (row[LAUNDRY_COL.RESIDENT_ID] || "").trim();
+      const user = userMap.get(resId);
+      return {
+        id: (row[LAUNDRY_COL.ID] || "").trim(),
+        residentId: resId,
+        date: (row[LAUNDRY_COL.DATE] || "").trim(),
+        timeStart: (row[LAUNDRY_COL.TIME_START] || "").trim(),
+        timeEnd: (row[LAUNDRY_COL.TIME_END] || "").trim(),
+        status: (row[LAUNDRY_COL.STATUS] || "").trim(),
+        cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
+        creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
+        cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim(),
+        displayName: user?.displayName || "Resident",
+        room: roomMap.get(resId) || ""
+      };
+    });
 
-    const reservations = resRows.slice(1).map((row: any) => ({
-      id: (row[LAUNDRY_COL.ID] || "").trim(),
-      residentId: (row[LAUNDRY_COL.RESIDENT_ID] || "").trim(),
-      date: (row[LAUNDRY_COL.DATE] || "").trim(),
-      timeStart: (row[LAUNDRY_COL.TIME_START] || "").trim(),
-      timeEnd: (row[LAUNDRY_COL.TIME_END] || "").trim(),
-      status: (row[LAUNDRY_COL.STATUS] || "").trim(),
-      cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
-      creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
-      cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim()
-    }));
+    // Find current resident ID
+    const me = userRows.slice(1).find((u: any) => (u[USER_COL.EMAIL] || "").toLowerCase() === authEmail.toLowerCase());
+    const currentResidentId = me ? (me[USER_COL.ID] || "").trim() : "";
 
-    return json({ reservations, users });
+    return json({ reservations, currentResidentId });
   } catch (e: any) {
     return serverError(e, "Laundry fetch");
   }

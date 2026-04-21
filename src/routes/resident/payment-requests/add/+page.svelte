@@ -3,8 +3,9 @@
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { fetchResidents } from "$lib/resident-logic";
+
   import { addPaymentRequest } from "$lib/shared-records-logic";
+  import { fetchServer } from "$lib/utils";
   import {
     translatePeriod,
     translateMop,
@@ -69,21 +70,9 @@
     if (!auth.user?.email) return;
     isLoading = true;
     try {
-      const [allResidents, constRows] = await Promise.all([
-        fetchResidents(),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId!, "constants!A:C")
-      ]);
-
-      resident =
-        allResidents.find((r) => r.email.toLowerCase() === auth.user?.email?.toLowerCase()) || null;
-
-      mopTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("MOP_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: translateMop(r[1] || r[0])
-        }));
+      const statusData = await fetchServer("/api/resident/check-status");
+      resident = statusData.account;
+      mopTypes = statusData.mopTypes;
     } catch (e: any) {
       toast.error("Failed to load account data");
     } finally {

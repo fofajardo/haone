@@ -49,18 +49,18 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData] = await Promise.all([
+      const [resResult, userData] = await Promise.all([
         fetchLaundryReservations(true),
         fetchUsers(true)
       ]);
 
-      reservations = resData;
+      if (Array.isArray(resResult)) {
+        reservations = resResult;
+      } else {
+        reservations = resResult.reservations;
+        currentResidentId = resResult.currentResidentId;
+      }
       users = userData;
-
-      const me = userData.find(
-        (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
-      );
-      currentResidentId = me?.id || "";
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -118,14 +118,11 @@
       const startH = parseTime(newReservation.timeStart);
       const endH = parseTime(newReservation.timeEnd);
 
-      const currentUser = users.find(
-        (u) => u.email.toLowerCase() === auth.user?.email?.toLowerCase()
-      );
-      if (!currentUser) throw new Error("Could not find your resident record.");
+      if (!currentResidentId) throw new Error("Could not find your resident record.");
 
       await addLaundryReservation({
         id: crypto.randomUUID(),
-        residentId: currentUser.id,
+        residentId: currentResidentId,
         date: newReservation.date,
         timeStart: formatTime(startH),
         timeEnd: formatTime(endH),

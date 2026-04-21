@@ -1,42 +1,66 @@
-# sv
+<p align="center">
+  <img src="static/ha1.svg" alt="HAOne Logo" width="120" />
+</p>
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+# HAOne
 
-## Creating a project
+A high-performance, premium institutional platform for managing resident data, financial journals, and facility operations. Built with modern web standards and a focus on visual excellence.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Features
 
-```sh
-# create a new project
-npx sv create my-app
+- **Financial Ledger**: Real-time management of water fees, association dues, and miscellaneous transactions with Google Sheets persistence.
+- **Resident Management**: Comprehensive directory with room assignments, bed tracking, and academic profile history.
+- **Automated Receipts**: Dynamic PDF generation for payment receipts and clearance documents.
+- **Facility Booking**: Integrated laundry reservation system with real-time availability tracking.
+- **Communication**: Automated email dispatching via Gmail API for status updates and notifications.
+
+## Tech Stack
+
+- **Framework**: [SvelteKit 2.0](https://kit.svelte.dev/) + [Svelte 5 (Runes)](https://svelte.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **UI Components**: [shadcn-svelte](https://www.shadcn-svelte.com/) + [Bits UI](https://bits-ui.com/)
+- **Backend/Persistence**: Google Sheets API V4 + Cloudflare Workers
+- **Visualization**: Three.js + LayerChart
+- **Editor**: Tiptap Rich Text Editor
+- **Deployment**: [Cloudflare Pages](https://pages.cloudflare.com/)
+
+## Getting Started
+
+### Prerequisites
+
+- [pnpm](https://pnpm.io/) (Mandatory)
+- Admin Google Cloud Project (Sheets and Gmail APIs enabled)
+- Resident Google Cloud Project (Google Identity Services / Auth only)
+- Cloudflare Account
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone <repository-url>
+   cd haone
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+3. Configure environment variables:
+   Copy `.env.example` to `.env` and fill in your credentials.
+
+4. Start the development server:
+   ```bash
+   pnpm dev
+   ```
+
+## Deployment
+
+The project is optimized for deployment on Cloudflare Pages using Wrangler.
+
+```bash
+pnpm build
+pnpm wrangler pages deploy .svelte-kit/cloudflare
 ```
-
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-pnpm dlx sv create --template minimal --types ts --add prettier tailwindcss="plugins:forms,typography" sveltekit-adapter="adapter:auto" mdsvex --install pnpm haone
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

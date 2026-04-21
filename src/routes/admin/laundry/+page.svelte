@@ -35,7 +35,7 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData, accRows] = await Promise.all([
+      const [resResult, userData, accRows] = await Promise.all([
         fetchLaundryReservations(true),
         fetchUsers(true),
         fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:E", true)
@@ -52,7 +52,11 @@
         }
       });
 
-      reservations = resData;
+      if (Array.isArray(resResult)) {
+        reservations = resResult;
+      } else {
+        reservations = resResult.reservations;
+      }
       users = userData.map((u) => ({
         ...u,
         room: roomMap.get(u.id) || roomMap.get((u.email || "").toLowerCase()) || ""

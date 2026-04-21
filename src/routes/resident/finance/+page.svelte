@@ -6,7 +6,7 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import TermFilter from "$lib/components/TermFilter.svelte";
+  import ResidentTermFilter from "$lib/components/residents/ResidentTermFilter.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$lib/components/residents/ClearanceCard.svelte";
@@ -72,7 +72,11 @@
 
   <div class="grid gap-4 lg:grid-cols-12">
     <div class="lg:col-span-3">
-      <TermFilter bind:value={localTerm} onSelect={() => loadData(localTerm)} />
+      <ResidentTermFilter
+        bind:value={localTerm}
+        options={status?.allTerms}
+        onSelect={() => loadData(localTerm)}
+      />
     </div>
   </div>
 
