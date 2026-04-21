@@ -13,18 +13,21 @@ export const columns: ColumnDef<LaundryRecord>[] = [
     header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Resident" }),
     cell: ({ row, table }) => {
       const meta = table.options.meta as any;
-      const name = meta?.userMap?.get(row.original.residentId) || row.original.residentId;
-      const snippet = createRawSnippet<[{ name: string; email: string }]>((p) => ({
+      const user = meta?.userMap?.get(row.original.residentId);
+      const name = user?.displayName || row.original.residentId;
+      const room = user?.room ? `Room ${user.room}` : "";
+
+      const snippet = createRawSnippet<[{ name: string; room: string }]>((p) => ({
         render: () => `
           <div class="flex flex-col">
             <span class="text-sm text-foreground font-semibold">${p().name}</span>
-            <span class="text-xs text-muted-foreground font-medium uppercase tracking-tighter">${p().email}</span>
+            ${p().room ? `<span class="text-xs text-muted-foreground font-medium uppercase tracking-tighter">${p().room}</span>` : ""}
           </div>
         `
       }));
       return renderSnippet(snippet, {
         name,
-        email: row.original.residentId
+        room
       });
     }
   },
