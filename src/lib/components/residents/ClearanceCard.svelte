@@ -68,7 +68,7 @@
       </div>
     {/if}
   </Card.Content>
-  {#if account.ceIssued && account.ceLink}
+  {#if account.ceIssued && account.ceLink && account.ceLink !== "N/A" && account.ceLink !== ""}
     <Card.Footer>
       <Button
         variant="outline"
