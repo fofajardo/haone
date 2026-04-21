@@ -55,11 +55,13 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     // 5. Check CURR sheet for potential registration (filter by term)
     const currRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "CURR!A:L");
-    const currEntry = currRows.find(
-      (r: any) =>
-        (r[CURR_COL.EMAIL] || "").trim().toLowerCase() === email &&
-        (r[CURR_COL.TERM] || "") === activeTerm
-    );
+    const currEntry = currRows
+      .reverse()
+      .find(
+        (r: any) =>
+          (r[CURR_COL.EMAIL] || "").trim().toLowerCase() === email &&
+          (r[CURR_COL.TERM] || "") === activeTerm
+      );
     const isEvaluated = currEntry?.[CURR_COL.EVALUATED]?.toUpperCase() === "TRUE";
 
     // 6. Fetch Transactions
