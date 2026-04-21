@@ -185,24 +185,16 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       });
     } else {
       // User exists, check for updates or bed assignments
-      const lastCollege = (user.college || "").split(",").pop()?.trim() || "";
-      const lastProgram = (user.program || "").split(":").pop()?.trim() || "";
-      const needsUserUpdate = lastCollege !== curr.college || lastProgram !== curr.program;
+      const colleges = (user.college || "").split(",").map((c) => c.trim()).filter(Boolean);
+      const programs = (user.program || "").split(":").map((p) => p.trim()).filter(Boolean);
 
-      if (needsUserUpdate) {
-        // Append new academic info if different
-        const newCollege =
-          lastCollege === curr.college
-            ? user.college
-            : user.college
-              ? `${user.college},${curr.college}`
-              : curr.college;
-        const newProgram =
-          lastProgram === curr.program
-            ? user.program
-            : user.program
-              ? `${user.program}:${curr.program}`
-              : curr.program;
+      const lastCollege = colleges[colleges.length - 1] || "";
+      const lastProgram = programs[programs.length - 1] || "";
+
+      const needsUpdate = curr.college !== lastCollege || curr.program !== lastProgram;
+      if (needsUpdate) {
+        const newColleges = [...colleges, curr.college];
+        const newPrograms = [...programs, curr.program];
 
         actions.push({
           type: "UPDATE_USER",
@@ -213,8 +205,8 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           details: `Update profile (College: ${curr.college}, Program: ${curr.program})`,
           payload: {
             id: user.id,
-            college: newCollege,
-            program: newProgram
+            college: newColleges.join(","),
+            program: newPrograms.join(":")
           }
         });
       }
