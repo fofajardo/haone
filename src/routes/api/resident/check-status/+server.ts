@@ -172,8 +172,8 @@ export const GET: RequestHandler = async ({ url, request }) => {
             firstName: userRow[USER_COL.FIRST_NAME],
             lastName: userRow[USER_COL.LAST_NAME],
             studentNo: userRow[USER_COL.STUDENT_NO],
-            college: userRow[USER_COL.COLLEGE],
-            program: userRow[USER_COL.DEGREE_PROGRAM]
+            college: (userRow[USER_COL.COLLEGE] || "").split(",").pop()?.trim() || "",
+            program: (userRow[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || ""
           }
         : null,
       account: residentAccount

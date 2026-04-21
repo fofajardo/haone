@@ -53,8 +53,8 @@ export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]
     bed: (row[CURR_COL.BED] || "").trim().toUpperCase(),
     lastName: (row[CURR_COL.LAST_NAME] || "").trim(),
     firstName: (row[CURR_COL.FIRST_NAME] || "").trim(),
-    college: (row[CURR_COL.COLLEGE] || "").trim().toUpperCase(),
-    program: (row[CURR_COL.PROGRAM] || "").trim().toUpperCase(),
+    college: (row[CURR_COL.COLLEGE] || "").trim(),
+    program: (row[CURR_COL.PROGRAM] || "").trim(),
     studentNo: (row[CURR_COL.STUDENT_NO] || "").trim(),
     checkInDate: row[CURR_COL.CHECK_IN_DATE] || "",
     isEvaluated: (row[CURR_COL.EVALUATED] || "").toUpperCase() === "TRUE",
@@ -185,8 +185,14 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       });
     } else {
       // User exists, check for updates or bed assignments
-      const colleges = (user.college || "").split(",").map((c) => c.trim()).filter(Boolean);
-      const programs = (user.program || "").split(":").map((p) => p.trim()).filter(Boolean);
+      const colleges = (user.college || "")
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
+      const programs = (user.program || "")
+        .split(":")
+        .map((p) => p.trim())
+        .filter(Boolean);
 
       const lastCollege = colleges[colleges.length - 1] || "";
       const lastProgram = programs[programs.length - 1] || "";

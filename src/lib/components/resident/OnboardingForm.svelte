@@ -49,9 +49,15 @@
       formData.studentNo =
         formData.studentNo || status.currEntry?.studentNo || status.profile?.studentNo || "";
       formData.college =
-        formData.college || status.currEntry?.college || status.profile?.college || "";
+        formData.college ||
+        status.currEntry?.college ||
+        (status.profile?.college || "").split(",").pop()?.trim() ||
+        "";
       formData.program =
-        formData.program || status.currEntry?.program || status.profile?.program || "";
+        formData.program ||
+        status.currEntry?.program ||
+        (status.profile?.program || "").split(":").pop()?.trim() ||
+        "";
       formData.firstName =
         formData.firstName || status.currEntry?.firstName || status.profile?.firstName || "";
       formData.lastName =
