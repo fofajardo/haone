@@ -77,11 +77,9 @@
         })
       });
 
-      toast.success("Registration complete!");
-      onSuccess();
+      await onSuccess();
     } catch (e: any) {
       toast.error(e.message);
-    } finally {
       isSubmitting = false;
     }
   }
