@@ -69,7 +69,8 @@ export const CURR_COL = {
   LAST_NAME: 7,
   FIRST_NAME: 8,
   COLLEGE: 9,
-  EVALUATED: 10
+  EVALUATED: 10,
+  TERM: 11
 } as const;
 
 export interface ResidentRecord {

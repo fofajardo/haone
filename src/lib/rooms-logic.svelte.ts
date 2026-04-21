@@ -21,6 +21,7 @@ export interface CurrRecord {
   studentNo: string;
   checkInDate: string;
   isEvaluated: boolean;
+  term: string;
   rowIndex: number; // 1-indexed
   raw: string[];
 }
@@ -42,7 +43,7 @@ export interface SyncPreviewAction {
 export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]> {
   if (!uiSettings.residentRecordsId) return [];
 
-  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:K", forceRefresh);
+  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:L", forceRefresh);
   if (rows.length <= 1) return [];
 
   return rows.slice(1).map((row, idx) => ({
@@ -57,6 +58,7 @@ export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]
     studentNo: (row[CURR_COL.STUDENT_NO] || "").trim(),
     checkInDate: row[CURR_COL.CHECK_IN_DATE] || "",
     isEvaluated: (row[CURR_COL.EVALUATED] || "").toUpperCase() === "TRUE",
+    term: row[CURR_COL.TERM] || "",
     rowIndex: idx + 2, // +1 for header, +1 for 1-indexing
     raw: row
   }));
@@ -106,6 +108,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
 
   for (const curr of currRecords) {
     if (curr.isEvaluated) continue;
+    if (curr.term !== currentTerm) continue;
     if (!curr.studentNo && !curr.email) continue;
 
     let user = userMapByStNo.get(curr.studentNo) || userMapByEmail.get(curr.email);

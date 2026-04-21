@@ -1,9 +1,10 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_RR_ID } from "$env/static/public";
+import { PUBLIC_GS_RR_ID, PUBLIC_GS_AW_ID } from "$env/static/public";
 import { CURR_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
+  getSheetValues,
   appendSheetValue,
   serverError
 } from "$lib/server/api-helper";
@@ -23,8 +24,12 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const client = await getSheetsClient();
 
+    // Fetch Constants to get TERM_CURR
+    const constRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "constants!A:C");
+    const activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
+
     // Append to CURR sheet
-    const newRow = new Array(11).fill("");
+    const newRow = new Array(12).fill("");
     newRow[CURR_COL.TIMESTAMP] = new Date().toISOString();
     newRow[CURR_COL.EMAIL] = targetEmail;
     newRow[CURR_COL.ROOM] = room;
@@ -36,8 +41,9 @@ export const POST: RequestHandler = async ({ request }) => {
     newRow[CURR_COL.STUDENT_NO] = studentNo;
     newRow[CURR_COL.CHECK_IN_DATE] = checkInDate || "";
     newRow[CURR_COL.EVALUATED] = "FALSE";
+    newRow[CURR_COL.TERM] = activeTerm;
 
-    await appendSheetValue(client, PUBLIC_GS_RR_ID, "CURR!A:K", [newRow]);
+    await appendSheetValue(client, PUBLIC_GS_RR_ID, "CURR!A:L", [newRow]);
 
     return json({ success: true });
   } catch (e: any) {

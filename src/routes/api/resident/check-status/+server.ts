@@ -53,10 +53,12 @@ export const GET: RequestHandler = async ({ url, request }) => {
         r[ACCOUNT_COL.RESIDENT_ID] === userRow[USER_COL.ID]
     );
 
-    // 5. Check CURR sheet for potential registration
-    const currRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "CURR!A:K");
+    // 5. Check CURR sheet for potential registration (filter by term)
+    const currRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "CURR!A:L");
     const currEntry = currRows.find(
-      (r: any) => (r[CURR_COL.EMAIL] || "").trim().toLowerCase() === email
+      (r: any) =>
+        (r[CURR_COL.EMAIL] || "").trim().toLowerCase() === email &&
+        (r[CURR_COL.TERM] || "") === activeTerm
     );
     const isEvaluated = currEntry?.[CURR_COL.EVALUATED]?.toUpperCase() === "TRUE";
 
