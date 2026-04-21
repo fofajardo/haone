@@ -23,14 +23,18 @@ export const GET: RequestHandler = async ({ request }) => {
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ isPublicAchievementList: false });
+    if (!user) return json({ isPublicAchievementList: true });
     const residentId = user[USER_COL.ID];
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:B");
-    const settings = rows.find((r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId);
+    const settings = rows.find(
+(r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
+);
 
     return json({
-      isPublicAchievementList: (settings?.[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() === "TRUE"
+      isPublicAchievementList: settings
+        ? (settings[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() !== "FALSE"
+        : true
     });
   } catch (e: any) {
     return serverError(e, "Settings fetch");
