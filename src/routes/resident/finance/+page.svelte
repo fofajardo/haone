@@ -35,8 +35,8 @@
     error = null;
     try {
       status = await fetchServer(`/api/resident/check-status?term=${targetTerm}`);
-      if (status.account?.period) {
-        localTerm = status.account.period;
+      if (status.activeTerm) {
+        localTerm = status.activeTerm;
       }
       pageState.title = "Finance";
     } catch (e: any) {
