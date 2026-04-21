@@ -89,7 +89,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
 
   accRows.slice(1).forEach((row, idx) => {
     if (row[ACCOUNT_COL.PERIOD] === currentTerm) {
-      existingAccountMap.set(row[ACCOUNT_COL.RESIDENT_ID], { row, index: idx + 1 });
+      existingAccountMap.set(row[ACCOUNT_COL.RESIDENT_ID], { row, index: idx + 2 });
 
       if (row[ACCOUNT_COL.ROOM] && row[ACCOUNT_COL.BED]) {
         const userId = row[ACCOUNT_COL.RESIDENT_ID];
