@@ -34,7 +34,9 @@ export const ACCOUNT_COL = {
   CE_REFNO: 5,
   CE_ISSUED: 6,
   CE_LINK: 7,
-  NOTES: 8
+  NOTES: 8,
+  ISSUER_ID: 9,
+  CHECK_IN_DATE: 10
 } as const;
 
 export const USER_COL = {
@@ -99,6 +101,7 @@ export interface ResidentRecord {
   ceFullName: string;
   residentId: string;
   ledgerId: string;
+  checkInDate: string;
   raw: string[];
 }
 

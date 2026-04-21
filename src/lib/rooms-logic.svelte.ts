@@ -176,7 +176,8 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           residentId: userId,
           period: currentTerm,
           room: curr.room,
-          bed: curr.bed
+          bed: curr.bed,
+          checkInDate: curr.checkInDate
         }
       });
     } else {
@@ -239,7 +240,8 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             payload: {
               rowIndex: existingAcc.index,
               room: curr.room,
-              bed: curr.bed
+              bed: curr.bed,
+              checkInDate: curr.checkInDate
             }
           });
         }
@@ -257,7 +259,8 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             residentId: user.id,
             period: currentTerm,
             room: curr.room,
-            bed: curr.bed
+            bed: curr.bed,
+            checkInDate: curr.checkInDate
           }
         });
       }
@@ -288,25 +291,35 @@ export async function applySync(actions: SyncPreviewAction[]) {
 
   // 3. Update Accounts (Batch)
   if (accountUpdates.length > 0) {
-    const updates = accountUpdates.map((a) => ({
-      range: `accounts!D${a.payload.rowIndex + 1}:E${a.payload.rowIndex + 1}`,
-      values: [[a.payload.room, a.payload.bed]]
-    }));
+    const updates: any[] = [];
+    for (const a of accountUpdates) {
+      const actualRow = a.payload.rowIndex;
+      updates.push({
+        range: `accounts!D${actualRow}:E${actualRow}`,
+        values: [[a.payload.room, a.payload.bed]]
+      });
+      // Also update check-in date
+      updates.push({
+        range: `accounts!K${actualRow}`,
+        values: [[a.payload.checkInDate]]
+      });
+    }
     await batchUpdateValues(uiSettings.accountingWorkbookId, updates);
   }
 
   // 4. Create Accounts (Append)
   if (accountCreations.length > 0) {
     const rows = accountCreations.map((a) => {
-      const row = new Array(9).fill("");
+      const row = new Array(11).fill("");
       row[ACCOUNT_COL.ID] = crypto.randomUUID();
       row[ACCOUNT_COL.RESIDENT_ID] = a.payload.residentId;
       row[ACCOUNT_COL.PERIOD] = a.payload.period;
       row[ACCOUNT_COL.ROOM] = a.payload.room;
       row[ACCOUNT_COL.BED] = a.payload.bed;
+      row[ACCOUNT_COL.CHECK_IN_DATE] = a.payload.checkInDate;
       return row;
     });
-    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:I", rows);
+    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:K", rows);
   }
 
   // 5. Mark CURR as Evaluated
@@ -344,12 +357,12 @@ export async function manualAssignBed(residentId: string, room: string, bed: str
       [[room, bed]]
     );
   } else {
-    const newRow = new Array(9).fill("");
+    const newRow = new Array(11).fill("");
     newRow[ACCOUNT_COL.ID] = crypto.randomUUID();
     newRow[ACCOUNT_COL.RESIDENT_ID] = residentId;
     newRow[ACCOUNT_COL.PERIOD] = term;
     newRow[ACCOUNT_COL.ROOM] = room;
     newRow[ACCOUNT_COL.BED] = bed;
-    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:I", [newRow]);
+    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:K", [newRow]);
   }
 }
