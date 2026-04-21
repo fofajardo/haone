@@ -237,32 +237,45 @@ export async function fetchUserById(id: string): Promise<UserRecord | null> {
 export function computeDisplayNames(data: Partial<UserRecord>) {
   const first = (data.firstName || "").trim().toUpperCase();
   const last = (data.lastName || "").trim().toUpperCase();
-  const middle = (data.middleName || "").trim().toUpperCase();
   const suffix = (data.suffix || "").trim().toUpperCase();
+  const override = (data.overrideName || "").trim();
 
-  // Standard: First Last
-  const displayName = `${first} ${last}`.trim();
+  if (override) {
+    return {
+      displayName: override,
+      displayNameFormal: override
+    };
+  }
 
-  // Formal/Full: Last, First Middle Suffix
-  const formalParts = [];
+  // display_name: [LAST NAME, FIRST_NAME SUFFIX]
+  const dnParts = [];
   if (last) {
-    formalParts.push(`${last},`);
+    dnParts.push(`${last},`);
   }
   if (first) {
-    formalParts.push(first);
-  }
-  if (middle) {
-    formalParts.push(middle);
+    dnParts.push(first);
   }
   if (suffix) {
-    formalParts.push(suffix);
+    dnParts.push(suffix);
   }
+  const displayName = dnParts.join(" ").replace(/, /, ", ").trim();
 
-  const displayNameFormal = formalParts.join(" ").replace(/, /, ", ").trim();
+  // display_name_fl: [FIRST_NAME LAST_NAME SUFFIX]
+  const flParts = [];
+  if (first) {
+    flParts.push(first);
+  }
+  if (last) {
+    flParts.push(last);
+  }
+  if (suffix) {
+    flParts.push(suffix);
+  }
+  const displayNameFormal = flParts.join(" ").trim();
 
   return {
-    displayName: data.displayName || displayName,
-    displayNameFormal: data.displayNameFormal || displayNameFormal
+    displayName,
+    displayNameFormal
   };
 }
 
@@ -299,8 +312,7 @@ export async function updateUser(userId: string, data: Partial<UserRecord>) {
     lastName: data.lastName ?? currentRow[USER_COL.LAST_NAME],
     middleName: data.middleName ?? currentRow[USER_COL.MIDDLE_NAME],
     suffix: data.suffix ?? currentRow[USER_COL.SUFFIX],
-    displayName: data.displayName,
-    displayNameFormal: data.displayNameFormal
+    overrideName: data.overrideName ?? currentRow[USER_COL.OVERRIDE_NAME]
   });
 
   newRow[USER_COL.DISPLAY_NAME] = computed.displayName;
