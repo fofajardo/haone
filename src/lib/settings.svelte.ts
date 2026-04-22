@@ -114,11 +114,11 @@ class UISettings {
     const settings = await fetchUserSettings(true);
     const my = settings[0];
     if (my) {
-      if (my.typography) this.fontFamily = my.typography as UIFont;
-      if (my.density) this.displayDensity = my.density as DisplayDensity;
-      if (my.theme) this.theme = my.theme;
-      this.reducedMotion = my.isReducedMotion;
-      this.isPublicAchievementList = my.isPublicAchievementList;
+      this.fontFamily = (my.typography as UIFont) || "inter";
+      this.displayDensity = (my.density as DisplayDensity) || "default";
+      this.theme = my.theme || "system";
+      this.reducedMotion = !!my.isReducedMotion;
+      this.isPublicAchievementList = my.isPublicAchievementList !== false;
       if (my.residentNav) this.residentNavIds = my.residentNav.split(",").filter(Boolean);
       if (my.adminNav) this.adminNavIds = my.adminNav.split(",").filter(Boolean);
     }

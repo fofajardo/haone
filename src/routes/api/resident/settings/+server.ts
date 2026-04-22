@@ -23,7 +23,17 @@ export const GET: RequestHandler = async ({ request }) => {
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ isPublicAchievementList: true });
+    if (!user) {
+      return json({
+        isPublicAchievementList: true,
+        residentNav: "home,finance,laundry",
+        adminNav: "dashboard,history,residents",
+        density: "default",
+        typography: "inter",
+        theme: "system",
+        isReducedMotion: false
+      });
+    }
     const residentId = user[USER_COL.ID];
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:H");
@@ -35,11 +45,15 @@ export const GET: RequestHandler = async ({ request }) => {
       isPublicAchievementList: settings
         ? (settings[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() !== "FALSE"
         : true,
-      residentNav: settings ? settings[USER_SETTINGS_COL.RESIDENT_NAV] || "" : "",
-      adminNav: settings ? settings[USER_SETTINGS_COL.ADMIN_NAV] || "" : "",
-      density: settings ? settings[USER_SETTINGS_COL.DENSITY] || "" : "",
-      typography: settings ? settings[USER_SETTINGS_COL.TYPOGRAPHY] || "" : "",
-      theme: settings ? settings[USER_SETTINGS_COL.THEME] || "" : "",
+      residentNav: settings
+        ? settings[USER_SETTINGS_COL.RESIDENT_NAV] || "home,finance,laundry"
+        : "home,finance,laundry",
+      adminNav: settings
+        ? settings[USER_SETTINGS_COL.ADMIN_NAV] || "dashboard,history,residents"
+        : "dashboard,history,residents",
+      density: settings ? settings[USER_SETTINGS_COL.DENSITY] || "default" : "default",
+      typography: settings ? settings[USER_SETTINGS_COL.TYPOGRAPHY] || "inter" : "inter",
+      theme: settings ? settings[USER_SETTINGS_COL.THEME] || "system" : "system",
       isReducedMotion: settings
         ? (settings[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE"
         : false
