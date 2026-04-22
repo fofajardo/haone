@@ -92,7 +92,7 @@
   });
 </script>
 
-<div class="space-y-12 pb-12">
+<div class="space-y-6 pb-12">
   <!-- Hero Section -->
   <div
     class="relative overflow-hidden rounded-3xl bg-brand px-4 py-8 text-brand-foreground shadow-2xl sm:px-8 sm:py-12"
