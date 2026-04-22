@@ -20,10 +20,9 @@
   import { useSidebar } from "$lib/components/ui/sidebar";
   import { page } from "$app/state";
   import { cn } from "$lib/utils";
-  import { fetchUserSettings } from "$lib/shared-records-logic";
+  import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
-  import { navState } from "$lib/nav-state.svelte";
 
   const sidebar = useSidebar();
 
@@ -56,7 +55,7 @@
   const isAdmin = $derived(page.url.pathname.startsWith("/admin"));
 
   const navItems = $derived.by(() => {
-    const ids = isAdmin ? navState.adminNavIds : navState.residentNavIds;
+    const ids = isAdmin ? uiSettings.adminNavIds : uiSettings.residentNavIds;
     const map = isAdmin ? MAP_ADMIN : MAP_RESIDENT;
     return ids.map((id) => map[id]).filter(Boolean);
   });
@@ -69,8 +68,8 @@
   }
 
   onMount(() => {
-    if (!navState.initialized) {
-      navState.refresh();
+    if (auth.accessToken) {
+      uiSettings.syncFromServer().catch(console.error);
     }
   });
 </script>

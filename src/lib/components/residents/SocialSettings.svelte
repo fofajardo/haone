@@ -1,56 +1,9 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
   import * as Card from "$lib/components/ui/card";
   import { Label } from "$lib/components/ui/label";
   import { Switch } from "$lib/components/ui/switch";
-  import { Shield, Trophy, LoaderCircle } from "lucide-svelte";
-  import { fetchUserSettings, updateUserSettings } from "$lib/shared-records-logic";
-  import { fetchUsers } from "$lib/resident-logic";
-  import { toast } from "svelte-sonner";
-
-  let isPublic = $state(false);
-  let isLoading = $state(true);
-  let isSaving = $state(false);
-  let residentId = $state("");
-
-  async function loadData() {
-    if (!auth.user?.email) return;
-    try {
-      const [allSettings, allUsers] = await Promise.all([fetchUserSettings(), fetchUsers()]);
-      const me = allUsers.find(
-        (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
-      );
-      residentId = me?.id || "";
-
-      if (auth.authType === "resident") {
-        isPublic = allSettings[0]?.isPublicAchievementList ?? false;
-      } else {
-        const my = residentId ? allSettings.find((s) => s.residentId === residentId) : undefined;
-        isPublic = my?.isPublicAchievementList ?? false;
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      isLoading = false;
-    }
-  }
-
-  async function handleToggle(v: boolean) {
-    if (!residentId) return;
-    isSaving = true;
-    try {
-      await updateUserSettings(residentId, { isPublic: v });
-      isPublic = v;
-      toast.success("Privacy settings updated");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isSaving = false;
-    }
-  }
-
-  onMount(loadData);
+  import { Trophy } from "lucide-svelte";
+  import { uiSettings } from "$lib/settings.svelte";
 </script>
 
 <Card.Root>
@@ -71,16 +24,10 @@
           </p>
         </div>
       </div>
-      {#if isLoading}
-        <LoaderCircle class="h-5 w-5 animate-spin text-muted-foreground" />
-      {:else}
-        <Switch
-          id="public-achievements"
-          checked={isPublic}
-          onCheckedChange={handleToggle}
-          disabled={isSaving}
-        />
-      {/if}
+      <Switch
+        id="public-achievements"
+        bind:checked={uiSettings.isPublicAchievementList}
+      />
     </div>
   </Card.Content>
 </Card.Root>

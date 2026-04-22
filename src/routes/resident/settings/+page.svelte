@@ -5,6 +5,7 @@
   import SettingsPreview from "$lib/components/SettingsPreview.svelte";
   import SocialSettings from "$lib/components/residents/SocialSettings.svelte";
   import NavSettings from "$lib/components/residents/NavSettings.svelte";
+  import SettingsActions from "$lib/components/SettingsActions.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$lib/page-info.svelte";
 
@@ -21,6 +22,7 @@
       <AppearanceSettings />
       <NavSettings />
       <SocialSettings />
+      <SettingsActions />
       <VersionCard />
     </div>
 

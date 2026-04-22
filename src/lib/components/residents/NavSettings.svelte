@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
@@ -12,24 +10,20 @@
     Banknote,
     Megaphone,
     Trophy,
-    Receipt,
-    History,
     Users,
     Bed,
     Contact,
     GraduationCap,
     Mail,
     Settings,
+    History,
+    Receipt,
     ChevronUp,
     ChevronDown,
     Plus,
-    X,
-    LoaderCircle
+    X
   } from "lucide-svelte";
-  import { fetchUserSettings, updateUserSettings } from "$lib/shared-records-logic";
-  import { fetchUsers } from "$lib/resident-logic";
-  import { toast } from "svelte-sonner";
-  import { navState } from "$lib/nav-state.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
   import { page } from "$app/state";
 
   const isAdminView = $derived(page.url.pathname.startsWith("/admin"));
@@ -60,84 +54,27 @@
     { id: "achievements", label: "Trophy", icon: Trophy }
   ];
 
-  let residentNav = $state<string[]>([]);
-  let adminNav = $state<string[]>([]);
-  let isLoading = $state(true);
-  let isSaving = $state(false);
-  let residentId = $state("");
-
-  async function loadData() {
-    if (!auth.user?.email) return;
-    try {
-      const [allSettings, allUsers] = await Promise.all([
-        fetchUserSettings(),
-        auth.authType === "admin" ? fetchUsers() : Promise.resolve([])
-      ]);
-
-      const me = allUsers.find(
-        (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
-      );
-      residentId = me?.id || auth.user.email; // Fallback to email for residents
-
-      const my = allSettings[0]; // fetchUserSettings handles finding the right record
-      residentNav = (my?.residentNav || "").split(",").filter(Boolean);
-      adminNav = (my?.adminNav || "").split(",").filter(Boolean);
-
-      // Default fallback
-      if (residentNav.length === 0) residentNav = ["home", "finance", "laundry"];
-      if (adminNav.length === 0) adminNav = ["dashboard", "history", "residents"];
-    } catch (e) {
-      console.error(e);
-    } finally {
-      isLoading = false;
+  function toggleItem(list: string[], id: string) {
+    if (list.includes(id)) {
+      return list.filter((i) => i !== id);
     }
+    if (list.length >= 4) return list;
+    return [...list, id];
   }
 
-  async function save() {
-    if (!residentId && auth.authType !== "resident") {
-      toast.error("User identity not resolved. Please refresh.");
-      return;
-    }
-    isSaving = true;
-    try {
-      await updateUserSettings(residentId, {
-        residentNav: residentNav.join(","),
-        adminNav: adminNav.join(",")
-      });
-      navState.residentNavIds = [...residentNav];
-      navState.adminNavIds = [...adminNav];
-      toast.success("Navigation settings updated");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isSaving = false;
-    }
-  }
-
-  function toggleItem(list: string[], itemId: string, max: number = 4) {
-    const idx = list.indexOf(itemId);
-    if (idx > -1) {
-      return list.filter((i) => i !== itemId);
-    } else if (list.length < max) {
-      return [...list, itemId];
-    }
-    return list;
-  }
-
-  function moveItem(list: string[], idx: number, direction: -1 | 1) {
+  function moveItem(list: string[], index: number, direction: number) {
     const newList = [...list];
-    const newIdx = idx + direction;
-    if (newIdx < 0 || newIdx >= newList.length) return list;
-    [newList[idx], newList[newIdx]] = [newList[newIdx], newList[idx]];
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= newList.length) return newList;
+    const [moved] = newList.splice(index, 1);
+    newList.splice(newIndex, 0, moved);
     return newList;
   }
-
-  onMount(loadData);
 </script>
 
 <Card.Root>
   <Card.Header>
-    <Card.Title>Navigation</Card.Title>
+    <Card.Title>Mobile Navigation</Card.Title>
     <Card.Description>Customize your mobile bottom navigation bar.</Card.Description>
   </Card.Header>
   <Card.Content class="space-y-8">
@@ -148,11 +85,11 @@
           <h4 class="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
             Resident Navigation
           </h4>
-          <span class="text-xs text-muted-foreground">{residentNav.length} / 4 items</span>
+          <span class="text-xs text-muted-foreground">{uiSettings.residentNavIds.length} / 4 items</span>
         </div>
 
         <div class="flex min-h-[52px] flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
-          {#each residentNav as itemId, i}
+          {#each uiSettings.residentNavIds as itemId, i}
             {@const item = ALL_RESIDENT_ITEMS.find((it) => it.id === itemId)}
             {#if item}
               <Badge variant="secondary" class="flex items-center gap-1.5 px-2.5 py-1 text-sm">
@@ -161,21 +98,22 @@
                 <div class="ml-1 flex items-center gap-0.5 border-l pl-1">
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (residentNav = moveItem(residentNav, i, -1))}
+                    onclick={() => (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, -1))}
                     disabled={i === 0}
                   >
                     <ChevronUp class="h-3 w-3" />
                   </button>
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (residentNav = moveItem(residentNav, i, 1))}
-                    disabled={i === residentNav.length - 1}
+                    onclick={() => (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, 1))}
+                    disabled={i === uiSettings.residentNavIds.length - 1}
                   >
                     <ChevronDown class="h-3 w-3" />
                   </button>
                   <button
                     class="ml-0.5 hover:text-destructive"
-                    onclick={() => (residentNav = residentNav.filter((id) => id !== itemId))}
+                    onclick={() =>
+                      (uiSettings.residentNavIds = uiSettings.residentNavIds.filter((id) => id !== itemId))}
                   >
                     <X class="h-3 w-3" />
                   </button>
@@ -183,20 +121,20 @@
               </Badge>
             {/if}
           {/each}
-          {#if residentNav.length === 0}
+          {#if uiSettings.residentNavIds.length === 0}
             <span class="py-1 text-sm text-muted-foreground italic">No items selected.</span>
           {/if}
         </div>
 
         <div class="flex flex-wrap gap-2">
           {#each ALL_RESIDENT_ITEMS as item}
-            {@const selected = residentNav.includes(item.id)}
+            {@const selected = uiSettings.residentNavIds.includes(item.id)}
             <Button
               variant={selected ? "default" : "outline"}
               size="sm"
               class="h-8 gap-1.5"
-              onclick={() => (residentNav = toggleItem(residentNav, item.id))}
-              disabled={!selected && residentNav.length >= 4}
+              onclick={() => (uiSettings.residentNavIds = toggleItem(uiSettings.residentNavIds, item.id))}
+              disabled={!selected && uiSettings.residentNavIds.length >= 4}
             >
               <item.icon class="h-3.5 w-3.5" />
               {item.label}
@@ -213,11 +151,11 @@
           <h4 class="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
             Admin Navigation
           </h4>
-          <span class="text-xs text-muted-foreground">{adminNav.length} / 4 items</span>
+          <span class="text-xs text-muted-foreground">{uiSettings.adminNavIds.length} / 4 items</span>
         </div>
 
         <div class="flex min-h-[52px] flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
-          {#each adminNav as itemId, i}
+          {#each uiSettings.adminNavIds as itemId, i}
             {@const item = ALL_ADMIN_ITEMS.find((it) => it.id === itemId)}
             {#if item}
               <Badge variant="secondary" class="flex items-center gap-1.5 px-2.5 py-1 text-sm">
@@ -226,21 +164,22 @@
                 <div class="ml-1 flex items-center gap-0.5 border-l pl-1">
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (adminNav = moveItem(adminNav, i, -1))}
+                    onclick={() => (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, -1))}
                     disabled={i === 0}
                   >
                     <ChevronUp class="h-3 w-3" />
                   </button>
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (adminNav = moveItem(adminNav, i, 1))}
-                    disabled={i === adminNav.length - 1}
+                    onclick={() => (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, 1))}
+                    disabled={i === uiSettings.adminNavIds.length - 1}
                   >
                     <ChevronDown class="h-3 w-3" />
                   </button>
                   <button
                     class="ml-0.5 hover:text-destructive"
-                    onclick={() => (adminNav = adminNav.filter((id) => id !== itemId))}
+                    onclick={() =>
+                      (uiSettings.adminNavIds = uiSettings.adminNavIds.filter((id) => id !== itemId))}
                   >
                     <X class="h-3 w-3" />
                   </button>
@@ -248,20 +187,20 @@
               </Badge>
             {/if}
           {/each}
-          {#if adminNav.length === 0}
+          {#if uiSettings.adminNavIds.length === 0}
             <span class="py-1 text-sm text-muted-foreground italic">No items selected.</span>
           {/if}
         </div>
 
         <div class="flex flex-wrap gap-2">
           {#each ALL_ADMIN_ITEMS as item}
-            {@const selected = adminNav.includes(item.id)}
+            {@const selected = uiSettings.adminNavIds.includes(item.id)}
             <Button
               variant={selected ? "default" : "outline"}
               size="sm"
               class="h-8 gap-1.5"
-              onclick={() => (adminNav = toggleItem(adminNav, item.id))}
-              disabled={!selected && adminNav.length >= 4}
+              onclick={() => (uiSettings.adminNavIds = toggleItem(uiSettings.adminNavIds, item.id))}
+              disabled={!selected && uiSettings.adminNavIds.length >= 4}
             >
               <item.icon class="h-3.5 w-3.5" />
               {item.label}
@@ -271,13 +210,4 @@
       </div>
     {/if}
   </Card.Content>
-  <Card.Footer class="flex justify-between border-t bg-muted/20">
-    <p class="text-xs text-muted-foreground">Changes will take effect after you save.</p>
-    <Button size="sm" onclick={save} disabled={isSaving || isLoading}>
-      {#if isSaving}
-        <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-      {/if}
-      Save
-    </Button>
-  </Card.Footer>
 </Card.Root>
