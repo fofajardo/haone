@@ -40,7 +40,7 @@
     if (!residentId) return;
     isSaving = true;
     try {
-      await updateUserSettings(residentId, v);
+      await updateUserSettings(residentId, { isPublic: v });
       isPublic = v;
       toast.success("Privacy settings updated");
     } catch (e: any) {

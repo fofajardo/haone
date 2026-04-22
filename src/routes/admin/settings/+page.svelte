@@ -12,6 +12,7 @@
   import AppearanceSettings from "$lib/components/AppearanceSettings.svelte";
   import VersionCard from "$lib/components/VersionCard.svelte";
   import SettingsPreview from "$lib/components/SettingsPreview.svelte";
+  import NavSettings from "$lib/components/residents/NavSettings.svelte";
 
   const brandingProfiles = Object.keys(branding);
 </script>
@@ -24,6 +25,7 @@
     <div class="flex-1 space-y-8">
       <!-- Appearance Section -->
       <AppearanceSettings />
+      <NavSettings />
 
       {#if uiSettings.isDev}
         <!-- Branding Section -->

@@ -254,7 +254,9 @@ export const ACHIEVEMENT_RECORD_COL = {
 
 export const USER_SETTINGS_COL = {
   RESIDENT_ID: 0,
-  IS_PUBLIC_ACHIEVEMENT_LIST: 1
+  IS_PUBLIC_ACHIEVEMENT_LIST: 1,
+  RESIDENT_NAV: 2,
+  ADMIN_NAV: 3
 } as const;
 
 export interface LaundryRecord {
@@ -326,5 +328,7 @@ export interface AchievementLogRecord {
 export interface UserSettingsRecord {
   residentId: string;
   isPublicAchievementList: boolean;
+  residentNav: string;
+  adminNav: string;
   raw: string[];
 }

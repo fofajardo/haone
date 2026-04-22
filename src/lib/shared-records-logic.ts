@@ -513,6 +513,8 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
       {
         residentId: auth.user?.email || "",
         isPublicAchievementList: data.isPublicAchievementList,
+        residentNav: data.residentNav || "",
+        adminNav: data.adminNav || "",
         raw: []
       }
     ];
@@ -521,37 +523,63 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:B", forceRefresh);
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:D", forceRefresh);
   return rows.slice(1).map((row) => ({
     residentId: (row[USER_SETTINGS_COL.RESIDENT_ID] || "").trim(),
     isPublicAchievementList:
-      (row[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() === "TRUE",
+      (row[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() !== "FALSE",
+    residentNav: row[USER_SETTINGS_COL.RESIDENT_NAV] || "",
+    adminNav: row[USER_SETTINGS_COL.ADMIN_NAV] || "",
     raw: row
   }));
 }
 
-export async function updateUserSettings(residentId: string, isPublic: boolean) {
+export async function updateUserSettings(
+  residentId: string,
+  data: {
+    isPublic?: boolean;
+    residentNav?: string;
+    adminNav?: string;
+  }
+) {
   if (auth.authType === "resident") {
+    const payload: any = {};
+    if (data.isPublic !== undefined) payload.isPublicAchievementList = data.isPublic;
+    if (data.residentNav !== undefined) payload.residentNav = data.residentNav;
+    if (data.adminNav !== undefined) payload.adminNav = data.adminNav;
+
     return await fetchServer("/api/resident/settings", {
       method: "PATCH",
-      body: JSON.stringify({ isPublicAchievementList: isPublic })
+      body: JSON.stringify(payload)
     });
   }
 
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:B");
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:D");
   const rowIndex = rows.findIndex((r) => r[USER_SETTINGS_COL.RESIDENT_ID] === residentId);
+
+  const current = rowIndex !== -1 ? rows[rowIndex] : [];
+  const isPublicVal =
+    data.isPublic !== undefined
+      ? String(data.isPublic).toUpperCase()
+      : current[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "TRUE";
+  const resNavVal =
+    data.residentNav !== undefined
+      ? data.residentNav
+      : current[USER_SETTINGS_COL.RESIDENT_NAV] || "";
+  const admNavVal =
+    data.adminNav !== undefined ? data.adminNav : current[USER_SETTINGS_COL.ADMIN_NAV] || "";
 
   if (rowIndex === -1) {
     // New setting record
-    const row = [residentId, String(isPublic).toUpperCase()];
-    await appendSheetRow(spreadsheetId, "settings!A:B", [row]);
+    const row = [residentId, isPublicVal, resNavVal, admNavVal];
+    await appendSheetRow(spreadsheetId, "settings!A:D", [row]);
   } else {
     const actualRow = rowIndex + 1;
-    await updateSheetValue(spreadsheetId, `settings!B${actualRow}`, [
-      [String(isPublic).toUpperCase()]
+    await updateSheetValue(spreadsheetId, `settings!B${actualRow}:D${actualRow}`, [
+      [isPublicVal, resNavVal, admNavVal]
     ]);
   }
 }
