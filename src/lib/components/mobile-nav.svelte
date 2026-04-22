@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { LayoutDashboard, History, CircleUser, Users, Settings } from "lucide-svelte";
+  import {
+    LayoutDashboard,
+    History,
+    CircleUser,
+    Users,
+    Wallet,
+    WashingMachine
+  } from "lucide-svelte";
   import { useSidebar } from "$lib/components/ui/sidebar";
   import { page } from "$app/state";
   import { cn } from "$lib/utils";
@@ -10,17 +17,24 @@
 
   const adminItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Transactions", href: "/admin/transactions", icon: History },
+    { label: "History", href: "/admin/transactions", icon: History },
     { label: "Residents", href: "/admin/residents", icon: Users }
   ];
 
   const residentItems = [
-    { label: "Dashboard", href: "/resident", icon: LayoutDashboard },
-    { label: "Transactions", href: "/resident/transactions", icon: History },
-    { label: "Settings", href: "/resident/settings", icon: Settings }
+    { label: "Home", href: "/resident", icon: LayoutDashboard },
+    { label: "Finance", href: "/resident/finance", icon: Wallet },
+    { label: "Laundry", href: "/resident/laundry", icon: WashingMachine }
   ];
 
   const navItems = $derived(isAdmin ? adminItems : residentItems);
+
+  function isActive(href: string) {
+    if (href === "/resident" || href === "/admin") {
+      return page.url.pathname === href;
+    }
+    return page.url.pathname.startsWith(href);
+  }
 </script>
 
 <div class="fixed right-0 bottom-6 left-0 z-50 flex justify-center px-4 md:hidden">
@@ -32,9 +46,7 @@
         href={item.href}
         class={cn(
           "flex flex-col items-center gap-1 transition-colors",
-          page.url.pathname === item.href
-            ? "text-primary"
-            : "text-muted-foreground hover:text-foreground"
+          isActive(item.href) ? "text-primary" : "text-muted-foreground hover:text-foreground"
         )}
       >
         <item.icon class="h-6 w-6" />
