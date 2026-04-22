@@ -83,7 +83,7 @@
         auth.redirectTo = null;
         return;
       } catch (e: any) {
-        if (!alertState.open) {
+        if (!auth.lastError) {
           auth.lastError = {
             title: "Sign-in Failed",
             description: e.message || "An unexpected error occurred."

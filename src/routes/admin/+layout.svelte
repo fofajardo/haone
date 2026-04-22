@@ -28,6 +28,10 @@
   // Handle errors from anywhere (e.g., session expired)
   $effect(() => {
     if (auth.lastError) {
+      // If we're about to redirect to sign-in due to auth error, 
+      // don't clear it here; let sign-in page handle it.
+      if (!auth.accessToken) return;
+
       showError(auth.lastError.title, auth.lastError.description);
       auth.lastError = null;
     }
