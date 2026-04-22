@@ -3,7 +3,7 @@
   import { fetchAnnouncements } from "$lib/shared-records-logic";
   import type { AnnouncementRecord } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
-  import { Megaphone, Clock, ChevronRight } from "lucide-svelte";
+  import { Clock, ChevronRight } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import RichEditor from "$lib/components/RichEditor.svelte";
 
@@ -35,9 +35,7 @@
 {#if !isLoading && announcements.length > 0}
   <div class="space-y-4">
     <div class="flex items-center justify-between">
-      <h2 class="flex items-center gap-2 text-xl font-bold text-foreground">
-        <Megaphone class="h-5 w-5 text-brand" /> Latest Announcements
-      </h2>
+      <h2 class="flex items-center gap-2 text-xl font-bold text-foreground">Announcements</h2>
       <Button variant="ghost" size="sm" href="/resident/announcements">
         View All <ChevronRight class="ml-1 h-4 w-4" />
       </Button>

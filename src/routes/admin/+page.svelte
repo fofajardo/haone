@@ -22,6 +22,7 @@
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { formatCurrency, formatDate, translatePeriod, translateType } from "$lib/receipt-utils";
   import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
+  import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
   import { onMount } from "svelte";
 
   let stats = $state({
@@ -35,7 +36,7 @@
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
 
-  const tools = [
+  const actions: any[] = [
     {
       title: "Pending Receipts",
       description: "Review pending payments and generate secure receipts.",
@@ -302,26 +303,8 @@
         <h2 class="text-xl font-bold text-foreground">Administrative Tools</h2>
       </div>
       <div class="grid gap-4 sm:grid-cols-2">
-        {#each tools as tool}
-          <a
-            href={tool.href}
-            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:shadow-xl {tool.border}"
-          >
-            <div class={`w-fit rounded-xl ${tool.bg} p-2.5 ${tool.color}`}>
-              <tool.icon class="h-6 w-6" />
-            </div>
-            <div>
-              <h3 class="font-bold text-foreground">{tool.title}</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                {tool.description}
-              </p>
-            </div>
-            <div
-              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-            >
-              <ArrowRight class={`h-5 w-5 ${tool.color}`} />
-            </div>
-          </a>
+        {#each actions as tool}
+          <DashboardActionCard {...tool} />
         {/each}
       </div>
     </div>

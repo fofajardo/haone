@@ -24,6 +24,7 @@
   import { formatCurrency, translatePeriod, translateType, formatDate } from "$lib/receipt-utils";
   import { pageState } from "$lib/page-info.svelte";
   import StatusBadge from "$lib/components/residents/StatusBadge.svelte";
+  import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
   import { fetchServer } from "$lib/utils";
 
   let status = $state<any>(null);
@@ -43,6 +44,45 @@
       isLoading = false;
     }
   }
+
+  const actions: any[] = [
+    {
+      title: "Finance",
+      description: "View your financial standing and history.",
+      href: "/resident/finance",
+      icon: Wallet
+    },
+    {
+      title: "Laundry",
+      description: "Book and manage your laundry reservations.",
+      href: "/resident/laundry",
+      icon: WashingMachine
+    },
+    {
+      title: "Payment Requests",
+      description: "Upload your transaction entries for verification.",
+      href: "/resident/payment-requests",
+      icon: Banknote
+    },
+    {
+      title: "Achievements",
+      description: "View your earned achievements and leaderboard.",
+      href: "/resident/achievements",
+      icon: Trophy
+    },
+    {
+      title: "Occupancy",
+      description: "View your current room details and history.",
+      href: "/resident/occupancy",
+      icon: House
+    },
+    {
+      title: "Settings",
+      description: "Customize your profile and application preferences.",
+      href: "/resident/settings",
+      icon: Settings
+    }
+  ];
 
   onMount(() => {
     pageState.title = "Resident Dashboard";
@@ -176,125 +216,9 @@
           <h2 class="text-xl font-bold text-foreground">Quick Access</h2>
         </div>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <a
-            href="/resident/finance"
-            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
-          >
-            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
-              <Wallet class="h-6 w-6" />
-            </div>
-            <div>
-              <h3 class="font-bold text-foreground">Finance</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                View your financial standing and history.
-              </p>
-            </div>
-            <div
-              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-            >
-              <ArrowRight class="h-5 w-5 text-brand" />
-            </div>
-          </a>
-
-          <a
-            href="/resident/laundry"
-            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
-          >
-            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
-              <WashingMachine class="h-6 w-6" />
-            </div>
-            <div>
-              <h3 class="font-bold text-foreground">Laundry</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                Book and manage your laundry reservations.
-              </p>
-            </div>
-            <div
-              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-            >
-              <ArrowRight class="h-5 w-5 text-brand" />
-            </div>
-          </a>
-
-          <a
-            href="/resident/payment-requests"
-            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
-          >
-            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
-              <Banknote class="h-6 w-6" />
-            </div>
-            <div>
-              <h3 class="font-bold text-foreground">Payment Requests</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                Upload your transaction entries for verification.
-              </p>
-            </div>
-            <div
-              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-            >
-              <ArrowRight class="h-5 w-5 text-brand" />
-            </div>
-          </a>
-
-          <a
-            href="/resident/achievements"
-            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
-          >
-            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
-              <Trophy class="h-6 w-6" />
-            </div>
-            <div>
-              <h3 class="font-bold text-foreground">Achievements</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                View your earned achievements and leaderboard.
-              </p>
-            </div>
-            <div
-              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-            >
-              <ArrowRight class="h-5 w-5 text-brand" />
-            </div>
-          </a>
-
-          <a
-            href="/resident/occupancy"
-            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
-          >
-            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
-              <House class="h-6 w-6" />
-            </div>
-            <div>
-              <h3 class="font-bold text-foreground">Occupancy</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                View your current room details and history.
-              </p>
-            </div>
-            <div
-              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-            >
-              <ArrowRight class="h-5 w-5 text-brand" />
-            </div>
-          </a>
-
-          <a
-            href="/resident/settings"
-            class="group relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-5 transition-all duration-300 hover:border-brand/50 hover:shadow-xl"
-          >
-            <div class="w-fit rounded-xl bg-brand/10 p-2.5 text-brand">
-              <Settings class="h-6 w-6" />
-            </div>
-            <div>
-              <h3 class="font-bold text-foreground">Settings</h3>
-              <p class="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                Customize your profile and application preferences.
-              </p>
-            </div>
-            <div
-              class="absolute right-5 bottom-5 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
-            >
-              <ArrowRight class="h-5 w-5 text-brand" />
-            </div>
-          </a>
+          {#each actions as tool}
+            <DashboardActionCard {...tool} />
+          {/each}
         </div>
       </div>
 
