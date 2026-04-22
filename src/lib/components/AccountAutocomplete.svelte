@@ -8,7 +8,7 @@
     label,
     placeholder = "Search name or email…",
     accounts = [],
-    filter = (a: ResidentRecord) => true,
+    filter = (_a: ResidentRecord) => true,
     useOfficialName = false,
     value = $bindable(""),
     onSelect,
@@ -31,7 +31,7 @@
   const filtered = $derived(
     accounts
       .filter(
-        (a) =>
+        (a: ResidentRecord) =>
           (getLabel(a).toLowerCase().includes(value.toLowerCase()) ||
             a.email.toLowerCase().includes(value.toLowerCase())) &&
           filter(a)

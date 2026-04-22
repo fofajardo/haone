@@ -263,13 +263,20 @@ export const USER_SETTINGS_COL = {
   IS_REDUCED_MOTION: 7
 } as const;
 
+export enum LaundryStatus {
+  ACTIVE = "ACTIVE",
+  COMPLETED = "COMPLETED",
+  CANCELLED_BY_ADMIN = "CANCELLED_BY_ADMIN",
+  CANCELLED_BY_USER = "CANCELLED_BY_USER"
+}
+
 export interface LaundryRecord {
   id: string;
   residentId: string;
   date: string;
   timeStart: string;
   timeEnd: string;
-  status: string;
+  status: LaundryStatus | string;
   cancelReason: string;
   creationTimestamp?: string;
   cancelTimestamp?: string;

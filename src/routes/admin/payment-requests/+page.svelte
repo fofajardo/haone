@@ -8,14 +8,14 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { fetchPaymentRequests, approvePaymentRequest } from "$lib/shared-records-logic";
+  import { fetchPaymentRequests } from "$lib/admin-logic";
   import { fetchResidents, fetchTermCurr } from "$lib/resident-logic";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { toast } from "svelte-sonner";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { goto } from "$app/navigation";
-  import { formatAmount } from "$lib/receipt-utils";
+  import { PaymentRequestStatus } from "$lib/schemas";
+  import { Combobox } from "$lib/components/ui/combobox";
+  import { Funnel } from "lucide-svelte";
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);
@@ -24,6 +24,15 @@
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let searchQuery = $state("");
+  let statusFilter = $state<string>(PaymentRequestStatus.PENDING);
+
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: PaymentRequestStatus.PENDING, label: "Pending" },
+    { value: PaymentRequestStatus.APPROVED, label: "Approved" },
+    { value: PaymentRequestStatus.DECLINED, label: "Declined" },
+    { value: PaymentRequestStatus.CANCELLED, label: "Cancelled" }
+  ];
 
   async function loadData(forceRefresh = false) {
     isLoading = true;
@@ -44,12 +53,18 @@
     }
   }
 
-  let filteredPayments = $derived(
-    payments.filter((p) => {
-      const s = searchQuery.toLowerCase();
-      return p.residentId.toLowerCase().includes(s) || p.mop.toLowerCase().includes(s);
-    })
-  );
+  let filteredPayments = $derived.by(() => {
+    const s = searchQuery.toLowerCase().trim();
+    return payments.filter((p) => {
+      const matchesSearch =
+        !s ||
+        (p.residentId || "").toLowerCase().includes(s) ||
+        (p.mop || "").toLowerCase().includes(s) ||
+        (p.notes || "").toLowerCase().includes(s);
+      const matchesStatus = !statusFilter || p.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  });
 
   function handleReviewSelected() {
     if (selectedIndices.size === 0) return;
@@ -85,14 +100,28 @@
       <Button onclick={() => loadData()} class="mt-4">Retry</Button>
     </ErrorView>
   {:else}
-    <div class="space-y-1">
-      <Label class="text-xs font-bold text-muted-foreground uppercase">Search</Label>
-      <div class="relative">
-        <Search class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          bind:value={searchQuery}
-          placeholder="Search by resident ID or MOP…"
-          class="h-9 pl-9 text-xs"
+    <div class="grid gap-4 lg:grid-cols-12">
+      <div class="space-y-1 lg:col-span-8">
+        <Label class="ml-1 text-xs font-bold text-muted-foreground uppercase">Search</Label>
+        <div class="relative">
+          <Search
+            class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            bind:value={searchQuery}
+            placeholder="Search by resident ID, MOP, or notes…"
+            class="h-9 pl-9"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1 lg:col-span-4">
+        <Label class="ml-1 text-xs font-bold text-muted-foreground uppercase">Status</Label>
+        <Combobox
+          bind:value={statusFilter}
+          options={statusOptions}
+          placeholder="Select status..."
+          class="h-9"
         />
       </div>
     </div>

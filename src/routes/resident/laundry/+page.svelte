@@ -3,9 +3,11 @@
   import { auth } from "$lib/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, XCircle, Plus, Info, Clock } from "lucide-svelte";
+  import { RefreshCcw, Plus, Info, Funnel, CircleX } from "lucide-svelte";
+  import * as NativeSelect from "$lib/components/ui/native-select";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
+  import EmptyView from "$lib/components/EmptyView.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import {
     fetchLaundryReservations,
@@ -13,10 +15,7 @@
     cancelLaundryReservation
   } from "$lib/shared-records-logic";
   import { fetchUsers } from "$lib/resident-logic";
-  import { formatDate } from "$lib/receipt-utils";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { ACCOUNT_COL } from "$lib/schemas";
-  import type { LaundryRecord, UserRecord } from "$lib/schemas";
+  import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
   import { Label } from "$lib/components/ui/label";
   import * as Dialog from "$lib/components/ui/dialog";
@@ -27,7 +26,9 @@
   import { toast } from "svelte-sonner";
   import { pageState } from "$lib/page-info.svelte";
   import { ChevronDown } from "lucide-svelte";
-  import { parseTime, formatTime } from "$lib/receipt-utils";
+  import { parseTime, formatTime, parseDateWeight } from "$lib/receipt-utils";
+  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import { columns } from "./columns";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<UserRecord[]>([]);
@@ -42,6 +43,9 @@
     timeStart: "05:00",
     timeEnd: "07:00"
   });
+
+  let selectedRow = $state<LaundryRecord | null>(null);
+  let statusFilter = $state(LaundryStatus.ACTIVE);
 
   let currentResidentId = $state("");
 
@@ -139,7 +143,7 @@
         date: newReservation.date,
         timeStart: formatTime(startH),
         timeEnd: formatTime(endH),
-        status: "ACTIVE",
+        status: LaundryStatus.ACTIVE,
         cancelReason: ""
       });
       toast.success("Reservation successful");
@@ -172,25 +176,76 @@
       toast.error(e.message);
     } finally {
       isCancelling = false;
+      selectedRow = null;
     }
   }
 
   onMount(() => {
-    pageState.title = "Laundry Reservation";
+    pageState.title = "Laundry";
     loadData();
   });
 
-  let userReservations = $derived(
-    reservations
-      .filter((r) => currentResidentId && r.residentId === currentResidentId)
-      .sort((a, b) => b.date.localeCompare(a.date) || b.timeStart.localeCompare(a.timeStart))
+  let userReservations = $derived.by(() => {
+    if (!currentResidentId) return [];
+    return reservations.filter((r) => r.residentId === currentResidentId);
+  });
+
+  const userMap = $derived(
+    new Map(
+      users.flatMap((u: any) => {
+        const name = u.displayName || u.name || "Resident";
+        const room = u.room || "";
+        const data = { name, room };
+        const entries: [string, typeof data][] = [];
+        const id = u.id || u.residentId;
+        const email = u.email;
+        if (id) entries.push([id, data]);
+        if (email) entries.push([(email || "").trim().toLowerCase(), data]);
+        return entries;
+      })
+    )
   );
+
+  let filteredReservations = $derived.by(() => {
+    return userReservations
+      .map((r) => {
+        let effectiveStatus = r.status;
+        if (r.status === LaundryStatus.ACTIVE) {
+          if (r.date && r.timeEnd) {
+            const [y, m, day] = r.date.split("-").map(Number);
+            const h = parseTime(r.timeEnd);
+            const endDt = new Date(y, m - 1, day, h, 0);
+            if (!isNaN(endDt.getTime()) && endDt < new Date()) {
+              effectiveStatus = LaundryStatus.COMPLETED;
+            }
+          }
+        }
+
+        let sortKey = parseDateWeight(r.creationTimestamp);
+        if (sortKey === 0) {
+          sortKey = parseDateWeight(`${r.date} ${r.timeStart}`);
+        }
+
+        const resId = (r.residentId || "").trim();
+        const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
+
+        return {
+          ...r,
+          name: (user as any)?.name || r.displayName || "Resident",
+          room: (user as any)?.room || r.room || "",
+          _sortKey: sortKey,
+          _effectiveStatus: effectiveStatus
+        };
+      })
+      .filter((r) => !statusFilter || r._effectiveStatus === statusFilter)
+      .sort((a, b) => b._sortKey - a._sortKey);
+  });
 
   let isRulesOpen = $state(false);
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Laundry Reservation" isTopLevel={true}>
+  <SubpageHeader title="Laundry" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
         <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
@@ -251,8 +306,10 @@
         {reservations}
         {users}
         currentUserId={currentResidentId}
+        isAdminView={false}
         onCancelReservation={handleCancel}
         {isCancelling}
+        bind:selectedReservation={selectedRow}
         onSelectSlot={(date, hour) => {
           // Check if already occupied
           const isOccupied = reservations.some((r: LaundryRecord) => {
@@ -277,70 +334,53 @@
 
     {#if userReservations.length > 0}
       <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="flex items-center gap-2 text-lg font-bold">
-            <RefreshCcw class="h-5 w-5 text-brand" /> Your Reservations
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h3 class="text-sm font-bold tracking-wider text-muted-foreground uppercase">
+            Reservation History
           </h3>
-          <span class="text-xs font-bold text-muted-foreground uppercase">
-            {userReservations.length} total
-          </span>
+          <div class="flex items-center gap-2">
+            <Funnel class="h-4 w-4 text-muted-foreground" />
+            <NativeSelect.Root bind:value={statusFilter} class="h-9 w-[140px] text-xs">
+              <NativeSelect.Option value="">All Status</NativeSelect.Option>
+              <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
+              <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
+              <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
+                >Cancelled</NativeSelect.Option
+              >
+            </NativeSelect.Root>
+          </div>
         </div>
-        <div class="grid gap-3">
-          {#each userReservations as r}
-            {@const isPast = new Date(`${r.date}T${r.timeEnd}`) < new Date()}
-            <Card.Root
-              size="sm"
-              class={cn("overflow-hidden transition-all", isPast && "opacity-60")}
-            >
-              <Card.Content class="flex items-center justify-between p-3 px-4">
-                <div class="flex items-center gap-4">
-                  <div
-                    class={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full",
-                      r.status === "CANCELLED"
-                        ? "bg-slate-100 text-slate-400"
-                        : "bg-brand/10 text-brand"
-                    )}
-                  >
-                    <Clock class="h-5 w-5" />
-                  </div>
-                  <div class="space-y-0.5">
-                    <div class="flex items-center gap-2">
-                      <span class="font-bold">{formatDate(r.date)}</span>
-                      {#if r.status === "CANCELLED"}
-                        <span
-                          class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black tracking-tighter text-slate-500 uppercase"
-                          >Cancelled</span
-                        >
-                      {:else if isPast}
-                        <span
-                          class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-black tracking-tighter text-slate-500 uppercase"
-                          >Completed</span
-                        >
-                      {/if}
-                    </div>
-                    <p class="text-xs font-medium text-muted-foreground">
-                      {r.timeStart} — {r.timeEnd}
-                    </p>
-                    <p class="font-mono text-xs text-muted-foreground/50 uppercase">{r.id}</p>
-                  </div>
-                </div>
-
-                {#if r.status === "ACTIVE" && !isPast}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="text-destructive hover:bg-destructive/10"
-                    onclick={() => handleCancel(r.id)}
-                    disabled={isCancelling}
-                  >
-                    <XCircle class="mr-2 h-4 w-4" /> Cancel
-                  </Button>
-                {/if}
-              </Card.Content>
-            </Card.Root>
-          {/each}
-        </div>
+        {#if filteredReservations.length > 0}
+          <DataTable
+            data={filteredReservations}
+            {columns}
+            rowId="id"
+            onRowClick={(row) => (selectedRow = row)}
+          />
+        {:else}
+          <EmptyView
+            title="No matching reservations"
+            description="No reservations match the selected status filter."
+          >
+            {#snippet icon()}
+              <CircleX class="h-10 w-10 text-muted-foreground/40" />
+            {/snippet}
+          </EmptyView>
+        {/if}
+      </div>
+    {:else}
+      <div class="space-y-4">
+        <h3 class="text-sm font-bold tracking-wider text-muted-foreground uppercase">
+          Reservation History
+        </h3>
+        <EmptyView
+          title="No reservations found"
+          description="Your laundry reservation history will appear here once you start booking slots."
+        >
+          {#snippet icon()}
+            <Plus class="h-10 w-10 text-muted-foreground/40" />
+          {/snippet}
+        </EmptyView>
       </div>
     {/if}
   {/if}
@@ -350,9 +390,11 @@
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>Book Laundry Slot</Dialog.Title>
-      <Dialog.Description>Select your preferred date and time. Max 2 hours.</Dialog.Description>
+      <Dialog.Description
+        >Select your preferred date and time. Maximum of 2 hours.</Dialog.Description
+      >
     </Dialog.Header>
-    <div class="space-y-6 py-4">
+    <div class="space-y-6 pb-4">
       <div class="space-y-2">
         <Label class="ml-1 text-xs font-bold tracking-wider text-muted-foreground uppercase"
           >Date</Label
@@ -377,7 +419,7 @@
       </div>
       {#if validationError}
         <div class="flex items-center gap-2 px-1 text-xs font-bold text-destructive uppercase">
-          <XCircle class="h-4 w-4" />
+          <CircleX class="h-4 w-4" />
           {validationError}
         </div>
       {/if}
@@ -391,7 +433,7 @@
           <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
           Processing…
         {:else}
-          Confirm Booking
+          Confirm
         {/if}
       </Button>
     </Dialog.Footer>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
@@ -48,6 +48,7 @@
     onSave: (row: any[]) => Promise<void>;
     onCancel: () => void;
     hideHeader?: boolean;
+    onStateChange?: (data: any) => void;
   }
 
   let {
@@ -56,7 +57,8 @@
     isSubmitting,
     onSave,
     onCancel,
-    hideHeader = false
+    hideHeader = false,
+    onStateChange
   }: Props = $props();
 
   let accounts = $state<ResidentRecord[]>([]);
@@ -65,6 +67,7 @@
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   const mopOptions = $derived(mopTypes);
   let isLoading = $state(true);
+  let isReady = $state(false);
   let error = $state<string | null>(null);
   let selectedResident = $state<ResidentRecord | null>(null);
   let isStandingOpen = $state(false);
@@ -145,6 +148,14 @@
   ];
 
   const isFundsOnly = $derived(fundsOnlyTypes.includes(formData.type));
+  
+  $effect(() => {
+    if (!isReady) return;
+    const snapshot = $state.snapshot(formData);
+    untrack(() => {
+      onStateChange?.(snapshot);
+    });
+  });
 
   $effect(() => {
     if (isFundsOnly && formData.accountEmail !== "_funds") {
@@ -314,6 +325,7 @@
           }
         }
       }
+      isReady = true;
     } catch (e: any) {
       error = `Failed to load data: ${e.message}`;
     } finally {

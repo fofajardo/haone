@@ -7,7 +7,7 @@
   import { ChevronLeft, Save, LoaderCircle } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
-  import { addAnnouncement } from "$lib/shared-records-logic";
+  import { addAnnouncement } from "$lib/admin-logic";
   import { fetchUsers } from "$lib/resident-logic";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";

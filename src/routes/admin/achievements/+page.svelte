@@ -9,10 +9,10 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import {
     fetchAchievements,
+    fetchAchievementLogs,
     addAchievement,
-    awardAchievement,
-    fetchAchievementLogs
-  } from "$lib/shared-records-logic";
+    awardAchievement
+  } from "$lib/admin-logic";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/resident-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";

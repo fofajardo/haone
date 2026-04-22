@@ -17,16 +17,12 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import TransactionForm from "$lib/components/TransactionForm.svelte";
-  import {
-    fetchPaymentRequests,
-    approvePaymentRequest,
-    declinePaymentRequest
-  } from "$lib/shared-records-logic";
-  import { fetchResidents, fetchTermCurr } from "$lib/resident-logic";
+  import { fetchPaymentRequests, declinePaymentRequest } from "$lib/admin-logic";
+  import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/resident-logic";
   import { PaymentRequestStatus } from "$lib/schemas";
   import { uiSettings } from "$lib/settings.svelte";
   import { toast } from "svelte-sonner";
-  import { formatAmount } from "$lib/receipt-utils";
+  import { formatAmount, translateMop } from "$lib/receipt-utils";
   import { Textarea } from "$lib/components/ui/textarea";
   import { goto } from "$app/navigation";
   import { Badge } from "$lib/components/ui/badge";
@@ -36,12 +32,14 @@
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);
+  let users = $state<any[]>([]);
   let currentTerm = $state("");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let currentIndex = $state(0);
   let declineReason = $state("");
   let isProcessing = $state(false);
+  let stagedForms = $state<Record<string, any>>({});
 
   const ids = $derived(page.url.searchParams.get("ids")?.split(",") || []);
 
@@ -49,18 +47,51 @@
     isLoading = true;
     error = null;
     try {
-      const [p, r, t] = await Promise.all([
+      const [p, r, t, u] = await Promise.all([
         fetchPaymentRequests(true),
         fetchResidents(true),
-        fetchTermCurr(true)
+        fetchTermCurr(true),
+        fetchUsers(true)
       ]);
 
-      // Filter only requested IDs that are PENDING
-      payments = p.filter(
+      const filtered = p.filter(
         (item) => ids.includes(item.id) && item.status === PaymentRequestStatus.PENDING
       );
+
+      // Initialize staged forms BEFORE setting reactive payments list
+      filtered.forEach((p) => {
+        const resident = r.find((res) => res.residentId === p.residentId);
+        const user = u.find((usr) => usr.id === p.residentId);
+        stagedForms[p.id] = {
+          date: p.date,
+          creator: auth.user?.email || "",
+          account: resident?.email || user?.email || p.residentId,
+          water: p.waterFee,
+          assoc: p.assocFee,
+          misc: p.misc,
+          mop: p.mop,
+          period: t,
+          type: "PMT_COLLECTION",
+          notes: p.notes || "",
+          notesPrivate: "",
+          mopRefNo: "",
+          prDateIssued: "",
+          prRefNo: "",
+          creatorName: auth.user?.name || "",
+          name: resident?.name || user?.displayName || "",
+          stno: resident?.stno || user?.studentNo || "",
+          wasAudited: false,
+          receiptUrl: "",
+          id: "",
+          amount: p.waterFee + p.assocFee + p.misc,
+          raw: []
+        };
+      });
+
+      payments = filtered;
       residents = r;
       currentTerm = t;
+      users = u;
 
       if (payments.length === 0) {
         error = "No pending payment requests found for the selected IDs.";
@@ -76,29 +107,29 @@
   let currentResident = $derived(
     currentPayment ? residents.find((r) => r.residentId === currentPayment.residentId) : null
   );
+  let currentUser = $derived(
+    currentPayment ? users.find((u) => u.id === currentPayment.residentId) : null
+  );
 
   async function handleDecline() {
     if (!currentPayment || !declineReason.trim()) return;
+    const paymentId = currentPayment.id;
     isProcessing = true;
     try {
-      await declinePaymentRequest(currentPayment.id, declineReason);
+      await declinePaymentRequest(paymentId, declineReason);
       toast.success("Payment request declined");
       declineReason = "";
 
-      // Move to next or finish
-      if (currentIndex < payments.length - 1) {
-        currentIndex++;
-      } else {
-        goto("/admin/payment-requests");
-      }
+      // Remove from local queue
+      payments = payments.filter((p) => p.id !== paymentId);
 
-      // Refresh local list to mark as processed (or just remove it)
-      payments = payments.filter((_, i) => i !== currentIndex - 1);
-      if (currentIndex >= payments.length) {
+      if (payments.length === 0) {
         goto("/admin/payment-requests");
       } else {
-        // Adjust index because we removed an item
-        currentIndex = Math.max(0, currentIndex - 1);
+        // Adjust index if we were at the end
+        if (currentIndex >= payments.length) {
+          currentIndex = payments.length - 1;
+        }
       }
     } catch (e: any) {
       toast.error(e.message);
@@ -119,7 +150,7 @@
       await appendSheetRow(awId, "journal_general!A:T", [row]);
 
       // 2. Mark as APPROVED in payment_requests sheet
-      const srRows = await fetchSheetRowsRaw(srId, "payment_requests!A:K");
+      const srRows = await fetchSheetRowsRaw(srId, "payment_requests!A:L");
       const rowIndex = srRows.findIndex(
         (r) => (r[0]?.toString() || "").trim() === currentPayment.id
       );
@@ -150,6 +181,28 @@
     } finally {
       isProcessing = false;
     }
+  }
+
+  function handleStateChange(formData: any) {
+    if (!currentPayment) return;
+    stagedForms[currentPayment.id] = {
+      ...stagedForms[currentPayment.id],
+      date: formData.date,
+      account: formData.accountEmail,
+      water: parseFloat(formData.waterFee) || 0,
+      assoc: parseFloat(formData.assocFee) || 0,
+      misc: parseFloat(formData.miscFee) || 0,
+      mop: formData.mop,
+      period: formData.period,
+      type: formData.type,
+      notes: formData.notes,
+      notesPrivate: formData.notesPrivate,
+      mopRefNo: formData.mopRefNo,
+      prDateIssued: formData.prDateIssued,
+      prRefNo: formData.prRefNo,
+      name: formData.accountName,
+      stno: formData.accountStNo
+    };
   }
 
   onMount(loadData);
@@ -220,7 +273,7 @@
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-muted-foreground">MOP:</span>
-                  <Badge variant="outline" class="uppercase">{currentPayment.mop}</Badge>
+                  <Badge variant="outline" class="uppercase">{translateMop(currentPayment.mop)}</Badge>
                 </div>
 
                 <div class="mt-2 border-t pt-2">
@@ -297,37 +350,17 @@
 
       <!-- Right: Processing Form -->
       <div class="lg:col-span-2">
-        <TransactionForm
-          mode="add"
-          hideHeader={true}
-          initialData={{
-            date: currentPayment.date,
-            creator: auth.user?.email || "",
-            account: currentResident?.email || currentPayment.residentId,
-            water: currentPayment.waterFee,
-            assoc: currentPayment.assocFee,
-            misc: currentPayment.misc,
-            mop: currentPayment.mop,
-            period: currentTerm,
-            type: "PMT_COLLECTION",
-            notes: currentPayment.notes || "Payment Request",
-            notesPrivate: "",
-            mopRefNo: "",
-            prDateIssued: "",
-            prRefNo: "",
-            creatorName: auth.user?.name || "",
-            name: currentResident?.name || "",
-            stno: currentResident?.stno || "",
-            wasAudited: false,
-            receiptUrl: "",
-            id: "",
-            amount: currentPayment.waterFee + currentPayment.assocFee + currentPayment.misc,
-            raw: []
-          }}
-          isSubmitting={isProcessing}
-          onSave={handleSaveReview}
-          onCancel={() => goto("/admin/payment-requests")}
-        />
+        {#key currentPayment.id}
+          <TransactionForm
+            mode="add"
+            hideHeader={true}
+            initialData={stagedForms[currentPayment.id]}
+            isSubmitting={isProcessing}
+            onSave={handleSaveReview}
+            onCancel={() => goto("/admin/payment-requests")}
+            onStateChange={handleStateChange}
+          />
+        {/key}
       </div>
     </div>
   {/if}

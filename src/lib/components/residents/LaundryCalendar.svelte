@@ -1,19 +1,11 @@
 <script lang="ts">
-  import type { LaundryRecord, UserRecord, ResidentRecord } from "$lib/schemas";
+  import type { LaundryRecord, UserRecord } from "$lib/schemas";
   import { auth } from "$lib/auth.svelte";
-  import * as Card from "$lib/components/ui/card";
   import { cn } from "$lib/utils";
-  import {
-    Clock,
-    Calendar as CalendarIcon,
-    ChevronLeft,
-    ChevronRight,
-    ChevronDown,
-    CalendarDays
-  } from "lucide-svelte";
+  import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "lucide-svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
-  import { parseTime, formatTime } from "$lib/receipt-utils";
+  import { parseTime } from "$lib/receipt-utils";
   import * as Sheet from "$lib/components/ui/sheet";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import {
@@ -21,7 +13,6 @@
     User as UserIcon,
     Calendar as CalendarIconSmall,
     Clock as ClockIcon,
-    XCircle,
     Trash2,
     RefreshCcw
   } from "lucide-svelte";
@@ -29,17 +20,21 @@
   let {
     reservations,
     users = [],
-    currentUserId,
+    currentUserId = "",
+    isAdminView = false,
     onSelectSlot,
     onCancelReservation,
-    isCancelling = false
+    isCancelling = false,
+    selectedReservation = $bindable(null)
   }: {
     reservations: LaundryRecord[];
-    users: (UserRecord | ResidentRecord | any)[];
+    users: (UserRecord & { room?: string })[];
     currentUserId?: string;
+    isAdminView?: boolean;
     onSelectSlot?: (date: string, hour: number) => void;
     onCancelReservation?: (id: string) => void;
     isCancelling?: boolean;
+    selectedReservation?: any;
   } = $props();
 
   let selectedDate = $state(new Date());
@@ -116,25 +111,34 @@
     return `${year}-${month}-${day}`;
   }
 
-  function getActiveReservationsForDay(date: string) {
-    return reservations
-      .filter((r: LaundryRecord) => r.status === "ACTIVE" && r.date === date)
-      .map((r: LaundryRecord) => {
-        const start = parseTime(r.timeStart);
-        const end = parseTime(r.timeEnd);
-        const resId = (r.residentId || "").trim();
-        // Lookup by ID (UUID) or email (legacy)
-        const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
+  const reservationsByDate = $derived.by(() => {
+    const map = new Map<string, LaundryRecord[]>();
+    for (const r of reservations) {
+      if (r.status !== "ACTIVE") continue;
+      const list = map.get(r.date) || [];
+      list.push(r);
+      map.set(r.date, list);
+    }
+    return map;
+  });
 
-        return {
-          ...r,
-          startHour: start,
-          endHour: end,
-          duration: end - start,
-          name: (user as any)?.name || r.displayName || "Resident",
-          room: (user as any)?.room || r.room || ""
-        };
-      });
+  function getActiveReservationsForDay(date: string) {
+    return (reservationsByDate.get(date) || []).map((r: LaundryRecord) => {
+      const start = parseTime(r.timeStart);
+      const end = parseTime(r.timeEnd);
+      const resId = (r.residentId || "").trim();
+      // Lookup by ID (UUID) or email (legacy)
+      const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
+
+      return {
+        ...r,
+        startHour: start,
+        endHour: end,
+        duration: end - start,
+        name: (user as any)?.name || r.displayName || "Resident",
+        room: (user as any)?.room || r.room || ""
+      };
+    });
   }
 
   function next() {
@@ -153,19 +157,16 @@
     selectedDate = new Date();
   }
 
-  let detailReservation = $state<any>(null);
   let isCancelConfirmOpen = $state(false);
 
   function handleReservationClick(res: any) {
-    detailReservation = res;
+    selectedReservation = res;
   }
 
-  let wasCancelling = $state(false);
   $effect(() => {
-    if (wasCancelling && !isCancelling) {
-      detailReservation = null;
+    if (selectedReservation === null) {
+      isCancelConfirmOpen = false;
     }
-    wasCancelling = isCancelling;
   });
 
   function checkIsPast(date: string, timeEnd: string) {
@@ -187,7 +188,7 @@
   }
 
   let isDetailPast = $derived(
-    detailReservation ? checkIsPast(detailReservation.date, detailReservation.timeEnd) : false
+    selectedReservation ? checkIsPast(selectedReservation.date, selectedReservation.timeEnd) : false
   );
 </script>
 
@@ -304,17 +305,19 @@
                 "disabled:cursor-not-allowed disabled:bg-muted/5"
               )}
               style="grid-row: {hourIdx + 2}; grid-column: {dayIdx + 2};"
-              disabled={reservations.some((r) => {
+              disabled={reservations.some((r: LaundryRecord) => {
                 if (r.status !== "ACTIVE" || r.date !== dateStr) return false;
                 const start = parseTime(r.timeStart);
                 const end = parseTime(r.timeEnd);
                 return hour >= start && hour < end;
               }) ||
-                (day.getFullYear() === now.getFullYear() &&
-                day.getMonth() === now.getMonth() &&
-                day.getDate() === now.getDate()
-                  ? hour < now.getHours()
-                  : day < now)}
+                (isAdminView
+                  ? false
+                  : day.getFullYear() === now.getFullYear() &&
+                      day.getMonth() === now.getMonth() &&
+                      day.getDate() === now.getDate()
+                    ? hour < now.getHours()
+                    : day < now)}
               onclick={() => onSelectSlot?.(dateStr, hour)}
               aria-label="Select slot for {dateStr} at {hour}:00"
             ></button>
@@ -368,11 +371,14 @@
               >
                 <div
                   class={cn(
-                    "line-clamp-1 w-full text-sm leading-tight font-semibold",
+                    "flex w-full min-w-0 items-center gap-1 text-sm leading-none font-semibold",
                     isPast ? "text-muted-foreground" : "text-white"
                   )}
                 >
-                  {res.name}
+                  {#if isMine}
+                    <BookmarkIcon class="h-3.5 w-3.5 shrink-0" />
+                  {/if}
+                  <span class="truncate">{res.name}</span>
                 </div>
                 {#if res.room}
                   <div
@@ -413,12 +419,12 @@
   </div>
 </div>
 
-<Sheet.Root open={!!detailReservation} onOpenChange={(o) => !o && (detailReservation = null)}>
+<Sheet.Root open={!!selectedReservation} onOpenChange={(o) => !o && (selectedReservation = null)}>
   <Sheet.Content side="right" class="sm:max-w-md sm:rounded-l-xl">
-    {#if detailReservation}
+    {#if selectedReservation}
       {@const isMine =
-        detailReservation.residentId === currentUserId ||
-        (auth.user?.email && detailReservation.residentId === auth.user.email)}
+        selectedReservation.residentId === currentUserId ||
+        (auth.user?.email && selectedReservation.residentId === auth.user.email)}
       <Sheet.Header>
         <Sheet.Title class="flex items-center gap-2">
           <Info class="h-5 w-5 text-primary" />
@@ -427,16 +433,16 @@
         <Sheet.Description>Information about this laundry booking.</Sheet.Description>
       </Sheet.Header>
 
-      <div class="space-y-4 p-4">
+      <div class="space-y-4 px-4">
         <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
           <UserIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
           <div class="space-y-0.5">
             <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Reserved By
             </p>
-            <p class="text-sm font-semibold">{detailReservation.name}</p>
-            {#if detailReservation.room}
-              <p class="text-xs text-muted-foreground">Room {detailReservation.room}</p>
+            <p class="text-sm font-semibold">{selectedReservation.name}</p>
+            {#if selectedReservation.room}
+              <p class="text-xs text-muted-foreground">Room {selectedReservation.room}</p>
             {/if}
           </div>
         </div>
@@ -446,51 +452,53 @@
             <CalendarIconSmall class="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div class="space-y-0.5">
               <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Date</p>
-              <p class="text-sm font-semibold">{detailReservation.date}</p>
+              <p class="text-sm font-semibold">{selectedReservation.date}</p>
             </div>
           </div>
           <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
             <ClockIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div class="space-y-0.5">
               <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Starts</p>
-              <p class="text-sm font-semibold">{detailReservation.timeStart}</p>
+              <p class="text-sm font-semibold">{selectedReservation.timeStart}</p>
             </div>
           </div>
           <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
             <ClockIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div class="space-y-0.5">
               <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Ends</p>
-              <p class="text-sm font-semibold">{detailReservation.timeEnd}</p>
+              <p class="text-sm font-semibold">{selectedReservation.timeEnd}</p>
             </div>
           </div>
         </div>
 
-        {#if detailReservation.creationTimestamp}
+        {#if selectedReservation.creationTimestamp}
           <div class="flex items-center gap-2 px-1 text-xs text-muted-foreground">
             <ClockIcon class="h-3 w-3" />
-            <span>Booked on {new Date(detailReservation.creationTimestamp).toLocaleString()}</span>
+            <span>Booked on {new Date(selectedReservation.creationTimestamp).toLocaleString()}</span
+            >
           </div>
         {/if}
       </div>
 
       <div class="mt-6 flex flex-col gap-2 px-4">
-        {#if isMine}
+        {#if isMine || isAdminView}
           <Button
             variant="destructive"
             class="w-full"
             disabled={isCancelling || isDetailPast}
-            onclick={() => (isCancelConfirmOpen = true)}
+            onclick={() => {
+              if (isAdminView) {
+                onCancelReservation?.(selectedReservation.id);
+              } else {
+                isCancelConfirmOpen = true;
+              }
+            }}
           >
-            {#if isCancelling}
-              <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
-              Cancelling…
-            {:else}
-              <Trash2 class="mr-2 h-4 w-4" />
-              Cancel
-            {/if}
+            <Trash2 class="mr-2 h-4 w-4" />
+            Cancel
           </Button>
         {/if}
-        <Button variant="outline" class="w-full" onclick={() => (detailReservation = null)}>
+        <Button variant="outline" class="w-full" onclick={() => (selectedReservation = null)}>
           Close
         </Button>
       </div>
@@ -503,21 +511,28 @@
     <AlertDialog.Header>
       <AlertDialog.Title>Cancel Reservation?</AlertDialog.Title>
       <AlertDialog.Description>
-        This action cannot be undone. This will permanently cancel your laundry reservation.
+        This action cannot be undone. This will permanently cancel {isAdminView ? "this" : "your"} laundry
+        reservation.
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Go Back</AlertDialog.Cancel>
-      <AlertDialog.Action
+      <AlertDialog.Cancel disabled={isCancelling}>Go Back</AlertDialog.Cancel>
+      <Button
+        variant="destructive"
         onclick={() => {
-          if (detailReservation) {
-            onCancelReservation?.(detailReservation.id);
+          if (selectedReservation) {
+            onCancelReservation?.(selectedReservation.id);
           }
         }}
-        class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
+        disabled={isCancelling}
       >
-        Confirm
-      </AlertDialog.Action>
+        {#if isCancelling}
+          <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
+          Cancelling…
+        {:else}
+          Confirm
+        {/if}
+      </Button>
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>

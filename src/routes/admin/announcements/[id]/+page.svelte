@@ -11,7 +11,7 @@
   import RichEditor from "$lib/components/RichEditor.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchAnnouncements, updateAnnouncement } from "$lib/shared-records-logic";
+  import { fetchAnnouncements, updateAnnouncement } from "$lib/admin-logic";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
 

@@ -133,7 +133,10 @@
   // Sync external search with internal table filters
   $effect(() => {
     if (filterColumnId) {
-      table.getColumn(filterColumnId)?.setFilterValue(filterSearch);
+      const col = table.getColumn(filterColumnId);
+      if (col && col.getFilterValue() !== filterSearch) {
+        col.setFilterValue(filterSearch);
+      }
     }
   });
 

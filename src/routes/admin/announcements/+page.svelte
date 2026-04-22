@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
   import { Button } from "$lib/components/ui/button";
   import { RefreshCcw, Plus, Megaphone, Clock, Trash2, Edit } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -8,20 +7,17 @@
   import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import {
-    fetchAnnouncements,
-    addAnnouncement,
-    updateAnnouncement,
-    expireAnnouncement
-  } from "$lib/shared-records-logic";
+  import { fetchAnnouncements, expireAnnouncement } from "$lib/admin-logic";
   import type { AnnouncementRecord } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
 
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let announcementToExpire = $state<string | null>(null);
 
   async function loadData() {
     isLoading = true;
@@ -35,14 +31,20 @@
     }
   }
 
-  async function handleExpire(id: string) {
-    if (!confirm("Are you sure you want to expire this announcement?")) return;
+  function handleExpire(id: string) {
+    announcementToExpire = id;
+  }
+
+  async function confirmExpire() {
+    if (!announcementToExpire) return;
     try {
-      await expireAnnouncement(id);
+      await expireAnnouncement(announcementToExpire);
       toast.success("Announcement expired");
       loadData();
     } catch (e: any) {
       toast.error(e.message);
+    } finally {
+      announcementToExpire = null;
     }
   }
 
@@ -146,3 +148,25 @@
     </div>
   {/if}
 </div>
+
+<AlertDialog.Root
+  open={announcementToExpire !== null}
+  onOpenChange={(o) => {
+    if (!o) announcementToExpire = null;
+  }}
+>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Expire Announcement</AlertDialog.Title>
+      <AlertDialog.Description>
+        Are you sure you want to expire this announcement? It will no longer be visible to residents.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <AlertDialog.Action onclick={confirmExpire} class="bg-red-600 hover:bg-red-700">
+        Expire
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

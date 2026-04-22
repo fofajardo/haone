@@ -19,27 +19,6 @@ export const columns: ColumnDef<LaundryRecord>[] = [
     }
   },
   {
-    accessorKey: "residentId",
-    header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Resident" }),
-    cell: ({ row }) => {
-      const name = row.original.displayName || row.original.residentId;
-      const room = row.original.room ? `Room ${row.original.room}` : "";
-
-      const snippet = createRawSnippet<[{ name: string; room: string }]>((p) => ({
-        render: () => `
-          <div class="flex flex-col">
-            <span class="font-medium">${p().name}</span>
-            ${p().room ? `<span class="text-muted-foreground">${p().room}</span>` : ""}
-          </div>
-        `
-      }));
-      return renderSnippet(snippet, {
-        name,
-        room
-      });
-    }
-  },
-  {
     accessorKey: "date",
     header: ({ column }) =>
       renderComponent(DataTableColumnHeader, { column, title: "Reservation" }),
