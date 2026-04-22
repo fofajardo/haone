@@ -33,7 +33,7 @@
 </script>
 
 <ModeWatcher />
-<Toaster />
+<Toaster mobileOffset="100px" />
 
 <svelte:head>
   <title>{pageState.title ? pageState.title + " - HAOne" : "HAOne"}</title>
