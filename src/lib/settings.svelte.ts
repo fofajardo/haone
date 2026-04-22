@@ -44,70 +44,96 @@ class UISettings {
   }
 
   // Getters/Setters for UI (with localStorage sync as cache)
-  get fontFamily() { return this.#fontFamily; }
+  get fontFamily() {
+    return this.#fontFamily;
+  }
   set fontFamily(v: UIFont) {
     this.#fontFamily = v;
     if (browser) localStorage.setItem(LS_KEYS.UI_FONT, v);
   }
 
-  get reducedMotion() { return this.#reducedMotion; }
+  get reducedMotion() {
+    return this.#reducedMotion;
+  }
   set reducedMotion(v: boolean) {
     this.#reducedMotion = v;
     if (browser) localStorage.setItem(LS_KEYS.ACC_REDUCED_MOTION, String(v));
   }
 
-  get displayDensity() { return this.#displayDensity; }
+  get displayDensity() {
+    return this.#displayDensity;
+  }
   set displayDensity(v: DisplayDensity) {
     this.#displayDensity = v;
     if (browser) localStorage.setItem(LS_KEYS.ACC_SPACIOUS_LAYOUT, v);
   }
 
-  get theme() { return this.#theme; }
+  get theme() {
+    return this.#theme;
+  }
   set theme(v: string) {
     this.#theme = v;
     if (browser) localStorage.setItem("halsk.ui.theme", v);
   }
 
-  get isPublicAchievementList() { return this.#isPublicAchievementList; }
-  set isPublicAchievementList(v: boolean) { this.#isPublicAchievementList = v; }
+  get isPublicAchievementList() {
+    return this.#isPublicAchievementList;
+  }
+  set isPublicAchievementList(v: boolean) {
+    this.#isPublicAchievementList = v;
+  }
 
-  get residentNavIds() { return this.#residentNavIds; }
+  get residentNavIds() {
+    return this.#residentNavIds;
+  }
   set residentNavIds(v: string[]) {
     this.#residentNavIds = v;
     if (browser) localStorage.setItem("halsk.ui.nav.res", JSON.stringify(v));
   }
 
-  get adminNavIds() { return this.#adminNavIds; }
+  get adminNavIds() {
+    return this.#adminNavIds;
+  }
   set adminNavIds(v: string[]) {
     this.#adminNavIds = v;
     if (browser) localStorage.setItem("halsk.ui.nav.adm", JSON.stringify(v));
   }
 
-  get currentTerm() { return this.#currentTerm; }
+  get currentTerm() {
+    return this.#currentTerm;
+  }
   set currentTerm(v: string) {
     this.#currentTerm = v;
     if (browser) localStorage.setItem("halsk.ui.current_term", v);
   }
 
-  get accountingWorkbookId() { return this.#accountingWorkbookId; }
+  get accountingWorkbookId() {
+    return this.#accountingWorkbookId;
+  }
   set accountingWorkbookId(v: string) {
     this.#accountingWorkbookId = v;
     if (browser) localStorage.setItem(LS_KEYS.GS_AW_ID, v);
   }
 
-  get residentRecordsId() { return this.#residentRecordsId; }
+  get residentRecordsId() {
+    return this.#residentRecordsId;
+  }
   set residentRecordsId(v: string) {
     this.#residentRecordsId = v;
     if (browser) localStorage.setItem(LS_KEYS.GS_RR_ID, v);
   }
 
-  get sharedRecordsId() { return this.#sharedRecordsId; }
+  get sharedRecordsId() {
+    return this.#sharedRecordsId;
+  }
   set sharedRecordsId(v: string) {
     this.#sharedRecordsId = v;
     if (browser) localStorage.setItem(LS_KEYS.GS_SR_ID, v);
   }
 
-  get isDev() { return dev || PUBLIC_APP_ENV === "development"; }
+  get isDev() {
+    return dev || PUBLIC_APP_ENV === "development";
+  }
 
   async syncFromServer() {
     const { fetchUserSettings } = await import("./shared-records-logic");

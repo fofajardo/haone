@@ -101,9 +101,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
         ? String(isPublicAchievementList).toUpperCase()
         : currentRecord[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "TRUE";
     const resNavVal =
-      residentNav !== undefined
-        ? residentNav
-        : currentRecord[USER_SETTINGS_COL.RESIDENT_NAV] || "";
+      residentNav !== undefined ? residentNav : currentRecord[USER_SETTINGS_COL.RESIDENT_NAV] || "";
     const admNavVal =
       adminNav !== undefined ? adminNav : currentRecord[USER_SETTINGS_COL.ADMIN_NAV] || "";
 
@@ -129,7 +127,9 @@ export const PATCH: RequestHandler = async ({ request }) => {
 
     if (rowIndex === -1) {
       // Append new row
-      await appendSheetValue(client, PUBLIC_GS_SR_ID, "settings!A:H", [[residentId, ...finalValues]]);
+      await appendSheetValue(client, PUBLIC_GS_SR_ID, "settings!A:H", [
+        [residentId, ...finalValues]
+      ]);
     } else {
       // Update existing row
       const actualRow = rowIndex + 1;

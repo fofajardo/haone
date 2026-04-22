@@ -24,10 +24,7 @@
           </p>
         </div>
       </div>
-      <Switch
-        id="public-achievements"
-        bind:checked={uiSettings.isPublicAchievementList}
-      />
+      <Switch id="public-achievements" bind:checked={uiSettings.isPublicAchievementList} />
     </div>
   </Card.Content>
 </Card.Root>

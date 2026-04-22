@@ -159,9 +159,7 @@ export async function approvePaymentRequest(
   if (!srId || !awId) throw new Error("Spreadsheet IDs not configured");
 
   const srRows = await fetchSheetRowsRaw(srId, "payment_requests!A:L");
-  const rowIndex = srRows.findIndex(
-    (r) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === paymentId
-  );
+  const rowIndex = srRows.findIndex((r) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === paymentId);
   if (rowIndex === -1) throw new Error("Payment record not found");
 
   const actualRow = rowIndex + 1;
@@ -194,9 +192,7 @@ export async function declinePaymentRequest(paymentId: string, reason: string) {
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
   const rows = await fetchSheetRowsRaw(spreadsheetId, "payment_requests!A:L");
-  const rowIndex = rows.findIndex(
-    (r) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === paymentId
-  );
+  const rowIndex = rows.findIndex((r) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === paymentId);
   if (rowIndex === -1) throw new Error("Payment record not found");
 
   const actualRow = rowIndex + 1;

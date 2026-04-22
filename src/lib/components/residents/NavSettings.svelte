@@ -85,7 +85,9 @@
           <h4 class="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
             Resident Navigation
           </h4>
-          <span class="text-xs text-muted-foreground">{uiSettings.residentNavIds.length} / 4 items</span>
+          <span class="text-xs text-muted-foreground"
+            >{uiSettings.residentNavIds.length} / 4 items</span
+          >
         </div>
 
         <div class="flex min-h-[52px] flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
@@ -98,14 +100,16 @@
                 <div class="ml-1 flex items-center gap-0.5 border-l pl-1">
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, -1))}
+                    onclick={() =>
+                      (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, -1))}
                     disabled={i === 0}
                   >
                     <ChevronUp class="h-3 w-3" />
                   </button>
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, 1))}
+                    onclick={() =>
+                      (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, 1))}
                     disabled={i === uiSettings.residentNavIds.length - 1}
                   >
                     <ChevronDown class="h-3 w-3" />
@@ -113,7 +117,9 @@
                   <button
                     class="ml-0.5 hover:text-destructive"
                     onclick={() =>
-                      (uiSettings.residentNavIds = uiSettings.residentNavIds.filter((id) => id !== itemId))}
+                      (uiSettings.residentNavIds = uiSettings.residentNavIds.filter(
+                        (id) => id !== itemId
+                      ))}
                   >
                     <X class="h-3 w-3" />
                   </button>
@@ -133,7 +139,8 @@
               variant={selected ? "default" : "outline"}
               size="sm"
               class="h-8 gap-1.5"
-              onclick={() => (uiSettings.residentNavIds = toggleItem(uiSettings.residentNavIds, item.id))}
+              onclick={() =>
+                (uiSettings.residentNavIds = toggleItem(uiSettings.residentNavIds, item.id))}
               disabled={!selected && uiSettings.residentNavIds.length >= 4}
             >
               <item.icon class="h-3.5 w-3.5" />
@@ -151,7 +158,9 @@
           <h4 class="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
             Admin Navigation
           </h4>
-          <span class="text-xs text-muted-foreground">{uiSettings.adminNavIds.length} / 4 items</span>
+          <span class="text-xs text-muted-foreground"
+            >{uiSettings.adminNavIds.length} / 4 items</span
+          >
         </div>
 
         <div class="flex min-h-[52px] flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
@@ -164,14 +173,16 @@
                 <div class="ml-1 flex items-center gap-0.5 border-l pl-1">
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, -1))}
+                    onclick={() =>
+                      (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, -1))}
                     disabled={i === 0}
                   >
                     <ChevronUp class="h-3 w-3" />
                   </button>
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() => (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, 1))}
+                    onclick={() =>
+                      (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, 1))}
                     disabled={i === uiSettings.adminNavIds.length - 1}
                   >
                     <ChevronDown class="h-3 w-3" />
@@ -179,7 +190,9 @@
                   <button
                     class="ml-0.5 hover:text-destructive"
                     onclick={() =>
-                      (uiSettings.adminNavIds = uiSettings.adminNavIds.filter((id) => id !== itemId))}
+                      (uiSettings.adminNavIds = uiSettings.adminNavIds.filter(
+                        (id) => id !== itemId
+                      ))}
                   >
                     <X class="h-3 w-3" />
                   </button>

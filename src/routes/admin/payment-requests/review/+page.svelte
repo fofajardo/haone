@@ -273,7 +273,9 @@
                 </div>
                 <div class="flex justify-between text-sm">
                   <span class="text-muted-foreground">MOP:</span>
-                  <Badge variant="outline" class="uppercase">{translateMop(currentPayment.mop)}</Badge>
+                  <Badge variant="outline" class="uppercase"
+                    >{translateMop(currentPayment.mop)}</Badge
+                  >
                 </div>
 
                 <div class="mt-2 border-t pt-2">

@@ -28,7 +28,7 @@ export async function fetchServer<T = any>(
 ): Promise<T> {
   const isLaundry = url.includes("/api/resident/laundry");
   const useCache = options.method === "GET" || !options.method;
- 
+
   if (!forceRefresh && !isLaundry && useCache && serverCache[url]) {
     return serverCache[url] as T;
   }

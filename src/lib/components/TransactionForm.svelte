@@ -148,7 +148,7 @@
   ];
 
   const isFundsOnly = $derived(fundsOnlyTypes.includes(formData.type));
-  
+
   $effect(() => {
     if (!isReady) return;
     const snapshot = $state.snapshot(formData);

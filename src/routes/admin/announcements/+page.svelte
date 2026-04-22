@@ -159,7 +159,8 @@
     <AlertDialog.Header>
       <AlertDialog.Title>Expire Announcement</AlertDialog.Title>
       <AlertDialog.Description>
-        Are you sure you want to expire this announcement? It will no longer be visible to residents.
+        Are you sure you want to expire this announcement? It will no longer be visible to
+        residents.
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>

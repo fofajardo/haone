@@ -29,7 +29,6 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "payment_requests!A:L");
 
-
     const requests = rows
       .slice(1)
       .filter((r: any) => (r[PAYMENT_REQUEST_COL.RESIDENT_ID] || "").trim() === residentId)

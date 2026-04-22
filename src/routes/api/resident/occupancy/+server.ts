@@ -30,7 +30,6 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const userId = userRow[USER_COL.ID];
 
-
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
     const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
 
