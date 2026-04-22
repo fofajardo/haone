@@ -325,7 +325,7 @@
       <div class="flex h-full flex-col gap-6">
         <FinancialStandingCard {account} />
 
-        {#if account.raw[ACC.NOTES]?.trim()}
+        {#if account.notes?.trim()}
           <Card.Root class="border-amber-200 bg-amber-50/30">
             <Card.Header>
               <Card.Title class="flex items-center gap-2 text-sm text-amber-900">
@@ -334,7 +334,7 @@
             </Card.Header>
             <Card.Content>
               <p class="text-xs leading-relaxed font-medium text-amber-800">
-                {@html account.raw[ACC.NOTES]}
+                {@html account.notes}
               </p>
             </Card.Content>
           </Card.Root>
