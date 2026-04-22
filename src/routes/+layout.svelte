@@ -6,11 +6,28 @@
   import "./layout.css";
   import favicon from "$lib/assets/favicon.svg";
 
+  import { onMount } from "svelte";
+  import { auth } from "$lib/auth.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
+  import { setMode, resetMode } from "mode-watcher";
+
   let { children } = $props();
 
   $effect(() => {
     if (page.data.pageInfo?.title) {
       pageState.title = page.data.pageInfo.title;
+    }
+  });
+
+  onMount(async () => {
+    if (auth.accessToken) {
+      try {
+        await uiSettings.syncFromServer();
+        if (uiSettings.theme === "system") resetMode();
+        else setMode(uiSettings.theme as any);
+      } catch (e) {
+        console.error("Failed to sync settings:", e);
+      }
     }
   });
 </script>

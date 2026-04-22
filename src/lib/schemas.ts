@@ -256,7 +256,11 @@ export const USER_SETTINGS_COL = {
   RESIDENT_ID: 0,
   IS_PUBLIC_ACHIEVEMENT_LIST: 1,
   RESIDENT_NAV: 2,
-  ADMIN_NAV: 3
+  ADMIN_NAV: 3,
+  DENSITY: 4,
+  TYPOGRAPHY: 5,
+  THEME: 6,
+  IS_REDUCED_MOTION: 7
 } as const;
 
 export interface LaundryRecord {
@@ -330,5 +334,9 @@ export interface UserSettingsRecord {
   isPublicAchievementList: boolean;
   residentNav: string;
   adminNav: string;
+  density: string;
+  typography: string;
+  theme: string;
+  isReducedMotion: boolean;
   raw: string[];
 }

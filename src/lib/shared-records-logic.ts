@@ -515,6 +515,10 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
         isPublicAchievementList: data.isPublicAchievementList,
         residentNav: data.residentNav || "",
         adminNav: data.adminNav || "",
+        density: data.density || "",
+        typography: data.typography || "",
+        theme: data.theme || "",
+        isReducedMotion: data.isReducedMotion || false,
         raw: []
       }
     ];
@@ -523,13 +527,17 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:D", forceRefresh);
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:H", forceRefresh);
   return rows.slice(1).map((row) => ({
     residentId: (row[USER_SETTINGS_COL.RESIDENT_ID] || "").trim(),
     isPublicAchievementList:
       (row[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() !== "FALSE",
     residentNav: row[USER_SETTINGS_COL.RESIDENT_NAV] || "",
     adminNav: row[USER_SETTINGS_COL.ADMIN_NAV] || "",
+    density: row[USER_SETTINGS_COL.DENSITY] || "",
+    typography: row[USER_SETTINGS_COL.TYPOGRAPHY] || "",
+    theme: row[USER_SETTINGS_COL.THEME] || "",
+    isReducedMotion: (row[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE",
     raw: row
   }));
 }
@@ -540,6 +548,10 @@ export async function updateUserSettings(
     isPublic?: boolean;
     residentNav?: string;
     adminNav?: string;
+    density?: string;
+    typography?: string;
+    theme?: string;
+    isReducedMotion?: boolean;
   }
 ) {
   if (auth.authType === "resident") {
@@ -547,6 +559,10 @@ export async function updateUserSettings(
     if (data.isPublic !== undefined) payload.isPublicAchievementList = data.isPublic;
     if (data.residentNav !== undefined) payload.residentNav = data.residentNav;
     if (data.adminNav !== undefined) payload.adminNav = data.adminNav;
+    if (data.density !== undefined) payload.density = data.density;
+    if (data.typography !== undefined) payload.typography = data.typography;
+    if (data.theme !== undefined) payload.theme = data.theme;
+    if (data.isReducedMotion !== undefined) payload.isReducedMotion = data.isReducedMotion;
 
     return await fetchServer("/api/resident/settings", {
       method: "PATCH",
@@ -557,7 +573,7 @@ export async function updateUserSettings(
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:D");
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:H");
   const rowIndex = rows.findIndex((r) => r[USER_SETTINGS_COL.RESIDENT_ID] === residentId);
 
   const current = rowIndex !== -1 ? rows[rowIndex] : [];
@@ -572,14 +588,32 @@ export async function updateUserSettings(
   const admNavVal =
     data.adminNav !== undefined ? data.adminNav : current[USER_SETTINGS_COL.ADMIN_NAV] || "";
 
+  const densityVal =
+    data.density !== undefined ? data.density : current[USER_SETTINGS_COL.DENSITY] || "";
+  const typographyVal =
+    data.typography !== undefined ? data.typography : current[USER_SETTINGS_COL.TYPOGRAPHY] || "";
+  const themeVal = data.theme !== undefined ? data.theme : current[USER_SETTINGS_COL.THEME] || "";
+  const reducedMotionVal =
+    data.isReducedMotion !== undefined
+      ? String(data.isReducedMotion).toUpperCase()
+      : current[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "FALSE";
+
+  const finalValues = [
+    isPublicVal,
+    resNavVal,
+    admNavVal,
+    densityVal,
+    typographyVal,
+    themeVal,
+    reducedMotionVal
+  ];
+
   if (rowIndex === -1) {
     // New setting record
-    const row = [residentId, isPublicVal, resNavVal, admNavVal];
-    await appendSheetRow(spreadsheetId, "settings!A:D", [row]);
+    const row = [residentId, ...finalValues];
+    await appendSheetRow(spreadsheetId, "settings!A:H", [row]);
   } else {
     const actualRow = rowIndex + 1;
-    await updateSheetValue(spreadsheetId, `settings!B${actualRow}:D${actualRow}`, [
-      [isPublicVal, resNavVal, admNavVal]
-    ]);
+    await updateSheetValue(spreadsheetId, `settings!B${actualRow}:H${actualRow}`, [finalValues]);
   }
 }
