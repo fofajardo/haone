@@ -4,6 +4,7 @@ import { JOURNAL_COL } from "$lib/schemas";
 import type { PageServerLoad, Actions } from "./$types";
 import type { ReceiptData, ReceiptItem } from "$lib/types";
 import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
+import { parseCSVAmount } from "$lib/receipt-utils";
 
 export const load: PageServerLoad = async ({ params }) => {
   const id = params.id;
@@ -38,17 +39,10 @@ export const actions: Actions = {
       if (stno === correctStNo) {
         // Build receipt data to return directly
         const prRefNo = row[JOURNAL_COL.PR_REFNO];
-        const parseAmount = (val: any) => {
-          if (!val) return 0;
-          const cleaned = String(val).replace(/[₱,\s]/g, "");
-          const num = parseFloat(cleaned);
-          return isNaN(num) ? 0 : num;
-        };
-
         const items: ReceiptItem[] = [];
-        const water = parseAmount(row[JOURNAL_COL.WATER]);
-        const assoc = parseAmount(row[JOURNAL_COL.ASSOC]);
-        const misc = parseAmount(row[JOURNAL_COL.MISC]);
+        const water = parseCSVAmount(row[JOURNAL_COL.WATER]);
+        const assoc = parseCSVAmount(row[JOURNAL_COL.ASSOC]);
+        const misc = parseCSVAmount(row[JOURNAL_COL.MISC]);
 
         if (water !== 0) items.push({ name: "Water Fee", amount: water });
         if (assoc !== 0) items.push({ name: "Association Fee", amount: assoc });

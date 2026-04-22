@@ -7,6 +7,7 @@ import {
   getSheetValues,
   serverError
 } from "$lib/server/api-helper";
+import { parseCSVAmount } from "$lib/receipt-utils";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
@@ -29,13 +30,6 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const userId = userRow[USER_COL.ID];
 
-    const parseAmount = (val: any) => {
-      if (!val) return 0;
-      const str = String(val).trim().replace(/[₱,]/g, "");
-      const isParen = str.startsWith("(") && str.endsWith(")");
-      const num = parseFloat(isParen ? str.slice(1, -1) : str);
-      return isNaN(num) ? 0 : isParen ? -num : num;
-    };
 
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
     const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
@@ -54,9 +48,9 @@ export const GET: RequestHandler = async ({ request }) => {
       .filter((r: any) => (r[2] || "").toLowerCase() === email)
       .map((r: any) => ({
         period: (r[7] || "").trim(),
-        water: parseAmount(r[3]),
-        assoc: parseAmount(r[4]),
-        misc: parseAmount(r[5]),
+        water: parseCSVAmount(r[3]),
+        assoc: parseCSVAmount(r[4]),
+        misc: parseCSVAmount(r[5]),
         type: (r[8] || "").trim()
       }));
 
@@ -65,8 +59,8 @@ export const GET: RequestHandler = async ({ request }) => {
       .filter((r: any) => r[ACCOUNT_COL.RESIDENT_ID] === userId)
       .map((r: any) => {
         const period = (r[ACCOUNT_COL.PERIOD] || "").trim();
-        const waterBase = parseAmount(getConstVal(`FEES_${period}_WATER`));
-        const assocBase = parseAmount(getConstVal(`FEES_${period}_ASSOC`));
+        const waterBase = parseCSVAmount(getConstVal(`FEES_${period}_WATER`));
+        const assocBase = parseCSVAmount(getConstVal(`FEES_${period}_ASSOC`));
 
         const filtered = journal.filter((j: JournalEntry) => j.period === period);
         const waterPaid = filtered

@@ -8,6 +8,7 @@ import {
   appendSheetValue,
   serverError
 } from "$lib/server/api-helper";
+import { parseCSVAmount } from "$lib/receipt-utils";
 import type { RequestHandler } from "./$types";
 
 /**
@@ -28,11 +29,6 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "payment_requests!A:L");
 
-    const parseAmount = (val: any) => {
-      if (!val) return 0;
-      const num = parseFloat(String(val).replace(/[₱,\s]/g, ""));
-      return isNaN(num) ? 0 : num;
-    };
 
     const requests = rows
       .slice(1)
@@ -41,9 +37,9 @@ export const GET: RequestHandler = async ({ request }) => {
         id: (row[PAYMENT_REQUEST_COL.ID] || "").trim(),
         residentId: (row[PAYMENT_REQUEST_COL.RESIDENT_ID] || "").trim(),
         date: (row[PAYMENT_REQUEST_COL.DATE] || "").trim(),
-        waterFee: parseAmount(row[PAYMENT_REQUEST_COL.WATER_FEE]),
-        assocFee: parseAmount(row[PAYMENT_REQUEST_COL.ASSOC_FEE]),
-        misc: parseAmount(row[PAYMENT_REQUEST_COL.MISC]),
+        waterFee: parseCSVAmount(row[PAYMENT_REQUEST_COL.WATER_FEE]),
+        assocFee: parseCSVAmount(row[PAYMENT_REQUEST_COL.ASSOC_FEE]),
+        misc: parseCSVAmount(row[PAYMENT_REQUEST_COL.MISC]),
         mop: (row[PAYMENT_REQUEST_COL.MOP] || "").trim(),
         type: (row[PAYMENT_REQUEST_COL.TYPE] || "").trim(),
         proofLink: (row[PAYMENT_REQUEST_COL.PROOF_LINK] || "").trim(),

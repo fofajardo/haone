@@ -7,6 +7,7 @@ import {
   getSheetValues,
   serverError
 } from "$lib/server/api-helper";
+import { parseCSVAmount } from "$lib/receipt-utils";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ url, request }) => {
@@ -71,12 +72,6 @@ export const GET: RequestHandler = async ({ url, request }) => {
     const isEvaluated = currEntry?.[CURR_COL.EVALUATED]?.toUpperCase() === "TRUE";
 
     // 6. Fetch Transactions
-    const parseAmount = (val: any) => {
-      if (!val) return 0;
-      const cleaned = String(val).replace(/[₱,\s]/g, "");
-      const num = parseFloat(cleaned);
-      return isNaN(num) ? 0 : num;
-    };
 
     const transactions = jorRows
       .slice(1)
@@ -90,9 +85,9 @@ export const GET: RequestHandler = async ({ url, request }) => {
         date: r[JOURNAL_COL.DATE],
         type: r[JOURNAL_COL.TYPE],
         amount:
-          parseAmount(r[JOURNAL_COL.WATER]) +
-          parseAmount(r[JOURNAL_COL.ASSOC]) +
-          parseAmount(r[JOURNAL_COL.MISC]),
+          parseCSVAmount(r[JOURNAL_COL.WATER]) +
+          parseCSVAmount(r[JOURNAL_COL.ASSOC]) +
+          parseCSVAmount(r[JOURNAL_COL.MISC]),
         period: r[JOURNAL_COL.PERIOD],
         mop: r[JOURNAL_COL.MOP],
         notes: r[JOURNAL_COL.NOTES],
@@ -139,26 +134,26 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     const waterPaid = filteredJor
       .filter((j: any) => j[JOURNAL_COL.TYPE] !== pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.WATER]), 0);
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j[JOURNAL_COL.WATER]), 0);
     const waterWaived = filteredJor
       .filter((j: any) => j[JOURNAL_COL.TYPE] === pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.WATER]), 0);
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j[JOURNAL_COL.WATER]), 0);
 
     const assocPaid = filteredJor
       .filter((j: any) => j[JOURNAL_COL.TYPE] !== pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.ASSOC]), 0);
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j[JOURNAL_COL.ASSOC]), 0);
     const assocWaived = filteredJor
       .filter((j: any) => j[JOURNAL_COL.TYPE] === pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.ASSOC]), 0);
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j[JOURNAL_COL.ASSOC]), 0);
 
-    const waterBase = parseAmount(getConstVal(`FEES_${targetTerm}_WATER`));
-    const assocBase = parseAmount(getConstVal(`FEES_${targetTerm}_ASSOC`));
+    const waterBase = parseCSVAmount(getConstVal(`FEES_${targetTerm}_WATER`));
+    const assocBase = parseCSVAmount(getConstVal(`FEES_${targetTerm}_ASSOC`));
 
     const totalBase = waterBase + assocBase;
     const paid =
       waterPaid +
       assocPaid +
-      filteredJor.reduce((sum: number, j: any) => sum + parseAmount(j[JOURNAL_COL.MISC]), 0);
+      filteredJor.reduce((sum: number, j: any) => sum + parseCSVAmount(j[JOURNAL_COL.MISC]), 0);
     const waived = waterWaived + assocWaived;
     const bal = totalBase - paid - waived;
 
