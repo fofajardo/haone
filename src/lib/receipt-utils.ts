@@ -1,4 +1,8 @@
 export function formatCurrency(amount: number) {
+  if (amount === undefined || amount === null || isNaN(amount)) {
+    console.warn("formatCurrency: invalid amount");
+    return "₱0.00";
+  }
   return amount.toLocaleString("en-PH", {
     style: "currency",
     currency: "PHP"
@@ -6,6 +10,10 @@ export function formatCurrency(amount: number) {
 }
 
 export function formatAmount(amount: number) {
+  if (amount === undefined || amount === null || isNaN(amount)) {
+    console.warn("formatAmount: invalid amount");
+    return "0.00";
+  }
   return amount.toLocaleString("en-PH", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
@@ -13,6 +21,10 @@ export function formatAmount(amount: number) {
 }
 
 export function formatAccounting(amount: number) {
+  if (amount === undefined || amount === null || isNaN(amount)) {
+    console.warn("formatAccounting: invalid amount");
+    return "0.00";
+  }
   const rounded = Math.round(amount * 100) / 100;
   const abs = Math.abs(rounded);
   const formatted = abs.toLocaleString("en-US", {
