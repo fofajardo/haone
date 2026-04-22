@@ -61,6 +61,13 @@
         currentResidentId = resResult.currentResidentId;
       }
       users = userData;
+
+      if (!currentResidentId && auth.user?.email) {
+        const me = users.find(
+          (u) => (u.email || "").toLowerCase() === auth.user?.email.toLowerCase()
+        );
+        if (me) currentResidentId = me.id;
+      }
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -85,7 +92,13 @@
       const [y, m, d] = newReservation.date.split("-").map(Number);
       const selectedDateTime = new Date(y, m - 1, d, startH);
       const now = new Date();
-      if (selectedDateTime < now) return "Cannot reserve for a past time";
+      const isToday = y === now.getFullYear() && m === now.getMonth() + 1 && d === now.getDate();
+
+      if (isToday) {
+        if (startH < now.getHours()) return "Cannot reserve for a past time";
+      } else if (selectedDateTime < now) {
+        return "Cannot reserve for a past time";
+      }
 
       const maxAdvance = new Date();
       maxAdvance.setDate(now.getDate() + 14);

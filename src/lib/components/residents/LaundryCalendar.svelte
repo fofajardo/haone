@@ -298,14 +298,23 @@
             <!-- Slot Button (Background) -->
             <button
               type="button"
-              class="h-[60px] w-full cursor-pointer rounded-none border-b border-l bg-transparent p-0 transition-colors enabled:hover:bg-muted/30"
+              class={cn(
+                "h-[60px] w-full rounded-none border-b border-l bg-transparent p-0 transition-colors",
+                "enabled:cursor-pointer enabled:hover:bg-muted/30",
+                "disabled:cursor-not-allowed disabled:bg-muted/5"
+              )}
               style="grid-row: {hourIdx + 2}; grid-column: {dayIdx + 2};"
               disabled={reservations.some((r) => {
                 if (r.status !== "ACTIVE" || r.date !== dateStr) return false;
                 const start = parseTime(r.timeStart);
                 const end = parseTime(r.timeEnd);
                 return hour >= start && hour < end;
-              })}
+              }) ||
+                (day.getFullYear() === now.getFullYear() &&
+                day.getMonth() === now.getMonth() &&
+                day.getDate() === now.getDate()
+                  ? hour < now.getHours()
+                  : day < now)}
               onclick={() => onSelectSlot?.(dateStr, hour)}
               aria-label="Select slot for {dateStr} at {hour}:00"
             ></button>
