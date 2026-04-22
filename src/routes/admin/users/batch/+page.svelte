@@ -66,7 +66,7 @@
         previewRows = mapped;
         isProcessing = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         errors.push(`CSV Parse Error: ${err.message}`);
         isProcessing = false;
       }
