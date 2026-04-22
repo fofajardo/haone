@@ -27,7 +27,7 @@ export async function fetchLaundryReservations(
   forceRefresh = false
 ): Promise<LaundryRecord[] | { reservations: LaundryRecord[]; currentResidentId: string }> {
   if (auth.authType === "resident") {
-    const data = await fetchServer("/api/resident/laundry");
+    const data = await fetchServer("/api/resident/laundry", {}, forceRefresh);
     return {
       reservations: data.reservations,
       currentResidentId: data.currentResidentId
@@ -168,7 +168,7 @@ export async function fetchPaymentRequests(
   PaymentRequestRecord[] | { requests: PaymentRequestRecord[]; currentResidentId: string }
 > {
   if (auth.authType === "resident") {
-    const data = await fetchServer("/api/resident/payment-requests");
+    const data = await fetchServer("/api/resident/payment-requests", {}, forceRefresh);
     return {
       requests: data.requests,
       currentResidentId: data.currentResidentId
@@ -326,7 +326,7 @@ export async function cancelPaymentRequest(paymentId: string) {
  */
 export async function fetchAnnouncements(forceRefresh = false): Promise<AnnouncementRecord[]> {
   if (auth.authType === "resident") {
-    return await fetchServer("/api/resident/announcements");
+    return await fetchServer("/api/resident/announcements", {}, forceRefresh);
   }
 
   const spreadsheetId = uiSettings.sharedRecordsId;
@@ -422,7 +422,7 @@ export async function fetchAchievements(
   | { achievements: AchievementRecord[]; logs: AchievementLogRecord[]; currentResidentId: string }
 > {
   if (auth.authType === "resident") {
-    const data = await fetchServer("/api/resident/achievements");
+    const data = await fetchServer("/api/resident/achievements", {}, forceRefresh);
     return {
       achievements: data.achievements,
       logs: data.logs,
@@ -467,7 +467,7 @@ export async function fetchAchievementLogs(
   | { achievements: AchievementRecord[]; logs: AchievementLogRecord[]; currentResidentId: string }
 > {
   if (auth.authType === "resident") {
-    const data = await fetchServer("/api/resident/achievements");
+    const data = await fetchServer("/api/resident/achievements", {}, forceRefresh);
     return {
       achievements: data.achievements,
       logs: data.logs,
@@ -508,7 +508,7 @@ export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) 
  */
 export async function fetchUserSettings(forceRefresh = false): Promise<UserSettingsRecord[]> {
   if (auth.authType === "resident") {
-    const data = await fetchServer("/api/resident/settings");
+    const data = await fetchServer("/api/resident/settings", {}, forceRefresh);
     return [
       {
         residentId: auth.user?.email || "",

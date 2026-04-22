@@ -11,7 +11,7 @@ class ResidentState {
     this.isLoading = true;
     this.error = null;
     try {
-      this.status = await fetchServer("/api/resident/check-status");
+      this.status = await fetchServer("/api/resident/check-status", {}, true);
     } catch (e: any) {
       this.error = e.message;
     } finally {

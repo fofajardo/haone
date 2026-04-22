@@ -33,7 +33,7 @@
 
   async function loadData() {
     try {
-      const statusData = await fetchServer("/api/resident/check-status");
+      const statusData = await fetchServer("/api/resident/check-status", {}, true);
       mopTypes = statusData.mopTypes || [];
     } catch (e) {
       console.error(e);

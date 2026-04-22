@@ -97,7 +97,7 @@ export function mapRowToResident(
  */
 export async function fetchResidents(forceRefresh = false): Promise<ResidentRecord[]> {
   if (auth.authType === "resident") {
-    const data = await fetchServer("/api/resident/occupancy");
+    const data = await fetchServer("/api/resident/occupancy", {}, forceRefresh);
     return data.accounts;
   }
 

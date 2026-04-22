@@ -35,7 +35,7 @@
     if (options && options.length > 0) return;
     isLoading = true;
     try {
-      const statusData = await fetchServer("/api/resident/check-status");
+      const statusData = await fetchServer("/api/resident/check-status", {}, true);
       if (statusData.allTerms) {
         internalTerms = statusData.allTerms;
 
