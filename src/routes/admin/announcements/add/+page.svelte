@@ -19,6 +19,7 @@
   let isSubmitting = $state(false);
   let tagList = $state<string[]>([]);
   let isSlugManuallyEdited = $state(false);
+  let editorActions: { uploadImages: () => Promise<void> } | undefined = $state();
 
   let formData = $state({
     title: "",
@@ -54,6 +55,9 @@
 
     isSubmitting = true;
     try {
+      if (editorActions) {
+        await editorActions.uploadImages();
+      }
       const allUsers = await fetchUsers();
       const me = allUsers.find(
         (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
@@ -128,6 +132,7 @@
         >
         <RichEditor
           bind:content={formData.content}
+          bind:actions={editorActions}
           placeholder="Announcement Details..."
           editable={!isSubmitting}
         />

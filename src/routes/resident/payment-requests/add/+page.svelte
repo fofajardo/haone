@@ -416,16 +416,20 @@
                   {#if isUploading}
                     <p class="animate-pulse text-xs font-bold text-brand">Uploading image...</p>
                   {:else if !formData.proofLink}
-                    <p class="text-xs text-muted-foreground">Paste a link or upload an image.</p>
+                    <p class="text-xs text-muted-foreground">
+                      Paste a link or upload an image. If using a Google Drive link, make sure it's
+                      shared with 'Anyone with the link' permission.
+                    </p>
                   {/if}
                 {:else}
                   <Input
-                    placeholder="Proof of Payment Link (Google Drive, etc.)"
+                    placeholder="https://drive.google.com/..."
                     bind:value={formData.proofLink}
                     disabled={isSubmitting}
                   />
                   <p class="text-xs text-muted-foreground">
-                    Please provide a valid URL for your receipt.
+                    If using a Google Drive link, make sure it's shared with 'Anyone with the link'
+                    permission.
                   </p>
                 {/if}
               </div>

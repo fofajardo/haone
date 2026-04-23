@@ -38,6 +38,7 @@
   let isActive = $derived(
     announcement ? getAnnouncementStatus(announcement) === AnnouncementStatus.ACTIVE : false
   );
+  let editorActions: { uploadImages: () => Promise<void> } | undefined = $state();
 
   let tagList = $state<string[]>([]);
   let formData = $state({
@@ -105,6 +106,9 @@
 
     isSubmitting = true;
     try {
+      if (editorActions) {
+        await editorActions.uploadImages();
+      }
       await updateAnnouncement(id, {
         ...formData,
         startDate: formData.startDate ? dayjs(formData.startDate).toISOString() : "",
@@ -222,6 +226,7 @@
           >
           <RichEditor
             bind:content={formData.content}
+            bind:actions={editorActions}
             placeholder="Announcement Details..."
             editable={!isSubmitting}
           />

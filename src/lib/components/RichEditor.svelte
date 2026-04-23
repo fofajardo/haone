@@ -29,13 +29,15 @@
   } from "lucide-svelte";
 
   let {
-    content = $bindable(""),
+    content = $bindable(),
     placeholder = "Start typing reminders…",
-    editable = true
+    editable = true,
+    actions = $bindable()
   } = $props<{
     content: string;
     placeholder?: string;
     editable?: boolean;
+    actions?: { uploadImages: () => Promise<void> };
   }>();
 
   let element: HTMLElement;
@@ -57,31 +59,72 @@
 
   let fileInput: HTMLInputElement | undefined = $state();
   let isUploadingImage = $state(false);
+  const pendingImages = new Map<string, Blob>();
 
   async function handleFileUpload(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (file) {
       isUploadingImage = true;
       try {
-        const processedFile = await compressImage(file);
-        const formData = new FormData();
-        formData.append("file", processedFile, file.name);
-
-        const data = await fetchServer("/api/upload?type=announcements", {
-          method: "POST",
-          body: formData
-        });
-
-        editor?.chain().focus().setImage({ src: data.url }).run();
+        const processedBlob = await compressImage(file);
+        const blobUrl = URL.createObjectURL(processedBlob);
+        pendingImages.set(blobUrl, processedBlob);
+        editor?.chain().focus().setImage({ src: blobUrl }).run();
         imageDialogOpen = false;
       } catch (err: any) {
         console.error(err);
-        toast.error("Upload failed: " + err.message);
+        toast.error("File processing failed: " + err.message);
       } finally {
         isUploadingImage = false;
       }
     }
   }
+
+  async function uploadImages() {
+    if (!editor) return;
+    const content = editor.getHTML();
+    if (!content.includes("blob:")) return;
+
+    // Parse content to find all blob images
+    const doc = new DOMParser().parseFromString(content, "text/html");
+    const imgs = Array.from(doc.querySelectorAll("img[src^='blob:']"));
+
+    if (imgs.length === 0) return;
+
+    isUploadingImage = true;
+    try {
+      for (const img of imgs) {
+        const blobUrl = img.getAttribute("src")!;
+        const blob = pendingImages.get(blobUrl);
+        if (blob) {
+          const formData = new FormData();
+          formData.append("file", blob, "announcement_image.jpg");
+
+          const data = await fetchServer("/api/upload?type=announcements", {
+            method: "POST",
+            body: formData
+          });
+
+          img.setAttribute("src", data.url);
+          pendingImages.delete(blobUrl);
+          URL.revokeObjectURL(blobUrl);
+        }
+      }
+
+      // Update editor with final content
+      editor.commands.setContent(doc.body.innerHTML);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Image upload failed: " + err.message);
+      throw err;
+    } finally {
+      isUploadingImage = false;
+    }
+  }
+
+  $effect(() => {
+    actions = { uploadImages };
+  });
 
   function applyImage() {
     if (imageUrl) {
@@ -259,17 +302,15 @@
 
         <div class="flex-grow"></div>
 
-        {#if uiSettings.firebaseEnabled}
-          <Button
-            variant="ghost"
-            size="sm"
-            class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            onclick={openImageDialog}
-            icon={ImageIcon}
-            iconClass="size-3.5"
-            title="Insert Image"
-          />
-        {/if}
+        <Button
+          variant="ghost"
+          size="sm"
+          class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          onclick={openImageDialog}
+          icon={ImageIcon}
+          iconClass="size-3.5"
+          title="Insert Image"
+        />
 
         <Button
           variant="ghost"
@@ -334,16 +375,28 @@
             bind:value={imageUrl}
             onkeydown={(e) => e.key === "Enter" && applyImage()}
           />
-          <Button
-            variant="outline"
-            onclick={() => fileInput?.click()}
-            disabled={isUploadingImage}
-            isLoading={isUploadingImage}
-          >
-            Upload
-          </Button>
+          {#if uiSettings.firebaseEnabled}
+            <Button
+              variant="outline"
+              onclick={() => fileInput?.click()}
+              disabled={isUploadingImage}
+              isLoading={isUploadingImage}
+            >
+              Upload
+            </Button>
+          {/if}
         </div>
-        <p class="text-[10px] text-muted-foreground">Paste a link or upload an image.</p>
+        {#if uiSettings.firebaseEnabled}
+          <p class="text-xs text-muted-foreground">
+            Paste a link or upload an image. If using a Google Drive link, make sure it's shared
+            with 'Anyone with the link' permission.
+          </p>
+        {:else}
+          <p class="text-xs text-muted-foreground">
+            If using a Google Drive link, make sure it's shared with 'Anyone with the link'
+            permission.
+          </p>
+        {/if}
       </div>
     </div>
     <input
