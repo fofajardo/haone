@@ -156,6 +156,64 @@ export async function appendSheetValue(
 }
 
 /**
+ * Updates values in a spreadsheet range.
+ */
+export async function updateSheetValue(
+  token: string,
+  spreadsheetId: string,
+  range: string,
+  values: any[][]
+) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
+  const resp = await fetchGoogleAPI(url, token, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ values })
+  });
+
+  return await resp.json();
+}
+
+/**
+ * Deletes a row from a specific sheet.
+ */
+export async function deleteSheetRow(
+  token: string,
+  spreadsheetId: string,
+  sheetName: string,
+  rowIndex: number
+) {
+  // 1. Resolve sheetId
+  const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`;
+  const metaResp = await fetchGoogleAPI(metaUrl, token);
+  const data = await metaResp.json();
+  const sheet = data.sheets?.find((s: any) => s.properties.title === sheetName);
+  if (!sheet) throw new Error(`Sheet "${sheetName}" not found`);
+  const sheetId = sheet.properties.sheetId;
+
+  // 2. Delete dimension
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+  await fetchGoogleAPI(url, token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId,
+              dimension: "ROWS",
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1
+            }
+          }
+        }
+      ]
+    })
+  });
+}
+
+/**
  * Standardized resident authentication for API routes.
  * Verifies the Bearer token with Google and returns the user's email.
  */
@@ -177,7 +235,24 @@ export async function authenticateResident(request: Request) {
     }
 
     const userData = await userinfoResp.json();
-    return { email: userData.email.trim().toLowerCase() };
+    const email = userData.email.trim().toLowerCase();
+
+    // Optionally resolve residentId if needed by common routes
+    let residentId = "";
+    if (email) {
+      try {
+        const { PUBLIC_GS_RR_ID } = await import("$env/static/public");
+        const { USER_COL } = await import("$lib/schemas");
+        const saToken = await getSheetsClient();
+        const users = await getSheetValues(saToken, PUBLIC_GS_RR_ID, "users!A:P");
+        const user = users.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
+        if (user) residentId = user[USER_COL.ID];
+      } catch (e) {
+        // Silently fail, just email is enough for base auth
+      }
+    }
+
+    return { email, residentId };
   } catch (e: any) {
     console.error("Auth validation failed:", e);
     return {

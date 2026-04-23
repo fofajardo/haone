@@ -8,12 +8,15 @@
   import { parseTime } from "$lib/receipt-utils";
   import * as Sheet from "$lib/components/ui/sheet";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import { brandingState } from "$lib/branding.svelte";
   import {
     Info,
     User as UserIcon,
     Calendar as CalendarIconSmall,
     Clock as ClockIcon,
-    Trash2
+    Trash2,
+    CalendarPlus,
+    Share2
   } from "lucide-svelte";
 
   let {
@@ -189,6 +192,71 @@
   let isDetailPast = $derived(
     selectedReservation ? checkIsPast(selectedReservation.date, selectedReservation.timeEnd) : false
   );
+
+  function formatCalendarTime(resDate: string, resTime: string) {
+    const dateClean = resDate.replace(/[-/]/g, "");
+    const str = resTime.trim().toUpperCase();
+    const match = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+
+    let h = 0;
+    let m = "00";
+
+    if (match) {
+      h = parseInt(match[1]);
+      m = match[2];
+      const ampm = match[3];
+      if (ampm === "PM" && h < 12) h += 12;
+      if (ampm === "AM" && h === 12) h = 0;
+    } else {
+      const parts = resTime.split(":");
+      h = parseInt(parts[0]) || 0;
+      m = parts[1]?.split(" ")[0] || "00";
+    }
+
+    const hStr = h.toString().padStart(2, "0");
+    const mStr = m.padStart(2, "0");
+    return dateClean + "T" + hStr + mStr + "00";
+  }
+
+  function generateIcsFile(res: any) {
+    const start = formatCalendarTime(res.date, res.timeStart);
+    const end = formatCalendarTime(res.date, res.timeEnd);
+
+    const content = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//HAOne/NONSGML//EN",
+      "BEGIN:VEVENT",
+      `UID:${res.id}@haone.uplb.edu.ph`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `SUMMARY:${brandingState.profile.shortName} | Laundry Reservation (${res.name})`,
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `DESCRIPTION:Laundry slot for ${res.name} (Room ${res.room})`,
+      `LOCATION:Laundry Area`,
+      "END:VEVENT",
+      "END:VCALENDAR"
+    ].join("\r\n");
+
+    const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `laundry-${res.date}-${res.timeStart.replace(":", "")}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  function getGoogleCalendarUrl(res: any) {
+    const start = formatCalendarTime(res.date, res.timeStart);
+    const end = formatCalendarTime(res.date, res.timeEnd);
+    const details = `Laundry slot for ${res.name} (Room ${res.room})`;
+    const title = `${brandingState.profile.shortName} | Laundry Reservation`;
+    const timezone = "Asia/Manila";
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(details)}&location=${encodeURIComponent("Laundry Area")}&ctz=${timezone}`;
+  }
 </script>
 
 <div class="flex flex-col gap-6">
@@ -477,6 +545,33 @@
             >
           </div>
         {/if}
+
+        {#if isMine || isAdminView}
+          <div class="space-y-2 pt-2">
+            <p class="px-1 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+              Add to Calendar
+            </p>
+            <div class="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onclick={() => generateIcsFile(selectedReservation)}
+                icon={CalendarPlus}
+              >
+                Download .ics
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                href={getGoogleCalendarUrl(selectedReservation)}
+                target="_blank"
+                icon={Share2}
+              >
+                Google Calendar
+              </Button>
+            </div>
+          </div>
+        {/if}
       </div>
 
       <div class="mt-6 flex flex-col gap-2 px-4">
@@ -492,8 +587,8 @@
                 isCancelConfirmOpen = true;
               }
             }}
+            icon={Trash2}
           >
-            <Trash2 class="mr-2 h-4 w-4" />
             Cancel
           </Button>
         {/if}

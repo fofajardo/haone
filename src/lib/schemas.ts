@@ -234,7 +234,8 @@ export const ANNOUNCEMENT_COL = {
   TITLE: 8,
   CONTENT: 9,
   IS_UNLISTED: 10,
-  SLUG: 11
+  SLUG: 11,
+  WAS_NOTIFIED: 12
 } as const;
 
 export const ACHIEVEMENT_COL = {

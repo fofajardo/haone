@@ -155,3 +155,27 @@ export async function updateUserSettings(
     body: JSON.stringify(payload)
   });
 }
+
+/**
+ * Notifications
+ */
+export async function savePushSubscription(subscription: PushSubscription) {
+  const json = subscription.toJSON();
+  return await fetchServer("/api/resident/notifications/subscribe", {
+    method: "POST",
+    body: JSON.stringify({
+      endpoint: json.endpoint,
+      p256dh: json.keys?.p256dh,
+      auth: json.keys?.auth
+    })
+  });
+}
+
+export async function deletePushSubscription(endpoint: string) {
+  return await fetchServer(
+    `/api/resident/notifications/subscribe?endpoint=${encodeURIComponent(endpoint)}`,
+    {
+      method: "DELETE"
+    }
+  );
+}

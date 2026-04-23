@@ -20,6 +20,13 @@
   });
 
   onMount(async () => {
+    // Service Worker Registration
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch((err) => {
+        console.error("SW registration failed:", err);
+      });
+    }
+
     if (auth.accessToken) {
       try {
         await uiSettings.syncFromServer();

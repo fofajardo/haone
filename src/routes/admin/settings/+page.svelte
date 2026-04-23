@@ -13,6 +13,7 @@
   import VersionCard from "$lib/components/VersionCard.svelte";
   import SettingsPreview from "$lib/components/SettingsPreview.svelte";
   import NavSettings from "$lib/components/residents/NavSettings.svelte";
+  import PrivacySettings from "$lib/components/residents/PrivacySettings.svelte";
   import SettingsActions from "$lib/components/SettingsActions.svelte";
 
   const brandingProfiles = Object.keys(branding);
@@ -27,6 +28,7 @@
       <!-- Appearance Section -->
       <AppearanceSettings />
       <NavSettings />
+      <PrivacySettings />
       <SettingsActions />
 
       {#if uiSettings.isDev}

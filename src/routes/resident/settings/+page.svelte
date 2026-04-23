@@ -3,8 +3,8 @@
   import AppearanceSettings from "$lib/components/AppearanceSettings.svelte";
   import VersionCard from "$lib/components/VersionCard.svelte";
   import SettingsPreview from "$lib/components/SettingsPreview.svelte";
-  import SocialSettings from "$lib/components/residents/SocialSettings.svelte";
   import NavSettings from "$lib/components/residents/NavSettings.svelte";
+  import PrivacySettings from "$lib/components/residents/PrivacySettings.svelte";
   import SettingsActions from "$lib/components/SettingsActions.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$lib/page-info.svelte";
@@ -21,7 +21,7 @@
     <div class="flex-1 space-y-8">
       <AppearanceSettings />
       <NavSettings />
-      <SocialSettings />
+      <PrivacySettings />
       <SettingsActions />
       <VersionCard />
     </div>
