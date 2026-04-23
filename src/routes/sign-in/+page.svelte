@@ -25,15 +25,20 @@
   }
 
   onMount(async () => {
-    // Check for PKCE Authorization Code callback
+    // If already logged in, go to appropriate dashboard
+    if (auth.accessToken && !window.location.search.includes("code=")) {
+      await goto(auth.authType === "admin" ? "/admin" : "/resident");
+      return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
-    const state = urlParams.get("state");
     const savedType =
       (sessionStorage.getItem("pkce_auth_type") as "admin" | "resident") || "resident";
 
     if (code) {
       isSigningIn = true;
+      let redirecting = false;
       try {
         const verifier = sessionStorage.getItem("pkce_verifier");
         if (!verifier) {
@@ -42,7 +47,7 @@
 
         const clientId = savedType === "admin" ? PUBLIC_GI_CLIENT_ID : PUBLIC_RESIDENT_GI_CLIENT_ID;
 
-        // Exchange code for token via our server-side API.
+        // Exchange code for token
         const tokenResp = await fetch("/api/auth/token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -59,18 +64,18 @@
           throw new Error(err.error_description || "Token exchange failed");
         }
 
-        const tokenData = await tokenResp.json();
-        const accessToken = tokenData.access_token;
+        const { access_token: accessToken } = await tokenResp.json();
 
-        const userInfo = await auth.fetchUserInfo(accessToken);
+        // Parallelize profile fetch and access verification
+        const [userInfo] = await Promise.all([
+          auth.fetchUserInfo(accessToken),
+          savedType === "admin"
+            ? testAccess(uiSettings.accountingWorkbookId, accessToken)
+            : Promise.resolve()
+        ]);
 
         if (savedType === "resident" && !userInfo.email.endsWith("@up.edu.ph")) {
           throw new Error("Only UP Mail accounts (@up.edu.ph) are allowed for residents.");
-        }
-
-        if (savedType === "admin") {
-          const spreadsheetId = uiSettings.accountingWorkbookId;
-          await testAccess(spreadsheetId, accessToken);
         }
 
         auth.setSession(accessToken, userInfo, rememberMe, savedType);
@@ -78,8 +83,8 @@
         sessionStorage.removeItem("pkce_verifier");
         sessionStorage.removeItem("pkce_auth_type");
 
-        // Redirect to the appropriate dashboard
-        goto(savedType === "admin" ? "/admin" : "/resident");
+        redirecting = true;
+        await goto(savedType === "admin" ? "/admin" : "/resident");
         return;
       } catch (e: any) {
         if (!auth.lastError) {
@@ -89,16 +94,14 @@
           };
         }
       } finally {
-        isSigningIn = false;
-        replaceState(window.location.pathname, {});
+        if (!redirecting) {
+          isSigningIn = false;
+          replaceState(window.location.pathname, {});
+          isLoadingAuth = false;
+        }
       }
-    }
-
-    isLoadingAuth = false;
-
-    // If already logged in, go to appropriate dashboard
-    if (auth.accessToken) {
-      goto(auth.authType === "admin" ? "/admin" : "/resident");
+    } else {
+      isLoadingAuth = false;
     }
   });
 
@@ -176,7 +179,7 @@
     <div class="animate-in space-y-3 pt-6 duration-1000 fade-in slide-in-from-bottom-4">
       {#if isSigningIn || isLoadingAuth}
         <div
-          class="flex animate-in items-center justify-center space-x-3 py-10 duration-500 zoom-in-95 fade-in"
+          class="flex h-[116px] animate-in items-center justify-center space-x-3 duration-500 zoom-in-95 fade-in"
         >
           <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
           {#if isSigningIn}
