@@ -7,7 +7,6 @@ import { formatDate } from "$lib/receipt-utils";
 import AnnouncementStatusCell from "./AnnouncementStatusCell.svelte";
 import AnnouncementTagsCell from "./AnnouncementTagsCell.svelte";
 import AnnouncementTitleCell from "./AnnouncementTitleCell.svelte";
-import AnnouncementActionsCell from "./AnnouncementActionsCell.svelte";
 
 export const columns: ColumnDef<AnnouncementRecord>[] = [
   {
@@ -37,13 +36,6 @@ export const columns: ColumnDef<AnnouncementRecord>[] = [
     cell: ({ row }) => {
       if (row.original.isIndefinite) return "Indefinite";
       return formatDate(row.original.expiryDate);
-    }
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row, table }) => {
-      return renderComponent(AnnouncementActionsCell, { row, table });
     }
   }
 ];

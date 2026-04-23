@@ -1,15 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Plus, Megaphone, Clock, Trash2, SquarePen } from "lucide-svelte";
+  import { RefreshCcw, Plus, Megaphone } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import RichEditor from "$lib/components/RichEditor.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchAnnouncements, expireAnnouncement } from "$lib/admin-logic";
+  import { fetchAnnouncements, expireAnnouncement, deleteAnnouncement } from "$lib/admin-logic";
+  import { auth } from "$lib/auth.svelte";
   import type { AnnouncementRecord } from "$lib/schemas";
-  import * as Card from "$lib/components/ui/card";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -30,6 +29,8 @@
   let error = $state<string | null>(null);
   let isExpiring = $state(false);
   let announcementToExpire = $state<string | null>(null);
+  let isDeleting = $state(false);
+  let announcementToDelete = $state<string | null>(null);
 
   const tableSync = new TableSync({
     initialFilters: { search: "", status: "ALL", tags: "ALL" },
@@ -65,6 +66,25 @@
       toast.error(e.message);
     } finally {
       isExpiring = false;
+    }
+  }
+
+  function handleDelete(id: string) {
+    announcementToDelete = id;
+  }
+
+  async function confirmDelete() {
+    if (!announcementToDelete) return;
+    isDeleting = true;
+    try {
+      await deleteAnnouncement(announcementToDelete, auth.accessToken!);
+      toast.success("Announcement deleted");
+      announcementToDelete = null;
+      await loadData();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      isDeleting = false;
     }
   }
 
@@ -190,7 +210,7 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/announcements/${r.id}`)}
         rowId="id"
-        meta={{ onExpire: handleExpire }}
+        meta={{ onExpire: handleExpire, onDelete: handleDelete }}
       />
     {:else}
       <EmptyView title="No announcements found.">
@@ -220,10 +240,33 @@
       <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
       <Button
         onclick={confirmExpire}
-        class="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+        class="bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800"
         isLoading={isExpiring}
       >
         Expire
+      </Button>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
+
+<AlertDialog.Root
+  open={announcementToDelete !== null}
+  onOpenChange={(o) => {
+    if (!o) announcementToDelete = null;
+  }}
+>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete Announcement</AlertDialog.Title>
+      <AlertDialog.Description>
+        Are you sure you want to permanently delete this announcement and all its uploaded images?
+        This action cannot be undone.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <Button onclick={confirmDelete} variant="destructive" isLoading={isDeleting}>
+        Delete Permanently
       </Button>
     </AlertDialog.Footer>
   </AlertDialog.Content>

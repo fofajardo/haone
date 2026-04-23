@@ -3,7 +3,7 @@
   import { auth } from "$lib/auth.svelte";
 
   import { addPaymentRequest } from "$lib/shared-records-logic";
-  import { fetchServer } from "$lib/utils";
+  import { fetchServer, compressImage, deleteUploadedImage } from "$lib/utils";
   import { formatCurrency, formatAccounting } from "$lib/receipt-utils";
   import type { ResidentRecord } from "$lib/schemas";
   import { Button } from "$lib/components/ui/button";
@@ -11,7 +11,16 @@
   import { Label } from "$lib/components/ui/label";
   import * as Card from "$lib/components/ui/card";
   import { Combobox } from "$lib/components/ui/combobox";
-  import { Calendar, Wallet, Link, ArrowLeftToLine, TriangleAlert } from "lucide-svelte";
+  import {
+    Calendar,
+    Wallet,
+    Link,
+    ArrowLeftToLine,
+    TriangleAlert,
+    Upload,
+    ImageIcon,
+    Trash2
+  } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -23,6 +32,29 @@
   let isSubmitting = $state(false);
   let resident = $state<ResidentRecord | null>(null);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
+  let fileInput: HTMLInputElement | undefined = $state();
+  let isUploading = $state(false);
+  let pendingFile = $state<File | Blob | null>(null);
+  let previewUrl = $state<string | null>(null);
+
+  async function handleFileUpload(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      isUploading = true;
+      try {
+        const processedFile = await compressImage(file);
+        pendingFile = processedFile;
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(processedFile);
+        formData.proofLink = "PENDING_UPLOAD"; // Marker to show preview
+      } catch (err: any) {
+        console.error(err);
+        toast.error("File processing failed: " + err.message);
+      } finally {
+        isUploading = false;
+      }
+    }
+  }
 
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
@@ -61,6 +93,13 @@
     }
   }
 
+  function handleRemoveImage() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    pendingFile = null;
+    previewUrl = null;
+    formData.proofLink = "";
+  }
+
   onMount(loadData);
 
   async function handleSubmit() {
@@ -81,7 +120,9 @@
     }
 
     try {
-      new URL(formData.proofLink);
+      if (formData.proofLink !== "PENDING_UPLOAD") {
+        new URL(formData.proofLink);
+      }
     } catch (e) {
       toast.error("Invalid proof of payment link. Please provide a valid URL.");
       return;
@@ -89,6 +130,18 @@
 
     isSubmitting = true;
     try {
+      let finalProofLink = formData.proofLink;
+
+      if (pendingFile) {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", pendingFile, "payment_proof.jpg");
+        const data = await fetchServer("/api/upload?type=payments", {
+          method: "POST",
+          body: formDataUpload
+        });
+        finalProofLink = data.url;
+      }
+
       await addPaymentRequest({
         id: crypto.randomUUID(),
         residentId: resident!.residentId,
@@ -98,10 +151,11 @@
         misc: misc,
         mop: formData.mop,
         type: "COLLECTION",
-        proofLink: formData.proofLink,
+        proofLink: finalProofLink,
         status: "PENDING",
         notes: formData.notes
       });
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
       toast.success("Payment submitted successfully");
       goto("/resident/payment-requests");
     } catch (e: any) {
@@ -304,14 +358,64 @@
                 <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Proof of Payment Link</Label
                 >
-                <Input
-                  placeholder="Drive or Image Link"
-                  bind:value={formData.proofLink}
-                  disabled={isSubmitting}
+                {#if formData.proofLink}
+                  <Card.Root
+                    class="group relative max-w-sm overflow-hidden border-brand/20 bg-brand/5"
+                  >
+                    <img
+                      src={previewUrl || formData.proofLink}
+                      alt="Payment Proof"
+                      class="aspect-video w-full object-cover transition-all group-hover:blur-[2px]"
+                    />
+                    <div
+                      class="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <Button
+                        size="sm"
+                        onclick={handleRemoveImage}
+                        class="h-8 gap-2 px-3 shadow-lg"
+                      >
+                        <Trash2 class="h-4 w-4" />
+                        Remove
+                      </Button>
+                    </div>
+                    <div
+                      class="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-bold text-brand shadow-sm backdrop-blur-sm"
+                    >
+                      <ImageIcon class="h-3 w-3" />
+                      <span>IMAGE ATTACHED</span>
+                    </div>
+                  </Card.Root>
+                {:else}
+                  <div class="flex gap-2">
+                    <Input
+                      placeholder="Drive or Image Link"
+                      bind:value={formData.proofLink}
+                      disabled={isSubmitting || isUploading}
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      class="shrink-0"
+                      disabled={isSubmitting || isUploading}
+                      isLoading={isUploading}
+                      onclick={() => fileInput?.click()}
+                      icon={Upload}
+                    />
+                  </div>
+                {/if}
+                <input
+                  type="file"
+                  bind:this={fileInput}
+                  accept="image/*"
+                  class="hidden"
+                  onchange={handleFileUpload}
                 />
-                <p class="text-xs text-muted-foreground">
-                  Upload your screenshot to Google Drive or any image host and paste the link here.
-                </p>
+                {#if isUploading}
+                  <p class="animate-pulse text-xs font-bold text-brand">Uploading image...</p>
+                {:else if !formData.proofLink}
+                  <p class="text-xs text-muted-foreground">Paste a link or upload an image.</p>
+                {/if}
               </div>
               <div class="space-y-2">
                 <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"

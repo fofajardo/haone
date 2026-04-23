@@ -6,12 +6,21 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { ChevronLeft, Save } from "lucide-svelte";
+  import { ChevronLeft, Save, Archive, Trash2 } from "lucide-svelte";
+  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import { auth } from "$lib/auth.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchAnnouncements, updateAnnouncement } from "$lib/admin-logic";
+  import {
+    fetchAnnouncements,
+    updateAnnouncement,
+    expireAnnouncement,
+    deleteAnnouncement,
+    getAnnouncementStatus
+  } from "$lib/admin-logic";
+  import { AnnouncementStatus, type AnnouncementRecord } from "$lib/schemas";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { ANNOUNCEMENT_TAG_LIST } from "$lib/schemas";
@@ -20,6 +29,15 @@
   let isLoading = $state(true);
   let isSubmitting = $state(false);
   let error = $state<string | null>(null);
+  let isExpiring = $state(false);
+  let isDeleting = $state(false);
+  let showExpireDialog = $state(false);
+  let showDeleteDialog = $state(false);
+
+  let announcement = $state<AnnouncementRecord | null>(null);
+  let isActive = $derived(
+    announcement ? getAnnouncementStatus(announcement) === AnnouncementStatus.ACTIVE : false
+  );
 
   let tagList = $state<string[]>([]);
   let formData = $state({
@@ -44,6 +62,7 @@
         error = "Announcement not found";
         return;
       }
+      announcement = a;
       formData = {
         title: a.title,
         slug: a.slug,
@@ -100,19 +119,64 @@
       isSubmitting = false;
     }
   }
+
+  async function handleExpire() {
+    const id = page.params.id;
+    if (!id) return;
+    isExpiring = true;
+    try {
+      await expireAnnouncement(id);
+      toast.success("Announcement expired");
+      showExpireDialog = false;
+      await loadData();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      isExpiring = false;
+    }
+  }
+
+  async function handleDelete() {
+    const id = page.params.id;
+    if (!id) return;
+    isDeleting = true;
+    try {
+      await deleteAnnouncement(id, auth.accessToken!);
+      toast.success("Announcement deleted");
+      goto("/admin/announcements");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      isDeleting = false;
+    }
+  }
 </script>
 
 <div class="space-y-6">
   <SubpageHeader title="Edit Announcement">
     {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => goto("/admin/announcements")}
-        icon={ChevronLeft}
-      >
-        Back
-      </Button>
+      <div class="flex gap-2">
+        {#if isActive}
+          <Button
+            variant="secondary"
+            size="sm"
+            onclick={() => (showExpireDialog = true)}
+            isLoading={isExpiring}
+            icon={Archive}
+          >
+            Expire
+          </Button>
+        {/if}
+        <Button
+          variant="destructive"
+          size="sm"
+          onclick={() => (showDeleteDialog = true)}
+          isLoading={isDeleting}
+          icon={Trash2}
+        >
+          Delete
+        </Button>
+      </div>
     {/snippet}
   </SubpageHeader>
 
@@ -240,3 +304,35 @@
     {/if}
   </div>
 </div>
+
+<AlertDialog.Root bind:open={showExpireDialog}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Expire Announcement</AlertDialog.Title>
+      <AlertDialog.Description>
+        Are you sure you want to expire this announcement? It will no longer be visible to
+        residents.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <Button onclick={handleExpire} isLoading={isExpiring}>Expire</Button>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
+
+<AlertDialog.Root bind:open={showDeleteDialog}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Delete Announcement</AlertDialog.Title>
+      <AlertDialog.Description>
+        Are you sure you want to permanently delete this announcement and all its uploaded images?
+        This action cannot be undone.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <Button onclick={handleDelete} variant="destructive" isLoading={isDeleting}>Delete</Button>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

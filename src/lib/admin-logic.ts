@@ -1,6 +1,12 @@
 import dayjs from "dayjs";
 import { uiSettings } from "./settings.svelte";
-import { fetchSheetRowsRaw, updateSheetValue, appendSheetRow } from "./google-sheets";
+import {
+  fetchSheetRowsRaw,
+  updateSheetValue,
+  appendSheetRow,
+  deleteSheetRow
+} from "./google-sheets";
+import { extractImageIds } from "./utils";
 import {
   LAUNDRY_COL,
   PAYMENT_REQUEST_COL,
@@ -315,6 +321,37 @@ export async function expireAnnouncement(id: string) {
     ]),
     updateSheetValue(spreadsheetId, `announcements!F${actualRow}`, [["FALSE"]])
   ]);
+}
+
+export async function deleteAnnouncement(id: string, accessToken: string) {
+  const spreadsheetId = uiSettings.sharedRecordsId;
+  if (!spreadsheetId) {
+    throw new Error("Shared Records ID not configured");
+  }
+
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "announcements!A:L");
+  const rowIndex = rows.findIndex((r) => (r[ANNOUNCEMENT_COL.ID] || "").trim() === id);
+  if (rowIndex === -1) {
+    throw new Error("Announcement not found");
+  }
+
+  const content = rows[rowIndex][ANNOUNCEMENT_COL.CONTENT] || "";
+  const imageIds = extractImageIds(content);
+
+  // 1. Delete images from Firestore
+  for (const imageId of imageIds) {
+    try {
+      await fetch(`/api/image/${imageId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+    } catch (e) {
+      console.warn("Failed to delete announcement image:", imageId, e);
+    }
+  }
+
+  // 2. Delete row from sheet
+  await deleteSheetRow(spreadsheetId, "announcements", rowIndex);
 }
 
 /**

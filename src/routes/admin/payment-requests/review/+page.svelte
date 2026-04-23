@@ -19,6 +19,7 @@
   import * as Card from "$lib/components/ui/card";
   import { appendSheetRow, updateSheetValue, fetchSheetRowsRaw } from "$lib/google-sheets";
   import { auth } from "$lib/auth.svelte";
+  import { deleteUploadedImage } from "$lib/utils";
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);
@@ -104,6 +105,7 @@
     isProcessing = true;
     try {
       await declinePaymentRequest(paymentId, declineReason);
+      await deleteUploadedImage(currentPayment.proofLink, auth.accessToken!);
       toast.success("Payment request declined");
       declineReason = "";
 
@@ -150,6 +152,7 @@
       await updateSheetValue(srId, `payment_requests!J${actualRow}`, [
         [PaymentRequestStatus.APPROVED]
       ]);
+      await deleteUploadedImage(currentPayment.proofLink, auth.accessToken!);
 
       toast.success("Transaction added and payment request approved");
 
