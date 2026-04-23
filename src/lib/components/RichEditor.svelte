@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import { Editor } from "@tiptap/core";
   import StarterKit from "@tiptap/starter-kit";
   import Link from "@tiptap/extension-link";
@@ -8,10 +8,13 @@
   import ListItem from "@tiptap/extension-list-item";
   import Underline from "@tiptap/extension-underline";
   import Placeholder from "@tiptap/extension-placeholder";
+  import Image from "@tiptap/extension-image";
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
+  import { transformGoogleDriveLink, compressImage, fetchServer } from "$lib/utils";
+  import { toast } from "svelte-sonner";
   import {
     Bold,
     Italic,
@@ -20,7 +23,8 @@
     ListOrdered,
     Link as LinkIcon,
     Unlink,
-    RotateCcw
+    RotateCcw,
+    Image as ImageIcon
   } from "lucide-svelte";
 
   let {
@@ -40,6 +44,51 @@
   // Link Dialog State
   let linkDialogOpen = $state(false);
   let linkUrl = $state("");
+
+  // Image Dialog State
+  let imageDialogOpen = $state(false);
+  let imageUrl = $state("");
+
+  function openImageDialog() {
+    imageUrl = "";
+    imageDialogOpen = true;
+  }
+
+  let fileInput: HTMLInputElement | undefined = $state();
+  let isUploadingImage = $state(false);
+
+  async function handleFileUpload(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      isUploadingImage = true;
+      try {
+        const processedFile = await compressImage(file);
+        const formData = new FormData();
+        formData.append("file", processedFile, file.name);
+
+        const data = await fetchServer("/api/upload?type=announcements", {
+          method: "POST",
+          body: formData
+        });
+
+        editor?.chain().focus().setImage({ src: data.url }).run();
+        imageDialogOpen = false;
+      } catch (err: any) {
+        console.error(err);
+        toast.error("Upload failed: " + err.message);
+      } finally {
+        isUploadingImage = false;
+      }
+    }
+  }
+
+  function applyImage() {
+    if (imageUrl) {
+      const finalUrl = transformGoogleDriveLink(imageUrl);
+      editor?.chain().focus().setImage({ src: finalUrl }).run();
+    }
+    imageDialogOpen = false;
+  }
 
   onMount(() => {
     editor = new Editor({
@@ -70,6 +119,12 @@
           }
         }),
         Underline,
+        Image.configure({
+          inline: false,
+          HTMLAttributes: {
+            style: "max-width: 100%; height: auto; border-radius: 0.5rem; margin: 1.5rem 0;"
+          }
+        }),
         Link.configure({
           openOnClick: false,
           HTMLAttributes: {
@@ -127,78 +182,78 @@
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 transition-colors {editor.isActive('bold')
+          class="size-8 transition-colors {editor.isActive('bold')
             ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleBold().run()}
-        >
-          <Bold class="h-3.5 w-3.5" />
-        </Button>
+          icon={Bold}
+          iconClass="size-3.5"
+        />
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 transition-colors {editor.isActive('italic')
+          class="size-8 transition-colors {editor.isActive('italic')
             ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleItalic().run()}
-        >
-          <Italic class="h-3.5 w-3.5" />
-        </Button>
+          icon={Italic}
+          iconClass="size-3.5"
+        />
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 transition-colors {editor.isActive('underline')
+          class="size-8 transition-colors {editor.isActive('underline')
             ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleUnderline().run()}
-        >
-          <UnderlineIcon class="h-3.5 w-3.5" />
-        </Button>
+          icon={UnderlineIcon}
+          iconClass="size-3.5"
+        />
 
         <div class="mx-1 h-4 w-[1px] bg-border"></div>
 
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 transition-colors {editor.isActive('bulletList')
+          class="size-8 transition-colors {editor.isActive('bulletList')
             ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleBulletList().run()}
-        >
-          <List class="h-3.5 w-3.5" />
-        </Button>
+          icon={List}
+          iconClass="size-3.5"
+        />
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 transition-colors {editor.isActive('orderedList')
+          class="size-8 transition-colors {editor.isActive('orderedList')
             ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={() => editor?.chain().focus().toggleOrderedList().run()}
-        >
-          <ListOrdered class="h-3.5 w-3.5" />
-        </Button>
+          icon={ListOrdered}
+          iconClass="size-3.5"
+        />
 
         <div class="mx-1 h-4 w-[1px] bg-border"></div>
 
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 transition-colors {editor.isActive('link')
+          class="size-8 transition-colors {editor.isActive('link')
             ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
           onclick={openLinkDialog}
-        >
-          <LinkIcon class="h-3.5 w-3.5" />
-        </Button>
+          icon={LinkIcon}
+          iconClass="size-3.5"
+        />
         {#if editor.isActive("link")}
           <Button
             variant="ghost"
             size="sm"
-            class="h-8 w-8 text-destructive hover:bg-destructive/10"
+            class="size-8 text-destructive hover:bg-destructive/10"
             onclick={() => editor?.chain().focus().unsetLink().run()}
-          >
-            <Unlink class="h-3.5 w-3.5" />
-          </Button>
+            icon={Unlink}
+            iconClass="size-3.5"
+          />
         {/if}
 
         <div class="flex-grow"></div>
@@ -206,12 +261,22 @@
         <Button
           variant="ghost"
           size="sm"
-          class="h-8 w-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          onclick={openImageDialog}
+          icon={ImageIcon}
+          iconClass="size-3.5"
+          title="Insert Image"
+        />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           onclick={() => editor?.chain().focus().clearNodes().unsetAllMarks().run()}
           title="Clear formatting"
-        >
-          <RotateCcw class="h-3.5 w-3.5" />
-        </Button>
+          icon={RotateCcw}
+          iconClass="size-3.5"
+        />
       </div>
     {/key}
   {/if}
@@ -246,6 +311,48 @@
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (linkDialogOpen = false)}>Cancel</Button>
       <Button type="submit" onclick={applyLink}>Apply</Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={imageDialogOpen}>
+  <Dialog.Content class="sm:max-w-[425px]">
+    <Dialog.Header>
+      <Dialog.Title>Insert Image</Dialog.Title>
+      <Dialog.Description>Paste a direct link to an image.</Dialog.Description>
+    </Dialog.Header>
+    <div class="grid gap-4 py-4">
+      <div class="grid gap-2">
+        <Label for="imageUrl">URL</Label>
+        <div class="flex gap-2">
+          <Input
+            id="imageUrl"
+            placeholder="https://..."
+            bind:value={imageUrl}
+            onkeydown={(e) => e.key === "Enter" && applyImage()}
+          />
+          <Button
+            variant="outline"
+            onclick={() => fileInput?.click()}
+            disabled={isUploadingImage}
+            isLoading={isUploadingImage}
+          >
+            Upload
+          </Button>
+        </div>
+        <p class="text-[10px] text-muted-foreground">Paste a link or upload an image.</p>
+      </div>
+    </div>
+    <input
+      type="file"
+      bind:this={fileInput}
+      accept="image/*"
+      class="hidden"
+      onchange={handleFileUpload}
+    />
+    <Dialog.Footer>
+      <Button variant="outline" onclick={() => (imageDialogOpen = false)}>Cancel</Button>
+      <Button type="submit" onclick={applyImage}>Insert</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
