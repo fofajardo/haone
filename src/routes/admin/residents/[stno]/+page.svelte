@@ -226,9 +226,7 @@
           onclick={() => loadResidentProfile(true)}
           {isLoading}
           icon={RefreshCcw}
-        >
-          <span class="hidden sm:inline">Refresh</span>
-        </Button>
+        />
       </div>
     {/snippet}
   </SubpageHeader>

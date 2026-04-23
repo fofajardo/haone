@@ -222,9 +222,7 @@
           onclick={() => loadData(true)}
           {isLoading}
           icon={RefreshCcw}
-        >
-          <span class="hidden sm:inline">Refresh</span>
-        </Button>
+        />
         <Button
           variant="outline"
           size="sm"

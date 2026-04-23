@@ -96,12 +96,8 @@
           onclick={() => loadUserProfile(true)}
           {isLoading}
           icon={RefreshCcw}
-        >
-          <span class="hidden sm:inline">Refresh</span>
-        </Button>
-        <Button size="sm" href="/admin/users/{userId}/edit" icon={UserCog}>
-          <span class="hidden sm:inline">Edit</span>
-        </Button>
+        />
+        <Button size="sm" href="/admin/users/{userId}/edit" icon={UserCog}>Edit</Button>
         {#if accounts.length === 0}
           <Button
             variant="destructive"

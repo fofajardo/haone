@@ -192,9 +192,7 @@
             onclick={() => loadData(true)}
             {isLoading}
             icon={RefreshCcw}
-          >
-            Refresh
-          </Button>
+          />
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger disabled={selectedIndices.size === 0}>

@@ -127,9 +127,7 @@
         onclick={() => loadData(true)}
         {isLoading}
         icon={RefreshCcw}
-      >
-        Refresh
-      </Button>
+      />
     {/snippet}
   </SubpageHeader>
 

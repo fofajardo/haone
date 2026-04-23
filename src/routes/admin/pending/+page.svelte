@@ -181,9 +181,7 @@
           onclick={() => loadData(true)}
           {isLoading}
           icon={RefreshCcw}
-        >
-          Refresh
-        </Button>
+        />
 
         <Button
           variant="outline"

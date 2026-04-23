@@ -155,9 +155,13 @@
 <div class="space-y-6 pb-20">
   <SubpageHeader title="Financial Report" isTopLevel={true}>
     {#snippet actions()}
-      <Button variant="outline" size="sm" onclick={() => loadData()} {isLoading} icon={RefreshCcw}>
-        <span class="hidden sm:inline">Refresh</span>
-      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}
+      />
     {/snippet}
   </SubpageHeader>
 

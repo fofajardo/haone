@@ -141,9 +141,7 @@
           onclick={() => loadData(true)}
           {isLoading}
           icon={RefreshCcw}
-        >
-          Refresh
-        </Button>
+        />
         <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
       </div>
     {/snippet}
