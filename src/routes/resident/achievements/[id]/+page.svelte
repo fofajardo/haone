@@ -78,7 +78,7 @@
   <SubpageHeader title="Achievement Details" />
 
   {#if isLoading}
-    <LoadingView text="Loading achievement details…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>

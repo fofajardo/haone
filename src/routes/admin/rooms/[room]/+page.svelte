@@ -134,7 +134,7 @@
   </SubpageHeader>
 
   {#if isLoading && residents.length === 0}
-    <LoadingView text="Loading room details…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button

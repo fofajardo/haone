@@ -150,7 +150,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading transactions…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button

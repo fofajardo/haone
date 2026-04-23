@@ -53,7 +53,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading announcements…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>

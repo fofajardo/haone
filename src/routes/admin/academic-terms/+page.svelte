@@ -243,7 +243,7 @@
   <div class="mx-auto max-w-4xl">
     <div class="space-y-4">
       {#if isLoading}
-        <LoadingView text="Loading academic terms…" />
+        <LoadingView />
       {:else if errorMessage && terms.length === 0}
         <ErrorView error={errorMessage} />
       {:else if terms.length === 0}

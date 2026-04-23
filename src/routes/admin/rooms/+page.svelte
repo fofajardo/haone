@@ -289,7 +289,7 @@
   {/if}
 
   {#if isLoading && residents.length === 0}
-    <LoadingView text="Loading rooms and residents…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button

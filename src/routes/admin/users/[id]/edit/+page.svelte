@@ -93,7 +93,7 @@
   <SubpageHeader title="Edit User" />
 
   {#if isLoading}
-    <LoadingView text="Loading user data…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button variant="outline" class="mt-4" onclick={() => goto("/admin/users")}>

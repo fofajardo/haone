@@ -300,7 +300,7 @@
   <LaundryImportDialog bind:open={isImportOpen} onComplete={loadData} />
 
   {#if isLoading}
-    <LoadingView text="Loading all reservations…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>

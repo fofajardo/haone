@@ -227,7 +227,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading review queue…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button

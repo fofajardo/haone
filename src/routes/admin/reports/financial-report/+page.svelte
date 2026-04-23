@@ -162,7 +162,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Analyzing ledger data…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button

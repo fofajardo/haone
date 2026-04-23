@@ -141,7 +141,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading user directory…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button

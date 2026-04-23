@@ -163,7 +163,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Generating demographics…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button

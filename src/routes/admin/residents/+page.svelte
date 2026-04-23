@@ -237,7 +237,7 @@
     </SubpageHeader>
 
     {#if isLoading}
-      <LoadingView text="Loading resident directory…" />
+      <LoadingView />
     {:else if error}
       <ErrorView {error}>
         <Button

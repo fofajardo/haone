@@ -99,7 +99,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading your payment requests…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} class="mt-4">Retry</Button>

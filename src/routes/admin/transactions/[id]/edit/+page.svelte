@@ -73,7 +73,7 @@
 </script>
 
 {#if isLoading}
-  <LoadingView text="Loading transaction details…" />
+  <LoadingView />
 {:else if error}
   <ErrorView {error} />
 {:else}

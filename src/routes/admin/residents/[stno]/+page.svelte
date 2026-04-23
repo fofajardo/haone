@@ -234,7 +234,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading profile…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button variant="outline" class="mt-4" href="/admin/residents">Return to Directory</Button>

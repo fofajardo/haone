@@ -208,7 +208,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading transaction…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button variant="outline" class="mt-4" href="/admin/transactions">Return to Ledger</Button>

@@ -93,7 +93,7 @@
 
   <div class="mx-auto max-w-3xl">
     {#if isLoading}
-      <LoadingView text="Loading announcement..." />
+      <LoadingView />
     {:else if error}
       <ErrorView {error} />
     {:else}

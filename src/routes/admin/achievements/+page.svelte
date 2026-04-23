@@ -134,7 +134,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading achievements…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>

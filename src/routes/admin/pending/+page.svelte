@@ -200,7 +200,7 @@
   </SubpageHeader>
 
   {#if isLoading && queue.length === 0}
-    <LoadingView text="Loading records…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error} class="mb-3">
       <Button

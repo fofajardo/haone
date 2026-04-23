@@ -310,7 +310,7 @@
   <SubpageHeader title="Resident List" isTopLevel={true} />
 
   {#if isLoading && allAccounts.length === 0}
-    <LoadingView text="Preparing export data…" />
+    <LoadingView />
   {:else if error}
     <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
       <CircleAlert class="mx-auto mb-2 h-8 w-8 text-destructive" />

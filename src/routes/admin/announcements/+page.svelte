@@ -75,7 +75,7 @@
   </SubpageHeader>
 
   {#if isLoading}
-    <LoadingView text="Loading announcements…" />
+    <LoadingView />
   {:else if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} {isLoading} icon={RefreshCcw} class="mt-4">Retry</Button>
