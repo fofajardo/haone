@@ -96,19 +96,42 @@ export async function getSheetsClient() {
 }
 
 /**
- * Fetches values from a spreadsheet range.
+ * Creates an authorized Firebase client (token) using the service account.
  */
-export async function getSheetValues(token: string, spreadsheetId: string, range: string) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
+export async function getFirebaseToken() {
+  const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
+  const token = await getServiceAccountToken(keys.client_email, keys.private_key, [
+    "https://www.googleapis.com/auth/datastore"
+  ]);
+  return token;
+}
+
+/**
+ * Generic fetch wrapper for Google APIs with Bearer auth and error handling.
+ */
+export async function fetchGoogleAPI(url: string, token: string, options: RequestInit = {}) {
   const resp = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` }
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`
+    }
   });
 
   if (!resp.ok) {
     const err = await resp.text();
-    throw new Error(`Sheets API error: ${err}`);
+    throw new Error(`Google API Error (${resp.status}): ${err}`);
   }
 
+  return resp;
+}
+
+/**
+ * Fetches values from a spreadsheet range.
+ */
+export async function getSheetValues(token: string, spreadsheetId: string, range: string) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}`;
+  const resp = await fetchGoogleAPI(url, token);
   const data = await resp.json();
   return data.values || [];
 }
@@ -123,19 +146,11 @@ export async function appendSheetValue(
   values: any[][]
 ) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
-  const resp = await fetch(url, {
+  const resp = await fetchGoogleAPI(url, token, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ values })
   });
-
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(`Sheets API error: ${err}`);
-  }
 
   return await resp.json();
 }
