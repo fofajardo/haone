@@ -201,9 +201,7 @@
             bind:checked={formData.shouldBroadcast}
             disabled={isSubmitting}
           />
-          <Label for="broadcast" class="cursor-pointer font-bold text-amber-600"
-            >Broadcast immediately</Label
-          >
+          <Label for="broadcast" class="cursor-pointer font-bold">Broadcast immediately</Label>
         </div>
       </div>
 

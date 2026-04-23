@@ -163,12 +163,11 @@
           icon={RefreshCcw}
         />
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onclick={handleBroadcast}
           isLoading={isBroadcasting}
           icon={Megaphone}
-          class="text-amber-600 hover:text-amber-700"
         >
           Broadcast
         </Button>
