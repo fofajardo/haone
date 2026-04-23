@@ -108,15 +108,18 @@ export async function notifyAllResidents(
   title: string,
   body: string,
   url: string = "/resident/announcements"
-) {
-  if (!PUBLIC_VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return;
+): Promise<{ sentCount: number; foundCount: number }> {
+  if (!PUBLIC_VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return { sentCount: 0, foundCount: 0 };
 
   try {
     const token = await getFirebaseToken();
-    const resp = await fetchGoogleAPI(`${BASE_URL}?pageSize=1000`, token);
+    const resp = await fetchGoogleAPI(`${BASE_URL}/push_subscriptions?pageSize=1000`, token);
     const data = await resp.json();
 
-    if (!data.documents) return;
+    if (!data.documents) return { sentCount: 0, foundCount: 0 };
+    
+    const foundCount = data.documents.length;
+    let sentCount = 0;
 
     for (const doc of data.documents) {
       const docName = doc.name;
@@ -147,7 +150,11 @@ export async function notifyAllResidents(
         const payload = await buildPushPayload(message, subscription, vapid);
         const pushResp = await fetch(endpoint, payload as any);
 
-        if (!pushResp.ok) {
+        if (pushResp.ok) {
+          sentCount++;
+        } else {
+          const errorText = await pushResp.text();
+          console.error(`[Push] Delivery failed (${pushResp.status}): ${errorText}`);
           if (pushResp.status === 404 || pushResp.status === 410) {
             await fetchGoogleAPI(`https://firestore.googleapis.com/v1/${docName}`, token, {
               method: "DELETE"
@@ -158,7 +165,9 @@ export async function notifyAllResidents(
         console.error("Push delivery failed:", err);
       }
     }
+    return { sentCount, foundCount };
   } catch (e) {
     console.error("NotifyAllResidents failed:", e);
+    return { sentCount: 0, foundCount: 0 };
   }
 }
