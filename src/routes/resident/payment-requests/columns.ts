@@ -1,57 +1,50 @@
 import { type ColumnDef } from "@tanstack/table-core";
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
-import { formatAmount } from "$lib/receipt-utils";
+import { formatDate, formatAccounting, translateMop } from "$lib/receipt-utils";
 import type { PaymentRequestRecord } from "$lib/schemas";
 import { PaymentRequestStatus, PAYMENT_REQUEST_STATUS_COLORS } from "$lib/schemas";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
 import { Button } from "$lib/components/ui/button";
+import CompositionCell from "$lib/components/CompositionCell.svelte";
+import { Trash2 } from "lucide-svelte";
 
 export const columns: ColumnDef<PaymentRequestRecord>[] = [
   {
     accessorKey: "date",
-    header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Date" })
+    header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Date" }),
+    cell: ({ row }) => formatDate(row.getValue("date"))
   },
   {
-    id: "amount",
-    header: "Total",
+    id: "composition",
+    header: "Composition",
     cell: ({ row }) => {
       const r = row.original;
-      const amountSnippet = createRawSnippet<[{ amount: number }]>((p) => ({
-        render: () => `<div class="font-bold text-sm">${formatAmount(p().amount)}</div>`
-      }));
-      return renderSnippet(amountSnippet, { amount: r.waterFee + r.assocFee + r.misc });
-    }
-  },
-  {
-    id: "breakdown",
-    header: "Breakdown",
-    cell: ({ row }) => {
-      const r = row.original;
-      const breakdownSnippet = createRawSnippet<[{ water: number; assoc: number; misc: number }]>(
-        (p) => ({
-          render: () => `
-          <div class="text-[10px] text-muted-foreground leading-tight">
-            W: ${formatAmount(p().water)} | A: ${formatAmount(p().assoc)} | M: ${formatAmount(p().misc)}
-          </div>
-        `
-        })
-      );
-      return renderSnippet(breakdownSnippet, {
-        water: r.waterFee,
-        assoc: r.assocFee,
-        misc: r.misc
+      return renderComponent(CompositionCell, {
+        variant: "composition",
+        record: {
+          ...r,
+          water: r.waterFee,
+          assoc: r.assocFee,
+          misc: r.misc
+        } as any
       });
     }
   },
   {
-    accessorKey: "mop",
-    header: "MOP",
+    id: "details",
+    header: "Payment Details",
     cell: ({ row }) => {
-      const mopSnippet = createRawSnippet<[{ mop: string }]>((p) => ({
-        render: () => `<div class="text-xs font-medium uppercase">${p().mop}</div>`
+      const r = row.original;
+      const snippet = createRawSnippet<[{ mop: string; notes: string }]>((p) => ({
+        render: () => `
+          <div class="flex flex-col">
+            <span class="text-sm font-medium uppercase">${translateMop(p().mop)}</span>
+            ${p().notes ? `<span class="text-sm text-muted-foreground italic truncate max-w-[200px] block">— ${p().notes}</span>` : ""}
+          </div>
+        `
       }));
-      return renderSnippet(mopSnippet, { mop: row.getValue("mop") as string });
+      return renderSnippet(snippet, { mop: r.mop, notes: r.notes });
     }
   },
   {
@@ -62,11 +55,25 @@ export const columns: ColumnDef<PaymentRequestRecord>[] = [
       const statusSnippet = createRawSnippet<[{ status: string }]>((p) => ({
         render: () => {
           const s = p().status;
-          const cls = PAYMENT_REQUEST_STATUS_COLORS[s] || PAYMENT_REQUEST_STATUS_COLORS.DEFAULT;
-          return `<div class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase w-fit ${cls}">${s}</div>`;
+          const cls =
+            PAYMENT_REQUEST_STATUS_COLORS[s as keyof typeof PAYMENT_REQUEST_STATUS_COLORS] ||
+            PAYMENT_REQUEST_STATUS_COLORS.DEFAULT;
+          return `<span class="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tracking-tight uppercase ${cls}">${s}</span>`;
         }
       }));
       return renderSnippet(statusSnippet, { status });
+    }
+  },
+  {
+    id: "total",
+    header: ({ column }) =>
+      renderComponent(DataTableColumnHeader, { column, title: "Total", class: "ml-auto" }),
+    cell: ({ row }) => {
+      const r = row.original;
+      const amountSnippet = createRawSnippet<[{ amount: number }]>((p) => ({
+        render: () => `<div class="text-right font-bold">${formatAccounting(p().amount)}</div>`
+      }));
+      return renderSnippet(amountSnippet, { amount: r.waterFee + r.assocFee + r.misc });
     }
   },
   {
@@ -86,10 +93,7 @@ export const columns: ColumnDef<PaymentRequestRecord>[] = [
           e.stopPropagation();
           onCancel?.(r.id);
         },
-        children: createRawSnippet(() => ({
-          render: () =>
-            `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`
-        }))
+        icon: Trash2
       });
     }
   }

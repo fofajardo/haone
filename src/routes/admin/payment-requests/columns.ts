@@ -6,7 +6,7 @@ import { PAYMENT_REQUEST_STATUS_COLORS } from "$lib/schemas";
 import DataTableCheckbox from "$lib/components/ui/data-table/data-table-checkbox.svelte";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
-import CompositionCell from "../pending/CompositionCell.svelte";
+import CompositionCell from "$lib/components/CompositionCell.svelte";
 
 export const columns: ColumnDef<PaymentRequestRecord>[] = [
   {

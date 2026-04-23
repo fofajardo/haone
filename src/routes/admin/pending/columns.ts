@@ -1,7 +1,7 @@
 import { type ColumnDef } from "@tanstack/table-core";
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
 import { formatDate, formatAccounting } from "$lib/receipt-utils";
-import CompositionCell from "./CompositionCell.svelte";
+import CompositionCell from "$lib/components/CompositionCell.svelte";
 import type { JournalRecord } from "$lib/schemas";
 import DataTableCheckbox from "$lib/components/ui/data-table/data-table-checkbox.svelte";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
