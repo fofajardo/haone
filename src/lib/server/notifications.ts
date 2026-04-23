@@ -1,22 +1,13 @@
-import webpush from "web-push";
 import { PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";
 import { VAPID_PRIVATE_KEY } from "$env/static/private";
 import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
+import { buildPushPayload, type PushSubscription, type PushMessage, type VapidKeys } from "@block65/webcrypto-web-push";
 import { getFirebaseToken, fetchGoogleAPI } from "$lib/server/api-helper";
 import branding from "$lib/branding.json";
 
 const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
 const PROJECT_ID = keys.project_id;
 const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
-
-// Configure VAPID
-if (PUBLIC_VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-  webpush.setVapidDetails(
-    `mailto:${branding.default.replyTo}`,
-    PUBLIC_VAPID_PUBLIC_KEY,
-    VAPID_PRIVATE_KEY
-  );
-}
 
 /**
  * Sends a push notification to a specific resident.
@@ -68,28 +59,36 @@ export async function notifyResident(
 
       if (!endpoint || !p256dh || !auth) continue;
 
-      const subscription = {
+      const subscription: PushSubscription = {
         endpoint,
-        keys: {
-          p256dh,
-          auth
-        }
+        expirationTime: null,
+        keys: { p256dh, auth }
       };
 
-      const payload = JSON.stringify({ title, body, url });
+      const message: PushMessage = {
+        data: JSON.stringify({ title, body, url }),
+        options: { ttl: 86400 }
+      };
+      const vapid: VapidKeys = {
+        subject: `mailto:${branding.default.replyTo}`,
+        publicKey: PUBLIC_VAPID_PUBLIC_KEY,
+        privateKey: VAPID_PRIVATE_KEY
+      };
 
       try {
-        await webpush.sendNotification(subscription, payload);
-        console.log(`[Push] Sent to ${residentId}: ${title}`);
-      } catch (err: any) {
-        if (err.statusCode === 404 || err.statusCode === 410) {
-          console.warn(`[Push] Subscription expired for ${residentId}, deleting.`);
-          await fetchGoogleAPI(`https://firestore.googleapis.com/v1/${docName}`, token, {
-            method: "DELETE"
-          });
-        } else {
-          console.error(`[Push] Error sending to ${residentId}:`, err);
+        const payload = await buildPushPayload(message, subscription, vapid);
+        const pushResp = await fetch(endpoint, payload as any);
+
+        if (!pushResp.ok) {
+          if (pushResp.status === 404 || pushResp.status === 410) {
+            console.warn(`[Push] Subscription expired for ${residentId}, deleting.`);
+            await fetchGoogleAPI(`https://firestore.googleapis.com/v1/${docName}`, token, {
+              method: "DELETE"
+            });
+          }
         }
+      } catch (err: any) {
+        console.error("Push delivery failed:", err);
       }
     }
   } catch (e) {
@@ -123,21 +122,35 @@ export async function notifyAllResidents(
 
       if (!endpoint || !p256dh || !auth) continue;
 
-      const subscription = {
+      const subscription: PushSubscription = {
         endpoint,
+        expirationTime: null,
         keys: { p256dh, auth }
       };
 
-      const payload = JSON.stringify({ title, body, url });
+      const message: PushMessage = {
+        data: JSON.stringify({ title, body, url }),
+        options: { ttl: 86400 }
+      };
+      const vapid: VapidKeys = {
+        subject: `mailto:${branding.default.replyTo}`,
+        publicKey: PUBLIC_VAPID_PUBLIC_KEY,
+        privateKey: VAPID_PRIVATE_KEY
+      };
 
       try {
-        await webpush.sendNotification(subscription, payload);
-      } catch (err: any) {
-        if (err.statusCode === 404 || err.statusCode === 410) {
-          await fetchGoogleAPI(`https://firestore.googleapis.com/v1/${docName}`, token, {
-            method: "DELETE"
-          });
+        const payload = await buildPushPayload(message, subscription, vapid);
+        const pushResp = await fetch(endpoint, payload as any);
+
+        if (!pushResp.ok) {
+          if (pushResp.status === 404 || pushResp.status === 410) {
+            await fetchGoogleAPI(`https://firestore.googleapis.com/v1/${docName}`, token, {
+              method: "DELETE"
+            });
+          }
         }
+      } catch (err: any) {
+        console.error("Push delivery failed:", err);
       }
     }
   } catch (e) {
