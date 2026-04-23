@@ -551,7 +551,7 @@
             <p class="px-1 text-xs font-bold tracking-wider text-muted-foreground uppercase">
               Add to Calendar
             </p>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Button
                 variant="outline"
                 size="sm"
