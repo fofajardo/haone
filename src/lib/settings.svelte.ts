@@ -4,7 +4,8 @@ import {
   PUBLIC_GS_AW_ID,
   PUBLIC_GS_RR_ID,
   PUBLIC_GS_SR_ID,
-  PUBLIC_APP_ENV
+  PUBLIC_APP_ENV,
+  PUBLIC_APP_FIREBASE_ENABLED
 } from "$env/static/public";
 
 export type UIFont = "inter" | "archivo" | "shantell";
@@ -133,6 +134,10 @@ class UISettings {
 
   get isDev() {
     return dev || PUBLIC_APP_ENV === "development";
+  }
+
+  get firebaseEnabled() {
+    return PUBLIC_APP_FIREBASE_ENABLED === "true";
   }
 
   async syncFromServer() {

@@ -2,7 +2,14 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
-  import { ArrowLeft, CircleX, ExternalLink, ChevronLeft, ChevronRight } from "lucide-svelte";
+  import {
+    ArrowLeft,
+    CircleX,
+    ExternalLink,
+    ChevronLeft,
+    ChevronRight,
+    TriangleAlert
+  } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -309,6 +316,20 @@
                   <div class="border-t pt-2 text-xs">
                     <span class="font-bold text-muted-foreground uppercase">Resident Notes:</span>
                     <p class="mt-1 italic">{currentPayment.notes}</p>
+                  </div>
+                {/if}
+
+                {#if uiSettings.firebaseEnabled && currentPayment.proofLink?.includes("/api/image/")}
+                  <div
+                    class="mt-2 flex items-start gap-3 rounded-lg border border-brand/20 bg-brand/5 p-3"
+                  >
+                    <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                    <div class="space-y-1">
+                      <p class="text-[10px] leading-relaxed text-muted-foreground">
+                        This receipt was uploaded through this instance's storage provider.
+                        Approving or declining this request will permanently delete the image copy.
+                      </p>
+                    </div>
                   </div>
                 {/if}
               </div>

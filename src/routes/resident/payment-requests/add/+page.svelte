@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
 
   import { addPaymentRequest } from "$lib/shared-records-logic";
   import { fetchServer, compressImage, deleteUploadedImage } from "$lib/utils";
@@ -358,63 +359,74 @@
                 <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                   >Proof of Payment Link</Label
                 >
-                {#if formData.proofLink}
-                  <Card.Root
-                    class="group relative max-w-sm overflow-hidden border-brand/20 bg-brand/5"
-                  >
-                    <img
-                      src={previewUrl || formData.proofLink}
-                      alt="Payment Proof"
-                      class="aspect-video w-full object-cover transition-all group-hover:blur-[2px]"
-                    />
-                    <div
-                      class="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity group-hover:opacity-100"
+                {#if uiSettings.firebaseEnabled}
+                  {#if formData.proofLink}
+                    <Card.Root
+                      class="group relative max-w-sm overflow-hidden border-brand/20 bg-brand/5"
                     >
-                      <Button
-                        size="sm"
-                        onclick={handleRemoveImage}
-                        class="h-8 gap-2 px-3 shadow-lg"
+                      <img
+                        src={previewUrl || formData.proofLink}
+                        alt="Payment Proof"
+                        class="aspect-video w-full object-cover transition-all group-hover:blur-[2px]"
+                      />
+                      <div
+                        class="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity group-hover:opacity-100"
                       >
-                        <Trash2 class="h-4 w-4" />
-                        Remove
-                      </Button>
+                        <Button
+                          size="sm"
+                          onclick={handleRemoveImage}
+                          class="h-8 gap-2 px-3 shadow-lg"
+                        >
+                          <Trash2 class="h-4 w-4" />
+                          Remove
+                        </Button>
+                      </div>
+                      <div
+                        class="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-bold text-brand shadow-sm backdrop-blur-sm"
+                      >
+                        <ImageIcon class="h-3 w-3" />
+                        <span>IMAGE ATTACHED</span>
+                      </div>
+                    </Card.Root>
+                  {:else}
+                    <div class="flex gap-2">
+                      <Input
+                        placeholder="Drive or Image Link"
+                        bind:value={formData.proofLink}
+                        disabled={isSubmitting || isUploading}
+                      />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        class="shrink-0"
+                        disabled={isSubmitting || isUploading}
+                        isLoading={isUploading}
+                        onclick={() => fileInput?.click()}
+                        icon={Upload}
+                      />
                     </div>
-                    <div
-                      class="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-bold text-brand shadow-sm backdrop-blur-sm"
-                    >
-                      <ImageIcon class="h-3 w-3" />
-                      <span>IMAGE ATTACHED</span>
-                    </div>
-                  </Card.Root>
+                  {/if}
+                  <input
+                    type="file"
+                    bind:this={fileInput}
+                    accept="image/*"
+                    class="hidden"
+                    onchange={handleFileUpload}
+                  />
+                  {#if isUploading}
+                    <p class="animate-pulse text-xs font-bold text-brand">Uploading image...</p>
+                  {:else if !formData.proofLink}
+                    <p class="text-xs text-muted-foreground">Paste a link or upload an image.</p>
+                  {/if}
                 {:else}
-                  <div class="flex gap-2">
-                    <Input
-                      placeholder="Drive or Image Link"
-                      bind:value={formData.proofLink}
-                      disabled={isSubmitting || isUploading}
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      class="shrink-0"
-                      disabled={isSubmitting || isUploading}
-                      isLoading={isUploading}
-                      onclick={() => fileInput?.click()}
-                      icon={Upload}
-                    />
-                  </div>
-                {/if}
-                <input
-                  type="file"
-                  bind:this={fileInput}
-                  accept="image/*"
-                  class="hidden"
-                  onchange={handleFileUpload}
-                />
-                {#if isUploading}
-                  <p class="animate-pulse text-xs font-bold text-brand">Uploading image...</p>
-                {:else if !formData.proofLink}
-                  <p class="text-xs text-muted-foreground">Paste a link or upload an image.</p>
+                  <Input
+                    placeholder="Proof of Payment Link (Google Drive, etc.)"
+                    bind:value={formData.proofLink}
+                    disabled={isSubmitting}
+                  />
+                  <p class="text-xs text-muted-foreground">
+                    Please provide a valid URL for your receipt.
+                  </p>
                 {/if}
               </div>
               <div class="space-y-2">

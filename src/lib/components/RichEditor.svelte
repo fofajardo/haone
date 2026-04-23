@@ -14,6 +14,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { transformGoogleDriveLink, compressImage, fetchServer } from "$lib/utils";
+  import { uiSettings } from "$lib/settings.svelte";
   import { toast } from "svelte-sonner";
   import {
     Bold,
@@ -258,15 +259,17 @@
 
         <div class="flex-grow"></div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          onclick={openImageDialog}
-          icon={ImageIcon}
-          iconClass="size-3.5"
-          title="Insert Image"
-        />
+        {#if uiSettings.firebaseEnabled}
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onclick={openImageDialog}
+            icon={ImageIcon}
+            iconClass="size-3.5"
+            title="Insert Image"
+          />
+        {/if}
 
         <Button
           variant="ghost"
