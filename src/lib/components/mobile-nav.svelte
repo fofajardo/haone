@@ -15,7 +15,8 @@
     Contact,
     GraduationCap,
     Mail,
-    Settings
+    Settings,
+    BookUser
   } from "lucide-svelte";
   import { useSidebar } from "$lib/components/ui/sidebar";
   import { page } from "$app/state";
@@ -44,6 +45,7 @@
     residents: { label: "Residents", href: "/admin/residents", icon: Users },
     rooms: { label: "Rooms", href: "/admin/rooms", icon: Bed },
     users: { label: "Users", href: "/admin/users", icon: Contact },
+    officers: { label: "Officers", href: "/admin/officers", icon: BookUser },
     terms: { label: "Terms", href: "/admin/academic-terms", icon: GraduationCap },
     dispatcher: { label: "Email", href: "/admin/email-dispatcher", icon: Mail },
     settings: { label: "Settings", href: "/admin/settings", icon: Settings },

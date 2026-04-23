@@ -11,7 +11,8 @@
     WashingMachine,
     Banknote,
     Megaphone,
-    Trophy
+    Trophy,
+    BookUser
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -58,6 +59,11 @@
       title: "Achievements",
       url: "/resident/achievements",
       icon: Trophy
+    },
+    {
+      title: "Officers",
+      url: "/resident/officers",
+      icon: BookUser
     }
   ];
 

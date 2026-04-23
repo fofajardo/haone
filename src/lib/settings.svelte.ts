@@ -18,7 +18,7 @@ class UISettings {
   #theme = $state<string>("system");
   #isPublicAchievementList = $state(true);
   #residentNavIds = $state<string[]>(["home", "finance", "laundry"]);
-  #adminNavIds = $state<string[]>(["dashboard", "history", "residents"]);
+  #adminNavIds = $state<string[]>(["dashboard", "history", "residents", "officers"]);
 
   #currentTerm = $state<string>("");
   #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");

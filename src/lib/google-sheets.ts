@@ -149,7 +149,7 @@ async function handleResponseError(resp: Response, defaultMessage: string) {
 /**
  * Standard fetch with auth and error handling.
  */
-async function fetchWithAuth(
+export async function fetchWithAuth(
   url: string,
   defaultError: string,
   init: RequestInit = {},

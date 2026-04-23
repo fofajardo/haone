@@ -1,0 +1,196 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { Button } from "$lib/components/ui/button";
+  import { ChevronLeft, Save } from "lucide-svelte";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
+  import { addOfficer, fetchOfficers } from "$lib/admin-logic";
+  import { fetchResidents, fetchTermCurr } from "$lib/resident-logic";
+  import { brandingState } from "$lib/branding.svelte";
+  import type { OfficerRecord, ResidentRecord } from "$lib/schemas";
+  import { OfficerStatus } from "$lib/schemas";
+  import { toast } from "svelte-sonner";
+  import { Label } from "$lib/components/ui/label";
+  import { Input } from "$lib/components/ui/input";
+  import { Combobox } from "$lib/components/ui/combobox";
+  import { goto } from "$app/navigation";
+  import { pageState } from "$lib/page-info.svelte";
+  import * as Card from "$lib/components/ui/card";
+
+  import { translatePeriod } from "$lib/receipt-utils";
+
+  let residents = $state<ResidentRecord[]>([]);
+  let officers = $state<OfficerRecord[]>([]);
+  let currentTerm = $state("");
+  let isLoading = $state(true);
+  let isSaving = $state(false);
+
+  let newOfficerData = $state({
+    residentId: "",
+    position: "",
+    nickname: "",
+    committee: "",
+    fbLink: "",
+    birthday: ""
+  });
+
+  async function loadData() {
+    isLoading = true;
+    try {
+      [residents, officers, currentTerm] = await Promise.all([
+        fetchResidents(),
+        fetchOfficers(),
+        fetchTermCurr()
+      ]);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  onMount(() => {
+    pageState.title = "Add Officer";
+    loadData();
+  });
+
+  const positions = $derived(
+    (brandingState.profile.officerPositions as { title: string; limit: number }[]) || []
+  );
+
+  const availablePositions = $derived.by(() => {
+    return positions.map((p) => {
+      const currentCount = officers.filter(
+        (o) => o.position === p.title && o.term === currentTerm
+      ).length;
+      const isFull = p.limit > 0 && currentCount >= p.limit;
+      return {
+        label: p.title + (p.limit > 0 ? ` (${currentCount}/${p.limit})` : ""),
+        value: p.title,
+        disabled: isFull
+      };
+    });
+  });
+
+  const residentOptions = $derived(
+    residents
+      .filter((r) => r.period === currentTerm)
+      .map((r) => ({
+        label: `${r.name} (${r.room}${r.bed})`,
+        value: r.residentId
+      }))
+  );
+
+  async function handleAddOfficer() {
+    if (!newOfficerData.residentId || !newOfficerData.position) {
+      toast.error("Please select a resident and a position");
+      return;
+    }
+
+    const resident = residents.find((r) => r.residentId === newOfficerData.residentId);
+    if (!resident) return;
+
+    if (newOfficerData.fbLink) {
+      try {
+        const url = new URL(newOfficerData.fbLink);
+        if (
+          !url.hostname.includes("facebook.com") &&
+          !url.hostname.includes("fb.com") &&
+          !url.hostname.includes("fb.me")
+        ) {
+          toast.error("Please provide a valid Facebook profile link");
+          return;
+        }
+      } catch (e) {
+        toast.error("Invalid Facebook link URL");
+        return;
+      }
+    }
+
+    isSaving = true;
+    try {
+      await addOfficer({
+        position: newOfficerData.position,
+        name: resident.name,
+        nickname: newOfficerData.nickname,
+        email: resident.email,
+        fbLink: newOfficerData.fbLink,
+        term: currentTerm,
+        committee: newOfficerData.committee,
+        birthday: newOfficerData.birthday,
+        id: "",
+        status: OfficerStatus.ACTIVE
+      });
+      toast.success("Officer added successfully");
+      goto("/admin/officers");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      isSaving = false;
+    }
+  }
+</script>
+
+<div class="space-y-6">
+  <SubpageHeader title="Add New Officer" href="/admin/officers" />
+
+  {#if isLoading}
+    <LoadingView />
+  {:else}
+    <Card.Root class="mx-auto max-w-2xl">
+      <Card.Header>
+        <Card.Title>Officer Details</Card.Title>
+        <Card.Description
+          >Assign a resident to an officer position for {translatePeriod(
+            currentTerm
+          )}.</Card.Description
+        >
+      </Card.Header>
+      <Card.Content class="space-y-6">
+        <div class="space-y-2">
+          <Label>Resident</Label>
+          <Combobox
+            options={residentOptions}
+            bind:value={newOfficerData.residentId}
+            placeholder="Select resident…"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <Label>Position</Label>
+          <Combobox
+            options={availablePositions}
+            bind:value={newOfficerData.position}
+            placeholder="Select position…"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <Label>Nickname (Optional)</Label>
+            <Input bind:value={newOfficerData.nickname} placeholder="e.g., Joey" />
+          </div>
+
+          <div class="space-y-2">
+            <Label>Committee (Optional)</Label>
+            <Input bind:value={newOfficerData.committee} placeholder="e.g., Informataion" />
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <Label>FB Link (Optional)</Label>
+          <Input bind:value={newOfficerData.fbLink} placeholder="https://facebook.com/..." />
+        </div>
+
+        <div class="space-y-2">
+          <Label>Birthday (Optional)</Label>
+          <Input bind:value={newOfficerData.birthday} type="date" />
+        </div>
+      </Card.Content>
+      <Card.Footer class="justify-end gap-2 border-t pt-6">
+        <Button variant="ghost" onclick={() => goto("/admin/officers")}>Cancel</Button>
+        <Button onclick={handleAddOfficer} isLoading={isSaving} icon={Save}>Assign Officer</Button>
+      </Card.Footer>
+    </Card.Root>
+  {/if}
+</div>

@@ -19,7 +19,8 @@
     WashingMachine,
     Banknote,
     Megaphone,
-    Trophy
+    Trophy,
+    BookUser
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import { auth } from "$lib/auth.svelte";
@@ -63,6 +64,11 @@
       title: "Academic Terms",
       url: "/admin/academic-terms",
       icon: GraduationCap
+    },
+    {
+      title: "Officers",
+      url: "/admin/officers",
+      icon: BookUser
     }
   ];
 

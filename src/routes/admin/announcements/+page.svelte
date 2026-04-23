@@ -7,6 +7,7 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { fetchAnnouncements, expireAnnouncement, deleteAnnouncement } from "$lib/admin-logic";
+  import { fetchWithAuth } from "$lib/google-sheets";
   import { auth } from "$lib/auth.svelte";
   import type { AnnouncementRecord } from "$lib/schemas";
   import { toast } from "svelte-sonner";
@@ -31,6 +32,31 @@
   let announcementToExpire = $state<string | null>(null);
   let isDeleting = $state(false);
   let announcementToDelete = $state<string | null>(null);
+  let isBroadcasting = $state(false);
+
+  async function handleBroadcast() {
+    isBroadcasting = true;
+    try {
+      const resp = await fetchWithAuth(
+        "/api/admin/announcements/broadcast",
+        "Failed to broadcast",
+        {
+          method: "POST"
+        }
+      );
+      const data = await resp.json();
+      if (data.success) {
+        toast.success(data.message || "Notifications sent to all residents");
+        await loadData();
+      } else {
+        throw new Error(data.error || "Failed to broadcast");
+      }
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      isBroadcasting = false;
+    }
+  }
 
   const tableSync = new TableSync({
     initialFilters: { search: "", status: "ALL", tags: "ALL" },
@@ -136,6 +162,16 @@
           {isLoading}
           icon={RefreshCcw}
         />
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={handleBroadcast}
+          isLoading={isBroadcasting}
+          icon={Megaphone}
+          class="text-amber-600 hover:text-amber-700"
+        >
+          Broadcast
+        </Button>
         <Button size="sm" onclick={() => goto("/admin/announcements/add")} icon={Plus}>New</Button>
       </div>
     {/snippet}

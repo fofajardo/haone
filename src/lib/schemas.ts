@@ -255,6 +255,25 @@ export const ACHIEVEMENT_RECORD_COL = {
   ACHIEVEMENT_ID: 4
 } as const;
 
+export const OFFICER_COL = {
+  POSITION: 0,
+  NAME: 1,
+  NICKNAME: 2,
+  EMAIL: 3,
+  FB_LINK: 4,
+  TERM: 5,
+  COMMITTEE: 6,
+  BIRTHDAY: 7,
+  ID: 8,
+  STATUS: 9
+} as const;
+
+export enum OfficerStatus {
+  ACTIVE = "ACTIVE",
+  RESIGNED = "RESIGNED",
+  CHANGED_POSITION = "CHANGED_POSITION"
+}
+
 export const USER_SETTINGS_COL = {
   RESIDENT_ID: 0,
   IS_PUBLIC_ACHIEVEMENT_LIST: 1,
@@ -356,6 +375,20 @@ export interface AnnouncementRecord {
   tags: string;
   title: string;
   content: string;
+  raw: string[];
+}
+
+export interface OfficerRecord {
+  position: string;
+  name: string;
+  nickname: string;
+  email: string;
+  fbLink: string;
+  term: string;
+  committee: string;
+  birthday: string;
+  id: string;
+  status: OfficerStatus | string;
   raw: string[];
 }
 

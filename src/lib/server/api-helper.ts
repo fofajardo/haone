@@ -264,6 +264,48 @@ export async function authenticateResident(request: Request) {
 }
 
 /**
+ * Standardized admin authentication for API routes.
+ */
+export async function authenticateAdmin(request: Request) {
+  const auth = await authenticateResident(request);
+  if (auth.error) return auth;
+
+  try {
+    const { PUBLIC_GS_RR_ID } = await import("$env/static/public");
+    const { OFFICER_COL } = await import("$lib/schemas");
+    const token = await getSheetsClient();
+    const directory = await getSheetValues(token, PUBLIC_GS_RR_ID, "directory!A:H");
+
+    // Check if user email is in the directory sheet
+    const officer = directory.find(
+      (r: any) => (r[OFFICER_COL.EMAIL] || "").toLowerCase() === auth.email
+    );
+
+    if (!officer) {
+      return {
+        error: json({ error: "Forbidden: Admin access required (Officer only)" }, { status: 403 })
+      };
+    }
+
+    return auth;
+  } catch (e: any) {
+    return {
+      error: json({ error: "Admin check failed", message: e.message }, { status: 500 })
+    };
+  }
+}
+
+/**
+ * Fetches the current term from the constants sheet.
+ */
+export async function fetchTermCurrServer(token: string) {
+  const { PUBLIC_GS_AW_ID } = await import("$env/static/public");
+  const values = await getSheetValues(token, PUBLIC_GS_AW_ID, "constants!A:C");
+  const row = values.find((r: any) => (r[0] || "").trim() === "TERM_CURR");
+  return row ? (row[1] || "").trim() : "";
+}
+
+/**
  * Standardized error response for API routes.
  */
 export function serverError(e: any, context = "API Operation") {
