@@ -78,9 +78,8 @@
         sessionStorage.removeItem("pkce_verifier");
         sessionStorage.removeItem("pkce_auth_type");
 
-        // Redirect back or to state
-        goto(state || auth.redirectTo || (savedType === "admin" ? "/admin" : "/resident"));
-        auth.redirectTo = null;
+        // Redirect to the appropriate dashboard
+        goto(savedType === "admin" ? "/admin" : "/resident");
         return;
       } catch (e: any) {
         if (!auth.lastError) {
@@ -99,8 +98,7 @@
 
     // If already logged in, go to appropriate dashboard
     if (auth.accessToken) {
-      goto(auth.redirectTo || (auth.authType === "admin" ? "/admin" : "/resident"));
-      auth.redirectTo = null;
+      goto(auth.authType === "admin" ? "/admin" : "/resident");
     }
   });
 
@@ -140,7 +138,7 @@
       redirect_uri: window.location.origin + "/sign-in",
       response_type: "code",
       scope: scopes,
-      state: auth.redirectTo || (type === "admin" ? "/admin" : "/resident"),
+      state: type === "admin" ? "/admin" : "/resident",
       include_granted_scopes: "true",
       code_challenge: challenge,
       code_challenge_method: "S256"

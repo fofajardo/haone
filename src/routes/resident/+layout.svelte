@@ -48,7 +48,6 @@
     const isOnboardingPage = pathname === "/resident/onboarding";
 
     if (!auth.accessToken && !isSignInPage) {
-      auth.redirectTo = page.url.pathname + page.url.search;
       goto("/sign-in");
       return;
     }
