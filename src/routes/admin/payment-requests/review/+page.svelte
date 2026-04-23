@@ -2,17 +2,7 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
-  import {
-    RefreshCcw,
-    ArrowLeft,
-    ArrowRight,
-    CircleX,
-    CircleCheckBig,
-    ExternalLink,
-    ChevronLeft,
-    ChevronRight,
-    Search
-  } from "lucide-svelte";
+  import { ArrowLeft, CircleX, ExternalLink, ChevronLeft, ChevronRight } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -106,9 +96,6 @@
   let currentPayment = $derived(payments[currentIndex]);
   let currentResident = $derived(
     currentPayment ? residents.find((r) => r.residentId === currentPayment.residentId) : null
-  );
-  let currentUser = $derived(
-    currentPayment ? users.find((u) => u.id === currentPayment.residentId) : null
   );
 
   async function handleDecline() {
@@ -224,17 +211,15 @@
               size="sm"
               onclick={() => (currentIndex = Math.max(0, currentIndex - 1))}
               disabled={currentIndex === 0 || isProcessing}
-            >
-              <ChevronLeft class="h-4 w-4" />
-            </Button>
+              icon={ChevronLeft}
+            />
             <Button
               variant="outline"
               size="sm"
               onclick={() => (currentIndex = Math.min(payments.length - 1, currentIndex + 1))}
               disabled={currentIndex === payments.length - 1 || isProcessing}
-            >
-              <ChevronRight class="h-4 w-4" />
-            </Button>
+              icon={ChevronRight}
+            />
           </div>
         {/if}
       </div>
@@ -245,8 +230,11 @@
     <LoadingView text="Loading review queue…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => goto("/admin/payment-requests")} variant="outline" class="mt-4"
-        >Back to List</Button
+      <Button
+        onclick={() => goto("/admin/payment-requests")}
+        variant="outline"
+        class="mt-4"
+        icon={ArrowLeft}>Back to List</Button
       >
     </ErrorView>
   {:else if currentPayment}
@@ -338,11 +326,10 @@
                 size="sm"
                 class="w-full"
                 onclick={handleDecline}
-                disabled={isProcessing || !declineReason.trim()}
+                isLoading={isProcessing}
+                disabled={!declineReason.trim()}
+                icon={CircleX}
               >
-                {#if isProcessing}
-                  <RefreshCcw class="mr-2 h-3 w-3 animate-spin" />
-                {/if}
                 Decline Request
               </Button>
             </div>

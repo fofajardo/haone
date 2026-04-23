@@ -29,7 +29,6 @@
     User,
     Users,
     Bed,
-    LoaderCircle,
     CloudDownload,
     CircleCheck,
     CircleAlert,
@@ -217,16 +216,23 @@
   <SubpageHeader title="Rooms" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData(true)}
+          {isLoading}
+          icon={RefreshCcw}
+        >
           <span class="hidden sm:inline">Refresh</span>
         </Button>
-        <Button variant="outline" size="sm" onclick={handleSync} disabled={isSyncing || isLoading}>
-          {#if isSyncing}
-            <LoaderCircle class="h-4 w-4 animate-spin sm:mr-2" />
-          {:else}
-            <CloudDownload class="h-4 w-4 sm:mr-2" />
-          {/if}
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={handleSync}
+          isLoading={isSyncing}
+          disabled={isLoading}
+          icon={CloudDownload}
+        >
           <span class="sm">Sync</span>
         </Button>
       </div>
@@ -286,7 +292,14 @@
     <LoadingView text="Loading rooms and residents…" />
   {:else if error}
     <ErrorView {error}>
-      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-2"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}>Try Again</Button
+      >
     </ErrorView>
   {:else}
     <div

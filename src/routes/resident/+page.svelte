@@ -127,10 +127,9 @@
         size="icon"
         class="h-10 w-10 rounded-xl text-white/50 transition-all hover:bg-white/10 hover:text-white"
         onclick={() => loadStatus()}
-        disabled={isLoading}
-      >
-        <RefreshCcw class="h-5 w-5 {isLoading ? 'animate-spin' : ''}" />
-      </Button>
+        {isLoading}
+        icon={RefreshCcw}
+      />
     </div>
   </div>
 
@@ -138,7 +137,7 @@
     <LoadingView text="Loading dashboard…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadStatus()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadStatus()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else if status}
     <!-- Quick Stats Grid -->
@@ -226,9 +225,13 @@
       <div>
         <div class="mb-6 flex items-center justify-between">
           <h2 class="text-xl font-bold text-foreground">Recent Activity</h2>
-          <Button variant="ghost" size="icon" href="/resident/finance" title="View All">
-            <ArrowRight class="h-4 w-4" />
-          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            href="/resident/finance"
+            title="View All"
+            icon={ArrowRight}
+          />
         </div>
         <Card.Root class="overflow-hidden border-none bg-card p-0 shadow-md">
           <Card.Content class="divide-y p-0">

@@ -55,9 +55,13 @@
 <div class="space-y-6">
   <SubpageHeader title="Occupancy" isTopLevel={true}>
     {#snippet actions()}
-      <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-        <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}
+      />
     {/snippet}
   </SubpageHeader>
 
@@ -65,7 +69,7 @@
     <LoadingView text="Loading occupancy data…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">

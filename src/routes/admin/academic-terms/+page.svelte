@@ -20,8 +20,7 @@
     Coins,
     Save,
     Calculator,
-    CircleCheck,
-    Loader
+    CircleCheck
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -237,10 +236,7 @@
 <div class="space-y-6">
   <SubpageHeader title="Academic Terms" isTopLevel={true}>
     {#snippet actions()}
-      <Button size="sm" onclick={() => (showAddDialog = true)}>
-        <Plus class="h-4 w-4 sm:mr-2" />
-        Add
-      </Button>
+      <Button size="sm" onclick={() => (showAddDialog = true)} icon={Plus}>Add</Button>
     {/snippet}
   </SubpageHeader>
 
@@ -300,9 +296,8 @@
                   onclick={() =>
                     openFees({ value: term.value, label: translatePeriod(term.value) })}
                   title="Edit Fees"
-                >
-                  <Coins class="h-4 w-4" />
-                </Button>
+                  icon={Coins}
+                />
               </div>
             </div>
           {/each}
@@ -354,14 +349,7 @@
       <Button variant="outline" onclick={() => (showAddDialog = false)} disabled={isSaving}
         >Cancel</Button
       >
-      <Button onclick={handleAdd} disabled={isSaving}>
-        {#if isSaving}
-          <Loader class="mr-2 h-4 w-4 animate-spin" />
-          Creating…
-        {:else}
-          Create
-        {/if}
-      </Button>
+      <Button onclick={handleAdd} isLoading={isSaving} icon={Plus}>Create</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
@@ -434,15 +422,7 @@
       <Button variant="outline" onclick={() => (editingFeesFor = null)} disabled={isSaving}
         >Cancel</Button
       >
-      <Button onclick={saveFees} disabled={isSaving} class="gap-2">
-        {#if isSaving}
-          <Loader class="h-4 w-4 animate-spin" />
-          Saving…
-        {:else}
-          <Save class="h-4 w-4" />
-          Save
-        {/if}
-      </Button>
+      <Button onclick={saveFees} isLoading={isSaving} icon={Save}>Save</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
@@ -468,8 +448,10 @@
           const val = confirmActiveCode;
           confirmActiveCode = "";
           setActive(val);
-        }}>Confirm Change</AlertDialog.Action
+        }}
       >
+        Confirm Change
+      </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>

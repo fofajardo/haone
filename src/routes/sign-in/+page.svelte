@@ -191,7 +191,6 @@
           onclick={() => handleLogin("resident")}
           class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
         >
-          <User class="mr-2 h-5 w-5" />
           Sign In
         </Button>
 

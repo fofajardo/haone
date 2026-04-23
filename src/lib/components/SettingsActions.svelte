@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { LoaderCircle, Save } from "lucide-svelte";
+  import { Save } from "lucide-svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { auth } from "$lib/auth.svelte";
   import { fetchUsers } from "$lib/resident-logic";
@@ -34,12 +34,6 @@
   });
 </script>
 
-<Button size="lg" onclick={save} disabled={isSaving} class="w-full font-bold">
-  {#if isSaving}
-    <LoaderCircle class="mr-2 h-5 w-5 animate-spin" />
-    Saving
-  {:else}
-    <Save class="mr-2 h-5 w-5" />
-    Save
-  {/if}
+<Button size="lg" onclick={save} isLoading={isSaving} icon={Save} class="w-full font-bold">
+  Save
 </Button>

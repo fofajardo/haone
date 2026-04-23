@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Plus, Trophy, UserPlus, Search } from "lucide-svelte";
+  import { RefreshCcw, Plus, Trophy, UserPlus } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
@@ -116,14 +116,18 @@
   <SubpageHeader title="Achievements" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData()}
+          {isLoading}
+          icon={RefreshCcw}
+        />
+        <Button variant="outline" size="sm" onclick={() => (isAwarderOpen = true)} icon={UserPlus}>
+          Award
         </Button>
-        <Button variant="outline" size="sm" onclick={() => (isAwarderOpen = true)}>
-          <UserPlus class="mr-2 h-4 w-4" /> Award
-        </Button>
-        <Button size="sm" onclick={() => (isCreatorOpen = true)}>
-          <Plus class="mr-2 h-4 w-4" /> New Achievement
+        <Button size="sm" onclick={() => (isCreatorOpen = true)} icon={Plus}>
+          New Achievement
         </Button>
       </div>
     {/snippet}
@@ -133,7 +137,7 @@
     <LoadingView text="Loading achievements…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -203,7 +207,7 @@
     </div>
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (isCreatorOpen = false)}>Cancel</Button>
-      <Button onclick={handleCreate}>Create</Button>
+      <Button onclick={handleCreate} {isLoading} icon={Plus}>Create</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
@@ -232,7 +236,7 @@
     </div>
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (isAwarderOpen = false)}>Cancel</Button>
-      <Button onclick={handleAward}>Award Achievement</Button>
+      <Button onclick={handleAward} {isLoading} icon={UserPlus}>Award Achievement</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

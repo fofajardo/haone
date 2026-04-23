@@ -4,7 +4,7 @@
   import { Label } from "$lib/components/ui/label";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { LoaderCircle, ChevronLeft, ChevronRight, RefreshCcw, Star } from "lucide-svelte";
+  import { ChevronLeft, ChevronRight, RefreshCcw, Star } from "lucide-svelte";
   import colleges from "$lib/colleges.json";
   import programs from "$lib/programs.json";
   import { untrack } from "svelte";
@@ -351,14 +351,13 @@
               <ChevronLeft class="mr-2 h-4 w-4" />
               Back
             </Stepper.Previous>
-            <Button onclick={handleSubmit} disabled={isSubmitting}>
-              {#if isSubmitting}
-                <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-                Submitting…
-              {:else}
-                Next
-                <ChevronRight class="ml-2 h-4 w-4" />
-              {/if}
+            <Button
+              onclick={handleSubmit}
+              isLoading={isSubmitting}
+              icon={ChevronRight}
+              iconPosition="right"
+            >
+              {isSubmitting ? "Submitting…" : "Next"}
             </Button>
           </div>
         </div>
@@ -380,15 +379,10 @@
             <Button
               variant="outline"
               onclick={() => residentState.refresh()}
-              disabled={residentState.isLoading}
+              isLoading={residentState.isLoading}
+              icon={RefreshCcw}
             >
-              {#if residentState.isLoading}
-                <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-                Checking…
-              {:else}
-                <RefreshCcw class="mr-2 h-4 w-4" />
-                Check Status
-              {/if}
+              Check Status
             </Button>
           </div>
         </div>

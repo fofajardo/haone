@@ -21,7 +21,7 @@
     Megaphone,
     Trophy
   } from "lucide-svelte";
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { Button } from "$lib/components/ui/button";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";
 
@@ -140,18 +140,17 @@
             size="sm"
             class="h-10 gap-2 px-3 text-muted-foreground hover:text-foreground"
             onclick={() => auth.logout()}
+            icon={LogOut}
           >
-            <LogOut class="h-5 w-5" />
-            <span class="text-sm font-medium">Sign out</span>
+            Sign out
           </Button>
           <Button
             variant="ghost"
             size="icon-lg"
             class="size-10 [&_svg]:size-6"
             onclick={() => sidebar.setOpenMobile(false)}
-          >
-            <X />
-          </Button>
+            icon={X}
+          />
         </div>
       {/if}
     </div>
@@ -287,15 +286,14 @@
               <span class="truncate text-xs font-semibold">{auth.user.name}</span>
               <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onclick={() => auth.logout()}
-              class="ml-auto rounded group-data-[collapsible=icon]:hidden hover:bg-muted {sidebar.isMobile
-                ? 'p-2'
-                : 'p-1'}"
+              class="ml-auto group-data-[collapsible=icon]:hidden"
+              icon={LogOut}
               title="Logout"
-            >
-              <LogOut class={sidebar.isMobile ? "h-5 w-5" : "h-4 w-4"} />
-            </button>
+            />
           </div>
         {/if}
       </Sidebar.MenuItem>

@@ -25,6 +25,7 @@
     Wallet,
     StickyNote,
     Eye,
+    Save,
     ArrowLeftToLine,
     TriangleAlert
   } from "lucide-svelte";
@@ -873,17 +874,15 @@
           </div>
 
           <div class="flex justify-end gap-3 border-t pt-4">
-            <Button variant="outline" onclick={onCancel} disabled={isSubmitting}>Cancel</Button>
+            <Button variant="outline" onclick={onCancel} isLoading={isSubmitting}>Cancel</Button>
             <Button
               onclick={handleSubmit}
-              disabled={!formData.accountEmail || isSubmitting}
+              disabled={!formData.accountEmail}
+              isLoading={isSubmitting}
+              icon={Save}
               class="min-w-[120px]"
             >
-              {#if isSubmitting}
-                <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Saving…
-              {:else}
-                Save
-              {/if}
+              Save
             </Button>
           </div>
         </Card.Content>

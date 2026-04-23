@@ -282,15 +282,17 @@
   <SubpageHeader title="Laundry" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => (isImportOpen = true)}>
-          <FileUp class="mr-2 h-4 w-4" /> Import
+        <Button variant="outline" size="sm" onclick={() => (isImportOpen = true)} icon={FileUp}>
+          Import
         </Button>
-        <Button size="sm" onclick={() => (isBookingOpen = true)}>
-          <Plus class="mr-2 h-4 w-4" /> Book Slot
-        </Button>
-        <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-        </Button>
+        <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData()}
+          {isLoading}
+          icon={RefreshCcw}
+        />
       </div>
     {/snippet}
   </SubpageHeader>
@@ -301,7 +303,7 @@
     <LoadingView text="Loading all reservations…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
     <div class="space-y-6">
@@ -377,13 +379,13 @@
         <Button variant="outline" onclick={() => (cancelData = null)} disabled={isCancelling}>
           Back
         </Button>
-        <Button variant="destructive" onclick={handleCancel} disabled={isCancelling}>
-          {#if isCancelling}
-            <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
-            Cancelling…
-          {:else}
-            Cancel Reservation
-          {/if}
+        <Button
+          variant="destructive"
+          onclick={handleCancel}
+          isLoading={isCancelling}
+          icon={CircleX}
+        >
+          Cancel Reservation
         </Button>
       </Dialog.Footer>
     {/if}
@@ -445,13 +447,8 @@
       <Button variant="outline" onclick={() => (isBookingOpen = false)} disabled={isBooking}>
         Cancel
       </Button>
-      <Button onclick={handleBook} disabled={!!validationError || isBooking}>
-        {#if isBooking}
-          <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
-          Processing…
-        {:else}
-          Confirm Booking
-        {/if}
+      <Button onclick={handleBook} isLoading={isBooking} disabled={!!validationError} icon={Plus}>
+        Confirm Booking
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

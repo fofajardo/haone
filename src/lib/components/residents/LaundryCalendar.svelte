@@ -13,8 +13,7 @@
     User as UserIcon,
     Calendar as CalendarIconSmall,
     Clock as ClockIcon,
-    Trash2,
-    RefreshCcw
+    Trash2
   } from "lucide-svelte";
 
   let {
@@ -524,14 +523,9 @@
             onCancelReservation?.(selectedReservation.id);
           }
         }}
-        disabled={isCancelling}
+        isLoading={isCancelling}
       >
-        {#if isCancelling}
-          <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
-          Cancelling…
-        {:else}
-          Confirm
-        {/if}
+        Confirm
       </Button>
     </AlertDialog.Footer>
   </AlertDialog.Content>

@@ -3,15 +3,8 @@
   import { Button } from "$lib/components/ui/button";
   import { Textarea } from "$lib/components/ui/textarea";
   import { Label } from "$lib/components/ui/label";
-  import {
-    Upload,
-    FileDown,
-    CheckCircle2,
-    AlertCircle,
-    ClipboardPaste,
-    LoaderIcon
-  } from "lucide-svelte";
-  import { Loader, toast } from "svelte-sonner";
+  import { FileDown, ClipboardPaste, CircleX, LoaderIcon } from "lucide-svelte";
+  import { toast } from "svelte-sonner";
   import Papa from "papaparse";
   import { fetchUsers } from "$lib/resident-logic";
   import { uiSettings } from "$lib/settings.svelte";
@@ -143,8 +136,9 @@
             size="sm"
             class="h-7 text-xs font-bold tracking-tighter uppercase"
             onclick={downloadTemplate}
+            icon={FileDown}
           >
-            <FileDown class="mr-1.5 h-3 w-3" /> Get Template
+            Get Template
           </Button>
         </div>
         <div
@@ -186,14 +180,14 @@
     </div>
 
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (open = false)} disabled={isImporting}>Cancel</Button
+      <Button
+        variant="outline"
+        onclick={() => (open = false)}
+        isLoading={isImporting}
+        icon={CircleX}>Cancel</Button
       >
-      <Button onclick={handleImport} disabled={isImporting}>
-        {#if isImporting}
-          <LoaderIcon class="mr-2 h-4 w-4 animate-spin" /> Importing...
-        {:else}
-          <ClipboardPaste class="mr-2 h-4 w-4" /> Import Data
-        {/if}
+      <Button onclick={handleImport} isLoading={isImporting} icon={ClipboardPaste}>
+        Import Data
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

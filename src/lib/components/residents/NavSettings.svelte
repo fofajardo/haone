@@ -20,7 +20,6 @@
     Receipt,
     ChevronUp,
     ChevronDown,
-    Plus,
     X
   } from "lucide-svelte";
   import { uiSettings } from "$lib/settings.svelte";
@@ -142,8 +141,8 @@
               onclick={() =>
                 (uiSettings.residentNavIds = toggleItem(uiSettings.residentNavIds, item.id))}
               disabled={!selected && uiSettings.residentNavIds.length >= 4}
+              icon={item.icon}
             >
-              <item.icon class="h-3.5 w-3.5" />
               {item.label}
             </Button>
           {/each}
@@ -214,8 +213,8 @@
               class="h-8 gap-1.5"
               onclick={() => (uiSettings.adminNavIds = toggleItem(uiSettings.adminNavIds, item.id))}
               disabled={!selected && uiSettings.adminNavIds.length >= 4}
+              icon={item.icon}
             >
-              <item.icon class="h-3.5 w-3.5" />
               {item.label}
             </Button>
           {/each}

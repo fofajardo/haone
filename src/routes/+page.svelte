@@ -1,10 +1,8 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { onMount, onDestroy } from "svelte";
-  import { pageState } from "$lib/page-info.svelte";
   import { auth } from "$lib/auth.svelte";
-  import { ArrowRight, LogIn, LayoutDashboard, ExternalLink, LoaderCircle } from "lucide-svelte";
-  import branding from "$lib/branding.json";
+  import { ArrowRight, LoaderCircle } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import HeroVisual from "$lib/components/HeroVisual.svelte";
 
@@ -78,8 +76,8 @@
           <Button
             href="/admin"
             class="h-14 rounded-xl bg-[#7B1113] text-lg font-bold text-white transition-all hover:bg-[#7B1113]/90 active:scale-[0.98]"
+            icon={ArrowRight}
           >
-            <ArrowRight class="mr-2 h-5 w-5" />
             Go to Dashboard
           </Button>
         {/if}

@@ -28,7 +28,7 @@
   // Handle errors from anywhere (e.g., session expired)
   $effect(() => {
     if (auth.lastError) {
-      // If we're about to redirect to sign-in due to auth error, 
+      // If we're about to redirect to sign-in due to auth error,
       // don't clear it here; let sign-in page handle it.
       if (!auth.accessToken) return;
 
@@ -47,13 +47,8 @@
   });
 </script>
 
-{#if isLoadingAuth}
-  <div class="flex min-h-screen flex-col items-center justify-center gap-4">
-    <LoaderCircle class="h-8 w-8 animate-spin text-foreground" />
-  </div>
-{:else if !auth.accessToken && page.url.pathname !== "/sign-in"}
-  <!-- Transition state while redirecting -->
-  <div class="flex min-h-screen flex-col items-center justify-center gap-4">
+{#if isLoadingAuth || (!auth.accessToken && page.url.pathname !== "/sign-in")}
+  <div class="flex min-h-screen items-center justify-center">
     <LoaderCircle class="h-8 w-8 animate-spin text-foreground" />
   </div>
 {:else}

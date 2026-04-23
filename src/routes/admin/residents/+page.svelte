@@ -2,10 +2,8 @@
   import { onMount } from "svelte";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { type ResidentRecord as Resident } from "$lib/schemas";
   import {
-    mapRowToResident,
     fetchResidents,
     stageStatusEmailBatch,
     stageClearanceEmailBatch,
@@ -28,8 +26,7 @@
     FunnelX,
     ChevronDown,
     FileCheck,
-    ShieldCheck,
-    LoaderCircle
+    ShieldCheck
   } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -189,8 +186,13 @@
     <SubpageHeader title="Residents" isTopLevel={true}>
       {#snippet actions()}
         <div class="flex gap-2">
-          <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
-            <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={() => loadData(true)}
+            {isLoading}
+            icon={RefreshCcw}
+          >
             Refresh
           </Button>
 
@@ -202,8 +204,8 @@
                   size="sm"
                   disabled={selectedIndices.size === 0}
                   {...props}
+                  icon={Mail}
                 >
-                  <Mail class="mr-2 h-4 w-4" />
                   Send
                   <ChevronDown class="ml-2 h-3 w-3 opacity-50" />
                 </Button>
@@ -226,8 +228,8 @@
             variant="outline"
             onclick={handleBatchClear}
             disabled={selectedIndices.size === 0}
+            icon={ShieldCheck}
           >
-            <ShieldCheck class="mr-2 h-4 w-4" />
             Mark as Cleared
           </Button>
         </div>
@@ -238,8 +240,13 @@
       <LoadingView text="Loading resident directory…" />
     {:else if error}
       <ErrorView {error}>
-        <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}
-          >Try Again</Button
+        <Button
+          variant="outline"
+          size="sm"
+          class="mt-2"
+          onclick={() => loadData()}
+          {isLoading}
+          icon={RefreshCcw}>Try Again</Button
         >
       </ErrorView>
     {:else}
@@ -272,8 +279,14 @@
         </div>
 
         <div class="flex items-end lg:col-span-1">
-          <Button variant="outline" size="sm" onclick={resetFilters} class="mb-1 h-9 w-full px-2">
-            <FunnelX class="mr-2 h-4 w-4" /> Clear
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={resetFilters}
+            class="mb-1 h-9 w-full px-2"
+            icon={FunnelX}
+          >
+            Clear
           </Button>
         </div>
       </div>

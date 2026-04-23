@@ -15,7 +15,6 @@
   import { goto } from "$app/navigation";
   import { PaymentRequestStatus } from "$lib/schemas";
   import { Combobox } from "$lib/components/ui/combobox";
-  import { Funnel } from "lucide-svelte";
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);
@@ -79,15 +78,21 @@
   <SubpageHeader title="Payment Requests" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData(true)}
+          {isLoading}
+          icon={RefreshCcw}
+        />
         <Button
           size="sm"
           onclick={handleReviewSelected}
-          disabled={isLoading || selectedIndices.size === 0}
+          {isLoading}
+          disabled={selectedIndices.size === 0}
+          icon={ListChecks}
         >
-          <ListChecks class="mr-2 h-4 w-4" /> Review
+          Review
         </Button>
       </div>
     {/snippet}
@@ -97,7 +102,7 @@
     <LoadingView text="Loading payments…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
     <div class="grid gap-4 lg:grid-cols-12">

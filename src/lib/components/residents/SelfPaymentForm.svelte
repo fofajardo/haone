@@ -1,13 +1,9 @@
 <script lang="ts">
-  import { auth } from "$lib/auth.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
   import { fetchServer } from "$lib/utils";
-  import { translateMop } from "$lib/receipt-utils";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import { LoaderCircle, Calendar, Wallet, Link } from "lucide-svelte";
   import { Combobox } from "$lib/components/ui/combobox";
   import { onMount } from "svelte";
 
@@ -126,14 +122,7 @@
 
     <div class="flex justify-end gap-3 border-t pt-4">
       <Button variant="outline" onclick={onCancel} disabled={isSubmitting}>Cancel</Button>
-      <Button onclick={handleSubmit} disabled={isSubmitting}>
-        {#if isSubmitting}
-          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-          Submitting…
-        {:else}
-          Submit Payment
-        {/if}
-      </Button>
+      <Button onclick={handleSubmit} isLoading={isSubmitting}>Submit Payment</Button>
     </div>
   </Card.Content>
 </Card.Root>

@@ -150,8 +150,13 @@
 <div class="space-y-3">
   <SubpageHeader title="Demographics" isTopLevel={true}>
     {#snippet actions()}
-      <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
-        <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData(true)}
+        {isLoading}
+        icon={RefreshCcw}
+      >
         <span class="hidden sm:inline">Refresh</span>
       </Button>
     {/snippet}
@@ -161,7 +166,14 @@
     <LoadingView text="Generating demographics…" />
   {:else if error}
     <ErrorView {error}>
-      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-2"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}>Try Again</Button
+      >
     </ErrorView>
   {:else}
     <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">

@@ -1,9 +1,8 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, ArrowLeft, Trophy, Users, Lock as LockIcon } from "lucide-svelte";
+  import { RefreshCcw, Trophy, Users, Lock as LockIcon } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -13,12 +12,7 @@
     fetchUserSettings
   } from "$lib/shared-records-logic";
   import { fetchUsers } from "$lib/resident-logic";
-  import type {
-    AchievementRecord,
-    AchievementLogRecord,
-    UserRecord,
-    UserSettingsRecord
-  } from "$lib/schemas";
+  import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
 
@@ -81,19 +75,13 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Achievement Details">
-    {#snippet actions()}
-      <Button variant="ghost" size="sm" href="/resident/achievements">
-        <ArrowLeft class="mr-2 h-4 w-4" /> Back
-      </Button>
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader title="Achievement Details" />
 
   {#if isLoading}
     <LoadingView text="Loading achievement details…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else if achievement}
     <div class="grid gap-8 lg:grid-cols-3">

@@ -135,14 +135,16 @@
   <SubpageHeader title="Transactions" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData(true)}
+          {isLoading}
+          icon={RefreshCcw}
+        >
           Refresh
         </Button>
-        <Button size="sm" href="/admin/transactions/add">
-          <Plus class="mr-2 h-4 w-4" />
-          Add
-        </Button>
+        <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
       </div>
     {/snippet}
   </SubpageHeader>
@@ -151,7 +153,14 @@
     <LoadingView text="Loading transactions…" />
   {:else if error}
     <ErrorView {error}>
-      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-2"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}>Try Again</Button
+      >
     </ErrorView>
   {:else}
     <div class="grid gap-2 lg:grid-cols-12">
@@ -183,8 +192,14 @@
       </div>
 
       <div class="flex items-end lg:col-span-1">
-        <Button variant="outline" size="sm" onclick={resetFilters} class="mb-1 h-9 w-full px-2">
-          <FunnelX class="mr-2 h-4 w-4" /> Clear
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={resetFilters}
+          class="mb-1 h-9 w-full px-2"
+          icon={FunnelX}
+        >
+          Clear
         </Button>
       </div>
     </div>

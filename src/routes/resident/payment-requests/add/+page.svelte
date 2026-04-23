@@ -1,36 +1,17 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
 
   import { addPaymentRequest } from "$lib/shared-records-logic";
   import { fetchServer } from "$lib/utils";
-  import {
-    translatePeriod,
-    translateMop,
-    formatAmount,
-    formatCurrency,
-    formatAccounting
-  } from "$lib/receipt-utils";
+  import { formatCurrency, formatAccounting } from "$lib/receipt-utils";
   import type { ResidentRecord } from "$lib/schemas";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import * as Card from "$lib/components/ui/card";
   import { Combobox } from "$lib/components/ui/combobox";
-  import {
-    LoaderCircle,
-    Calendar,
-    Wallet,
-    Link,
-    ChevronLeft,
-    ArrowLeftToLine,
-    Droplets,
-    Users,
-    StickyNote,
-    TriangleAlert
-  } from "lucide-svelte";
+  import { Calendar, Wallet, Link, ArrowLeftToLine, TriangleAlert } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -209,9 +190,8 @@
                             {...props}
                             onclick={() => (formData.waterFee = waterLimit.toString())}
                             disabled={waterLimit <= 0 || isSubmitting}
-                          >
-                            <ArrowLeftToLine class="h-4 w-4" />
-                          </Button>
+                            icon={ArrowLeftToLine}
+                          />
                         {/snippet}
                       </Tooltip.Trigger>
                       <Tooltip.Content>
@@ -265,9 +245,8 @@
                             {...props}
                             onclick={() => (formData.assocFee = assocLimit.toString())}
                             disabled={assocLimit <= 0 || isSubmitting}
-                          >
-                            <ArrowLeftToLine class="h-4 w-4" />
-                          </Button>
+                            icon={ArrowLeftToLine}
+                          />
                         {/snippet}
                       </Tooltip.Trigger>
                       <Tooltip.Content>
@@ -371,13 +350,8 @@
                     )}
                   </p>
                 </div>
-                <Button size="lg" class="px-8" onclick={handleSubmit} disabled={isSubmitting}>
-                  {#if isSubmitting}
-                    <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-                    Submitting…
-                  {:else}
-                    Submit
-                  {/if}
+                <Button size="lg" class="px-8" onclick={handleSubmit} isLoading={isSubmitting}>
+                  Submit Payment
                 </Button>
               </div>
             </div>

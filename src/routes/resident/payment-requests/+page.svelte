@@ -84,11 +84,15 @@
   <SubpageHeader title="Payment Requests" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-        </Button>
-        <Button size="sm" onclick={() => goto("/resident/payment-requests/add")}>
-          <Plus class="mr-2 h-4 w-4" /> Add
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData()}
+          {isLoading}
+          icon={RefreshCcw}
+        />
+        <Button size="sm" onclick={() => goto("/resident/payment-requests/add")} icon={Plus}>
+          Add
         </Button>
       </div>
     {/snippet}

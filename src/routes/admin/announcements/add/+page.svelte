@@ -4,7 +4,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { ChevronLeft, Save, LoaderCircle } from "lucide-svelte";
+  import { ChevronLeft, Save } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import { addAnnouncement } from "$lib/admin-logic";
@@ -58,8 +58,13 @@
 <div class="space-y-6">
   <SubpageHeader title="New Announcement">
     {#snippet actions()}
-      <Button variant="outline" size="sm" onclick={() => goto("/admin/announcements")}>
-        <ChevronLeft class="mr-2 h-4 w-4" /> Back
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => goto("/admin/announcements")}
+        icon={ChevronLeft}
+      >
+        Back
       </Button>
     {/snippet}
   </SubpageHeader>
@@ -140,13 +145,8 @@
           onclick={() => goto("/admin/announcements")}
           disabled={isSubmitting}>Cancel</Button
         >
-        <Button onclick={handleSave} disabled={isSubmitting} class="min-w-[140px]">
-          {#if isSubmitting}
-            <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-            Saving…
-          {:else}
-            <Save class="mr-2 h-4 w-4" /> Save
-          {/if}
+        <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-[140px]">
+          Save
         </Button>
       </div>
     </div>

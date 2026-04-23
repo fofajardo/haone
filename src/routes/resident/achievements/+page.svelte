@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Trophy, Medal, Lock } from "lucide-svelte";
+  import { RefreshCcw, Trophy } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -69,9 +69,13 @@
 <div class="space-y-6">
   <SubpageHeader title="Achievements" isTopLevel={true}>
     {#snippet actions()}
-      <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-        <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}
+      />
     {/snippet}
   </SubpageHeader>
 

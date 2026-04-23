@@ -175,8 +175,13 @@
   <SubpageHeader title="Pending Receipts" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
-          <RefreshCcw class="mr-2 h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData(true)}
+          {isLoading}
+          icon={RefreshCcw}
+        >
           Refresh
         </Button>
 
@@ -184,10 +189,11 @@
           variant="outline"
           size="sm"
           onclick={prepareDispatch}
-          disabled={isLoading || selectedIndices.size === 0}
+          {isLoading}
+          disabled={selectedIndices.size === 0}
+          icon={FileCheck}
         >
-          <FileCheck class="mr-2 h-4 w-4" />
-          Settle ({selectedIndices.size})
+          Settle
         </Button>
       </div>
     {/snippet}
@@ -197,7 +203,14 @@
     <LoadingView text="Loading records…" />
   {:else if error}
     <ErrorView {error} class="mb-3">
-      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-2"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}>Try Again</Button
+      >
     </ErrorView>
   {:else}
     <div class="mb-4 grid gap-2 lg:grid-cols-12">

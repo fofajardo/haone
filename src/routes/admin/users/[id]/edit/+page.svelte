@@ -9,6 +9,7 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import UserForm from "$lib/components/admin/UserForm.svelte";
+  import { Button } from "$lib/components/ui/button";
 
   const userId = $derived(page.params.id);
 
@@ -95,10 +96,9 @@
     <LoadingView text="Loading user data…" />
   {:else if error}
     <ErrorView {error}>
-      <button
-        class="mt-4 rounded-md border px-4 py-2 hover:bg-muted"
-        onclick={() => goto("/admin/users")}>Return to Directory</button
-      >
+      <Button variant="outline" class="mt-4" onclick={() => goto("/admin/users")}>
+        Return to Directory
+      </Button>
     </ErrorView>
   {:else if user}
     <UserForm

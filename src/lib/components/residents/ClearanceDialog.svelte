@@ -3,7 +3,6 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import { LoaderCircle, ShieldCheck } from "lucide-svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
   import { brandingState } from "$lib/branding.svelte";
@@ -13,6 +12,7 @@
   import type { ResidentRecord } from "$lib/schemas";
   import { pluralize } from "$lib/receipt-utils";
   import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
+  import { X, ShieldCheck } from "lucide-svelte";
 
   let {
     open = $bindable(false),
@@ -142,14 +142,14 @@
       </div>
     </div>
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (open = false)}>Cancel</Button>
-      <Button onclick={handleConfirm} disabled={isClearing || !signatoryName || !signatoryTitle}>
-        {#if isClearing}
-          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-          Processing…
-        {:else}
-          {residents.length > 1 ? "Issue Certificates" : "Issue Certificate"}
-        {/if}
+      <Button variant="outline" onclick={() => (open = false)} icon={X}>Cancel</Button>
+      <Button
+        onclick={handleConfirm}
+        isLoading={isClearing}
+        disabled={!signatoryName || !signatoryTitle}
+        icon={ShieldCheck}
+      >
+        {residents.length > 1 ? "Issue Certificates" : "Issue Certificate"}
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

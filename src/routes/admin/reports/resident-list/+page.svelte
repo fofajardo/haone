@@ -315,7 +315,14 @@
     <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
       <CircleAlert class="mx-auto mb-2 h-8 w-8 text-destructive" />
       <p class="text-sm font-medium text-destructive">{error}</p>
-      <Button variant="outline" size="sm" class="mt-4" onclick={loadData}>Retry</Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-4"
+        onclick={loadData}
+        {isLoading}
+        icon={RefreshCcw}>Retry</Button
+      >
     </div>
   {:else}
     <div
@@ -557,8 +564,8 @@
                         existingSheetId = "";
                         selectedSheetName = "";
                       }}
+                      icon={Trash2}
                     >
-                      <Trash2 class="mr-2 h-4 w-4" />
                       Reset Selection
                     </Button>
                   {/if}
@@ -568,8 +575,9 @@
                   size="lg"
                   class="w-full gap-3 border-dashed bg-background font-bold transition-all hover:border-primary/50 hover:bg-primary/5"
                   onclick={openPicker}
+                  icon={FileSpreadsheet}
+                  iconClass="text-muted-foreground"
                 >
-                  <FileSpreadsheet class="h-5 w-5 text-muted-foreground" />
                   {selectedSheetName || "Select from Google Drive…"}
                 </Button>
               </div>
@@ -677,14 +685,13 @@
           size="lg"
           class="w-full font-bold"
           onclick={handleAction}
-          disabled={isLoading || isProcessing || filteredResidents.length === 0}
+          isLoading={isProcessing}
+          icon={exportFormat === "sheets" ? RefreshCcw : Download}
         >
-          {#if isProcessing}
-            <RefreshCcw class="mr-3 h-5 w-5 animate-spin" /> Processing…
-          {:else if exportFormat === "sheets"}
-            <RefreshCcw class="mr-3 h-5 w-5" /> Sync to Google Sheets
+          {#if exportFormat === "sheets"}
+            Sync to Google Sheets
           {:else}
-            <Download class="mr-3 h-5 w-5" /> Generate {exportFormat.toUpperCase()} Report
+            Generate {exportFormat.toUpperCase()} Report
           {/if}
         </Button>
         <p class="mt-3 text-center text-xs text-muted-foreground">
@@ -707,12 +714,11 @@
       <AlertDialog.Cancel>Close</AlertDialog.Cancel>
       <Button
         variant="outline"
-        class="gap-2"
         onclick={() => {
           navigator.clipboard.writeText(successDialog.url);
         }}
+        icon={Copy}
       >
-        <Copy class="h-4 w-4" />
         Copy Link
       </Button>
       <AlertDialog.Action onclick={() => window.open(successDialog.url, "_blank")} class="gap-2">

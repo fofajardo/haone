@@ -38,9 +38,6 @@
   </div>
 
   {#if hideToggle}
-    <Button variant="ghost" size="sm" onclick={() => auth.logout()}>
-      <LogOut class="mr-2 h-4 w-4" />
-      Sign Out
-    </Button>
+    <Button variant="ghost" size="sm" onclick={() => auth.logout()} icon={LogOut}>Sign Out</Button>
   {/if}
 </header>

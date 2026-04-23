@@ -1,13 +1,9 @@
 <script lang="ts">
   import OnboardingForm from "$lib/components/resident/OnboardingForm.svelte";
   import { residentState } from "$lib/resident-state.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import { User, Clock, RefreshCcw, LoaderCircle } from "lucide-svelte";
-  import { Button } from "$lib/components/ui/button";
   import { pageState } from "$lib/page-info.svelte";
 
   import { brandingState } from "$lib/branding.svelte";
-  import { translatePeriod } from "$lib/receipt-utils";
 
   import { goto } from "$app/navigation";
 

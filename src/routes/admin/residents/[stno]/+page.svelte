@@ -18,33 +18,16 @@
   import TermFilter from "$lib/components/TermFilter.svelte";
   import {
     RefreshCcw,
-    User,
     ShieldCheck,
-    History,
     Info,
     ArrowUpRight,
-    MapPin,
-    GraduationCap,
-    Clock,
     Mail,
-    Send,
-    IdCard,
-    Bed as BedIcon,
-    Calendar,
-    Hash,
-    ClipboardCheck,
-    AwardIcon,
     ChevronDown,
     FileCheck,
     FileDown,
     UserCog
   } from "lucide-svelte";
-  import {
-    ACCOUNT_COL as ACC,
-    JOURNAL_COL as JOR,
-    type ResidentRecord,
-    type JournalRecord
-  } from "$lib/schemas";
+  import { JOURNAL_COL as JOR, type ResidentRecord, type JournalRecord } from "$lib/schemas";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import {
     stageStatusEmail,
@@ -241,9 +224,9 @@
           variant="outline"
           size="sm"
           onclick={() => loadResidentProfile(true)}
-          disabled={isLoading}
+          {isLoading}
+          icon={RefreshCcw}
         >
-          <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
           <span class="hidden sm:inline">Refresh</span>
         </Button>
       </div>
@@ -254,7 +237,7 @@
     <LoadingView text="Loading profile…" />
   {:else if error}
     <ErrorView {error}>
-      <Button variant="outline" class="mt-4" href="/admin/residents">Return to Hub</Button>
+      <Button variant="outline" class="mt-4" href="/admin/residents">Return to Directory</Button>
     </ErrorView>
   {:else if account}
     <div class="grid gap-4 lg:grid-cols-12">
@@ -269,14 +252,13 @@
             variant="outline"
             size="sm"
             href="/admin/transactions/add?account={account.email}"
+            icon={ArrowUpRight}
           >
-            <ArrowUpRight class="mr-1.5 h-3.5 w-3.5" />
             Add Transaction
           </Button>
 
           {#if (!account.ceIssued || account.ceIssued === "" || account.ceIssued === "#N/A") && account.bal <= 0 && account.totalBase > 0}
-            <Button variant="outline" size="sm" onclick={handleClear}>
-              <ShieldCheck class="mr-1.5 h-3.5 w-3.5" />
+            <Button variant="outline" size="sm" onclick={handleClear} icon={ShieldCheck}>
               Mark as Cleared
             </Button>
           {/if}
@@ -284,8 +266,7 @@
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               {#snippet child({ props })}
-                <Button variant="outline" size="sm" {...props}>
-                  <Mail class="mr-1.5 h-3.5 w-3.5" />
+                <Button variant="outline" size="sm" {...props} icon={Mail}>
                   Send
                   <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
                 </Button>
@@ -305,13 +286,16 @@
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
-          <Button variant="outline" size="sm" href="/admin/users/{account.residentId}">
-            <UserCog class="mr-1.5 h-3.5 w-3.5" />
+          <Button
+            variant="outline"
+            size="sm"
+            href="/admin/users/{account.residentId}"
+            icon={UserCog}
+          >
             View User Profile
           </Button>
 
-          <Button variant="outline" size="sm" disabled>
-            <FileDown class="mr-1.5 h-3.5 w-3.5" />
+          <Button variant="outline" size="sm" disabled icon={FileDown}>
             Export Statement (PDF)
           </Button>
         </div>

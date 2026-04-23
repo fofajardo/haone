@@ -17,7 +17,6 @@
     Send,
     IdCard,
     AwardIcon,
-    History,
     Contact,
     UserCog,
     StickyNote,
@@ -95,13 +94,12 @@
           variant="outline"
           size="sm"
           onclick={() => loadUserProfile(true)}
-          disabled={isLoading}
+          {isLoading}
+          icon={RefreshCcw}
         >
-          <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
           <span class="hidden sm:inline">Refresh</span>
         </Button>
-        <Button size="sm" href="/admin/users/{userId}/edit">
-          <UserCog class="h-4 w-4 sm:mr-2" />
+        <Button size="sm" href="/admin/users/{userId}/edit" icon={UserCog}>
           <span class="hidden sm:inline">Edit</span>
         </Button>
         {#if accounts.length === 0}
@@ -109,9 +107,9 @@
             variant="destructive"
             size="sm"
             onclick={() => (isDeleteAlertOpen = true)}
-            disabled={isLoading}
+            {isLoading}
+            icon={Trash2}
           >
-            <Trash2 class="h-4 w-4 sm:mr-2" />
             <span class="hidden sm:inline">Delete</span>
           </Button>
         {/if}

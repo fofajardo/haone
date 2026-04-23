@@ -4,7 +4,7 @@
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { LoaderCircle, Save, FileUp, Info, CircleAlert } from "lucide-svelte";
+  import { Save, FileUp, Info, CircleAlert } from "lucide-svelte";
   import { type UserRecord } from "$lib/schemas";
   import { addUsersBatch } from "$lib/resident-logic";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -129,13 +129,8 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
             />
           </div>
 
-          <Button class="w-full" onclick={handleParse} disabled={!csvData || isProcessing}>
-            {#if isProcessing}
-              <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-              Processing…
-            {:else}
-              Parse CSV
-            {/if}
+          <Button class="w-full" onclick={handleParse} isLoading={isProcessing} disabled={!csvData}>
+            Parse CSV
           </Button>
         </Card.Content>
       </Card.Root>
@@ -175,15 +170,11 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
             <Button
               size="sm"
               onclick={handleImport}
-              disabled={previewRows.length === 0 || errors.length > 0 || isSaving}
+              isLoading={isSaving}
+              disabled={previewRows.length === 0 || errors.length > 0}
+              icon={Save}
             >
-              {#if isSaving}
-                <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-                Importing…
-              {:else}
-                <Save class="mr-2 h-4 w-4" />
-                Import {previewRows.length} Users
-              {/if}
+              Import
             </Button>
           </div>
         </Card.Header>

@@ -155,8 +155,7 @@
 <div class="space-y-6 pb-20">
   <SubpageHeader title="Financial Report" isTopLevel={true}>
     {#snippet actions()}
-      <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-        <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
+      <Button variant="outline" size="sm" onclick={() => loadData()} {isLoading} icon={RefreshCcw}>
         <span class="hidden sm:inline">Refresh</span>
       </Button>
     {/snippet}
@@ -166,7 +165,14 @@
     <LoadingView text="Analyzing ledger data…" />
   {:else if error}
     <ErrorView {error}>
-      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-2"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}>Try Again</Button
+      >
     </ErrorView>
   {:else}
     <div class="mx-auto max-w-2xl space-y-8 {isProcessing ? 'pointer-events-none opacity-50' : ''}">
@@ -301,15 +307,11 @@
         size="lg"
         class="w-full gap-3 font-bold"
         onclick={handleGenerate}
-        disabled={isProcessing || journal.length === 0}
+        isLoading={isProcessing}
+        disabled={journal.length === 0}
+        icon={HandCoins}
       >
-        {#if isProcessing}
-          <RefreshCcw class="h-5 w-5 animate-spin" />
-          Processing…
-        {:else}
-          <HandCoins class="h-5 w-5" />
-          Generate PDF Report
-        {/if}
+        Generate Financial Report
       </Button>
     </div>
   {/if}

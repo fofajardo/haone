@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { uiSettings } from "$lib/settings.svelte";
   import { roomsState } from "$lib/rooms.svelte";
   import { fetchResidents, fetchUsers, fetchTermCurr } from "$lib/resident-logic";
   import { manualAssignBed } from "$lib/rooms-logic.svelte";
@@ -12,16 +11,7 @@
   import { Label } from "$lib/components/ui/label";
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import {
-    RefreshCcw,
-    User,
-    Users,
-    Bed,
-    CircleCheck,
-    CircleAlert,
-    ChevronLeft,
-    Info
-  } from "lucide-svelte";
+  import { RefreshCcw, Users, Bed, Info } from "lucide-svelte";
 
   let { data } = $props();
   const roomNumber = $derived(data.roomNumber);
@@ -131,8 +121,13 @@
 <div class="space-y-4">
   <SubpageHeader title="Room {roomNumber}" isTopLevel={false}>
     {#snippet actions()}
-      <Button variant="outline" size="sm" onclick={() => loadData(true)} disabled={isLoading}>
-        <RefreshCcw class="h-4 w-4 sm:mr-2 {isLoading ? 'animate-spin' : ''}" />
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData(true)}
+        {isLoading}
+        icon={RefreshCcw}
+      >
         Refresh
       </Button>
     {/snippet}
@@ -142,7 +137,14 @@
     <LoadingView text="Loading room details…" />
   {:else if error}
     <ErrorView {error}>
-      <Button variant="outline" size="sm" class="mt-2" onclick={() => loadData()}>Try Again</Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-2"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}>Try Again</Button
+      >
     </ErrorView>
   {:else if !roomConfig}
     <ErrorView error="Room configuration not found." />

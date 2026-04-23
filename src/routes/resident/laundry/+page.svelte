@@ -3,7 +3,7 @@
   import { auth } from "$lib/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Plus, Info, Funnel, CircleX } from "lucide-svelte";
+  import { RefreshCcw, Plus, Info, Funnel, CircleX, CircleCheck } from "lucide-svelte";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -248,12 +248,14 @@
   <SubpageHeader title="Laundry" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-        </Button>
-        <Button size="sm" onclick={() => (isBookingOpen = true)}>
-          <Plus class="mr-2 h-4 w-4" /> Book Slot
-        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData()}
+          {isLoading}
+          icon={RefreshCcw}
+        />
+        <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
       </div>
     {/snippet}
   </SubpageHeader>
@@ -270,10 +272,14 @@
         </h4>
         <Collapsible.Trigger>
           {#snippet child({ props })}
-            <Button variant="ghost" size="sm" class="h-8 w-8 p-0" {...props}>
-              <ChevronDown
-                class={cn("h-4 w-4 transition-transform duration-200", isRulesOpen && "rotate-180")}
-              />
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 w-8 p-0"
+              {...props}
+              icon={ChevronDown}
+              iconClass={cn("transition-transform duration-200", isRulesOpen && "rotate-180")}
+            >
               <span class="sr-only">Toggle</span>
             </Button>
           {/snippet}
@@ -298,7 +304,7 @@
     <LoadingView text="Loading reservations…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
     <div class="space-y-6">
@@ -425,16 +431,21 @@
       {/if}
     </div>
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (isBookingOpen = false)} disabled={isBooking}>
+      <Button
+        variant="outline"
+        onclick={() => (isBookingOpen = false)}
+        isLoading={isBooking}
+        icon={CircleX}
+      >
         Cancel
       </Button>
-      <Button onclick={handleBook} disabled={!!validationError || isBooking}>
-        {#if isBooking}
-          <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
-          Processing…
-        {:else}
-          Confirm
-        {/if}
+      <Button
+        onclick={handleBook}
+        isLoading={isBooking}
+        disabled={!!validationError}
+        icon={CircleCheck}
+      >
+        Confirm
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

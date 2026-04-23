@@ -23,6 +23,7 @@
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
+  import { Button } from "$lib/components/ui/button";
 
   const sidebar = useSidebar();
 
@@ -79,24 +80,30 @@
     class="flex h-16 w-full max-w-md items-center justify-around rounded-2xl border border-border bg-background/80 px-4 shadow-xl backdrop-blur-lg"
   >
     {#each navItems as item}
-      <a
+      <Button
+        variant="ghost"
         href={item.href}
         class={cn(
-          "flex flex-col items-center gap-1 transition-colors",
+          "flex h-auto flex-col items-center gap-1 p-0 transition-colors hover:bg-transparent",
           isActive(item.href) ? "text-primary" : "text-muted-foreground hover:text-foreground"
         )}
+        icon={item.icon}
+        iconPosition="top"
+        iconClass="h-6 w-6"
       >
-        <item.icon class="h-6 w-6" />
         <span class="text-xs font-medium">{item.label}</span>
-      </a>
+      </Button>
     {/each}
 
-    <button
+    <Button
+      variant="ghost"
+      class="flex h-auto flex-col items-center gap-1 p-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
       onclick={() => sidebar.setOpenMobile(true)}
-      class="flex flex-col items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+      icon={CircleUser}
+      iconPosition="top"
+      iconClass="h-6 w-6"
     >
-      <CircleUser class="h-6 w-6" />
       <span class="text-xs font-medium">You</span>
-    </button>
+    </Button>
   </nav>
 </div>

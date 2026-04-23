@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Plus, Megaphone, Clock, Trash2, Edit } from "lucide-svelte";
+  import { RefreshCcw, Plus, Megaphone, Clock, Trash2, SquarePen } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
@@ -62,12 +62,14 @@
   <SubpageHeader title="Announcements" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => loadData()} disabled={isLoading}>
-          <RefreshCcw class="h-4 w-4 {isLoading ? 'animate-spin' : ''}" />
-        </Button>
-        <Button size="sm" onclick={() => goto("/admin/announcements/add")}>
-          <Plus class="mr-2 h-4 w-4" /> New
-        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => loadData()}
+          {isLoading}
+          icon={RefreshCcw}
+        />
+        <Button size="sm" onclick={() => goto("/admin/announcements/add")} icon={Plus}>New</Button>
       </div>
     {/snippet}
   </SubpageHeader>
@@ -76,7 +78,7 @@
     <LoadingView text="Loading announcements…" />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button onclick={() => loadData()} {isLoading} icon={RefreshCcw} class="mt-4">Retry</Button>
     </ErrorView>
   {:else}
     <div class="grid gap-4">
@@ -122,18 +124,16 @@
                 variant="ghost"
                 size="icon"
                 onclick={() => goto(`/admin/announcements/${a.id}`)}
-              >
-                <Edit class="h-4 w-4" />
-              </Button>
+                icon={SquarePen}
+              />
               {#if isActive(a)}
                 <Button
                   variant="ghost"
                   size="icon"
                   class="text-red-500 hover:text-red-600"
                   onclick={() => handleExpire(a.id)}
-                >
-                  <Trash2 class="h-4 w-4" />
-                </Button>
+                  icon={Trash2}
+                />
               {/if}
             </div>
           </Card.Content>

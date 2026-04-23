@@ -92,27 +92,27 @@
       <div class="grid grid-cols-3 gap-2">
         <Button
           variant={uiSettings.theme === "light" ? "default" : "outline"}
-          class="h-10 gap-2"
+          class="h-10"
           onclick={() => updateTheme("light")}
+          icon={Sun}
         >
-          <Sun class="h-4 w-4" />
-          <span class="text-xs">Light</span>
+          Light
         </Button>
         <Button
           variant={uiSettings.theme === "dark" ? "default" : "outline"}
-          class="h-10 gap-2"
+          class="h-10"
           onclick={() => updateTheme("dark")}
+          icon={Moon}
         >
-          <Moon class="h-4 w-4" />
-          <span class="text-xs">Dark</span>
+          Dark
         </Button>
         <Button
           variant={uiSettings.theme === "system" ? "default" : "outline"}
-          class="h-10 gap-2"
+          class="h-10"
           onclick={() => updateTheme("system")}
+          icon={Monitor}
         >
-          <Monitor class="h-4 w-4" />
-          <span class="text-xs">System</span>
+          System
         </Button>
       </div>
     </div>

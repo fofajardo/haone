@@ -19,8 +19,6 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Label } from "$lib/components/ui/label";
   import {
-    LoaderCircle,
-    History,
     User,
     ShieldCheck,
     ExternalLink,
@@ -35,10 +33,11 @@
   } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
 
   const id = $derived(page.params.id);
 
-  import { JOURNAL_COL as JOR, ACCOUNT_COL as ACC, type JournalRecord } from "$lib/schemas";
+  import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/schemas";
   import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
 
   let transaction = $state<JournalRecord | null>(null);
@@ -153,8 +152,8 @@
             class="h-8 gap-1.5 font-bold"
             href="/admin/transactions/{id}/edit"
             disabled={isDeleting}
+            icon={Pencil}
           >
-            <Pencil class="h-3 w-3" />
             Edit
           </Button>
 
@@ -166,13 +165,9 @@
                   variant="outline"
                   size="sm"
                   class="h-8 gap-1.5 font-bold"
-                  disabled={isDeleting}
+                  isLoading={isDeleting}
+                  icon={Trash2}
                 >
-                  {#if isDeleting}
-                    <LoaderCircle class="h-3 w-3 animate-spin" />
-                  {:else}
-                    <Trash2 class="h-3 w-3" />
-                  {/if}
                   Delete
                 </Button>
               {/snippet}
@@ -204,8 +199,8 @@
           class="h-8 gap-1.5 font-bold"
           href={transaction.receiptUrl}
           target="_blank"
+          icon={ExternalLink}
         >
-          <ExternalLink class="h-3 w-3" />
           View Receipt
         </Button>
       {/if}
@@ -215,13 +210,9 @@
   {#if isLoading}
     <LoadingView text="Loading transaction…" />
   {:else if error}
-    <Card.Root class="border-border bg-muted/30">
-      <Card.Content class="flex flex-col items-center justify-center p-12 text-center">
-        <History class="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
-        <h2 class="text-lg font-bold text-foreground">{error}</h2>
-        <Button variant="outline" class="mt-4" href="/admin/transactions">Return to Journal</Button>
-      </Card.Content>
-    </Card.Root>
+    <ErrorView {error}>
+      <Button variant="outline" class="mt-4" href="/admin/transactions">Return to Ledger</Button>
+    </ErrorView>
   {:else if transaction}
     <Card.Root class="mx-auto max-w-4xl overflow-hidden p-0">
       <Card.Header class="border-b p-8 transition-colors {headerColors()}">

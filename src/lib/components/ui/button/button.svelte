@@ -45,10 +45,15 @@
     WithElementRef<HTMLAnchorAttributes> & {
       variant?: ButtonVariant;
       size?: ButtonSize;
+      icon?: any;
+      iconClass?: string;
+      isLoading?: boolean;
     };
 </script>
 
 <script lang="ts">
+  import { LoaderCircle } from "lucide-svelte";
+
   let {
     class: className,
     variant = "default",
@@ -58,8 +63,12 @@
     type = "button",
     disabled,
     children,
+    icon: Icon,
+    iconClass = "",
+    iconPosition = "left",
+    isLoading = false,
     ...restProps
-  }: ButtonProps = $props();
+  }: ButtonProps & { iconPosition?: "left" | "right" | "top" } = $props();
 </script>
 
 {#if href}
@@ -67,13 +76,23 @@
     bind:this={ref}
     data-slot="button"
     class={cn(buttonVariants({ variant, size }), className)}
-    href={disabled ? undefined : href}
-    aria-disabled={disabled}
-    role={disabled ? "link" : undefined}
-    tabindex={disabled ? -1 : undefined}
+    href={disabled || isLoading ? undefined : href}
+    aria-disabled={disabled || isLoading}
+    role={disabled || isLoading ? "link" : undefined}
+    tabindex={disabled || isLoading ? -1 : undefined}
     {...restProps}
   >
+    {#if isLoading && (iconPosition === "left" || iconPosition === "top")}
+      <LoaderCircle class={cn("animate-spin", iconClass)} />
+    {:else if Icon && (iconPosition === "left" || iconPosition === "top")}
+      <Icon class={iconClass} />
+    {/if}
     {@render children?.()}
+    {#if isLoading && iconPosition === "right"}
+      <LoaderCircle class="animate-spin" />
+    {:else if Icon && iconPosition === "right"}
+      <Icon />
+    {/if}
   </a>
 {:else}
   <button
@@ -81,9 +100,19 @@
     data-slot="button"
     class={cn(buttonVariants({ variant, size }), className)}
     {type}
-    {disabled}
+    disabled={disabled || isLoading}
     {...restProps}
   >
+    {#if isLoading && (iconPosition === "left" || iconPosition === "top")}
+      <LoaderCircle class={cn("animate-spin", iconClass)} />
+    {:else if Icon && (iconPosition === "left" || iconPosition === "top")}
+      <Icon class={iconClass} />
+    {/if}
     {@render children?.()}
+    {#if isLoading && iconPosition === "right"}
+      <LoaderCircle class="animate-spin" />
+    {:else if Icon && iconPosition === "right"}
+      <Icon />
+    {/if}
   </button>
 {/if}

@@ -2,21 +2,18 @@
   import { emailDispatcher } from "$lib/dispatcher.svelte";
   import { auth } from "$lib/auth.svelte";
   import { createEmail, sendEmail } from "$lib/gmail";
-  import { goto } from "$app/navigation";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Progress } from "$lib/components/ui/progress";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import { formatCurrency, formatAmount } from "$lib/receipt-utils";
   import {
     Play,
-    LoaderCircle,
+    RefreshCcw,
     CircleCheckBig,
-    CircleAlert,
     ChevronLeft,
     ChevronRight,
     Eye,
@@ -25,8 +22,7 @@
     Info,
     Settings2,
     Calculator,
-    Users,
-    TriangleAlert
+    Users
   } from "lucide-svelte";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import { Label } from "$lib/components/ui/label";
@@ -152,22 +148,19 @@
           size="sm"
           onclick={() => emailDispatcher.clear()}
           disabled={isSending || isSuccess}
+          icon={Trash2}
         >
-          <Trash2 class="mr-2 h-4 w-4" /> Clear Queue
+          Clear Queue
         </Button>
         <Button
           onclick={runBatch}
-          disabled={isSending || isSuccess || emailDispatcher.queue.length === 0}
+          isLoading={isSending}
+          disabled={isSuccess || emailDispatcher.queue.length === 0}
+          icon={isSuccess ? CircleCheckBig : Play}
           size="sm"
           class="min-w-[120px]"
         >
-          {#if isSending}
-            <LoaderCircle class="mr-2 h-4 w-4 animate-spin" /> Sending...
-          {:else if isSuccess}
-            <CircleCheckBig class="mr-2 h-4 w-4" /> Sent
-          {:else}
-            <Play class="mr-2 h-4 w-4" /> Run Batch
-          {/if}
+          {isSuccess ? "Sent" : "Run Batch"}
         </Button>
       </div>
     {/snippet}
@@ -212,8 +205,13 @@
 
             {#if error}
               <ErrorView {error}>
-                <Button variant="outline" size="sm" class="mt-2" onclick={runBatch}
-                  >Try Again</Button
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="mt-2"
+                  onclick={runBatch}
+                  isLoading={isSending}
+                  icon={RefreshCcw}>Try Again</Button
                 >
               </ErrorView>
             {/if}
@@ -375,9 +373,8 @@
                 class="h-7 w-7"
                 disabled={previewIndex === 0 || isSending || isSuccess}
                 onclick={() => previewIndex--}
-              >
-                <ChevronLeft class="h-4 w-4" />
-              </Button>
+                icon={ChevronLeft}
+              />
               <span class="text-xs font-bold tabular-nums"
                 >{previewIndex + 1} / {emailDispatcher.queue.length}</span
               >
@@ -389,9 +386,8 @@
                   isSending ||
                   isSuccess}
                 onclick={() => previewIndex++}
-              >
-                <ChevronRight class="h-4 w-4" />
-              </Button>
+                icon={ChevronRight}
+              />
             </div>
           </Card.Header>
           <Card.Content>

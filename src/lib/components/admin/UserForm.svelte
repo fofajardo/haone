@@ -6,7 +6,6 @@
   import * as Card from "$lib/components/ui/card";
   import * as Dialog from "$lib/components/ui/dialog";
   import {
-    LoaderCircle,
     Save,
     X,
     User as UserIcon,
@@ -123,18 +122,10 @@
   <div class="flex items-center justify-between">
     <h2 class="text-xl font-bold tracking-tight text-foreground">{title}</h2>
     <div class="flex gap-2">
-      <Button variant="outline" size="sm" onclick={onCancel} disabled={isSaving}>
-        <X class="h-4 w-4 sm:mr-2" />
+      <Button variant="outline" size="sm" onclick={onCancel} isLoading={isSaving} icon={X}>
         <span class="hidden sm:inline">Cancel</span>
       </Button>
-      <Button size="sm" onclick={onSave} disabled={isSaving}>
-        {#if isSaving}
-          <LoaderCircle class="h-4 w-4 animate-spin sm:mr-2" />
-        {:else}
-          <Save class="h-4 w-4 sm:mr-2" />
-        {/if}
-        <span class="hidden sm:inline">{isSaving ? "Saving…" : "Save"}</span>
-      </Button>
+      <Button size="sm" onclick={onSave} isLoading={isSaving} icon={Save}>Save</Button>
     </div>
   </div>
 
@@ -361,7 +352,7 @@
     </div>
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (isDialogOpen = false)}>Cancel</Button>
-      <Button onclick={saveAcademicItem}>Save</Button>
+      <Button onclick={saveAcademicItem} icon={Save}>Save</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
