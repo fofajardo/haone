@@ -42,6 +42,8 @@
     const isSignInPage = page.url.pathname === "/sign-in";
 
     if (!auth.accessToken && !isSignInPage) {
+      // Save path for restoration
+      auth.redirectTo = page.url.pathname + page.url.search;
       goto("/sign-in");
     }
   });

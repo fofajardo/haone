@@ -33,6 +33,7 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
+    const state = urlParams.get("state");
     const savedType =
       (sessionStorage.getItem("pkce_auth_type") as "admin" | "resident") || "resident";
 
@@ -84,7 +85,12 @@
         sessionStorage.removeItem("pkce_auth_type");
 
         redirecting = true;
-        await goto(savedType === "admin" ? "/admin" : "/resident");
+        let target = state || auth.redirectTo || (savedType === "admin" ? "/admin" : "/resident");
+        if (savedType === "resident" && target.startsWith("/admin")) {
+          target = "/resident";
+        }
+        await goto(target);
+        auth.redirectTo = null;
         return;
       } catch (e: any) {
         if (!auth.lastError) {
@@ -100,8 +106,18 @@
           isLoadingAuth = false;
         }
       }
-    } else {
-      isLoadingAuth = false;
+    }
+
+    isLoadingAuth = false;
+
+    // If already logged in, go to appropriate dashboard
+    if (auth.accessToken) {
+      let target = auth.redirectTo || (auth.authType === "admin" ? "/admin" : "/resident");
+      if (auth.authType === "resident" && target.startsWith("/admin")) {
+        target = "/resident";
+      }
+      goto(target);
+      auth.redirectTo = null;
     }
   });
 
@@ -141,7 +157,7 @@
       redirect_uri: window.location.origin + "/sign-in",
       response_type: "code",
       scope: scopes,
-      state: type === "admin" ? "/admin" : "/resident",
+      state: auth.redirectTo || (type === "admin" ? "/admin" : "/resident"),
       include_granted_scopes: "true",
       code_challenge: challenge,
       code_challenge_method: "S256"
