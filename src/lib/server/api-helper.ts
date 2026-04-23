@@ -101,7 +101,9 @@ export async function getSheetsClient() {
 export async function getFirebaseToken() {
   const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
   const token = await getServiceAccountToken(keys.client_email, keys.private_key, [
-    "https://www.googleapis.com/auth/datastore"
+    "https://www.googleapis.com/auth/datastore",
+    "https://www.googleapis.com/auth/cloud-platform",
+    "https://www.googleapis.com/auth/firebase"
   ]);
   return token;
 }
