@@ -45,7 +45,7 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
             data.isFullyPaid
               ? `
           <p style="font-size: 11px; color: #000; line-height: 1.4; margin: 0; font-style: italic;">
-            For your security, the PDF file is password-protected. You may open it by entering your student number (e.g., 2001-01234).
+            For your security, the link is password-protected. You may open it by entering your student number (e.g., 2001-01234).
           </p>
           `
               : ""
