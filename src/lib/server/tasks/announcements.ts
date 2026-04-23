@@ -7,6 +7,8 @@ import {
   getFirebaseToken
 } from "$lib/server/api-helper";
 import { notifyAllResidents } from "$lib/server/notifications";
+import dayjs from "dayjs";
+import { AnnouncementStatus } from "$lib/schemas";
 
 /**
  * Task to check for newly active announcements and notify residents.
@@ -21,19 +23,36 @@ export async function runAnnouncementNotifications(): Promise<number> {
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "announcements!A:M");
     if (!rows || rows.length <= 1) return 0;
 
-    const todayStr = new Date().toISOString().split("T")[0];
+    const now = dayjs();
 
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
       const id = row[ANNOUNCEMENT_COL.ID];
-      const startDate = row[ANNOUNCEMENT_COL.START_DATE];
       const title = row[ANNOUNCEMENT_COL.TITLE];
       const slug = row[ANNOUNCEMENT_COL.SLUG];
+      const start = row[ANNOUNCEMENT_COL.START_DATE]
+        ? dayjs(row[ANNOUNCEMENT_COL.START_DATE])
+        : null;
+      const expiry = row[ANNOUNCEMENT_COL.EXPIRY_DATE]
+        ? dayjs(row[ANNOUNCEMENT_COL.EXPIRY_DATE])
+        : null;
+      const isIndefinite = row[ANNOUNCEMENT_COL.IS_INDEFINITE] === "TRUE";
       const wasNotified = row[ANNOUNCEMENT_COL.WAS_NOTIFIED];
       const isUnlisted = row[ANNOUNCEMENT_COL.IS_UNLISTED] === "TRUE";
 
+      let status = AnnouncementStatus.EXPIRED;
+      if (start && start.isAfter(now)) {
+        status = AnnouncementStatus.FUTURE;
+      } else if (isIndefinite) {
+        status = AnnouncementStatus.ACTIVE;
+      } else if (!expiry || expiry.isAfter(now) || expiry.isSame(now)) {
+        status = AnnouncementStatus.ACTIVE;
+      }
+
+      const isActive = status === AnnouncementStatus.ACTIVE;
+      console.log(id, title, isActive, !isUnlisted, wasNotified !== "TRUE");
       // Notify if active, not unlisted, and not yet notified
-      if (startDate <= todayStr && !isUnlisted && wasNotified !== "TRUE") {
+      if (isActive && !isUnlisted && wasNotified !== "TRUE") {
         console.log(`[Announcement] Notifying for: ${title}`);
 
         const { sentCount, foundCount } = await notifyAllResidents(
