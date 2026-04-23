@@ -671,11 +671,9 @@ export async function clearResident(
   resident: ResidentRecord,
   spreadsheetId: string,
   brandingKey: string,
-  signatory: string,
-  signatoryTitle: string
+  issuerId: string
 ) {
   const { updateSheetValue, fetchSheetRowsRaw } = await import("./google-sheets");
-  const { encryptJSON } = await import("./crypto");
 
   const now = new Date();
   const dateString = now.toLocaleDateString("en-PH", {
@@ -693,12 +691,10 @@ export async function clearResident(
     dateIssued: dateString,
     refNo: refNo,
     branding: brandingKey,
-    signatory,
-    signatoryTitle
+    issuerId
   };
 
-  const encrypted = await encryptJSON(clearanceData, resident.stno);
-  const publicLink = `${window.location.origin}/clearance?data=${encodeURIComponent(encrypted)}`;
+  const publicLink = `${window.location.origin}/clearance/${refNo}`;
 
   const rows = await fetchSheetRowsRaw(spreadsheetId, "accounts!A:C");
   const rowIndex = rows.findIndex(
@@ -714,7 +710,8 @@ export async function clearResident(
   await Promise.all([
     updateSheetValue(spreadsheetId, `accounts!F${actualRow}`, [[refNo]]),
     updateSheetValue(spreadsheetId, `accounts!G${actualRow}`, [[dateString]]),
-    updateSheetValue(spreadsheetId, `accounts!H${actualRow}`, [[publicLink]])
+    updateSheetValue(spreadsheetId, `accounts!H${actualRow}`, [[publicLink]]),
+    updateSheetValue(spreadsheetId, `accounts!J${actualRow}`, [[issuerId]])
   ]);
 
   return { refNo, dateString, publicLink };

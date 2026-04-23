@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { decryptJSON } from "$lib/crypto";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
   import branding from "$lib/branding.json";
@@ -14,12 +13,16 @@
   import { LS_KEYS } from "$lib/constants";
   import { pageState } from "$lib/page-info.svelte";
   import { exportClearancePDF } from "$lib/clearance-pdf";
+  import type { PageData, ActionData } from "./$types";
+  import { enhance } from "$app/forms";
+
+  let { data, form } = $props<{ data: PageData; form: ActionData }>();
 
   let clearanceData = $state<any>(null);
   let error = $state("");
   let studentNo = $state("");
   let rememberMe = $state(false);
-  let isDecrypting = $state(false);
+  let isChecking = $state(false);
   let qrDataUrl = $state("");
   let isExporting = $state(false);
 
@@ -27,9 +30,24 @@
   let alertState = $state({ open: false, title: "", description: "" });
 
   $effect(() => {
+    if (form?.success) {
+      clearanceData = form.clearanceData;
+    } else if (data.clearanceData) {
+      clearanceData = data.clearanceData;
+    }
+    if (data.error) error = data.error;
+  });
+
+  $effect(() => {
     if (clearanceData) {
       const profile = branding[clearanceData.branding as keyof typeof branding] || branding.default;
       pageState.title = `${profile.issuerName} - Certificate of Full Payment`;
+
+      QRCode.toDataURL(window.location.href, {
+        margin: 1,
+        width: 200,
+        color: { dark: "#000000", light: "#ffffff" }
+      }).then((url) => (qrDataUrl = url));
     }
   });
 
@@ -39,48 +57,22 @@
     alertState.open = true;
   }
 
-  onMount(() => {
+  onMount(async () => {
     const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
     if (savedId) {
       studentNo = savedId;
       rememberMe = true;
     }
+
+    const handedOffId = sessionStorage.getItem(`clearance_handoff_${data.id}`);
+    if (handedOffId) {
+      studentNo = handedOffId;
+      sessionStorage.removeItem(`clearance_handoff_${data.id}`);
+      await tick();
+      const formEl = document.getElementById("auth-form") as HTMLFormElement;
+      if (formEl) formEl.requestSubmit();
+    }
   });
-
-  async function attemptDecryption() {
-    const params = new URLSearchParams(window.location.search);
-    const encryptedData = params.get("data");
-
-    if (!encryptedData) {
-      error = "Invalid or missing clearance data.";
-      return;
-    }
-
-    if (!studentNo) return;
-
-    isDecrypting = true;
-    error = "";
-    try {
-      clearanceData = await decryptJSON(encryptedData, studentNo);
-
-      if (rememberMe) {
-        localStorage.setItem(LS_KEYS.STUDENT_NUMBER, studentNo);
-      } else {
-        localStorage.removeItem(LS_KEYS.STUDENT_NUMBER);
-      }
-
-      qrDataUrl = await QRCode.toDataURL(window.location.href, {
-        margin: 1,
-        width: 200,
-        color: { dark: "#000000", light: "#ffffff" }
-      });
-    } catch (e: any) {
-      error = e.message;
-      clearanceData = null;
-    } finally {
-      isDecrypting = false;
-    }
-  }
 
   async function generateCanvas(element: HTMLElement) {
     const images = Array.from(element.querySelectorAll("img"));
@@ -218,12 +210,40 @@
   class="flex min-h-screen items-center justify-center bg-background p-4 text-foreground md:p-8"
 >
   {#if !clearanceData && !error}
-    <StudentNumberAuthCard
-      bind:studentNo
-      bind:rememberMe
-      {isDecrypting}
-      onAuthenticate={attemptDecryption}
-    />
+    <form
+      id="auth-form"
+      method="POST"
+      action="?/verify"
+      class="w-full max-w-sm"
+      use:enhance={() => {
+        isChecking = true;
+        return async ({ result, update }) => {
+          isChecking = false;
+          if (result.type === "success") {
+            if (rememberMe) {
+              localStorage.setItem(LS_KEYS.STUDENT_NUMBER, studentNo);
+            } else {
+              localStorage.removeItem(LS_KEYS.STUDENT_NUMBER);
+            }
+          } else if (result.type === "failure") {
+            error = (result.data as any)?.error || "Verification failed";
+          }
+          await update();
+        };
+      }}
+    >
+      <input type="hidden" name="stno" value={studentNo} />
+      <input type="hidden" name="remember" value={rememberMe ? "on" : ""} />
+      <StudentNumberAuthCard
+        bind:studentNo
+        bind:rememberMe
+        isDecrypting={isChecking}
+        onAuthenticate={() => {
+          const form = document.getElementById("auth-form") as HTMLFormElement;
+          if (form) form.requestSubmit();
+        }}
+      />
+    </form>
   {:else if error}
     <ReceiptErrorCard
       {error}
