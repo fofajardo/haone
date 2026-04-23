@@ -80,9 +80,7 @@
           {isLoading}
           icon={RefreshCcw}
         />
-        <Button size="sm" onclick={() => goto("/admin/officers/new")} icon={Plus}
-          >Add Officer</Button
-        >
+        <Button size="sm" onclick={() => goto("/admin/officers/new")} icon={Plus}>Add</Button>
       </div>
     {/snippet}
   </SubpageHeader>
