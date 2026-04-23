@@ -22,6 +22,7 @@
   import { Textarea } from "$lib/components/ui/textarea";
   import { toast } from "svelte-sonner";
   import { Combobox } from "$lib/components/ui/combobox";
+  import { translatePeriod } from "$lib/receipt-utils";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -126,9 +127,7 @@
         <Button variant="outline" size="sm" onclick={() => (isAwarderOpen = true)} icon={UserPlus}>
           Award
         </Button>
-        <Button size="sm" onclick={() => (isCreatorOpen = true)} icon={Plus}>
-          New Achievement
-        </Button>
+        <Button size="sm" onclick={() => (isCreatorOpen = true)} icon={Plus}>New</Button>
       </div>
     {/snippet}
   </SubpageHeader>
@@ -217,10 +216,12 @@
     <Dialog.Header>
       <Dialog.Title>Award Achievement</Dialog.Title>
       <Dialog.Description
-        >Select a resident to give an achievement to for the current term ({currentTerm}).</Dialog.Description
+        >Select a resident to give an achievement to for the current term ({translatePeriod(
+          currentTerm
+        )}).</Dialog.Description
       >
     </Dialog.Header>
-    <div class="space-y-4 py-4">
+    <div class="space-y-4 pb-4">
       <div class="space-y-2">
         <Label>Achievement</Label>
         <Combobox

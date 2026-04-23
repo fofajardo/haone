@@ -3,7 +3,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Textarea } from "$lib/components/ui/textarea";
   import { Label } from "$lib/components/ui/label";
-  import { FileDown, ClipboardPaste, CircleX, LoaderIcon } from "lucide-svelte";
+  import { FileDown, ClipboardPaste, LoaderIcon } from "lucide-svelte";
   import { toast } from "svelte-sonner";
   import Papa from "papaparse";
   import { fetchUsers } from "$lib/resident-logic";
@@ -123,7 +123,7 @@
       >
     </Dialog.Header>
 
-    <div class="space-y-6 py-4">
+    <div class="space-y-6 pb-4">
       <div
         class="space-y-4 rounded-2xl border border-dashed border-muted-foreground/20 bg-muted/50 p-4"
       >
@@ -180,11 +180,8 @@
     </div>
 
     <Dialog.Footer>
-      <Button
-        variant="outline"
-        onclick={() => (open = false)}
-        isLoading={isImporting}
-        icon={CircleX}>Cancel</Button
+      <Button variant="outline" onclick={() => (open = false)} isLoading={isImporting}
+        >Cancel</Button
       >
       <Button onclick={handleImport} isLoading={isImporting} icon={ClipboardPaste}>
         Import Data

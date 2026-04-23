@@ -224,14 +224,13 @@
           icon={RefreshCcw}
         />
         <Button
-          variant="outline"
           size="sm"
           onclick={handleSync}
           isLoading={isSyncing}
           disabled={isLoading}
           icon={CloudDownload}
         >
-          <span class="sm">Sync</span>
+          Sync
         </Button>
       </div>
     {/snippet}

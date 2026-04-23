@@ -198,7 +198,7 @@
             <DropdownMenu.Trigger disabled={selectedIndices.size === 0}>
               {#snippet child({ props })}
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   disabled={selectedIndices.size === 0}
                   {...props}
@@ -223,7 +223,6 @@
 
           <Button
             size="sm"
-            variant="outline"
             onclick={handleBatchClear}
             disabled={selectedIndices.size === 0}
             icon={ShieldCheck}

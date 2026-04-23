@@ -184,7 +184,6 @@
         />
 
         <Button
-          variant="outline"
           size="sm"
           onclick={prepareDispatch}
           {isLoading}

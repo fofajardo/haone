@@ -282,10 +282,6 @@
   <SubpageHeader title="Laundry" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button variant="outline" size="sm" onclick={() => (isImportOpen = true)} icon={FileUp}>
-          Import
-        </Button>
-        <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
         <Button
           variant="outline"
           size="sm"
@@ -293,6 +289,10 @@
           {isLoading}
           icon={RefreshCcw}
         />
+        <Button variant="secondary" size="sm" onclick={() => (isImportOpen = true)} icon={FileUp}>
+          Import
+        </Button>
+        <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
       </div>
     {/snippet}
   </SubpageHeader>

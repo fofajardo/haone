@@ -144,7 +144,7 @@
     {#snippet actions()}
       <div class="flex gap-2">
         <Button
-          variant="outline"
+          variant="destructive"
           size="sm"
           onclick={() => emailDispatcher.clear()}
           disabled={isSending || isSuccess}

@@ -146,25 +146,13 @@
     {#snippet actions()}
       {#if transaction && !transaction.wasAudited}
         <div class="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            class="h-8 gap-1.5 font-bold"
-            href="/admin/transactions/{id}/edit"
-            disabled={isDeleting}
-            icon={Pencil}
-          >
-            Edit
-          </Button>
-
           <AlertDialog.Root bind:open={isDialogOpen}>
             <AlertDialog.Trigger>
               {#snippet child({ props })}
                 <Button
                   {...props}
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
-                  class="h-8 gap-1.5 font-bold"
                   isLoading={isDeleting}
                   icon={Trash2}
                 >
@@ -193,14 +181,17 @@
           </AlertDialog.Root>
         </div>
       {/if}
+      <Button
+        variant={transaction?.receiptUrl ? "secondary" : "default"}
+        size="sm"
+        href="/admin/transactions/{id}/edit"
+        disabled={isDeleting}
+        icon={Pencil}
+      >
+        Edit
+      </Button>
       {#if transaction && transaction.receiptUrl}
-        <Button
-          size="sm"
-          class="h-8 gap-1.5 font-bold"
-          href={transaction.receiptUrl}
-          target="_blank"
-          icon={ExternalLink}
-        >
+        <Button size="sm" href={transaction.receiptUrl} target="_blank" icon={ExternalLink}>
           View Receipt
         </Button>
       {/if}

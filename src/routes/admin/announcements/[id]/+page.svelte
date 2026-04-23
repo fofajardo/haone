@@ -183,7 +183,7 @@
             disabled={isSubmitting}>Cancel</Button
           >
           <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-[140px]">
-            Update Announcement
+            Update
           </Button>
         </div>
       </div>
