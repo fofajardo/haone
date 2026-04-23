@@ -3,7 +3,6 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { type UserRecord, UserTag } from "$lib/schemas";
   import { addUser } from "$lib/resident-logic";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import UserForm from "$lib/components/admin/UserForm.svelte";
 
   let isSaving = $state(false);
@@ -50,19 +49,14 @@
   }
 </script>
 
-<div class="space-y-6">
-  <SubpageHeader title="New User" />
-
-  <UserForm
-    bind:formData
-    bind:userTypes
-    bind:academicItems
-    {isSaving}
-    onSave={handleSave}
-    onCancel={() => goto("/admin/users")}
-    title="Create New User Account"
-  />
-</div>
+<UserForm
+  bind:formData
+  bind:userTypes
+  bind:academicItems
+  {isSaving}
+  onSave={handleSave}
+  title="Create New User Account"
+/>
 
 <!-- Save Error AlertDialog -->
 <AlertDialog.Root bind:open={isErrorDialogOpen}>

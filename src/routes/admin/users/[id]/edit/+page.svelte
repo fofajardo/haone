@@ -5,7 +5,6 @@
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { type UserRecord, UserTag } from "$lib/schemas";
   import { fetchUserById, updateUser } from "$lib/resident-logic";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import UserForm from "$lib/components/admin/UserForm.svelte";
@@ -89,29 +88,24 @@
   onMount(loadUser);
 </script>
 
-<div class="space-y-6">
-  <SubpageHeader title="Edit User" />
-
-  {#if isLoading}
-    <LoadingView />
-  {:else if error}
-    <ErrorView {error}>
-      <Button variant="outline" class="mt-4" onclick={() => goto("/admin/users")}>
-        Return to Directory
-      </Button>
-    </ErrorView>
-  {:else if user}
-    <UserForm
-      bind:formData
-      bind:userTypes
-      bind:academicItems
-      {isSaving}
-      onSave={handleSave}
-      onCancel={() => goto(`/admin/users/${userId}`)}
-      title="Edit {user.displayName}"
-    />
-  {/if}
-</div>
+{#if isLoading}
+  <LoadingView />
+{:else if error}
+  <ErrorView {error}>
+    <Button variant="outline" class="mt-4" onclick={() => goto("/admin/users")}>
+      Return to Directory
+    </Button>
+  </ErrorView>
+{:else if user}
+  <UserForm
+    bind:formData
+    bind:userTypes
+    bind:academicItems
+    {isSaving}
+    onSave={handleSave}
+    title="Edit User"
+  />
+{/if}
 
 <!-- Save Error AlertDialog -->
 <AlertDialog.Root bind:open={isErrorDialogOpen}>

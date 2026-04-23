@@ -7,7 +7,6 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import {
     Save,
-    X,
     User as UserIcon,
     Mail,
     Contact,
@@ -26,6 +25,7 @@
   import programsJson from "$lib/programs.json";
   import { TagsInput } from "$lib/components/ui/tags-input";
   import { Combobox } from "$lib/components/ui/combobox";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
 
   let {
     formData = $bindable({}),
@@ -33,7 +33,6 @@
     academicItems = $bindable([]),
     isSaving = false,
     onSave,
-    onCancel,
     title = "User Information"
   }: {
     formData: Partial<UserRecord>;
@@ -41,7 +40,6 @@
     academicItems: { college: string; program: string }[];
     isSaving?: boolean;
     onSave: () => void;
-    onCancel: () => void;
     title?: string;
   } = $props();
 
@@ -119,15 +117,11 @@
 </script>
 
 <div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h2 class="text-xl font-bold tracking-tight text-foreground">{title}</h2>
-    <div class="flex gap-2">
-      <Button variant="outline" size="sm" onclick={onCancel} isLoading={isSaving} icon={X}>
-        <span class="hidden sm:inline">Cancel</span>
-      </Button>
+  <SubpageHeader {title}>
+    {#snippet actions()}
       <Button size="sm" onclick={onSave} isLoading={isSaving} icon={Save}>Save</Button>
-    </div>
-  </div>
+    {/snippet}
+  </SubpageHeader>
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Left Column -->
