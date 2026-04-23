@@ -33,15 +33,28 @@
   let isDeleting = $state(false);
   let announcementToDelete = $state<string | null>(null);
   let isBroadcasting = $state(false);
+  let selectedIds = $state(new Set<string>());
+  let showBroadcastDialog = $state(false);
 
-  async function handleBroadcast() {
+  function handleBroadcast() {
+    if (selectedIds.size === 0) {
+      toast.error("Please select at least one announcement to broadcast.");
+      return;
+    }
+    showBroadcastDialog = true;
+  }
+
+  async function confirmBroadcast() {
     isBroadcasting = true;
+    showBroadcastDialog = false;
+    const ids = Array.from(selectedIds);
     try {
       const resp = await fetchWithAuth(
         "/api/admin/announcements/broadcast",
         "Failed to broadcast",
         {
-          method: "POST"
+          method: "POST",
+          body: JSON.stringify({ ids })
         }
       );
       const data = await resp.json();
@@ -245,6 +258,8 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/announcements/${r.id}`)}
         rowId="id"
+        enableSelection={true}
+        onSelectionChange={(ids) => (selectedIds = ids)}
         meta={{ onExpire: handleExpire, onDelete: handleDelete }}
       />
     {:else}
@@ -302,6 +317,29 @@
       <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
       <Button onclick={confirmDelete} variant="destructive" isLoading={isDeleting}>
         Delete Permanently
+      </Button>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
+
+<AlertDialog.Root bind:open={showBroadcastDialog}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Broadcast Announcements?</AlertDialog.Title>
+      <AlertDialog.Description>
+        This will send a push notification to <strong>all subscribed residents</strong> for the
+        <span class="font-bold">{selectedIds.size}</span> selected announcement(s) immediately. Each notification
+        will use its respective announcement title and a snippet of its content.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <Button
+        onclick={confirmBroadcast}
+        class="bg-brand hover:bg-brand/90"
+        isLoading={isBroadcasting}
+      >
+        Confirm & Broadcast
       </Button>
     </AlertDialog.Footer>
   </AlertDialog.Content>

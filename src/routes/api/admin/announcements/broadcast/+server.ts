@@ -12,9 +12,13 @@ export const POST: RequestHandler = async ({ request }) => {
   if (auth.error) return auth.error;
 
   try {
-    const totalSent = await runAnnouncementNotifications();
-    return json({ 
-      success: true, 
+    const body = await request.json().catch(() => ({}));
+    const ids = Array.isArray(body.ids) ? body.ids : undefined;
+    console.log(`[Broadcast API] Triggering for IDs:`, ids);
+
+    const totalSent = await runAnnouncementNotifications(ids);
+    return json({
+      success: true,
       message: `Notifications broadcasted successfully to ${totalSent} subscriber(s).`,
       count: totalSent
     });

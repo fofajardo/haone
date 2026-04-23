@@ -1,6 +1,5 @@
 import { json } from "@sveltejs/kit";
 import { runLaundryReminders } from "$lib/server/tasks/laundry-reminders";
-import { runAnnouncementNotifications } from "$lib/server/tasks/announcements";
 import { CRON_SECRET } from "$env/static/private";
 import type { RequestHandler } from "./$types";
 
@@ -25,14 +24,6 @@ export const GET: RequestHandler = async ({ url }) => {
       results.laundry = { success: true };
     } catch (e: any) {
       results.laundry = { success: false, error: e.message };
-    }
-
-    // 2. Announcement Notifications
-    try {
-      await runAnnouncementNotifications();
-      results.announcements = { success: true };
-    } catch (e: any) {
-      results.announcements = { success: false, error: e.message };
     }
 
     return json({

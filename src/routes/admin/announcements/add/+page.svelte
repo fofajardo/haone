@@ -31,8 +31,7 @@
     isIndefinite: true,
     isAdminOnly: false,
     isUnlisted: false,
-    tags: "",
-    shouldBroadcast: true
+    tags: ""
   });
 
   $effect(() => {
@@ -71,18 +70,9 @@
         ...formData,
         startDate: formData.startDate ? dayjs(formData.startDate).toISOString() : "",
         expiryDate: formData.expiryDate ? dayjs(formData.expiryDate).toISOString() : "",
-        tags: tagList.join(",")
+        tags: tagList.join(","),
+        broadcastCount: 0
       });
-
-      if (formData.shouldBroadcast && !formData.isUnlisted) {
-        try {
-          await fetchWithAuth("/api/admin/announcements/broadcast", "Failed to broadcast", {
-            method: "POST"
-          });
-        } catch (e) {
-          console.warn("Immediate broadcast failed:", e);
-        }
-      }
 
       toast.success("Announcement created");
       goto("/admin/announcements");
@@ -194,14 +184,6 @@
         <div class="flex items-center gap-2">
           <Checkbox id="unlisted" bind:checked={formData.isUnlisted} disabled={isSubmitting} />
           <Label for="unlisted" class="cursor-pointer font-bold">Unlisted</Label>
-        </div>
-        <div class="flex items-center gap-2">
-          <Checkbox
-            id="broadcast"
-            bind:checked={formData.shouldBroadcast}
-            disabled={isSubmitting}
-          />
-          <Label for="broadcast" class="cursor-pointer font-bold">Broadcast immediately</Label>
         </div>
       </div>
 

@@ -117,7 +117,7 @@ export async function notifyAllResidents(
     const data = await resp.json();
 
     if (!data.documents) return { sentCount: 0, foundCount: 0 };
-    
+
     const foundCount = data.documents.length;
     let sentCount = 0;
 

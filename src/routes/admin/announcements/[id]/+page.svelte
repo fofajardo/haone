@@ -113,7 +113,8 @@
         ...formData,
         startDate: formData.startDate ? dayjs(formData.startDate).toISOString() : "",
         expiryDate: formData.expiryDate ? dayjs(formData.expiryDate).toISOString() : "",
-        tags: tagList.join(",")
+        tags: tagList.join(","),
+        broadcastCount: announcement?.broadcastCount || 0
       });
       toast.success("Announcement updated");
       goto("/admin/announcements");

@@ -235,7 +235,7 @@ export const ANNOUNCEMENT_COL = {
   CONTENT: 9,
   IS_UNLISTED: 10,
   SLUG: 11,
-  WAS_NOTIFIED: 12
+  BROADCAST_COUNT: 12
 } as const;
 
 export const ACHIEVEMENT_COL = {
@@ -375,6 +375,7 @@ export interface AnnouncementRecord {
   tags: string;
   title: string;
   content: string;
+  broadcastCount: number;
   raw: string[];
 }
 

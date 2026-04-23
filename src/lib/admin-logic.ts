@@ -236,6 +236,7 @@ export async function fetchAnnouncements(forceRefresh = false): Promise<Announce
     tags: (row[ANNOUNCEMENT_COL.TAGS] || "").trim(),
     title: (row[ANNOUNCEMENT_COL.TITLE] || "").trim(),
     content: (row[ANNOUNCEMENT_COL.CONTENT] || "").trim(),
+    broadcastCount: parseInt(row[ANNOUNCEMENT_COL.BROADCAST_COUNT]) || 0,
     raw: row
   }));
 }
@@ -250,7 +251,7 @@ export async function addAnnouncement(data: Omit<AnnouncementRecord, "raw">) {
     throw new Error(`Slug "${data.slug}" is already in use`);
   }
 
-  const row = new Array(12).fill("");
+  const row = new Array(13).fill("");
   row[ANNOUNCEMENT_COL.ID] = data.id || crypto.randomUUID();
   row[ANNOUNCEMENT_COL.CREATOR_ID] = data.creatorId;
   row[ANNOUNCEMENT_COL.DATE_CREATED] = new Date().toISOString();
@@ -263,8 +264,9 @@ export async function addAnnouncement(data: Omit<AnnouncementRecord, "raw">) {
   row[ANNOUNCEMENT_COL.TITLE] = data.title;
   row[ANNOUNCEMENT_COL.CONTENT] = data.content;
   row[ANNOUNCEMENT_COL.SLUG] = data.slug;
+  row[ANNOUNCEMENT_COL.BROADCAST_COUNT] = "0";
 
-  await appendSheetRow(spreadsheetId, "announcements!A:L", [row]);
+  await appendSheetRow(spreadsheetId, "announcements!A:M", [row]);
 }
 
 export async function updateAnnouncement(id: string, data: Partial<AnnouncementRecord>) {
@@ -288,7 +290,7 @@ export async function updateAnnouncement(id: string, data: Partial<AnnouncementR
   const newRow = [...currentRow];
 
   // Ensure row has enough columns
-  while (newRow.length < 12) newRow.push("");
+  while (newRow.length < 13) newRow.push("");
 
   if (data.startDate !== undefined) newRow[ANNOUNCEMENT_COL.START_DATE] = data.startDate;
   if (data.expiryDate !== undefined) newRow[ANNOUNCEMENT_COL.EXPIRY_DATE] = data.expiryDate;
@@ -302,8 +304,10 @@ export async function updateAnnouncement(id: string, data: Partial<AnnouncementR
   if (data.title !== undefined) newRow[ANNOUNCEMENT_COL.TITLE] = data.title;
   if (data.content !== undefined) newRow[ANNOUNCEMENT_COL.CONTENT] = data.content;
   if (data.slug !== undefined) newRow[ANNOUNCEMENT_COL.SLUG] = data.slug;
+  if (data.broadcastCount !== undefined)
+    newRow[ANNOUNCEMENT_COL.BROADCAST_COUNT] = String(data.broadcastCount);
 
-  await updateSheetValue(spreadsheetId, `announcements!A${actualRow}:L${actualRow}`, [newRow]);
+  await updateSheetValue(spreadsheetId, `announcements!A${actualRow}:M${actualRow}`, [newRow]);
 }
 
 export async function expireAnnouncement(id: string) {
