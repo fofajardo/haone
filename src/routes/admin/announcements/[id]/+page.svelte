@@ -13,11 +13,14 @@
   import { fetchAnnouncements, updateAnnouncement } from "$lib/admin-logic";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
+  import { ANNOUNCEMENT_TAG_LIST } from "$lib/schemas";
+  import { TagsInput } from "$lib/components/ui/tags-input";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);
   let error = $state<string | null>(null);
 
+  let tagList = $state<string[]>([]);
   let formData = $state({
     title: "",
     content: "",
@@ -47,6 +50,14 @@
         isAdminOnly: a.isAdminOnly,
         tags: a.tags
       };
+      tagList = Array.from(
+        new Set(
+          (a.tags || "")
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        )
+      );
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -66,7 +77,7 @@
 
     isSubmitting = true;
     try {
-      await updateAnnouncement(id, formData);
+      await updateAnnouncement(id, { ...formData, tags: tagList.join(",") });
       toast.success("Announcement updated");
       goto("/admin/announcements");
     } catch (e: any) {
@@ -166,12 +177,13 @@
 
         <div class="space-y-2">
           <Label for="tags" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Tags (comma-separated)</Label
+            >Tags</Label
           >
-          <Input
+          <TagsInput
             id="tags"
-            bind:value={formData.tags}
-            placeholder="Important, News, Maintenance"
+            bind:value={tagList}
+            suggestions={ANNOUNCEMENT_TAG_LIST}
+            placeholder="Add tags…"
             disabled={isSubmitting}
           />
         </div>

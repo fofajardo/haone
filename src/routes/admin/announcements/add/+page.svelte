@@ -11,8 +11,11 @@
   import { fetchUsers } from "$lib/resident-logic";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
+  import { ANNOUNCEMENT_TAG_LIST } from "$lib/schemas";
+  import { TagsInput } from "$lib/components/ui/tags-input";
 
   let isSubmitting = $state(false);
+  let tagList = $state<string[]>([]);
   let formData = $state({
     title: "",
     content: "",
@@ -43,7 +46,8 @@
         id: crypto.randomUUID(),
         creatorId: me?.id || "",
         dateCreated: new Date().toISOString(),
-        ...formData
+        ...formData,
+        tags: tagList.join(",")
       });
       toast.success("Announcement created");
       goto("/admin/announcements");
@@ -129,12 +133,13 @@
 
       <div class="space-y-2">
         <Label for="tags" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Tags (comma-separated)</Label
+          >Tags</Label
         >
-        <Input
+        <TagsInput
           id="tags"
-          bind:value={formData.tags}
-          placeholder="Important, News, Maintenance"
+          bind:value={tagList}
+          suggestions={ANNOUNCEMENT_TAG_LIST}
+          placeholder="Add tags…"
           disabled={isSubmitting}
         />
       </div>

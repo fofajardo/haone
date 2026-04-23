@@ -301,6 +301,44 @@ export interface PaymentRequestRecord {
   raw: string[];
 }
 
+export enum AnnouncementStatus {
+  ACTIVE = "ACTIVE",
+  FUTURE = "FUTURE",
+  EXPIRED = "EXPIRED"
+}
+
+export const ANNOUNCEMENT_STATUS_COLORS: Record<string, string> = {
+  [AnnouncementStatus.ACTIVE]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [AnnouncementStatus.FUTURE]: "bg-blue-100 text-blue-700 border-blue-200",
+  [AnnouncementStatus.EXPIRED]: "bg-slate-100 text-slate-700 border-slate-200",
+  DEFAULT: "bg-muted text-muted-foreground border-border"
+};
+
+export enum AnnouncementTag {
+  IMPORTANT = "IMPORTANT",
+  MAINTENANCE = "MAINTENANCE",
+  EVENT = "EVENT",
+  BILLING = "BILLING",
+  SECURITY = "SECURITY",
+  NEWS = "NEWS",
+  REGISTRATION = "REGISTRATION",
+  CLEANING = "CLEANING"
+}
+
+export const ANNOUNCEMENT_TAG_LIST = Object.values(AnnouncementTag);
+
+export const ANNOUNCEMENT_TAG_COLORS: Record<string, string> = {
+  [AnnouncementTag.IMPORTANT]: "bg-red-100 text-red-700 border-red-200",
+  [AnnouncementTag.MAINTENANCE]: "bg-amber-100 text-amber-700 border-amber-200",
+  [AnnouncementTag.EVENT]: "bg-purple-100 text-purple-700 border-purple-200",
+  [AnnouncementTag.BILLING]: "bg-blue-100 text-blue-700 border-blue-200",
+  [AnnouncementTag.SECURITY]: "bg-rose-100 text-rose-700 border-rose-200",
+  [AnnouncementTag.NEWS]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [AnnouncementTag.REGISTRATION]: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  [AnnouncementTag.CLEANING]: "bg-slate-100 text-slate-700 border-slate-200",
+  DEFAULT: "bg-muted text-muted-foreground border-border"
+};
+
 export interface AnnouncementRecord {
   id: string;
   creatorId: string;

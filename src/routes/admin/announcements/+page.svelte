@@ -14,10 +14,27 @@
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
 
+  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
+  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import { columns } from "./columns";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import { Combobox } from "$lib/components/ui/combobox";
+  import { Search, FunnelX } from "lucide-svelte";
+
+  import { getAnnouncementStatus } from "$lib/admin-logic";
+  import { AnnouncementStatus } from "$lib/schemas";
+
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let announcementToExpire = $state<string | null>(null);
+
+  const tableSync = new TableSync({
+    initialFilters: { search: "", status: "ALL", tags: "ALL" },
+    paramMap: { search: "q", status: "status", tags: "tags" },
+    searchKey: "search"
+  });
 
   async function loadData() {
     isLoading = true;
@@ -50,11 +67,38 @@
 
   onMount(loadData);
 
-  function isActive(a: AnnouncementRecord) {
-    const now = new Date().toISOString().split("T")[0];
-    if (a.startDate > now) return false;
-    if (a.isIndefinite) return true;
-    return a.expiryDate >= now;
+  const tagsOptions = $derived.by(() => {
+    const set = new Set<string>();
+    announcements.forEach((a) => {
+      (a.tags || "").split(",").forEach((t) => {
+        const val = t.trim();
+        if (val) set.add(val);
+      });
+    });
+    return Array.from(set); // NO SORT
+  });
+
+  const filteredAnnouncements = $derived.by(() => {
+    return announcements
+      .filter((a) => {
+        const search = tableSync.filters!.search.toLowerCase();
+        const status = tableSync.filters!.status;
+        const tags = tableSync.filters!.tags;
+        const currentStatus = getAnnouncementStatus(a);
+
+        const matchesSearch =
+          a.title.toLowerCase().includes(search) || a.content.toLowerCase().includes(search);
+        const matchesStatus = status === "ALL" || currentStatus === status;
+        const matchesTags =
+          tags === "ALL" || (a.tags || "").split(",").some((t) => t.trim() === tags);
+
+        return matchesSearch && matchesStatus && matchesTags;
+      })
+      .sort((a, b) => b.dateCreated.localeCompare(a.dateCreated));
+  });
+
+  function resetFilters() {
+    tableSync.reset();
   }
 </script>
 
@@ -81,71 +125,77 @@
       <Button onclick={() => loadData()} {isLoading} icon={RefreshCcw} class="mt-4">Retry</Button>
     </ErrorView>
   {:else}
-    <div class="grid gap-4">
-      {#each announcements as a}
-        <Card.Root size="sm" class={!isActive(a) ? "opacity-60 grayscale" : ""}>
-          <Card.Content class="flex items-start justify-between gap-4 p-2 px-3">
-            <div class="flex-1 space-y-2">
-              <div class="flex items-center gap-2">
-                <h4 class="font-bold">{a.title}</h4>
-                {#if a.isAdminOnly}
-                  <div
-                    class="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-bold text-purple-700 uppercase"
-                  >
-                    Admin Only
-                  </div>
-                {/if}
-                {#if !isActive(a)}
-                  <div
-                    class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 uppercase"
-                  >
-                    Expired/Future
-                  </div>
-                {/if}
-              </div>
-              <RichEditor content={a.content} editable={false} />
-              <div
-                class="flex items-center gap-4 text-xs font-bold text-muted-foreground uppercase"
-              >
-                <span class="flex items-center gap-1"
-                  ><Clock class="h-3 w-3" /> Start: {a.startDate}</span
-                >
-                {#if !a.isIndefinite}
-                  <span class="flex items-center gap-1"
-                    ><Clock class="h-3 w-3" /> End: {a.expiryDate}</span
-                  >
-                {:else}
-                  <span>Indefinite</span>
-                {/if}
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onclick={() => goto(`/admin/announcements/${a.id}`)}
-                icon={SquarePen}
-              />
-              {#if isActive(a)}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="text-red-500 hover:text-red-600"
-                  onclick={() => handleExpire(a.id)}
-                  icon={Trash2}
-                />
-              {/if}
-            </div>
-          </Card.Content>
-        </Card.Root>
-      {:else}
-        <EmptyView title="No announcements found.">
-          {#snippet icon()}
-            <Megaphone class="h-8 w-8 text-muted-foreground" />
-          {/snippet}
-        </EmptyView>
-      {/each}
+    <div class="grid gap-4 lg:grid-cols-12">
+      <div class="space-y-1 lg:col-span-5">
+        <Label class="text-xs font-bold text-muted-foreground uppercase">Search</Label>
+        <div class="relative">
+          <Search
+            class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            bind:value={tableSync.filters!.search}
+            placeholder="Search announcements…"
+            class="h-9 pl-9 text-xs"
+          />
+        </div>
+      </div>
+
+      <div class="space-y-1 lg:col-span-3">
+        <Label class="text-xs font-bold text-muted-foreground uppercase">Status</Label>
+        <Combobox
+          bind:value={tableSync.filters!.status}
+          options={[
+            { value: "ALL", label: "All Status" },
+            { value: AnnouncementStatus.ACTIVE, label: "Active" },
+            { value: AnnouncementStatus.FUTURE, label: "Future" },
+            { value: AnnouncementStatus.EXPIRED, label: "Expired" }
+          ]}
+          class="h-9"
+        />
+      </div>
+
+      <div class="space-y-1 lg:col-span-3">
+        <Label class="text-xs font-bold text-muted-foreground uppercase">Tags</Label>
+        <Combobox
+          bind:value={tableSync.filters!.tags}
+          options={[
+            { value: "ALL", label: "All Tags" },
+            ...tagsOptions.map((t) => ({ value: t, label: t }))
+          ]}
+          class="h-9"
+        />
+      </div>
+
+      <div class="flex items-end lg:col-span-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={resetFilters}
+          class="mb-1 h-9 w-full px-2"
+          icon={FunnelX}
+        >
+          Clear
+        </Button>
+      </div>
     </div>
+
+    {#if filteredAnnouncements.length > 0}
+      <DataTable
+        data={filteredAnnouncements}
+        {columns}
+        pagination={tableSync.pagination}
+        onPaginationChange={(p) => (tableSync.pagination = p)}
+        onRowClick={(r) => goto(`/admin/announcements/${r.id}`)}
+        rowId="id"
+        meta={{ onExpire: handleExpire }}
+      />
+    {:else}
+      <EmptyView title="No announcements found.">
+        {#snippet icon()}
+          <Megaphone class="h-8 w-8 text-muted-foreground" />
+        {/snippet}
+      </EmptyView>
+    {/if}
   {/if}
 </div>
 

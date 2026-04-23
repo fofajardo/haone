@@ -12,7 +12,8 @@ import {
   type AnnouncementRecord,
   type AchievementRecord,
   type AchievementLogRecord,
-  PaymentRequestStatus
+  PaymentRequestStatus,
+  AnnouncementStatus
 } from "./schemas";
 import { parseAmount } from "./resident-logic";
 import { parseTime } from "./receipt-utils";
@@ -352,4 +353,14 @@ export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) 
   row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId;
 
   await appendSheetRow(spreadsheetId, "achievement_records!A:E", [row]);
+}
+
+/**
+ * Announcement Helpers
+ */
+export function getAnnouncementStatus(a: AnnouncementRecord) {
+  const now = new Date().toISOString().split("T")[0];
+  if (a.startDate > now) return AnnouncementStatus.FUTURE;
+  if (a.isIndefinite) return AnnouncementStatus.ACTIVE;
+  return a.expiryDate >= now ? AnnouncementStatus.ACTIVE : AnnouncementStatus.EXPIRED;
 }
