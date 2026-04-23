@@ -46,7 +46,8 @@ export const POST: RequestHandler = async ({ request }) => {
       }
     };
 
-    const updateMask = "updateMask.fieldPaths=residentId&updateMask.fieldPaths=endpoint&updateMask.fieldPaths=p256dh&updateMask.fieldPaths=auth&updateMask.fieldPaths=createdAt";
+    const updateMask =
+      "updateMask.fieldPaths=residentId&updateMask.fieldPaths=endpoint&updateMask.fieldPaths=p256dh&updateMask.fieldPaths=auth&updateMask.fieldPaths=createdAt";
     await fetchGoogleAPI(`${BASE_URL}/${docId}?${updateMask}`, token, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
