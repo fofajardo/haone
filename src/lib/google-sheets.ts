@@ -136,6 +136,9 @@ async function handleResponseError(resp: Response, defaultMessage: string) {
     auth.logout();
     throw new Error("Not authorized (403)");
   }
+  if (resp.status === 429) {
+    throw new Error("Too many requests. Please wait a moment before trying again.");
+  }
   let message = defaultMessage;
   try {
     const err = await resp.json();
