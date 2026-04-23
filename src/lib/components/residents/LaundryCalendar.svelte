@@ -465,7 +465,7 @@
     </div>
   </div>
   <div
-    class="flex items-center gap-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
+    class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
   >
     <div class="flex items-center gap-1.5">
       <div class="h-3 w-3 rounded-sm bg-brand"></div>
