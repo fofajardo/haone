@@ -7,35 +7,22 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
-  import { fetchAnnouncementBySlug } from "$lib/shared-records-logic";
   import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
   import { Badge } from "$lib/components/ui/badge";
 
-  let announcement = $state<AnnouncementRecord | null>(null);
-  let isLoading = $state(true);
-  let error = $state<string | null>(null);
+  let { data } = $props();
 
-  async function loadData() {
-    const slug = page.params.slug;
-    if (!slug) return;
-    isLoading = true;
-    error = null;
-    try {
-      announcement = await fetchAnnouncementBySlug(slug as string);
-    } catch (e: any) {
-      if (e.message === "expired") {
-        error = "This announcement has expired and is no longer available.";
-      } else if (e.message === "not_found") {
-        error = "Announcement not found.";
-      } else {
-        error = e.message;
-      }
-    } finally {
-      isLoading = false;
+  let announcement = $derived(data.announcement);
+  let error = $derived.by(() => {
+    if (data.error === "expired") {
+      return "This announcement has expired and is no longer available.";
     }
-  }
-
-  onMount(loadData);
+    if (data.error === "not_found") {
+      return "Announcement not found.";
+    }
+    return data.error || null;
+  });
+  let isLoading = $derived(!data.announcement && !data.error);
 </script>
 
 <div class="space-y-8">
