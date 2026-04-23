@@ -113,20 +113,37 @@ export async function fetchAchievementLogs(forceRefresh = false): Promise<{
  * User Settings
  */
 export async function fetchUserSettings(forceRefresh = false): Promise<UserSettingsRecord[]> {
-  const data = await fetchServer("/api/resident/settings", {}, forceRefresh);
-  return [
-    {
-      residentId: auth.user?.email || "",
-      isPublicAchievementList: data.isPublicAchievementList,
-      residentNav: data.residentNav || "",
-      adminNav: data.adminNav || "",
-      density: data.density || "",
-      typography: data.typography || "",
-      theme: data.theme || "",
-      isReducedMotion: data.isReducedMotion || false,
-      raw: []
-    }
-  ];
+  try {
+    const data = await fetchServer("/api/resident/settings", {}, forceRefresh);
+    return [
+      {
+        residentId: auth.user?.email || "",
+        isPublicAchievementList: data.isPublicAchievementList,
+        residentNav: data.residentNav || "",
+        adminNav: data.adminNav || "",
+        density: data.density || "",
+        typography: data.typography || "",
+        theme: data.theme || "",
+        isReducedMotion: data.isReducedMotion || false,
+        raw: []
+      }
+    ];
+  } catch (e) {
+    console.error("[SharedRecords] Failed to fetch settings, returning defaults:", e);
+    return [
+      {
+        residentId: auth.user?.email || "",
+        isPublicAchievementList: true,
+        residentNav: "home,finance,laundry",
+        adminNav: "dashboard,history,residents",
+        density: "default",
+        typography: "inter",
+        theme: "system",
+        isReducedMotion: false,
+        raw: []
+      }
+    ];
+  }
 }
 
 export async function updateUserSettings(

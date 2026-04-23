@@ -23,7 +23,9 @@ export const GET: RequestHandler = async ({ request }) => {
     // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
+    
     if (!user) {
+      console.warn(`[Settings] No user found for ${authEmail}. Returning defaults.`);
       return json({
         isPublicAchievementList: true,
         residentNav: "home,finance,laundry",
@@ -34,12 +36,21 @@ export const GET: RequestHandler = async ({ request }) => {
         isReducedMotion: false
       });
     }
-    const residentId = user[USER_COL.ID];
+
+    const residentId = (user[USER_COL.ID] || "").trim();
+    if (!residentId) {
+      console.error(`[Settings] User found for ${authEmail} but missing ID column.`);
+      return json({ error: "malformed_user_record", message: "User record is missing an ID." }, { status: 500 });
+    }
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:H");
     const settings = rows.find(
       (r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
+
+    if (!settings) {
+       console.log(`[Settings] No settings row for ${residentId}. Using defaults.`);
+    }
 
     return json({
       isPublicAchievementList: settings

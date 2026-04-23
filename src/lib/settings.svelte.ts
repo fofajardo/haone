@@ -141,17 +141,30 @@ class UISettings {
   }
 
   async syncFromServer() {
-    const { fetchUserSettings } = await import("./shared-records-logic");
-    const settings = await fetchUserSettings(true);
-    const my = settings[0];
-    if (my) {
-      this.fontFamily = (my.typography as UIFont) || "inter";
-      this.displayDensity = (my.density as DisplayDensity) || "default";
-      this.theme = my.theme || "system";
-      this.reducedMotion = !!my.isReducedMotion;
-      this.isPublicAchievementList = my.isPublicAchievementList !== false;
-      if (my.residentNav) this.residentNavIds = my.residentNav.split(",").filter(Boolean);
-      if (my.adminNav) this.adminNavIds = my.adminNav.split(",").filter(Boolean);
+    try {
+      const { fetchUserSettings } = await import("./shared-records-logic");
+      const settings = await fetchUserSettings(true);
+      const my = settings[0];
+      if (my) {
+        // Apply with individual safety checks
+        if (my.typography) this.fontFamily = my.typography as UIFont;
+        if (my.density) this.displayDensity = my.density as DisplayDensity;
+        if (my.theme) this.theme = my.theme;
+        this.reducedMotion = !!my.isReducedMotion;
+        this.isPublicAchievementList = my.isPublicAchievementList !== false;
+
+        if (my.residentNav) {
+          const nav = my.residentNav.split(",").filter(Boolean);
+          if (nav.length > 0) this.residentNavIds = nav;
+        }
+
+        if (my.adminNav) {
+          const nav = my.adminNav.split(",").filter(Boolean);
+          if (nav.length > 0) this.adminNavIds = nav;
+        }
+      }
+    } catch (e) {
+      console.error("[Settings] Sync failed, using local/default values:", e);
     }
   }
 
