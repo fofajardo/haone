@@ -1,5 +1,5 @@
 import { PUBLIC_GA_ID } from "$env/static/public";
-import type { Handle } from "@sveltejs/kit";
+import type { Handle, HandleServerError } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
   return await resolve(event, {
@@ -22,4 +22,12 @@ export const handle: Handle = async ({ event, resolve }) => {
       return html.replace("%google_analytics%", "");
     }
   });
+};
+
+export const handleError: HandleServerError = ({ error }) => {
+  console.error(error);
+  return {
+    message: (error as Error)?.message ?? "An unexpected error occurred",
+    stack: (error as Error)?.stack ?? ""
+  };
 };
