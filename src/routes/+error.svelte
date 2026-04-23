@@ -2,7 +2,17 @@
   import { page } from "$app/state";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { CircleAlert, ChevronRight, RefreshCcw, House } from "lucide-svelte";
+  import {
+    ChevronRight,
+    RefreshCcw,
+    House,
+    MapPinOff,
+    Lock,
+    ShieldAlert,
+    Zap,
+    CircleAlert,
+    Construction
+  } from "lucide-svelte";
   import { fade, slide } from "svelte/transition";
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";
@@ -11,6 +21,35 @@
 
   const status = page.status;
   const error = page.error as { message: string; stack?: string };
+
+  const errorTitles: Record<number, string> = {
+    404: "These aren't the droids you're looking for",
+    401: "Stay on target… (Auth Denied)",
+    403: "You lack the Force (Access Forbidden)",
+    500: "A great disturbance in the Force",
+    503: "The hyperdrive is leaking"
+  };
+
+  const errorIcons: Record<number, any> = {
+    404: MapPinOff,
+    401: Lock,
+    403: ShieldAlert,
+    500: Zap,
+    503: Construction
+  };
+
+  const errorDescriptions: Record<number, string> = {
+    404: "The coordinates you provided lead to a void in space-time. Perhaps the archives are incomplete?",
+    401: "Your clearance codes have expired or are invalid. Please re-authenticate.",
+    403: "This sector is restricted. You do not have the required clearance level.",
+    500: "A critical failure has occurred in the reactor core. Our droids are working on it.",
+    503: "The system is currently undergoing tactical maintenance. Check back soon."
+  };
+
+  const title = errorTitles[status] || `Something went wrong (${status || 500})`;
+  const Icon = errorIcons[status] || CircleAlert;
+  const description =
+    errorDescriptions[status] || error?.message || "Internal server error occurred.";
 
   function reload() {
     window.location.reload();
@@ -29,10 +68,14 @@
   <div class="w-full max-w-2xl" in:fade={{ duration: 300 }}>
     <Card.Root class="border shadow-none sm:shadow-sm">
       <Card.Header class="text-center">
-        <CircleAlert class="mx-auto mb-3 h-10 w-10" />
-        <Card.Title class="text-2xl font-bold">Error {status || 500}</Card.Title>
+        <div
+          class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50"
+        >
+          <Icon class="h-6 w-6" />
+        </div>
+        <Card.Title class="text-2xl font-bold">{title}</Card.Title>
         <Card.Description class="text-sm leading-relaxed text-balance">
-          {error?.message || "Something went wrong while processing your request."}
+          {description}
         </Card.Description>
       </Card.Header>
 
