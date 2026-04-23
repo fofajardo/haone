@@ -81,27 +81,27 @@
   >
     {#each navItems as item}
       <Button
-        variant="ghost"
+        variant="nav"
         href={item.href}
         class={cn(
-          "flex h-auto flex-col items-center gap-1 p-0 transition-colors hover:bg-transparent",
+          "flex h-auto flex-col items-center gap-1 p-0 transition-colors",
           isActive(item.href) ? "text-primary" : "text-muted-foreground hover:text-foreground"
         )}
         icon={item.icon}
         iconPosition="top"
-        iconClass="h-6 w-6"
+        iconClass="size-6"
       >
         <span class="text-xs font-medium">{item.label}</span>
       </Button>
     {/each}
 
     <Button
-      variant="ghost"
-      class="flex h-auto flex-col items-center gap-1 p-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
+      variant="nav"
+      class="flex h-auto flex-col items-center gap-1 p-0 text-muted-foreground transition-colors hover:text-foreground"
       onclick={() => sidebar.setOpenMobile(true)}
       icon={CircleUser}
       iconPosition="top"
-      iconClass="h-6 w-6"
+      iconClass="size-6"
     >
       <span class="text-xs font-medium">You</span>
     </Button>
