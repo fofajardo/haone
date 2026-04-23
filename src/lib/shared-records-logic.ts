@@ -74,6 +74,17 @@ export async function fetchAnnouncements(forceRefresh = false): Promise<Announce
   return await fetchServer("/api/resident/announcements", {}, forceRefresh);
 }
 
+export async function fetchAnnouncementBySlug(
+  slug: string,
+  forceRefresh = false
+): Promise<AnnouncementRecord> {
+  return await fetchServer(
+    `/api/resident/announcements?slug=${encodeURIComponent(slug)}`,
+    {},
+    forceRefresh
+  );
+}
+
 /**
  * Achievements
  */

@@ -1,34 +1,27 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Megaphone, Clock } from "lucide-svelte";
+  import { RefreshCcw, Megaphone, ArrowRight } from "lucide-svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import { fetchAnnouncements } from "$lib/shared-records-logic";
-  import type { AnnouncementRecord } from "$lib/schemas";
+  import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
+  import { Badge } from "$lib/components/ui/badge";
+  import { goto } from "$app/navigation";
 
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  async function loadData() {
+  async function loadData(forceRefresh = false) {
     isLoading = true;
     error = null;
     try {
-      const all = await fetchAnnouncements(true);
-      const now = new Date().toISOString().split("T")[0];
-      announcements = all
-        .filter((a) => {
-          if (a.isAdminOnly) return false;
-          if (a.startDate > now) return false;
-          if (a.isIndefinite) return true;
-          return a.expiryDate >= now;
-        })
-        .sort((a, b) => b.dateCreated.localeCompare(a.dateCreated));
+      announcements = await fetchAnnouncements(forceRefresh);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -39,53 +32,79 @@
   onMount(loadData);
 </script>
 
-<div class="space-y-6">
-  <SubpageHeader title="Announcements" isTopLevel={true}>
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData()}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    {/snippet}
-  </SubpageHeader>
+<SubpageHeader title="Announcements" isTopLevel={true}>
+  {#snippet actions()}
+    <Button
+      variant="outline"
+      size="sm"
+      onclick={() => loadData(true)}
+      {isLoading}
+      icon={RefreshCcw}
+    />
+  {/snippet}
+</SubpageHeader>
 
+<div class="mx-auto max-w-2xl space-y-6">
   {#if isLoading}
-    <LoadingView />
+    <div class="py-12">
+      <LoadingView />
+    </div>
   {:else if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
-    <div class="grid gap-6">
+    <div class="space-y-4">
       {#each announcements as a}
-        <Card.Root class="overflow-hidden border-l-4 border-none border-l-brand bg-card">
-          <Card.Content class="space-y-4 p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex flex-wrap gap-2">
+        <Card.Root
+          class="cursor-pointer overflow-hidden border-none bg-card"
+          onclick={() => goto(`/resident/announcements/${a.slug}`)}
+        >
+          <Card.Content class="space-y-4">
+            <div class="flex items-start justify-between gap-4">
+              <h3 class="text-xl font-bold text-foreground">{a.title}</h3>
+              <div class="flex flex-wrap justify-end gap-1.5">
                 {#each (a.tags || "")
                   .split(",")
                   .map((t) => t.trim())
                   .filter(Boolean) as tag}
-                  <span
-                    class="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-black tracking-widest text-brand uppercase"
-                    >{tag}</span
+                  <Badge
+                    variant="secondary"
+                    class={ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
+                      ANNOUNCEMENT_TAG_COLORS.DEFAULT}
                   >
+                    {tag}
+                  </Badge>
                 {/each}
               </div>
-              <span
-                class="flex items-center gap-1 text-xs font-bold text-muted-foreground uppercase"
-              >
-                <Clock class="h-3 w-3 text-brand" />
-                {a.startDate}
-              </span>
             </div>
 
-            <h3 class="text-2xl font-black tracking-tight text-foreground">{a.title}</h3>
+            <div class="line-clamp-3 text-sm text-muted-foreground">
+              <RichEditor content={a.content} editable={false} />
+            </div>
 
-            <RichEditor content={a.content} editable={false} />
+            <div class="flex items-center justify-between border-t pt-4">
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-foreground">{a.creatorName}</span>
+                <span class="flex items-center gap-1 text-xs text-muted-foreground">
+                  {new Date(a.startDate || a.dateCreated).toLocaleString(undefined, {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit"
+                  })}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="h-8 text-xs font-bold uppercase"
+                icon={ArrowRight}
+              >
+                Read More
+              </Button>
+            </div>
           </Card.Content>
         </Card.Root>
       {:else}

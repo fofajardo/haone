@@ -1,4 +1,5 @@
 <script lang="ts">
+  import dayjs from "dayjs";
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
@@ -23,11 +24,13 @@
   let tagList = $state<string[]>([]);
   let formData = $state({
     title: "",
+    slug: "",
     content: "",
     startDate: "",
     expiryDate: "",
     isIndefinite: false,
     isAdminOnly: false,
+    isUnlisted: false,
     tags: ""
   });
 
@@ -43,11 +46,13 @@
       }
       formData = {
         title: a.title,
+        slug: a.slug,
         content: a.content,
-        startDate: a.startDate,
-        expiryDate: a.expiryDate,
+        startDate: a.startDate ? dayjs(a.startDate).format("YYYY-MM-DDTHH:mm") : "",
+        expiryDate: a.expiryDate ? dayjs(a.expiryDate).format("YYYY-MM-DDTHH:mm") : "",
         isIndefinite: a.isIndefinite,
         isAdminOnly: a.isAdminOnly,
+        isUnlisted: a.isUnlisted,
         tags: a.tags
       };
       tagList = Array.from(
@@ -72,12 +77,21 @@
       toast.error("Title is required");
       return;
     }
+    if (!formData.slug.trim()) {
+      toast.error("Slug is required");
+      return;
+    }
     const id = page.params.id;
     if (!id) return;
 
     isSubmitting = true;
     try {
-      await updateAnnouncement(id, { ...formData, tags: tagList.join(",") });
+      await updateAnnouncement(id, {
+        ...formData,
+        startDate: formData.startDate ? dayjs(formData.startDate).toISOString() : "",
+        expiryDate: formData.expiryDate ? dayjs(formData.expiryDate).toISOString() : "",
+        tags: tagList.join(",")
+      });
       toast.success("Announcement updated");
       goto("/admin/announcements");
     } catch (e: any) {
@@ -123,6 +137,21 @@
         </div>
 
         <div class="space-y-2">
+          <Label for="slug" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+            >Slug</Label
+          >
+          <Input
+            id="slug"
+            bind:value={formData.slug}
+            placeholder="announcement-slug"
+            disabled={isSubmitting}
+          />
+          <p class="text-[10px] text-muted-foreground italic">
+            This will be used for the announcement URL.
+          </p>
+        </div>
+
+        <div class="space-y-2">
           <Label
             for="content"
             class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Content</Label
@@ -139,19 +168,24 @@
             <Label
               for="start"
               class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-              >Start Date</Label
+              >Start Date & Time</Label
             >
-            <Input type="date" id="start" bind:value={formData.startDate} disabled={isSubmitting} />
+            <Input
+              type="datetime-local"
+              id="start"
+              bind:value={formData.startDate}
+              disabled={isSubmitting}
+            />
           </div>
           {#if !formData.isIndefinite}
             <div class="space-y-2">
               <Label
                 for="end"
                 class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                >Expiry Date</Label
+                >Expiry Date & Time</Label
               >
               <Input
-                type="date"
+                type="datetime-local"
                 id="end"
                 bind:value={formData.expiryDate}
                 disabled={isSubmitting}
@@ -172,6 +206,10 @@
           <div class="flex items-center gap-2">
             <Checkbox id="adminOnly" bind:checked={formData.isAdminOnly} disabled={isSubmitting} />
             <Label for="adminOnly" class="cursor-pointer font-bold">Admin Only</Label>
+          </div>
+          <div class="flex items-center gap-2">
+            <Checkbox id="unlisted" bind:checked={formData.isUnlisted} disabled={isSubmitting} />
+            <Label for="unlisted" class="cursor-pointer font-bold">Unlisted</Label>
           </div>
         </div>
 

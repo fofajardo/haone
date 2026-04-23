@@ -28,6 +28,7 @@
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+  let isExpiring = $state(false);
   let announcementToExpire = $state<string | null>(null);
 
   const tableSync = new TableSync({
@@ -54,14 +55,16 @@
 
   async function confirmExpire() {
     if (!announcementToExpire) return;
+    isExpiring = true;
     try {
       await expireAnnouncement(announcementToExpire);
       toast.success("Announcement expired");
-      loadData();
+      announcementToExpire = null;
+      await loadData();
     } catch (e: any) {
       toast.error(e.message);
     } finally {
-      announcementToExpire = null;
+      isExpiring = false;
     }
   }
 
@@ -215,9 +218,13 @@
     </AlertDialog.Header>
     <AlertDialog.Footer>
       <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action onclick={confirmExpire} class="bg-red-600 hover:bg-red-700">
+      <Button
+        onclick={confirmExpire}
+        class="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+        isLoading={isExpiring}
+      >
         Expire
-      </AlertDialog.Action>
+      </Button>
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>

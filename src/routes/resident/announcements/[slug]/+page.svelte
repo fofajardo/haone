@@ -1,0 +1,102 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { page } from "$app/state";
+  import { Button } from "$lib/components/ui/button";
+  import { ChevronLeft } from "lucide-svelte";
+  import { goto } from "$app/navigation";
+  import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
+  import RichEditor from "$lib/components/RichEditor.svelte";
+  import { fetchAnnouncementBySlug } from "$lib/shared-records-logic";
+  import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
+  import { Badge } from "$lib/components/ui/badge";
+
+  let announcement = $state<AnnouncementRecord | null>(null);
+  let isLoading = $state(true);
+  let error = $state<string | null>(null);
+
+  async function loadData() {
+    const slug = page.params.slug;
+    if (!slug) return;
+    isLoading = true;
+    error = null;
+    try {
+      announcement = await fetchAnnouncementBySlug(slug as string);
+    } catch (e: any) {
+      if (e.message === "expired") {
+        error = "This announcement has expired and is no longer available.";
+      } else if (e.message === "not_found") {
+        error = "Announcement not found.";
+      } else {
+        error = e.message;
+      }
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  onMount(loadData);
+</script>
+
+<div class="space-y-8">
+  <div class="flex items-center gap-2">
+    <Button
+      variant="ghost"
+      size="sm"
+      onclick={() => goto("/resident/announcements")}
+      icon={ChevronLeft}
+    >
+      Back to Feed
+    </Button>
+  </div>
+
+  {#if isLoading}
+    <LoadingView />
+  {:else if error}
+    <ErrorView {error} />
+  {:else if announcement}
+    <div class="border-b bg-muted/30 pb-8">
+      <div class="mx-auto max-w-4xl px-6">
+        <div class="space-y-6">
+          <div class="flex flex-wrap gap-2">
+            {#each (announcement.tags || "")
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean) as tag}
+              <Badge
+                variant="secondary"
+                class="{ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
+                  ANNOUNCEMENT_TAG_COLORS.DEFAULT} border"
+              >
+                {tag}
+              </Badge>
+            {/each}
+          </div>
+
+          <h1 class="text-4xl font-black tracking-tight text-foreground lg:text-5xl">
+            {announcement.title}
+          </h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="mx-auto max-w-4xl px-6 pb-12">
+      <div class="prose prose-slate dark:prose-invert max-w-none">
+        <RichEditor content={announcement.content} editable={false} />
+      </div>
+
+      <div class="mt-12 flex flex-col border-t pt-8">
+        <span class="text-sm font-medium text-foreground">{announcement.creatorName}</span>
+        <span class="flex items-center gap-1 text-xs text-muted-foreground">
+          {new Date(announcement.startDate || announcement.dateCreated).toLocaleString(undefined, {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit"
+          })}
+        </span>
+      </div>
+    </div>
+  {/if}
+</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import dayjs from "dayjs";
   import { auth } from "$lib/auth.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -13,22 +14,37 @@
   import { goto } from "$app/navigation";
   import { ANNOUNCEMENT_TAG_LIST } from "$lib/schemas";
   import { TagsInput } from "$lib/components/ui/tags-input";
+  import slugify from "slug";
 
   let isSubmitting = $state(false);
   let tagList = $state<string[]>([]);
+  let isSlugManuallyEdited = $state(false);
+
   let formData = $state({
     title: "",
+    slug: "",
     content: "",
-    startDate: new Date().toISOString().split("T")[0],
+    startDate: dayjs().format("YYYY-MM-DDTHH:mm"),
     expiryDate: "",
     isIndefinite: true,
     isAdminOnly: false,
+    isUnlisted: false,
     tags: ""
+  });
+
+  $effect(() => {
+    if (!isSlugManuallyEdited && formData.title) {
+      formData.slug = slugify(formData.title, { lower: true });
+    }
   });
 
   async function handleSave() {
     if (!formData.title.trim()) {
       toast.error("Title is required");
+      return;
+    }
+    if (!formData.slug.trim()) {
+      toast.error("Slug is required");
       return;
     }
     if (!formData.content.trim()) {
@@ -45,8 +61,10 @@
       await addAnnouncement({
         id: crypto.randomUUID(),
         creatorId: me?.id || "",
-        dateCreated: new Date().toISOString(),
+        dateCreated: dayjs().toISOString(),
         ...formData,
+        startDate: formData.startDate ? dayjs(formData.startDate).toISOString() : "",
+        expiryDate: formData.expiryDate ? dayjs(formData.expiryDate).toISOString() : "",
         tags: tagList.join(",")
       });
       toast.success("Announcement created");
@@ -88,6 +106,22 @@
       </div>
 
       <div class="space-y-2">
+        <Label for="slug" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+          >Slug</Label
+        >
+        <Input
+          id="slug"
+          bind:value={formData.slug}
+          placeholder="announcement-slug"
+          disabled={isSubmitting}
+          oninput={() => (isSlugManuallyEdited = true)}
+        />
+        <p class="text-[10px] text-muted-foreground italic">
+          This will be used for the announcement URL.
+        </p>
+      </div>
+
+      <div class="space-y-2">
         <Label
           for="content"
           class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Content</Label
@@ -104,18 +138,28 @@
           <Label
             for="start"
             class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Start Date</Label
+            >Start Date & Time</Label
           >
-          <Input type="date" id="start" bind:value={formData.startDate} disabled={isSubmitting} />
+          <Input
+            type="datetime-local"
+            id="start"
+            bind:value={formData.startDate}
+            disabled={isSubmitting}
+          />
         </div>
         {#if !formData.isIndefinite}
           <div class="space-y-2">
             <Label
               for="end"
               class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-              >Expiry Date</Label
+              >Expiry Date & Time</Label
             >
-            <Input type="date" id="end" bind:value={formData.expiryDate} disabled={isSubmitting} />
+            <Input
+              type="datetime-local"
+              id="end"
+              bind:value={formData.expiryDate}
+              disabled={isSubmitting}
+            />
           </div>
         {/if}
       </div>
@@ -128,6 +172,10 @@
         <div class="flex items-center gap-2">
           <Checkbox id="adminOnly" bind:checked={formData.isAdminOnly} disabled={isSubmitting} />
           <Label for="adminOnly" class="cursor-pointer font-bold">Admin Only</Label>
+        </div>
+        <div class="flex items-center gap-2">
+          <Checkbox id="unlisted" bind:checked={formData.isUnlisted} disabled={isSubmitting} />
+          <Label for="unlisted" class="cursor-pointer font-bold">Unlisted</Label>
         </div>
       </div>
 

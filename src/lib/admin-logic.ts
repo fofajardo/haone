@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { uiSettings } from "./settings.svelte";
 import { fetchSheetRowsRaw, updateSheetValue, appendSheetRow } from "./google-sheets";
 import {
@@ -212,7 +213,7 @@ export async function fetchAnnouncements(forceRefresh = false): Promise<Announce
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) return [];
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "announcements!A:J", forceRefresh);
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "announcements!A:L", forceRefresh);
   return rows.slice(1).map((row) => ({
     id: (row[ANNOUNCEMENT_COL.ID] || "").trim(),
     creatorId: (row[ANNOUNCEMENT_COL.CREATOR_ID] || "").trim(),
@@ -221,6 +222,8 @@ export async function fetchAnnouncements(forceRefresh = false): Promise<Announce
     expiryDate: (row[ANNOUNCEMENT_COL.EXPIRY_DATE] || "").trim(),
     isIndefinite: (row[ANNOUNCEMENT_COL.IS_INDEFINITE] || "").toUpperCase() === "TRUE",
     isAdminOnly: (row[ANNOUNCEMENT_COL.IS_ADMIN_ONLY] || "").toUpperCase() === "TRUE",
+    isUnlisted: (row[ANNOUNCEMENT_COL.IS_UNLISTED] || "").toUpperCase() === "TRUE",
+    slug: (row[ANNOUNCEMENT_COL.SLUG] || "").trim(),
     tags: (row[ANNOUNCEMENT_COL.TAGS] || "").trim(),
     title: (row[ANNOUNCEMENT_COL.TITLE] || "").trim(),
     content: (row[ANNOUNCEMENT_COL.CONTENT] || "").trim(),
@@ -232,7 +235,13 @@ export async function addAnnouncement(data: Omit<AnnouncementRecord, "raw">) {
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
-  const row = new Array(10).fill("");
+  // Check for duplicate slug
+  const all = await fetchAnnouncements();
+  if (all.some((a) => a.slug === data.slug)) {
+    throw new Error(`Slug "${data.slug}" is already in use`);
+  }
+
+  const row = new Array(12).fill("");
   row[ANNOUNCEMENT_COL.ID] = data.id || crypto.randomUUID();
   row[ANNOUNCEMENT_COL.CREATOR_ID] = data.creatorId;
   row[ANNOUNCEMENT_COL.DATE_CREATED] = new Date().toISOString();
@@ -240,24 +249,37 @@ export async function addAnnouncement(data: Omit<AnnouncementRecord, "raw">) {
   row[ANNOUNCEMENT_COL.EXPIRY_DATE] = data.expiryDate;
   row[ANNOUNCEMENT_COL.IS_INDEFINITE] = String(data.isIndefinite).toUpperCase();
   row[ANNOUNCEMENT_COL.IS_ADMIN_ONLY] = String(data.isAdminOnly).toUpperCase();
+  row[ANNOUNCEMENT_COL.IS_UNLISTED] = String(data.isUnlisted).toUpperCase();
   row[ANNOUNCEMENT_COL.TAGS] = data.tags;
   row[ANNOUNCEMENT_COL.TITLE] = data.title;
   row[ANNOUNCEMENT_COL.CONTENT] = data.content;
+  row[ANNOUNCEMENT_COL.SLUG] = data.slug;
 
-  await appendSheetRow(spreadsheetId, "announcements!A:J", [row]);
+  await appendSheetRow(spreadsheetId, "announcements!A:L", [row]);
 }
 
 export async function updateAnnouncement(id: string, data: Partial<AnnouncementRecord>) {
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) throw new Error("Shared Records ID not configured");
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "announcements!A:J");
-  const rowIndex = rows.findIndex((r) => r[ANNOUNCEMENT_COL.ID] === id);
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "announcements!A:L");
+  const rowIndex = rows.findIndex((r) => (r[ANNOUNCEMENT_COL.ID] || "").trim() === id);
   if (rowIndex === -1) throw new Error("Announcement not found");
+
+  // Check for duplicate slug if slug is being updated
+  if (data.slug !== undefined) {
+    const all = await fetchAnnouncements();
+    if (all.some((a) => a.slug === data.slug && a.id !== id)) {
+      throw new Error(`Slug "${data.slug}" is already in use`);
+    }
+  }
 
   const actualRow = rowIndex + 1;
   const currentRow = rows[rowIndex];
   const newRow = [...currentRow];
+
+  // Ensure row has enough columns
+  while (newRow.length < 12) newRow.push("");
 
   if (data.startDate !== undefined) newRow[ANNOUNCEMENT_COL.START_DATE] = data.startDate;
   if (data.expiryDate !== undefined) newRow[ANNOUNCEMENT_COL.EXPIRY_DATE] = data.expiryDate;
@@ -265,11 +287,14 @@ export async function updateAnnouncement(id: string, data: Partial<AnnouncementR
     newRow[ANNOUNCEMENT_COL.IS_INDEFINITE] = String(data.isIndefinite).toUpperCase();
   if (data.isAdminOnly !== undefined)
     newRow[ANNOUNCEMENT_COL.IS_ADMIN_ONLY] = String(data.isAdminOnly).toUpperCase();
+  if (data.isUnlisted !== undefined)
+    newRow[ANNOUNCEMENT_COL.IS_UNLISTED] = String(data.isUnlisted).toUpperCase();
   if (data.tags !== undefined) newRow[ANNOUNCEMENT_COL.TAGS] = data.tags;
   if (data.title !== undefined) newRow[ANNOUNCEMENT_COL.TITLE] = data.title;
   if (data.content !== undefined) newRow[ANNOUNCEMENT_COL.CONTENT] = data.content;
+  if (data.slug !== undefined) newRow[ANNOUNCEMENT_COL.SLUG] = data.slug;
 
-  await updateSheetValue(spreadsheetId, `announcements!A${actualRow}:J${actualRow}`, [newRow]);
+  await updateSheetValue(spreadsheetId, `announcements!A${actualRow}:L${actualRow}`, [newRow]);
 }
 
 export async function expireAnnouncement(id: string) {
@@ -359,8 +384,16 @@ export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) 
  * Announcement Helpers
  */
 export function getAnnouncementStatus(a: AnnouncementRecord) {
-  const now = new Date().toISOString().split("T")[0];
-  if (a.startDate > now) return AnnouncementStatus.FUTURE;
+  const now = dayjs();
+  const start = a.startDate ? dayjs(a.startDate) : null;
+  const expiry = a.expiryDate ? dayjs(a.expiryDate) : null;
+
+  if (start && start.isAfter(now)) return AnnouncementStatus.FUTURE;
   if (a.isIndefinite) return AnnouncementStatus.ACTIVE;
-  return a.expiryDate >= now ? AnnouncementStatus.ACTIVE : AnnouncementStatus.EXPIRED;
+  if (!expiry || expiry.isAfter(now) || expiry.isSame(now)) return AnnouncementStatus.ACTIVE;
+  return AnnouncementStatus.EXPIRED;
+}
+
+export function isAnnouncementActive(a: AnnouncementRecord) {
+  return getAnnouncementStatus(a) === AnnouncementStatus.ACTIVE;
 }

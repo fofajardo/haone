@@ -1,42 +1,69 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { ANNOUNCEMENT_COL } from "$lib/schemas";
+import { PUBLIC_GS_SR_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
+import { ANNOUNCEMENT_COL, USER_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
   getSheetValues,
   serverError
 } from "$lib/server/api-helper";
+import { isAnnouncementActive } from "$lib/admin-logic";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
   const { error } = await authenticateResident(request);
   if (error) return error;
 
+  const url = new URL(request.url);
+  const slugParam = url.searchParams.get("slug");
+
   try {
     const client = await getSheetsClient();
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "announcements!A:J");
+    const [rows, userRows] = await Promise.all([
+      getSheetValues(client, PUBLIC_GS_SR_ID, "announcements!A:L"),
+      getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P")
+    ]);
 
-    const now = new Date().toISOString().split("T")[0];
-    const announcements = rows
-      .slice(1)
-      .map((row: any) => ({
+    const userMap = new Map();
+    userRows.slice(1).forEach((row: any) => {
+      userMap.set((row[USER_COL.ID] || "").trim(), row[USER_COL.DISPLAY_NAME]);
+    });
+
+    const parsedAnnouncements = rows.slice(1).map((row: any) => {
+      const creatorId = (row[ANNOUNCEMENT_COL.CREATOR_ID] || "").trim();
+      return {
         id: (row[ANNOUNCEMENT_COL.ID] || "").trim(),
-        creatorId: (row[ANNOUNCEMENT_COL.CREATOR_ID] || "").trim(),
+        creatorId,
+        creatorName: userMap.get(creatorId) || "Administrator",
         dateCreated: (row[ANNOUNCEMENT_COL.DATE_CREATED] || "").trim(),
         startDate: (row[ANNOUNCEMENT_COL.START_DATE] || "").trim(),
         expiryDate: (row[ANNOUNCEMENT_COL.EXPIRY_DATE] || "").trim(),
         isIndefinite: (row[ANNOUNCEMENT_COL.IS_INDEFINITE] || "").toUpperCase() === "TRUE",
         isAdminOnly: (row[ANNOUNCEMENT_COL.IS_ADMIN_ONLY] || "").toUpperCase() === "TRUE",
+        isUnlisted: (row[ANNOUNCEMENT_COL.IS_UNLISTED] || "").toUpperCase() === "TRUE",
+        slug: (row[ANNOUNCEMENT_COL.SLUG] || "").trim(),
         tags: (row[ANNOUNCEMENT_COL.TAGS] || "").trim(),
         title: (row[ANNOUNCEMENT_COL.TITLE] || "").trim(),
         content: (row[ANNOUNCEMENT_COL.CONTENT] || "").trim()
-      }))
+      };
+    });
+
+    if (slugParam) {
+      const found = parsedAnnouncements.find((a: any) => a.slug === slugParam);
+      if (!found || found.isAdminOnly) {
+        return json({ message: "not_found" }, { status: 404 });
+      }
+      if (!isAnnouncementActive(found)) {
+        return json({ message: "expired" }, { status: 410 });
+      }
+      return json(found);
+    }
+
+    const announcements = parsedAnnouncements
       .filter((a: any) => {
         if (a.isAdminOnly) return false;
-        if (a.startDate > now) return false;
-        if (a.isIndefinite) return true;
-        return a.expiryDate >= now;
+        if (a.isUnlisted) return false;
+        return isAnnouncementActive(a);
       })
       .sort((a: any, b: any) => b.dateCreated.localeCompare(a.dateCreated));
 

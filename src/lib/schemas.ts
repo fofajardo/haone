@@ -232,7 +232,9 @@ export const ANNOUNCEMENT_COL = {
   IS_ADMIN_ONLY: 6,
   TAGS: 7,
   TITLE: 8,
-  CONTENT: 9
+  CONTENT: 9,
+  IS_UNLISTED: 10,
+  SLUG: 11
 } as const;
 
 export const ACHIEVEMENT_COL = {
@@ -347,6 +349,9 @@ export interface AnnouncementRecord {
   expiryDate: string;
   isIndefinite: boolean;
   isAdminOnly: boolean;
+  isUnlisted: boolean;
+  slug: string;
+  creatorName?: string;
   tags: string;
   title: string;
   content: string;
