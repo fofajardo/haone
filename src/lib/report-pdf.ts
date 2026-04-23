@@ -26,7 +26,7 @@ async function imgToDataUrl(url: string): Promise<string> {
 }
 
 export interface PDFReportOptions {
-  residents: ResidentRecord[];
+  residents: (ResidentRecord & { position?: string })[];
   categoryLabel: string;
   semester: string;
   brandingKey: string;
@@ -38,6 +38,7 @@ export interface PDFReportOptions {
   certifiedByEmail: string;
   periodCovered: string;
   isPublic: boolean;
+  isOfficerReport?: boolean;
 }
 
 export async function exportReportPDF(options: PDFReportOptions) {
@@ -53,7 +54,8 @@ export async function exportReportPDF(options: PDFReportOptions) {
     certifiedBy,
     certifiedByEmail,
     periodCovered,
-    isPublic
+    isPublic,
+    isOfficerReport
   } = options;
 
   const [pdfMakeMod, pdfFontsMod] = await Promise.all([
@@ -82,12 +84,18 @@ export async function exportReportPDF(options: PDFReportOptions) {
   const profile = branding[brandingKey as keyof typeof branding] || branding.default;
   const letterheadData = await imgToDataUrl(profile.letterheadUrl);
 
-  const headers: TableCell[] = [
-    { text: "Resident", style: "tableHeader" },
-    { text: "Room", style: "tableHeader" }
-  ];
+  const headers: TableCell[] = isOfficerReport
+    ? [
+        { text: "Position", style: "tableHeader" },
+        { text: "Name", style: "tableHeader" },
+        { text: "Room", style: "tableHeader" }
+      ]
+    : [
+        { text: "Resident", style: "tableHeader" },
+        { text: "Room", style: "tableHeader" }
+      ];
 
-  if (!isPublic) {
+  if (!isPublic && !isOfficerReport) {
     headers.push({ text: "Bed", style: "tableHeader" });
     headers.push({ text: "Base", style: "tableHeader", alignment: "right" });
     headers.push({ text: "Paid", style: "tableHeader", alignment: "right" });
@@ -95,10 +103,10 @@ export async function exportReportPDF(options: PDFReportOptions) {
     headers.push({ text: "Balance", style: "tableHeader", alignment: "right" });
   }
 
-  const widths: Size[] = ["*"];
-  if (!isPublic) {
+  const widths: Size[] = isOfficerReport ? [100, "*", 60] : ["*"];
+  if (!isPublic && !isOfficerReport) {
     widths.push(40, 40, 60, 60, 60, 60);
-  } else {
+  } else if (!isOfficerReport) {
     widths.push(100);
   }
 
@@ -116,7 +124,7 @@ export async function exportReportPDF(options: PDFReportOptions) {
     },
     content: [
       {
-        text: "RESIDENT LIST",
+        text: isOfficerReport ? "OFFICER LIST" : "RESIDENT LIST",
         style: "header",
         alignment: "center" as Alignment,
         margin: [0, 60, 0, 5] as Margins
@@ -136,6 +144,13 @@ export async function exportReportPDF(options: PDFReportOptions) {
           body: [
             headers,
             ...residents.map((r) => {
+              if (isOfficerReport) {
+                return [
+                  { text: r.position || "", fontSize: 9, bold: true },
+                  { text: r.name, fontSize: 9 },
+                  { text: r.room, fontSize: 9 }
+                ];
+              }
               const row: TableCell[] = [
                 { text: r.name, fontSize: 9 },
                 { text: r.room, fontSize: 9 }

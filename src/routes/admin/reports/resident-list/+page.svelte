@@ -24,7 +24,8 @@
     CircleCheck,
     Trash2,
     ExternalLink,
-    Copy
+    Copy,
+    BookUser
   } from "lucide-svelte";
   import {
     fetchSheetRowsRaw,
@@ -35,16 +36,19 @@
   } from "$lib/google-sheets";
   import { loadGapiScript } from "$lib/gmail";
   import { matchesStatusFilter, fetchResidents } from "$lib/resident-logic";
-  import type { ResidentRecord } from "$lib/schemas";
+  import type { ResidentRecord, OfficerRecord } from "$lib/schemas";
   import { translatePeriod } from "$lib/receipt-utils";
   import { exportReportPDF } from "$lib/report-pdf";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import { fetchOfficers } from "$lib/admin-logic";
+  import { OfficerStatus } from "$lib/schemas";
 
   let isLoading = $state(true);
   let isProcessing = $state(false);
   let error = $state<string | null>(null);
   let allAccounts = $state<ResidentRecord[]>([]);
   let residents = $state<ResidentRecord[]>([]);
+  let officers = $state<OfficerRecord[]>([]);
 
   // Export Options
   let exportFormat = $state("pdf");
@@ -76,7 +80,8 @@
     { id: "half_fully_paid", label: "Half-Fully Paid", icon: Clock },
     { id: "partially_paid", label: "Partially Paid", icon: CircleAlert },
     { id: "no_payment", label: "No Payment", icon: Ban },
-    { id: "cleared", label: "Cleared", icon: UserCheck }
+    { id: "cleared", label: "Cleared", icon: UserCheck },
+    { id: "officers", label: "Active Officers", icon: BookUser }
   ];
 
   // Auto-generate title based on scope
@@ -104,21 +109,80 @@
       .join(", ") || "None"
   );
 
-  const filteredResidents = $derived(
-    residents.filter((r) => {
-      return selectedCategories.some((cat) => matchesStatusFilter(r, cat.toUpperCase()));
-    })
-  );
+  const filteredResidents = $derived.by(() => {
+    let result: (ResidentRecord & { position?: string; isOfficer?: boolean })[] = [];
+
+    if (selectedCategories.some((c) => c !== "officers")) {
+      result = residents
+        .filter((r) => {
+          return selectedCategories.some(
+            (cat) => cat !== "officers" && matchesStatusFilter(r, cat.toUpperCase())
+          );
+        })
+        .map((r) => ({ ...r, isOfficer: false }));
+    }
+
+    if (selectedCategories.includes("officers")) {
+      const currentSem = uiSettings.currentTerm.trim();
+      const activeOfficers = officers.filter(
+        (o) => o.status === OfficerStatus.ACTIVE && o.term === currentSem
+      );
+
+      const officerEntries = activeOfficers.map((o) => {
+        const res = allAccounts.find(
+          (a) => (a.email || "").toLowerCase() === (o.email || "").toLowerCase()
+        );
+        return {
+          email: o.email,
+          period: o.term,
+          room: res?.room || "N/A",
+          bed: res?.bed || "N/A",
+          name: o.name,
+          stno: res?.stno || `OFF-${o.id}`,
+          waterBase: res?.waterBase || 0,
+          waterPaid: res?.waterPaid || 0,
+          waterWaived: res?.waterWaived || 0,
+          waterBal: res?.waterBal || 0,
+          assocBase: res?.assocBase || 0,
+          assocPaid: res?.assocPaid || 0,
+          assocWaived: res?.assocWaived || 0,
+          assocBal: res?.assocBal || 0,
+          totalBase: res?.totalBase || 0,
+          paid: res?.paid || 0,
+          waived: res?.waived || 0,
+          bal: res?.bal || 0,
+          isFullyPaid: res?.isFullyPaid || false,
+          notes: res?.notes || "",
+          college: res?.college || "",
+          program: res?.program || "",
+          ceIssued: res?.ceIssued || "",
+          ceRefNo: res?.ceRefNo || "",
+          ceLink: res?.ceLink || "",
+          ceFullName: res?.ceFullName || "",
+          residentId: res?.residentId || "",
+          ledgerId: res?.ledgerId || "",
+          checkInDate: res?.checkInDate || "",
+          raw: res?.raw || [],
+          position: o.position,
+          isOfficer: true
+        };
+      });
+      result = [...result, ...officerEntries];
+    }
+
+    return result;
+  });
 
   async function loadData() {
     if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
-      const mapped = await fetchResidents();
+      const [mapped, officerList] = await Promise.all([fetchResidents(), fetchOfficers()]);
       const currentSem = uiSettings.currentTerm.trim();
 
       allAccounts = mapped;
       residents = mapped.filter((r) => r.period === currentSem);
+      officers = officerList;
 
       // Auto-Period
       const journalRows = await fetchSheetRowsRaw(
@@ -152,23 +216,36 @@
 
   function downloadCSV() {
     const isPublicMode = isPublic;
-    let headers = isPublicMode
-      ? ["Name", "Room", "Bed"]
-      : ["Name", "Email", "Room", "Bed", "Total Base", "Paid", "Waived", "Balance"];
+    const isOfficerReport =
+      selectedCategories.length === 1 && selectedCategories.includes("officers");
+
+    let headers = [];
+    if (isOfficerReport) {
+      headers = ["Position", "Name", "Room"];
+    } else {
+      headers = isPublicMode
+        ? ["Name", "Room", "Bed"]
+        : ["Name", "Email", "Room", "Bed", "Total Base", "Paid", "Waived", "Balance"];
+    }
 
     const rows = filteredResidents.map((r) => {
+      if (isOfficerReport) return [r.position, r.name, r.room];
       if (isPublicMode) return [r.name, r.room, r.bed];
       return [r.name, r.email, r.room, r.bed, r.totalBase, r.paid, r.waived, r.bal];
     });
 
     const csvContent = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .map((row) => row.map((cell) => `"${String(cell || "").replace(/"/g, '""')}"`).join(","))
       .join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `report_${selectedCategories.join("_")}_${uiSettings.currentTerm}.csv`;
     link.click();
+  }
+
+  async function handleExportOfficers() {
+    // Logic moved into categories
   }
 
   async function openPicker() {
@@ -234,6 +311,9 @@
       const baseName = `REPORT_${selectedCategories.join("_")}_${uiSettings.currentTerm}`;
       const sheetName = (isPublic ? `PUBLIC_${baseName}` : baseName).toUpperCase().slice(0, 31);
 
+      const isOfficerReport =
+        selectedCategories.length === 1 && selectedCategories.includes("officers");
+
       let targetId = "";
       if (sheetsTarget === "new") {
         if (!newSheetTitle) throw new Error("Please provide a title for the new sheet");
@@ -245,11 +325,17 @@
         await ensureSheetExists(targetId, sheetName);
       }
 
-      let headers = isPublic
-        ? ["NAME", "ROOM", "BED"]
-        : ["NAME", "EMAIL", "ROOM", "BED", "BASE", "PAID", "WAIVED", "BALANCE"];
+      let headers = [];
+      if (isOfficerReport) {
+        headers = ["POSITION", "NAME", "ROOM"];
+      } else {
+        headers = isPublic
+          ? ["NAME", "ROOM", "BED"]
+          : ["NAME", "EMAIL", "ROOM", "BED", "BASE", "PAID", "WAIVED", "BALANCE"];
+      }
 
       const rows = filteredResidents.map((r) => {
+        if (isOfficerReport) return [r.position, r.name, r.room];
         if (isPublic) return [r.name, r.room, r.bed];
         return [r.name, r.email, r.room, r.bed, r.totalBase, r.paid, r.waived, r.bal];
       });
@@ -282,6 +368,9 @@
 
     isProcessing = true;
     try {
+      const isOfficerReport =
+        selectedCategories.length === 1 && selectedCategories.includes("officers");
+
       if (exportFormat === "pdf") {
         await exportReportPDF({
           residents: filteredResidents,
@@ -289,6 +378,7 @@
           semester: translatePeriod(uiSettings.currentTerm),
           brandingKey: brandingState.selectedKey,
           isPublic: isPublic,
+          isOfficerReport,
           issuedBy,
           issuedByEmail: hideSignatoryEmails ? "" : issuedByEmail,
           assessedBy,
@@ -356,7 +446,14 @@
                       checked={selectedCategories.includes(cat.id)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          selectedCategories = [...selectedCategories, cat.id];
+                          if (cat.id === "officers") {
+                            selectedCategories = ["officers"];
+                          } else {
+                            selectedCategories = [
+                              ...selectedCategories.filter((id) => id !== "officers"),
+                              cat.id
+                            ];
+                          }
                         } else {
                           selectedCategories = selectedCategories.filter((id) => id !== cat.id);
                         }
