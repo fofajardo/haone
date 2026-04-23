@@ -87,7 +87,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title={user?.displayName || "User Profile"}>
+  <SubpageHeader title="View User">
     {#snippet actions()}
       <div class="flex gap-2">
         <Button
