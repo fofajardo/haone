@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
-  import { CircleCheckBig } from "lucide-svelte";
 </script>
 
 <Card.Root class="overflow-hidden">
@@ -38,8 +37,3 @@
     </div>
   </Card.Content>
 </Card.Root>
-
-<div class="flex items-center gap-2 px-1 text-xs font-medium text-muted-foreground/60">
-  <CircleCheckBig class="h-3.5 w-3.5 text-green-600/50" />
-  Settings persist in this browser.
-</div>
