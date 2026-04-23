@@ -9,8 +9,21 @@
   import Underline from "@tiptap/extension-underline";
   import Placeholder from "@tiptap/extension-placeholder";
   import Image from "@tiptap/extension-image";
+  import { Table } from "@tiptap/extension-table";
+  import { TableRow } from "@tiptap/extension-table-row";
+  import { TableHeader } from "@tiptap/extension-table-header";
+  import { TableCell } from "@tiptap/extension-table-cell";
+  import { TextAlign } from "@tiptap/extension-text-align";
+  import { Highlight } from "@tiptap/extension-highlight";
+  import { TextStyle } from "@tiptap/extension-text-style";
+  import { Color } from "@tiptap/extension-color";
+  import { Subscript } from "@tiptap/extension-subscript";
+  import { Superscript } from "@tiptap/extension-superscript";
+  import { TaskList } from "@tiptap/extension-task-list";
+  import { TaskItem } from "@tiptap/extension-task-item";
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
+  import * as Popover from "$lib/components/ui/popover";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { transformGoogleDriveLink, compressImage, fetchServer } from "$lib/utils";
@@ -25,7 +38,20 @@
     Link as LinkIcon,
     Unlink,
     RotateCcw,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Highlighter,
+    Subscript as SubscriptIcon,
+    Superscript as SuperscriptIcon,
+    Table as TableIcon,
+    Palette,
+    Trash2,
+    TextAlignStart,
+    TextAlignCenter,
+    TextAlignEnd,
+    TextAlignJustify,
+    SquareCheckBig,
+    Rows2,
+    Columns2
   } from "lucide-svelte";
 
   let {
@@ -177,6 +203,27 @@
         }),
         Placeholder.configure({
           placeholder
+        }),
+        Table.configure({
+          resizable: true,
+          HTMLAttributes: {
+            class: "border-collapse table-fixed w-full"
+          }
+        }),
+        TableRow,
+        TableHeader,
+        TableCell,
+        TextAlign.configure({
+          types: ["heading", "paragraph"]
+        }),
+        Highlight.configure({ multicolor: true }),
+        TextStyle,
+        Color,
+        Subscript,
+        Superscript,
+        TaskList,
+        TaskItem.configure({
+          nested: true
         })
       ],
       content,
@@ -222,105 +269,350 @@
   <!-- Fixed Toolbar -->
   {#if editable && editor}
     {#key selectionState}
-      <div class="flex flex-wrap items-center gap-1 border-b bg-muted/50 p-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 transition-colors {editor.isActive('bold')
-            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-          onclick={() => editor?.chain().focus().toggleBold().run()}
-          icon={Bold}
-          iconClass="size-3.5"
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 transition-colors {editor.isActive('italic')
-            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-          onclick={() => editor?.chain().focus().toggleItalic().run()}
-          icon={Italic}
-          iconClass="size-3.5"
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 transition-colors {editor.isActive('underline')
-            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-          onclick={() => editor?.chain().focus().toggleUnderline().run()}
-          icon={UnderlineIcon}
-          iconClass="size-3.5"
-        />
-
-        <div class="mx-1 h-4 w-[1px] bg-border"></div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 transition-colors {editor.isActive('bulletList')
-            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-          onclick={() => editor?.chain().focus().toggleBulletList().run()}
-          icon={List}
-          iconClass="size-3.5"
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 transition-colors {editor.isActive('orderedList')
-            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-          onclick={() => editor?.chain().focus().toggleOrderedList().run()}
-          icon={ListOrdered}
-          iconClass="size-3.5"
-        />
-
-        <div class="mx-1 h-4 w-[1px] bg-border"></div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 transition-colors {editor.isActive('link')
-            ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
-            : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-          onclick={openLinkDialog}
-          icon={LinkIcon}
-          iconClass="size-3.5"
-        />
-        {#if editor.isActive("link")}
+      <div class="flex flex-col border-b bg-muted/50">
+        <!-- Text Formatting Toolbar -->
+        <div class="flex flex-wrap items-center gap-1 p-2">
+          <!-- History -->
           <Button
             variant="ghost"
             size="sm"
-            class="size-8 text-destructive hover:bg-destructive/10"
-            onclick={() => editor?.chain().focus().unsetLink().run()}
-            icon={Unlink}
+            class="size-8 text-muted-foreground hover:bg-muted hover:text-foreground"
+            onclick={() => editor?.chain().focus().undo().run()}
+            icon={RotateCcw}
+            iconClass="size-3.5"
+            title="Undo"
+          />
+
+          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+
+          <!-- Basic Marks -->
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('bold')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleBold().run()}
+            icon={Bold}
+            iconClass="size-3.5"
+            title="Bold"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('italic')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleItalic().run()}
+            icon={Italic}
+            iconClass="size-3.5"
+            title="Italic"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('underline')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleUnderline().run()}
+            icon={UnderlineIcon}
+            iconClass="size-3.5"
+            title="Underline"
+          />
+
+          <!-- Color & Highlight -->
+          <Popover.Root>
+            <Popover.Trigger>
+              <Button
+                variant="ghost"
+                size="sm"
+                class="size-8 transition-colors {editor.isActive('textStyle') &&
+                editor.getAttributes('textStyle').color
+                  ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+                icon={Palette}
+                iconClass="size-3.5"
+                title="Text Color"
+              />
+            </Popover.Trigger>
+            <Popover.Content class="w-40 p-2">
+              <div class="grid grid-cols-5 gap-1">
+                {#each ["inherit", "#ef4444", "#f97316", "#f59e0b", "#10b981", "#3b82f6", "#6366f1", "#8b5cf6", "#d946ef", "#000000"] as color}
+                  <button
+                    class="size-6 rounded-md border border-border transition-transform hover:scale-110"
+                    style="background-color: {color === 'inherit' ? 'transparent' : color}"
+                    onclick={() => {
+                      if (color === "inherit") {
+                        editor?.chain().focus().unsetColor().run();
+                      } else {
+                        editor?.chain().focus().setColor(color).run();
+                      }
+                    }}
+                    title={color}
+                  >
+                    {#if color === "inherit"}
+                      <RotateCcw class="mx-auto size-3" />
+                    {/if}
+                  </button>
+                {/each}
+              </div>
+            </Popover.Content>
+          </Popover.Root>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('highlight')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleHighlight().run()}
+            icon={Highlighter}
+            iconClass="size-3.5"
+            title="Highlight"
+          />
+
+          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+
+          <!-- Script -->
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('subscript')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleSubscript().run()}
+            icon={SubscriptIcon}
+            iconClass="size-3.5"
+            title="Subscript"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('superscript')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleSuperscript().run()}
+            icon={SuperscriptIcon}
+            iconClass="size-3.5"
+            title="Superscript"
+          />
+
+          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+
+          <!-- Alignment -->
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive({ textAlign: 'left' })
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().setTextAlign("left").run()}
+            icon={TextAlignStart}
+            iconClass="size-3.5"
+            title="Align Left"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive({ textAlign: 'center' })
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().setTextAlign("center").run()}
+            icon={TextAlignCenter}
+            iconClass="size-3.5"
+            title="Align Center"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive({ textAlign: 'right' })
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().setTextAlign("right").run()}
+            icon={TextAlignEnd}
+            iconClass="size-3.5"
+            title="Align Right"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive({ textAlign: 'justify' })
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().setTextAlign("justify").run()}
+            icon={TextAlignJustify}
+            iconClass="size-3.5"
+            title="Justify"
+          />
+
+          <div class="flex-grow"></div>
+
+          <!-- Utilities -->
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onclick={() => editor?.chain().focus().clearNodes().unsetAllMarks().run()}
+            title="Clear formatting"
+            icon={RotateCcw}
             iconClass="size-3.5"
           />
+        </div>
+
+        <!-- Content Elements Row -->
+        <div class="flex flex-wrap items-center gap-1 border-t bg-muted/10 p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('bulletList')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleBulletList().run()}
+            icon={List}
+            iconClass="size-3.5"
+            title="Bullet List"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('orderedList')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleOrderedList().run()}
+            icon={ListOrdered}
+            iconClass="size-3.5"
+            title="Ordered List"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('taskList')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() => editor?.chain().focus().toggleTaskList().run()}
+            icon={SquareCheckBig}
+            iconClass="size-3.5"
+            title="Task List"
+          />
+
+          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('table')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={() =>
+              editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+            icon={TableIcon}
+            iconClass="size-3.5"
+            title="Insert Table"
+          />
+
+          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 transition-colors {editor.isActive('link')
+              ? 'border-border bg-background text-foreground shadow-sm ring-1 ring-border'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+            onclick={openLinkDialog}
+            icon={LinkIcon}
+            iconClass="size-3.5"
+            title="Link"
+          />
+          {#if editor.isActive("link")}
+            <Button
+              variant="ghost"
+              size="sm"
+              class="size-8 text-destructive hover:bg-destructive/10"
+              onclick={() => editor?.chain().focus().unsetLink().run()}
+              icon={Unlink}
+              iconClass="size-3.5"
+              title="Unlink"
+            />
+          {/if}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            onclick={openImageDialog}
+            icon={ImageIcon}
+            iconClass="size-3.5"
+            title="Insert Image"
+          />
+        </div>
+
+        <!-- Table Row Modification Row -->
+        {#if editor.isActive("table")}
+          <div class="flex flex-wrap items-center gap-1 border-t bg-muted/20 p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 gap-2 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              onclick={() => editor?.chain().focus().addColumnBefore().run()}
+            >
+              <Columns2 class="size-3" /> Col Before
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 gap-2 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              onclick={() => editor?.chain().focus().addColumnAfter().run()}
+            >
+              <Columns2 class="size-3" /> Col After
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 gap-2 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              onclick={() => editor?.chain().focus().deleteColumn().run()}
+            >
+              <Trash2 class="size-3" /> Del Col
+            </Button>
+
+            <div class="mx-1 h-4 w-[1px] bg-border"></div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 gap-2 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              onclick={() => editor?.chain().focus().addRowBefore().run()}
+            >
+              <Rows2 class="size-3" /> Row Before
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 gap-2 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              onclick={() => editor?.chain().focus().addRowAfter().run()}
+            >
+              <Rows2 class="size-3" /> Row After
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 gap-2 px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+              onclick={() => editor?.chain().focus().deleteRow().run()}
+            >
+              <Trash2 class="size-3" /> Del Row
+            </Button>
+
+            <div class="mx-1 h-4 w-[1px] bg-border"></div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              class="h-8 gap-2 px-2 text-xs text-destructive hover:bg-destructive/10"
+              onclick={() => editor?.chain().focus().deleteTable().run()}
+            >
+              <Trash2 class="size-3" /> Delete Table
+            </Button>
+          </div>
         {/if}
-
-        <div class="flex-grow"></div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          onclick={openImageDialog}
-          icon={ImageIcon}
-          iconClass="size-3.5"
-          title="Insert Image"
-        />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          class="size-8 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          onclick={() => editor?.chain().focus().clearNodes().unsetAllMarks().run()}
-          title="Clear formatting"
-          icon={RotateCcw}
-          iconClass="size-3.5"
-        />
       </div>
     {/key}
   {/if}
@@ -442,5 +734,85 @@
     color: var(--brand);
     text-decoration: underline;
     font-weight: 500;
+  }
+
+  :global(.tiptap table) {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  :global(.tiptap table td, .tiptap table th) {
+    min-width: 1em;
+    border: 1px solid var(--border);
+    padding: 3px 5px;
+    vertical-align: top;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  :global(.tiptap table td > *, .tiptap table th > *) {
+    margin-bottom: 0;
+  }
+
+  :global(.tiptap table th) {
+    font-weight: bold;
+    text-align: left;
+    background-color: var(--muted);
+  }
+
+  :global(.tiptap table .selectedCell:after) {
+    z-index: 2;
+    position: absolute;
+    content: "";
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(200, 200, 255, 0.4);
+    pointer-events: none;
+  }
+
+  :global(.tiptap table .column-resize-handle) {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: -2px;
+    width: 4px;
+    background-color: var(--brand);
+    pointer-events: none;
+  }
+
+  :global(.tiptap .tableWrapper) {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  :global(.tiptap ul[data-type="taskList"]) {
+    list-style: none !important;
+    padding: 0 !important;
+  }
+
+  :global(.tiptap ul[data-type="taskList"] li) {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem !important;
+  }
+
+  :global(.tiptap ul[data-type="taskList"] li > label) {
+    flex: 0 0 auto;
+    user-select: none;
+    margin-top: 0.25rem;
+  }
+
+  :global(.tiptap ul[data-type="taskList"] li > div) {
+    flex: 1 1 auto;
+  }
+
+  :global(.tiptap ul[data-type="taskList"] input[type="checkbox"]) {
+    cursor: pointer;
   }
 </style>
