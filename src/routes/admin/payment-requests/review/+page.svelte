@@ -319,7 +319,7 @@
                   </div>
                 {/if}
 
-                {#if uiSettings.firebaseEnabled && currentPayment.proofLink?.includes("/api/image/")}
+                {#if currentPayment.proofLink?.includes("/api/image/")}
                   <div
                     class="mt-2 flex items-start gap-3 rounded-lg border border-brand/20 bg-brand/5 p-3"
                   >
