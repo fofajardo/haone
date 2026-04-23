@@ -5,13 +5,13 @@
   import { testAccess } from "$lib/google-sheets";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/crypto";
   import { Button } from "$lib/components/ui/button";
-  import { LogIn, LoaderCircle, ShieldCheck, User } from "lucide-svelte";
+  import { User, LoaderIcon } from "lucide-svelte";
   import { goto, replaceState } from "$app/navigation";
   import branding from "$lib/branding.json";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { PUBLIC_GI_CLIENT_ID, PUBLIC_RESIDENT_GI_CLIENT_ID } from "$env/static/public";
 
-  let isLoggingIn = $state(false);
+  let isSigningIn = $state(false);
   let isLoadingAuth = $state(true);
   let rememberMe = $state(true);
   let currentAuthType = $state<"admin" | "resident">("resident");
@@ -33,7 +33,7 @@
       (sessionStorage.getItem("pkce_auth_type") as "admin" | "resident") || "resident";
 
     if (code) {
-      isLoggingIn = true;
+      isSigningIn = true;
       try {
         const verifier = sessionStorage.getItem("pkce_verifier");
         if (!verifier) {
@@ -89,7 +89,7 @@
           };
         }
       } finally {
-        isLoggingIn = false;
+        isSigningIn = false;
         replaceState(window.location.pathname, {});
       }
     }
@@ -110,7 +110,7 @@
   });
 
   async function handleLogin(type: "admin" | "resident" = "resident") {
-    isLoggingIn = true;
+    isSigningIn = true;
     currentAuthType = type;
     const clientId = type === "admin" ? PUBLIC_GI_CLIENT_ID : PUBLIC_RESIDENT_GI_CLIENT_ID;
 
@@ -174,36 +174,32 @@
     </div>
 
     <div class="animate-in space-y-3 pt-6 duration-1000 fade-in slide-in-from-bottom-4">
-      <Button
-        onclick={() => handleLogin("resident")}
-        disabled={isLoggingIn || isLoadingAuth}
-        class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
-      >
-        {#if isLoggingIn && currentAuthType === "resident"}
-          <LoaderCircle class="mr-2 h-5 w-5 animate-spin" />
-          Signing in…
-        {:else if isLoadingAuth}
-          <LoaderCircle class="mr-2 h-5 w-5 animate-spin" />
-          Loading…
-        {:else}
+      {#if isSigningIn || isLoadingAuth}
+        <div
+          class="flex animate-in items-center justify-center space-x-3 py-10 duration-500 zoom-in-95 fade-in"
+        >
+          <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
+          {#if isSigningIn}
+            <p class="text-sm font-bold tracking-tight text-foreground uppercase">Signing in…</p>
+          {/if}
+        </div>
+      {:else}
+        <Button
+          onclick={() => handleLogin("resident")}
+          class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
+        >
           <User class="mr-2 h-5 w-5" />
           Sign In
-        {/if}
-      </Button>
+        </Button>
 
-      <Button
-        variant="ghost"
-        onclick={() => handleLogin("admin")}
-        disabled={isLoggingIn || isLoadingAuth}
-        class="h-12 w-full rounded-xl text-sm font-bold transition-all hover:bg-muted active:scale-[0.98]"
-      >
-        {#if isLoggingIn && currentAuthType === "admin"}
-          <LoaderCircle class="mr-2 h-4 w-4 animate-spin" />
-          Signing in…
-        {:else}
+        <Button
+          variant="ghost"
+          onclick={() => handleLogin("admin")}
+          class="h-12 w-full rounded-xl text-sm font-bold transition-all hover:bg-muted active:scale-[0.98]"
+        >
           Sign In as House Council Officer
-        {/if}
-      </Button>
+        </Button>
+      {/if}
     </div>
   </div>
 
