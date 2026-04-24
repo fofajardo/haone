@@ -316,11 +316,11 @@
           "relative grid overflow-hidden rounded-xl border bg-background",
           viewMode === "week" ? "grid-cols-[60px_repeat(7,1fr)]" : "grid-cols-[60px_1fr]"
         )}
-        style="grid-template-rows: 80px repeat({hours.length}, 60px);"
+        style="grid-template-rows: 80px repeat({hours.length}, 60px) 30px;"
       >
         <!-- Header -->
         <div
-          class="flex items-end justify-center border-b bg-muted/30 p-2 text-xs font-semibold text-muted-foreground uppercase"
+          class="flex items-center justify-center border-b bg-muted/30 p-2 text-xs font-semibold text-muted-foreground uppercase"
           style="grid-row: 1; grid-column: 1;"
         >
           Time
@@ -355,10 +355,21 @@
         {#each hours as hour, hourIdx}
           <!-- Time Label -->
           <div
-            class="flex items-center justify-center border-b bg-muted/5 p-2 text-xs font-bold text-muted-foreground"
+            class="relative flex justify-end border-b bg-muted/5 p-0 text-xs font-bold text-muted-foreground uppercase"
             style="grid-row: {hourIdx + 2}; grid-column: 1;"
           >
-            {hour.toString().padStart(2, "0")}:00
+            <span
+              class="absolute top-0 right-2 z-20 -translate-y-1/2 bg-background px-1 text-muted-foreground/60"
+            >
+              {hour.toString().padStart(2, "0")}:00
+            </span>
+            {#if hourIdx === hours.length - 1}
+              <span
+                class="absolute right-2 bottom-0 z-20 translate-y-1/2 bg-background px-1 text-muted-foreground/60"
+              >
+                {(hour + 1).toString().padStart(2, "0")}:00
+              </span>
+            {/if}
           </div>
 
           {#each weekDays as day, dayIdx}
@@ -389,6 +400,15 @@
               aria-label="Select slot for {dateStr} at {hour}:00"
             ></button>
           {/each}
+        {/each}
+
+        <!-- Bottom Spacer Row -->
+        <div class="bg-muted/5" style="grid-row: {hours.length + 2}; grid-column: 1;"></div>
+        {#each weekDays as day, dayIdx}
+          <div
+            class="border-l bg-transparent"
+            style="grid-row: {hours.length + 2}; grid-column: {dayIdx + 2};"
+          ></div>
         {/each}
 
         {#each weekDays as day, dayIdx}
