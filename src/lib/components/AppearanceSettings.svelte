@@ -124,5 +124,28 @@
       <Label>Reduced Motion</Label>
       <Switch bind:checked={uiSettings.reducedMotion} />
     </div>
+
+    <div class="h-px bg-border/50"></div>
+
+    <!-- Time Format -->
+    <div class="space-y-3">
+      <Label>Time Format</Label>
+      <div class="grid grid-cols-2 gap-2">
+        <Button
+          variant={uiSettings.clockFormat === "12h" ? "default" : "outline"}
+          class="h-10"
+          onclick={() => (uiSettings.clockFormat = "12h")}
+        >
+          12-hour (AM/PM)
+        </Button>
+        <Button
+          variant={uiSettings.clockFormat === "24h" ? "default" : "outline"}
+          class="h-10"
+          onclick={() => (uiSettings.clockFormat = "24h")}
+        >
+          24-hour
+        </Button>
+      </div>
+    </div>
   </Card.Content>
 </Card.Root>

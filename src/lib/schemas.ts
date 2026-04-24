@@ -282,7 +282,8 @@ export const USER_SETTINGS_COL = {
   DENSITY: 4,
   TYPOGRAPHY: 5,
   THEME: 6,
-  IS_REDUCED_MOTION: 7
+  IS_REDUCED_MOTION: 7,
+  CLOCK_FORMAT: 8
 } as const;
 
 export enum LaundryStatus {
@@ -423,5 +424,6 @@ export interface UserSettingsRecord {
   typography: string;
   theme: string;
   isReducedMotion: boolean;
+  clockFormat: string;
   raw: string[];
 }

@@ -125,6 +125,7 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
         typography: data.typography || "",
         theme: data.theme || "",
         isReducedMotion: data.isReducedMotion || false,
+        clockFormat: data.clockFormat || "12h",
         raw: []
       }
     ];
@@ -140,6 +141,7 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
         typography: "inter",
         theme: "system",
         isReducedMotion: false,
+        clockFormat: "12h",
         raw: []
       }
     ];
@@ -156,6 +158,7 @@ export async function updateUserSettings(
     typography?: string;
     theme?: string;
     isReducedMotion?: boolean;
+    clockFormat?: string;
   }
 ) {
   const payload: any = {};
@@ -166,6 +169,7 @@ export async function updateUserSettings(
   if (data.typography !== undefined) payload.typography = data.typography;
   if (data.theme !== undefined) payload.theme = data.theme;
   if (data.isReducedMotion !== undefined) payload.isReducedMotion = data.isReducedMotion;
+  if (data.clockFormat !== undefined) payload.clockFormat = data.clockFormat;
 
   return await fetchServer("/api/resident/settings", {
     method: "PATCH",

@@ -19,6 +19,7 @@ class UISettings {
   #isPublicAchievementList = $state(true);
   #residentNavIds = $state<string[]>(["home", "finance", "laundry"]);
   #adminNavIds = $state<string[]>(["dashboard", "history", "residents", "officers"]);
+  #clockFormat = $state<"12h" | "24h">("12h");
 
   #currentTerm = $state<string>("");
   #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");
@@ -36,6 +37,7 @@ class UISettings {
       this.#accountingWorkbookId = localStorage.getItem(LS_KEYS.GS_AW_ID) || PUBLIC_GS_AW_ID || "";
       this.#residentRecordsId = localStorage.getItem(LS_KEYS.GS_RR_ID) || PUBLIC_GS_RR_ID || "";
       this.#sharedRecordsId = localStorage.getItem(LS_KEYS.GS_SR_ID) || PUBLIC_GS_SR_ID || "";
+      this.#clockFormat = (localStorage.getItem("halsk.ui.clock_format") as "12h" | "24h") || "12h";
 
       const sn = localStorage.getItem("halsk.ui.nav.res");
       if (sn) this.#residentNavIds = JSON.parse(sn);
@@ -100,6 +102,14 @@ class UISettings {
     if (browser) localStorage.setItem("halsk.ui.nav.adm", JSON.stringify(v));
   }
 
+  get clockFormat() {
+    return this.#clockFormat;
+  }
+  set clockFormat(v: "12h" | "24h") {
+    this.#clockFormat = v;
+    if (browser) localStorage.setItem("halsk.ui.clock_format", v);
+  }
+
   get currentTerm() {
     return this.#currentTerm;
   }
@@ -150,6 +160,7 @@ class UISettings {
         if (my.typography) this.fontFamily = my.typography as UIFont;
         if (my.density) this.displayDensity = my.density as DisplayDensity;
         if (my.theme) this.theme = my.theme;
+        if (my.clockFormat) this.clockFormat = my.clockFormat as "12h" | "24h";
         this.reducedMotion = !!my.isReducedMotion;
         this.isPublicAchievementList = my.isPublicAchievementList !== false;
 
@@ -177,7 +188,8 @@ class UISettings {
       isReducedMotion: this.reducedMotion,
       isPublic: this.isPublicAchievementList,
       residentNav: this.residentNavIds.join(","),
-      adminNav: this.adminNavIds.join(",")
+      adminNav: this.adminNavIds.join(","),
+      clockFormat: this.clockFormat
     });
   }
 }

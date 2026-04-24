@@ -33,7 +33,8 @@ export const GET: RequestHandler = async ({ request }) => {
         density: "default",
         typography: "inter",
         theme: "system",
-        isReducedMotion: false
+        isReducedMotion: false,
+        clockFormat: "12h"
       });
     }
 
@@ -46,7 +47,7 @@ export const GET: RequestHandler = async ({ request }) => {
       );
     }
 
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:H");
+    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:I");
     const settings = rows.find(
       (r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
@@ -70,7 +71,8 @@ export const GET: RequestHandler = async ({ request }) => {
       theme: settings ? settings[USER_SETTINGS_COL.THEME] || "system" : "system",
       isReducedMotion: settings
         ? (settings[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE"
-        : false
+        : false,
+      clockFormat: settings ? settings[USER_SETTINGS_COL.CLOCK_FORMAT] || "12h" : "12h"
     });
   } catch (e: any) {
     return serverError(e, "Settings fetch");
@@ -93,7 +95,8 @@ export const PATCH: RequestHandler = async ({ request }) => {
       density,
       typography,
       theme,
-      isReducedMotion
+      isReducedMotion,
+      clockFormat
     } = data;
 
     const client = await getSheetsClient();
@@ -104,7 +107,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
     if (!user) return json({ error: "Resident record not found" }, { status: 404 });
     const residentId = user[USER_COL.ID];
 
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:H");
+    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:I");
     const rowIndex = rows.findIndex(
       (r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
@@ -128,6 +131,10 @@ export const PATCH: RequestHandler = async ({ request }) => {
       isReducedMotion !== undefined
         ? String(isReducedMotion).toUpperCase()
         : currentRecord[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "FALSE";
+    const clockFormatVal =
+      clockFormat !== undefined
+        ? clockFormat
+        : currentRecord[USER_SETTINGS_COL.CLOCK_FORMAT] || "24h";
 
     const finalValues = [
       isPublicVal,
@@ -136,18 +143,19 @@ export const PATCH: RequestHandler = async ({ request }) => {
       densityVal,
       typographyVal,
       themeVal,
-      reducedMotionVal
+      reducedMotionVal,
+      clockFormatVal
     ];
 
     if (rowIndex === -1) {
       // Append new row
-      await appendSheetValue(client, PUBLIC_GS_SR_ID, "settings!A:H", [
+      await appendSheetValue(client, PUBLIC_GS_SR_ID, "settings!A:I", [
         [residentId, ...finalValues]
       ]);
     } else {
       // Update existing row
       const actualRow = rowIndex + 1;
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/settings!B${actualRow}:H${actualRow}?valueInputOption=USER_ENTERED`;
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/settings!B${actualRow}:I${actualRow}?valueInputOption=USER_ENTERED`;
 
       await fetch(url, {
         method: "PUT",

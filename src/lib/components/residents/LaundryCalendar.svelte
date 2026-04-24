@@ -9,6 +9,7 @@
   import * as Sheet from "$lib/components/ui/sheet";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { brandingState } from "$lib/branding.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
   import {
     Info,
     User as UserIcon,
@@ -359,15 +360,23 @@
             style="grid-row: {hourIdx + 2}; grid-column: 1;"
           >
             <span
-              class="absolute top-0 right-2 z-20 -translate-y-1/2 bg-background px-1 text-muted-foreground/60"
+              class="absolute inset-x-0 top-0 z-20 flex -translate-y-1/2 items-center justify-center"
             >
-              {hour.toString().padStart(2, "0")}:00
+              <span class="bg-background px-1 text-muted-foreground">
+                {uiSettings.clockFormat === "12h"
+                  ? `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`
+                  : `${hour.toString().padStart(2, "0")}:00`}
+              </span>
             </span>
             {#if hourIdx === hours.length - 1}
               <span
-                class="absolute right-2 bottom-0 z-20 translate-y-1/2 bg-background px-1 text-muted-foreground/60"
+                class="absolute inset-x-0 bottom-0 z-20 flex translate-y-1/2 items-center justify-center"
               >
-                {(hour + 1).toString().padStart(2, "0")}:00
+                <span class="bg-background px-1 text-muted-foreground">
+                  {uiSettings.clockFormat === "12h"
+                    ? `${(hour + 1) % 12 || 12} ${hour + 1 >= 12 ? "PM" : "AM"}`
+                    : `${(hour + 1).toString().padStart(2, "0")}:00`}
+                </span>
               </span>
             {/if}
           </div>
