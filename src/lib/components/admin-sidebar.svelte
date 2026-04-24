@@ -90,23 +90,26 @@
     }
   ];
 
-  const secondaryItems = [
-    {
-      title: "Resident View",
-      url: "/resident",
-      icon: LayoutDashboard
-    },
-    {
-      title: "Email Dispatcher",
-      url: "/admin/email-dispatcher",
-      icon: Mail
-    },
-    {
-      title: "Settings",
-      url: "/admin/settings",
-      icon: Settings
-    }
-  ];
+  const secondaryItems = $derived(
+    [
+      {
+        title: "Resident View",
+        url: "/resident",
+        icon: LayoutDashboard,
+        hide: auth.isInstanceAdmin
+      },
+      {
+        title: "Email Dispatcher",
+        url: "/admin/email-dispatcher",
+        icon: Mail
+      },
+      {
+        title: "Settings",
+        url: "/admin/settings",
+        icon: Settings
+      }
+    ].filter((i) => !i.hide)
+  );
 
   const serviceItems = [
     {

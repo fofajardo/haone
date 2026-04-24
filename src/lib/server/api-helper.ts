@@ -1,5 +1,5 @@
 import { json } from "@sveltejs/kit";
-import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
+import { GOOGLE_SERVICE_ACCOUNT_JSON, INSTANCE_ADMIN } from "$env/static/private";
 
 /**
  * Base64url encoding helper
@@ -242,9 +242,22 @@ export async function authenticateResident(request: Request) {
     const userData = await userinfoResp.json();
     const email = userData.email.trim().toLowerCase();
 
+    // Resolve instance admin to allow bypass
+    const isInstanceAdmin = email === (INSTANCE_ADMIN || "").trim().toLowerCase();
+
+    // Domain restriction: all sign-ins must be @up.edu.ph, UNLESS it's the instance admin
+    if (!isInstanceAdmin && !email.endsWith("@up.edu.ph")) {
+      return {
+        error: json(
+          { error: "forbidden_domain", message: "Only @up.edu.ph emails are allowed." },
+          { status: 403 }
+        )
+      };
+    }
+
     // Optionally resolve residentId if needed by common routes
     let residentId = "";
-    if (email) {
+    if (email && !isInstanceAdmin) {
       try {
         const { PUBLIC_GS_RR_ID } = await import("$env/static/public");
         const { USER_COL } = await import("$lib/schemas");
@@ -257,7 +270,7 @@ export async function authenticateResident(request: Request) {
       }
     }
 
-    return { email, residentId };
+    return { email, residentId, isInstanceAdmin };
   } catch (e: any) {
     console.error("Auth validation failed:", e);
     return {

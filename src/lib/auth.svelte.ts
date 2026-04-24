@@ -16,6 +16,7 @@ class AuthState {
   initialized = $state(false);
   cachedPicture = $state<string | null>(null);
   authType = $state<"admin" | "resident" | null>(null);
+  isInstanceAdmin = $state(false);
 
   constructor() {
     if (browser) {
@@ -29,6 +30,7 @@ class AuthState {
         this.isRemembered = true;
         this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
         this.authType = (localStorage.getItem("halsk.auth.type") as "admin" | "resident") || null;
+        this.isInstanceAdmin = localStorage.getItem("halsk.auth.is_admin") === "true";
       }
       this.initialized = true;
     }
@@ -61,18 +63,21 @@ class AuthState {
     token: string,
     user: UserInfo,
     remember: boolean,
-    type: "admin" | "resident" = "admin"
+    type: "admin" | "resident" = "admin",
+    isInstanceAdmin: boolean = false
   ) {
     this.accessToken = token;
     this.user = user;
     this.isRemembered = remember;
     this.authType = type;
+    this.isInstanceAdmin = isInstanceAdmin;
 
     if (browser && remember) {
       localStorage.setItem(LS_KEYS.ACCESS_TOKEN, token);
       localStorage.setItem(LS_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(LS_KEYS.REMEMBER, "true");
       localStorage.setItem("halsk.auth.type", type);
+      localStorage.setItem("halsk.auth.is_admin", String(isInstanceAdmin));
       this.ensureCachedPicture();
     }
   }
@@ -88,8 +93,10 @@ class AuthState {
       localStorage.removeItem(LS_KEYS.REMEMBER);
       localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
       localStorage.removeItem("halsk.auth.type");
+      localStorage.removeItem("halsk.auth.is_admin");
       this.cachedPicture = null;
       this.authType = null;
+      this.isInstanceAdmin = false;
     }
   }
 

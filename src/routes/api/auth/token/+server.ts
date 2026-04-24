@@ -1,5 +1,5 @@
 import { json } from "@sveltejs/kit";
-import { GI_CLIENT_SECRET, RESIDENT_GI_CLIENT_SECRET } from "$env/static/private";
+import { GI_CLIENT_SECRET, RESIDENT_GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
 import { PUBLIC_GI_CLIENT_ID, PUBLIC_RESIDENT_GI_CLIENT_ID } from "$env/static/public";
 import type { RequestHandler } from "./$types";
 
@@ -26,12 +26,37 @@ export const POST: RequestHandler = async ({ request }) => {
     });
 
     const data = await tokenResp.json();
+    if (!tokenResp.ok) return json(data, { status: tokenResp.status });
 
-    if (!tokenResp.ok) {
-      return json(data, { status: tokenResp.status });
+    const accessToken = data.access_token;
+
+    // Fetch userinfo to check domain/admin
+    const userinfoResp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    if (!userinfoResp.ok) {
+      return json({ error: "failed_userinfo", message: "Failed to fetch profile info" }, { status: 500 });
     }
 
-    return json(data);
+    const userData = await userinfoResp.json();
+    const email = userData.email.trim().toLowerCase();
+
+    const isInstanceAdmin = email === (INSTANCE_ADMIN || "").trim().toLowerCase();
+
+    // Enforce domain check here too
+    if (!isInstanceAdmin && !email.endsWith("@up.edu.ph")) {
+      return json(
+        { error: "forbidden_domain", error_description: "Only @up.edu.ph emails allowed." },
+        { status: 403 }
+      );
+    }
+
+    return json({
+      ...data,
+      user: userData,
+      isInstanceAdmin
+    });
   } catch (e: any) {
     return json({ error: "server_error", error_description: e.message }, { status: 500 });
   }

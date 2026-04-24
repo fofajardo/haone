@@ -178,15 +178,6 @@ export async function fetchWithAuth(
   return resp;
 }
 
-/**
- * Tests connectivity to a spreadsheet with an explicit token.
- * Useful for pre-login verification.
- */
-export async function testAccess(spreadsheetId: string, token: string) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=spreadsheetId`;
-  await fetchWithAuth(url, "Connection test failed", {}, token);
-}
-
 export interface SheetRow {
   [key: string]: string;
 }

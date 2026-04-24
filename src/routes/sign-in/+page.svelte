@@ -2,10 +2,9 @@
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
-  import { testAccess } from "$lib/google-sheets";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/crypto";
   import { Button } from "$lib/components/ui/button";
-  import { User, LoaderIcon } from "lucide-svelte";
+  import { LoaderIcon } from "lucide-svelte";
   import { goto, replaceState } from "$app/navigation";
   import branding from "$lib/branding.json";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -65,21 +64,10 @@
           throw new Error(err.error_description || "Token exchange failed");
         }
 
-        const { access_token: accessToken } = await tokenResp.json();
+        const tokenData = await tokenResp.json();
+        const { access_token: accessToken, user: userInfo, isInstanceAdmin } = tokenData;
 
-        // Parallelize profile fetch and access verification
-        const [userInfo] = await Promise.all([
-          auth.fetchUserInfo(accessToken),
-          savedType === "admin"
-            ? testAccess(uiSettings.accountingWorkbookId, accessToken)
-            : Promise.resolve()
-        ]);
-
-        if (savedType === "resident" && !userInfo.email.endsWith("@up.edu.ph")) {
-          throw new Error("Only UP Mail accounts (@up.edu.ph) are allowed for residents.");
-        }
-
-        auth.setSession(accessToken, userInfo, rememberMe, savedType);
+        auth.setSession(accessToken, userInfo, rememberMe, savedType, isInstanceAdmin);
 
         sessionStorage.removeItem("pkce_verifier");
         sessionStorage.removeItem("pkce_auth_type");

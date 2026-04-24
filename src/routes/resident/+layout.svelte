@@ -53,11 +53,18 @@
       return;
     }
 
-    if (auth.accessToken && residentState.status) {
-      if (residentState.needsOnboarding && !isOnboardingPage) {
-        goto("/resident/onboarding");
-      } else if (!residentState.needsOnboarding && isOnboardingPage) {
-        goto("/resident");
+    if (auth.accessToken) {
+      if (auth.isInstanceAdmin && pathname.startsWith("/resident")) {
+        goto("/admin");
+        return;
+      }
+
+      if (residentState.status) {
+        if (residentState.needsOnboarding && !isOnboardingPage) {
+          goto("/resident/onboarding");
+        } else if (!residentState.needsOnboarding && isOnboardingPage) {
+          goto("/resident");
+        }
       }
     }
   });
