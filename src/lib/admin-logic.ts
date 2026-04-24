@@ -163,6 +163,7 @@ export async function approvePaymentRequest(
     creatorName: string;
     name: string;
     stno: string;
+    receiptUrl?: string;
   }
 ) {
   const srId = uiSettings.sharedRecordsId;
@@ -190,6 +191,7 @@ export async function approvePaymentRequest(
   jRow[JOURNAL_COL.NAME] = journalData.name;
   jRow[JOURNAL_COL.STNO] = journalData.stno;
   jRow[JOURNAL_COL.WAS_AUDITED] = "FALSE";
+  jRow[JOURNAL_COL.RECEIPT_URL] = journalData.receiptUrl || "";
   jRow[JOURNAL_COL.ID] = crypto.randomUUID();
 
   await Promise.all([

@@ -95,6 +95,7 @@
     notesPrivate: "",
     mopRefNo: "",
     instapayInvoice: "",
+    receiptUrl: "",
     prDateIssued: "",
     prRefNo: ""
   });
@@ -287,6 +288,7 @@
           notesPrivate: initialData.notesPrivate,
           mopRefNo: mopRefInfo.reference || initialData.mopRefNo,
           instapayInvoice: mopRefInfo.invoice || "",
+          receiptUrl: initialData.receiptUrl || "",
           prDateIssued: initialData.prDateIssued,
           prRefNo: initialData.prRefNo
         };
@@ -463,11 +465,13 @@
       row[JOR.CREATOR_NAME] = formData.creatorName;
       row[JOR.NAME] = formData.accountName;
       row[JOR.STNO] = formData.accountStNo;
+      row[JOR.RECEIPT_URL] = formData.receiptUrl || "";
 
       if (mode === "edit") {
-        row[JOR.WAS_AUDITED] = "FALSE";
+        row[JOR.WAS_AUDITED] = initialData?.wasAudited ? "TRUE" : "FALSE";
         row[JOR.ID] = initialData?.id;
       } else {
+        row[JOR.WAS_AUDITED] = "FALSE";
         row[JOR.ID] = crypto.randomUUID();
       }
 

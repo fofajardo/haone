@@ -149,7 +149,7 @@
               range: `journal_general!M${record.ledgerIndex}:N${record.ledgerIndex}`,
               values: [[dateIssued, prRefNo]]
             },
-            { range: `journal_general!R${record.ledgerIndex}`, values: [[url]] }
+            { range: `journal_general!S${record.ledgerIndex}`, values: [[url]] }
           ];
           await batchUpdateValues(uiSettings.accountingWorkbookId!, updates);
           invalidateCache();
