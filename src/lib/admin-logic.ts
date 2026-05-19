@@ -414,7 +414,9 @@ export async function addAchievement(data: Omit<AchievementRecord, "raw">) {
 
 export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) {
   const spreadsheetId = uiSettings.sharedRecordsId;
-  if (!spreadsheetId) throw new Error("Shared Records ID not configured");
+  if (!spreadsheetId) {
+    throw new Error("Shared Records ID not configured");
+  }
 
   const row = new Array(5).fill("");
   row[ACHIEVEMENT_RECORD_COL.ID] = data.id || crypto.randomUUID();
@@ -424,6 +426,28 @@ export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) 
   row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId;
 
   await appendSheetRow(spreadsheetId, "achievement_records!A:E", [row]);
+}
+
+export async function awardAchievementBatch(records: Omit<AchievementLogRecord, "raw">[]) {
+  if (records.length === 0) {
+    return;
+  }
+  const spreadsheetId = uiSettings.sharedRecordsId;
+  if (!spreadsheetId) {
+    throw new Error("Shared Records ID not configured");
+  }
+
+  const rows = records.map((data) => {
+    const row = new Array(5).fill("");
+    row[ACHIEVEMENT_RECORD_COL.ID] = data.id || crypto.randomUUID();
+    row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] = data.recorderId;
+    row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] = data.accountId;
+    row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || new Date().toISOString().split("T")[0];
+    row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId;
+    return row;
+  });
+
+  await appendSheetRow(spreadsheetId, "achievement_records!A:E", rows);
 }
 
 /**

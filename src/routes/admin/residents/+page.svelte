@@ -26,7 +26,8 @@
     FunnelX,
     ChevronDown,
     FileCheck,
-    ShieldCheck
+    ShieldCheck,
+    Trophy
   } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -38,6 +39,7 @@
   import { columns } from "./columns";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import ClearanceDialog from "$lib/components/residents/ClearanceDialog.svelte";
+  import AwardDialog from "$lib/components/residents/AwardDialog.svelte";
 
   let residents = $state<Resident[]>([]);
   let isLoading = $state(false);
@@ -156,16 +158,21 @@
 
   let isClearDialogOpen = $state(false);
   let residentsToClear = $state<Resident[]>([]);
+  let isAwardDialogOpen = $state(false);
+  let residentsToAward = $state<Resident[]>([]);
 
   async function handleBatchClear() {
-    if (selectedIndices.size === 0 || !uiSettings.accountingWorkbookId) return;
-    const eligible = residents.filter(
-      (r) =>
+    if (selectedIndices.size === 0 || !uiSettings.accountingWorkbookId) {
+      return;
+    }
+    const eligible = residents.filter((r) => {
+      return (
         selectedIndices.has(r.stno) &&
         r.bal <= 0 &&
         r.totalBase > 0 &&
         (!r.ceIssued || r.ceIssued === "" || r.ceIssued === "#N/A")
-    );
+      );
+    });
 
     if (eligible.length === 0) {
       showAlert(
@@ -178,6 +185,16 @@
 
     residentsToClear = eligible;
     isClearDialogOpen = true;
+  }
+
+  function handleBatchAward() {
+    if (selectedIndices.size === 0) {
+      return;
+    }
+    residentsToAward = residents.filter((r) => {
+      return selectedIndices.has(r.stno);
+    });
+    isAwardDialogOpen = true;
   }
 </script>
 
@@ -220,6 +237,16 @@
               </DropdownMenu.Item>
             </DropdownMenu.Content>
           </DropdownMenu.Root>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={handleBatchAward}
+            disabled={selectedIndices.size === 0}
+            icon={Trophy}
+          >
+            Award
+          </Button>
 
           <Button
             size="sm"
@@ -320,6 +347,14 @@
   onSuccess={(count) => {
     showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
     selectedIndices = new Set(); // Clear selection after success
+  }}
+/>
+
+<AwardDialog
+  bind:open={isAwardDialogOpen}
+  residents={residentsToAward}
+  onSuccess={(count) => {
+    selectedIndices = new Set();
   }}
 />
 
