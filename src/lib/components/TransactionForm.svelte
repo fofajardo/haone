@@ -104,11 +104,10 @@
     const type = formData.type;
     return (
       type === "PMT_COLLECTION" ||
-      type === "PMT_COLLECTION_OTHERS" ||
       type === "PMT_CN_REFUND" ||
       type === "PMT_WAIVED"
     );
-  });
+});
 
   const waterLimit = $derived.by(() => {
     if (!isCollection || !selectedResident) return 0;
@@ -662,7 +661,7 @@
                       type="number"
                       step="0.01"
                       bind:value={formData.waterFee}
-                      max={allowOverpayment ? undefined : waterLimit}
+                      max={isCollection && !allowOverpayment ? waterLimit : undefined}
                       disabled={!formData.accountEmail || isSubmitting}
                       class="text-right font-mono"
                     />
@@ -723,7 +722,7 @@
                       type="number"
                       step="0.01"
                       bind:value={formData.assocFee}
-                      max={allowOverpayment ? undefined : assocLimit}
+                      max={isCollection && !allowOverpayment ? assocLimit : undefined}
                       disabled={!formData.accountEmail || isSubmitting}
                       class="text-right font-mono"
                     />
