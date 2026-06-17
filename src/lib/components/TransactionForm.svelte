@@ -102,12 +102,8 @@
 
   const isCollection = $derived.by(() => {
     const type = formData.type;
-    return (
-      type === "PMT_COLLECTION" ||
-      type === "PMT_CN_REFUND" ||
-      type === "PMT_WAIVED"
-    );
-});
+    return type === "PMT_COLLECTION" || type === "PMT_CN_REFUND" || type === "PMT_WAIVED";
+  });
 
   const waterLimit = $derived.by(() => {
     if (!isCollection || !selectedResident) return 0;
