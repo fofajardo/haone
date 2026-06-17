@@ -69,10 +69,10 @@
     isAwarding = true;
     try {
       const recordsToAward = residents
-        .filter((r) => {
+        .filter((r: ResidentRecord) => {
           return r.residentId && r.residentId !== "";
         })
-        .map((r) => {
+        .map((r: ResidentRecord) => {
           return {
             id: crypto.randomUUID(),
             recorderId: currentUserId,
