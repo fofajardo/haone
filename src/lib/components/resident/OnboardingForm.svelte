@@ -10,6 +10,7 @@
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { auth } from "$lib/auth.svelte";
+  import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/schemas";
 
   import { residentState } from "$lib/resident-state.svelte";
   import { roomsState } from "$lib/rooms.svelte";
@@ -26,6 +27,21 @@
   $effect(() => {
     if (status?.waitingForConfirmation) {
       step = 4;
+    }
+  });
+
+  let accountType = $state(AccountType.STUDENT);
+  let hasStudentNo = $state(true);
+
+  const emailVal = $derived(status?.profile?.email || auth.user?.email || "");
+  const isUpMail = $derived(emailVal.endsWith("@up.edu.ph"));
+
+  $effect.pre(() => {
+    if (status) {
+      if (!isUpMail && accountType === AccountType.STUDENT) {
+        accountType = AccountType.TRANSIENT;
+        hasStudentNo = false;
+      }
     }
   });
 
@@ -67,10 +83,11 @@
   });
 
   async function handleSubmit() {
+    const isStudentNoRequired = accountType === AccountType.STUDENT || hasStudentNo;
     if (
       !formData.room ||
       !formData.bed ||
-      !formData.studentNo ||
+      (!formData.studentNo && isStudentNoRequired) ||
       !formData.college ||
       !formData.program ||
       !formData.checkInDate ||
@@ -88,6 +105,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          studentNo: isStudentNoRequired ? formData.studentNo : "",
+          accountType,
           email: status.profile?.email || auth.user?.email,
           term: status.systemActiveTerm
         })
@@ -140,6 +159,8 @@
   const isStudentNoDisabled = $derived(
     !!(status.profile?.studentNo || status.currEntry?.studentNo)
   );
+
+  const blockStudentNoChange = $derived(!!status.profile?.studentNo);
 
   const isAcademicDisabled = $derived(
     !!(status.profile?.college && status.profile?.program && !isOutdated)
@@ -260,14 +281,56 @@
               </div>
             {/if}
             <div class="space-y-2">
-              <Label for="studentNo">Student Number</Label>
-              <Input
-                id="studentNo"
-                bind:value={formData.studentNo}
-                placeholder="XXXX-XXXXX"
-                disabled={isStudentNoDisabled}
+              <Label>Account Type</Label>
+              <Combobox
+                bind:value={accountType}
+                options={[
+                  {
+                    value: AccountType.STUDENT,
+                    label: ACCOUNT_TYPE_LABELS.STUDENT,
+                    disabled: !isUpMail
+                  },
+                  { value: AccountType.TRANSIENT, label: ACCOUNT_TYPE_LABELS.TRANSIENT },
+                  {
+                    value: AccountType.BOOTCAMP,
+                    label: ACCOUNT_TYPE_LABELS.BOOTCAMP,
+                    disabled: blockStudentNoChange
+                  },
+                  { value: AccountType.ALUMNUS, label: ACCOUNT_TYPE_LABELS.ALUMNUS },
+                  { value: AccountType.FACULTY, label: ACCOUNT_TYPE_LABELS.FACULTY },
+                  { value: AccountType.STAFF, label: ACCOUNT_TYPE_LABELS.STAFF },
+                  { value: AccountType.REPS, label: ACCOUNT_TYPE_LABELS.REPS }
+                ]}
+                placeholder="Select account type…"
+                class="w-full"
               />
             </div>
+
+            {#if !blockStudentNoChange && accountType !== AccountType.STUDENT && accountType !== AccountType.ALUMNUS}
+              <div class="flex items-center space-x-3 py-2">
+                <Checkbox id="hasStudentNo" bind:checked={hasStudentNo} />
+                <Label for="hasStudentNo" class="cursor-pointer text-sm font-medium">
+                  I have a student number
+                </Label>
+              </div>
+            {/if}
+
+            {#if hasStudentNo || accountType === AccountType.STUDENT || accountType === AccountType.ALUMNUS}
+              <div class="space-y-2">
+                <Label for="studentNo">Student Number</Label>
+                <Input
+                  id="studentNo"
+                  bind:value={formData.studentNo}
+                  placeholder="XXXX-XXXXX"
+                  disabled={isStudentNoDisabled}
+                />
+              </div>
+            {:else}
+              <div class="rounded-lg bg-muted/50 p-3">
+                A random temporary identifier code will be automatically assigned as your student
+                number.
+              </div>
+            {/if}
             <div class="space-y-4">
               <div class="space-y-2">
                 <Label>College</Label>
@@ -298,7 +361,7 @@
                       for="outdated"
                       class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      My college/degree program details are outdated
+                      My UPLB college/degree program details are outdated
                     </Label>
                     <p class="text-sm text-muted-foreground">
                       Checking this allows you to request an update to your academic profile.
@@ -308,43 +371,49 @@
               {/if}
             </div>
 
-            <div class="space-y-4 rounded-xl border bg-muted/20 p-4">
-              <Label
-                class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
-              >
-                <Star class="h-3.5 w-3.5" /> Social Media Requirements
-              </Label>
-              <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                  <Checkbox id="fb-page" bind:checked={formData.likedFBPage} />
-                  <Label for="fb-page" class="text-sm leading-none font-medium">
-                    <span
-                      >I have liked the <a
-                        href="https://www.facebook.com/atintcrha.uplb"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-primary underline hover:text-primary/80"
-                        >Official Facebook Page</a
-                      > of the Association</span
-                    >
-                  </Label>
-                </div>
-                <div class="flex items-center gap-3">
-                  <Checkbox id="fb-group" bind:checked={formData.joinedFBGroup} />
-                  <Label for="fb-group" class="text-sm leading-none font-medium">
-                    <span
-                      >I have joined the <a
-                        href="https://www.facebook.com/share/g/19hjZodpeg/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-primary underline hover:text-primary/80"
-                        >Official Facebook Group</a
-                      > of the Association</span
-                    >
-                  </Label>
+            {#if accountType === AccountType.STUDENT || accountType === AccountType.ALUMNUS || accountType === AccountType.BOOTCAMP}
+              <div class="space-y-4 rounded-xl border bg-muted/20 p-4">
+                <Label
+                  class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
+                >
+                  <Star class="h-3.5 w-3.5" /> Social Media Requirements
+                </Label>
+                <div class="space-y-4">
+                  <div class="flex items-center gap-3">
+                    <Checkbox id="fb-page" bind:checked={formData.likedFBPage} />
+                    <Label for="fb-page" class="text-sm leading-none font-medium">
+                      <span
+                        >I have liked the <a
+                          href="https://www.facebook.com/atintcrha.uplb"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-primary underline hover:text-primary/80"
+                          >Official Facebook Page</a
+                        > of the Association</span
+                      >
+                    </Label>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <Checkbox id="fb-group" bind:checked={formData.joinedFBGroup} />
+                    <Label for="fb-group" class="text-sm leading-none font-medium">
+                      <span
+                        >I have joined the <a
+                          href="https://www.facebook.com/share/g/19hjZodpeg/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-primary underline hover:text-primary/80"
+                          >Official Facebook Group</a
+                        > of the Association</span
+                      >
+                    </Label>
+                  </div>
                 </div>
               </div>
-            </div>
+            {:else}
+              <div class="rounded-lg bg-muted/50 p-3">
+                Choose No College Information and No Degree Program Information if you did not attend UPLB as a student.
+              </div>
+            {/if}
           </div>
           <div class="flex justify-between pt-6">
             <Stepper.Previous>

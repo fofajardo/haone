@@ -36,7 +36,8 @@ export const ACCOUNT_COL = {
   CE_LINK: 7,
   NOTES: 8,
   ISSUER_ID: 9,
-  CHECK_IN_DATE: 10
+  CHECK_IN_DATE: 10,
+  TYPE: 11
 } as const;
 
 export const USER_COL = {
@@ -70,7 +71,8 @@ export const CURR_COL = {
   FIRST_NAME: 8,
   COLLEGE: 9,
   EVALUATED: 10,
-  TERM: 11
+  TERM: 11,
+  ACCOUNT_TYPE: 12
 } as const;
 
 export interface ResidentRecord {
@@ -103,6 +105,7 @@ export interface ResidentRecord {
   residentId: string;
   ledgerId: string;
   checkInDate: string;
+  type: string;
   raw: string[];
 }
 
@@ -157,25 +160,49 @@ export interface UserRecord {
 }
 export enum UserTag {
   STUDENT = "STUDENT",
+  BOOTCAMP = "BOOTCAMP",
   ALUMNUS = "ALUMNUS",
   FACULTY = "FACULTY",
+  STAFF = "STAFF",
+  REPS = "REPS",
   INTERNAL = "INTERNAL",
   DECEASED = "DECEASED",
   BACKED_OUT = "BACKED-OUT",
   RETURNING = "RETURNING",
-  HRDO = "HRDO",
   GUEST = "GUEST"
 }
 
+export enum AccountType {
+  STUDENT = "STUDENT",
+  TRANSIENT = "TRANSIENT",
+  BOOTCAMP = "BOOTCAMP",
+  ALUMNUS = "ALUMNUS",
+  FACULTY = "FACULTY",
+  STAFF = "STAFF",
+  REPS = "REPS"
+}
+
+export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
+  [AccountType.STUDENT]: "Student",
+  [AccountType.TRANSIENT]: "Transient without classification",
+  [AccountType.BOOTCAMP]: "Bootcamp/Associate Degree Candidate",
+  [AccountType.ALUMNUS]: "Alumnus",
+  [AccountType.FACULTY]: "UHO Beneficiary: Faculty",
+  [AccountType.STAFF]: "UHO Beneficiary: Staff",
+  [AccountType.REPS]: "UHO Beneficiary: Research, Extension, and Professional Staff"
+};
+
 export const USER_TAG_COLORS: Record<string, string> = {
   [UserTag.STUDENT]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [UserTag.BOOTCAMP]: "bg-emerald-100 text-emerald-700 border-emerald-200",
   [UserTag.ALUMNUS]: "bg-blue-100 text-blue-700 border-blue-200",
   [UserTag.FACULTY]: "bg-purple-100 text-purple-700 border-purple-200",
+  [UserTag.STAFF]: "bg-purple-100 text-purple-700 border-purple-200",
+  [UserTag.REPS]: "bg-purple-100 text-purple-700 border-purple-200",
   [UserTag.INTERNAL]: "bg-amber-100 text-amber-700 border-amber-200",
   [UserTag.DECEASED]: "bg-red-100 text-red-700 border-red-200",
   [UserTag.BACKED_OUT]: "bg-red-100 text-red-700 border-red-200",
   [UserTag.RETURNING]: "bg-cyan-100 text-cyan-700 border-cyan-200",
-  [UserTag.HRDO]: "bg-indigo-100 text-indigo-700 border-indigo-200",
   [UserTag.GUEST]: "bg-slate-100 text-slate-700 border-slate-200",
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };

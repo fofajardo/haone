@@ -5,8 +5,8 @@ import {
   batchUpdateValues,
   appendSheetRow
 } from "./google-sheets";
-import { USER_COL, ACCOUNT_COL, CURR_COL, type UserRecord, type ResidentRecord } from "./schemas";
-import { fetchUsers, addUser, updateUser, computeDisplayNames } from "./resident-logic";
+import { ACCOUNT_COL, CURR_COL, AccountType, UserTag, type UserRecord } from "./schemas";
+import { fetchUsers, addUser, updateUser } from "./resident-logic";
 import { roomsState } from "./rooms.svelte";
 
 export interface CurrRecord {
@@ -22,6 +22,7 @@ export interface CurrRecord {
   checkInDate: string;
   isEvaluated: boolean;
   term: string;
+  accountType: string;
   rowIndex: number; // 1-indexed
   raw: string[];
 }
@@ -43,7 +44,7 @@ export interface SyncPreviewAction {
 export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]> {
   if (!uiSettings.residentRecordsId) return [];
 
-  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:L", forceRefresh);
+  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:M", forceRefresh);
   if (rows.length <= 1) return [];
 
   return rows.slice(1).map((row, idx) => ({
@@ -59,6 +60,7 @@ export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]
     checkInDate: row[CURR_COL.CHECK_IN_DATE] || "",
     isEvaluated: (row[CURR_COL.EVALUATED] || "").toUpperCase() === "TRUE",
     term: row[CURR_COL.TERM] || "",
+    accountType: (row[CURR_COL.ACCOUNT_TYPE] || "").trim().toUpperCase(),
     rowIndex: idx + 2, // +1 for header, +1 for 1-indexing
     raw: row
   }));
@@ -72,7 +74,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
   const [currRecords, users, accRows] = await Promise.all([
     fetchCurrSheet(true),
     fetchUsers(true),
-    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:I", true)
+    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L", true)
   ]);
 
   const userMapByStNo = new Map<string, UserRecord>();
@@ -145,6 +147,36 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
         plannedUsersByStNo.set(curr.studentNo, userId);
         plannedUsersByEmail.set(curr.email, userId);
 
+        // Translate account type to user tag.
+        // XXX: keep this in sync with schemas.ts. This should probably be put
+        // somewhere else to avoid duplication.
+        let accountTypeTag = UserTag.STUDENT;
+        switch (curr.accountType) {
+          case AccountType.STUDENT:
+            accountTypeTag = UserTag.STUDENT;
+            break;
+          case AccountType.TRANSIENT:
+            accountTypeTag = UserTag.GUEST;
+            break;
+          case AccountType.BOOTCAMP:
+            accountTypeTag = UserTag.BOOTCAMP;
+            break;
+          case AccountType.ALUMNUS:
+            accountTypeTag = UserTag.ALUMNUS;
+            break;
+          case AccountType.FACULTY:
+            accountTypeTag = UserTag.FACULTY;
+            break;
+          case AccountType.STAFF:
+            accountTypeTag = UserTag.STAFF;
+            break;
+          case AccountType.REPS:
+            accountTypeTag = UserTag.REPS;
+            break;
+          default:
+            throw new Error(`Unknown account type: ${curr.accountType} for ${residentName}`);
+        }
+
         actions.push({
           type: "CREATE_USER",
           residentName,
@@ -160,7 +192,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             program: curr.program,
             firstName: curr.firstName.toUpperCase(),
             lastName: curr.lastName.toUpperCase(),
-            tags: "STUDENT"
+            tags: accountTypeTag
           }
         });
       }
@@ -180,7 +212,8 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           period: currentTerm,
           room: curr.room,
           bed: curr.bed,
-          checkInDate: curr.checkInDate
+          checkInDate: curr.checkInDate,
+          accountType: curr.accountType || AccountType.STUDENT
         }
       });
     } else {
@@ -261,7 +294,8 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             period: currentTerm,
             room: curr.room,
             bed: curr.bed,
-            checkInDate: curr.checkInDate
+            checkInDate: curr.checkInDate,
+            accountType: curr.accountType || AccountType.STUDENT
           }
         });
       }
@@ -311,21 +345,23 @@ export async function applySync(actions: SyncPreviewAction[]) {
   // 4. Create Accounts (Append)
   if (accountCreations.length > 0) {
     const rows = accountCreations.map((a) => {
-      const row = new Array(11).fill("");
+      const row = new Array(12).fill("");
       row[ACCOUNT_COL.ID] = crypto.randomUUID();
       row[ACCOUNT_COL.RESIDENT_ID] = a.payload.residentId;
       row[ACCOUNT_COL.PERIOD] = a.payload.period;
       row[ACCOUNT_COL.ROOM] = a.payload.room;
       row[ACCOUNT_COL.BED] = a.payload.bed;
       row[ACCOUNT_COL.CHECK_IN_DATE] = a.payload.checkInDate;
+      row[ACCOUNT_COL.TYPE] = a.payload.accountType || AccountType.STUDENT;
       return row;
     });
-    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:K", rows);
+    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", rows);
   }
 
   // 5. Mark CURR as Evaluated
   const currIndices = [...new Set(actions.map((a) => a.currIndex).filter(Boolean))];
   if (currIndices.length > 0 && uiSettings.residentRecordsId) {
+    // EVALUATED is col index 10 = column K
     const updates = currIndices.map((idx) => ({
       range: `CURR!K${idx}`,
       values: [["TRUE"]]
@@ -345,7 +381,7 @@ export async function applySync(actions: SyncPreviewAction[]) {
 export async function manualAssignBed(residentId: string, room: string, bed: string, term: string) {
   if (!uiSettings.accountingWorkbookId) throw new Error("Accounting Workbook ID not configured");
 
-  const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:I");
+  const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
   const rowIndex = accRows.findIndex(
     (r) => r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term
   );
@@ -358,12 +394,12 @@ export async function manualAssignBed(residentId: string, room: string, bed: str
       [[room, bed]]
     );
   } else {
-    const newRow = new Array(11).fill("");
+    const newRow = new Array(12).fill("");
     newRow[ACCOUNT_COL.ID] = crypto.randomUUID();
     newRow[ACCOUNT_COL.RESIDENT_ID] = residentId;
     newRow[ACCOUNT_COL.PERIOD] = term;
     newRow[ACCOUNT_COL.ROOM] = room;
     newRow[ACCOUNT_COL.BED] = bed;
-    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:K", [newRow]);
+    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", [newRow]);
   }
 }

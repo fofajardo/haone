@@ -4,7 +4,7 @@
   import { page } from "$app/state";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/google-sheets";
   import {
     translateCollege,
     translateProgram,
@@ -27,7 +27,14 @@
     FileDown,
     UserCog
   } from "lucide-svelte";
-  import { JOURNAL_COL as JOR, type ResidentRecord, type JournalRecord } from "$lib/schemas";
+  import {
+    JOURNAL_COL as JOR,
+    ACCOUNT_COL,
+    type ResidentRecord,
+    type JournalRecord,
+    AccountType,
+    ACCOUNT_TYPE_LABELS
+  } from "$lib/schemas";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import {
     stageStatusEmail,
@@ -181,6 +188,45 @@
   let isClearDialogOpen = $state(false);
   let residentsToClear = $state<ResidentRecord[]>([]);
   let allAccounts = $state<ResidentRecord[]>([]);
+  let isChangingType = $state(false);
+
+  const ACCOUNT_TYPE_OPTIONS = [
+    { value: AccountType.STUDENT, label: ACCOUNT_TYPE_LABELS.STUDENT },
+    { value: AccountType.TRANSIENT, label: ACCOUNT_TYPE_LABELS.TRANSIENT },
+    { value: AccountType.BOOTCAMP, label: ACCOUNT_TYPE_LABELS.BOOTCAMP },
+    { value: AccountType.ALUMNUS, label: ACCOUNT_TYPE_LABELS.ALUMNUS },
+    { value: AccountType.FACULTY, label: ACCOUNT_TYPE_LABELS.FACULTY },
+    { value: AccountType.STAFF, label: ACCOUNT_TYPE_LABELS.STAFF },
+    { value: AccountType.REPS, label: ACCOUNT_TYPE_LABELS.REPS }
+  ];
+
+  async function changeAccountType(newType: string) {
+    if (!account || !uiSettings.accountingWorkbookId) {
+      return;
+    }
+    isChangingType = true;
+    try {
+      const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
+      const rowIndex = accRows.findIndex(
+        (r) =>
+          (r[ACCOUNT_COL.RESIDENT_ID] || "").trim() === account!.residentId &&
+          (r[ACCOUNT_COL.PERIOD] || "").trim() === account!.period
+      );
+      if (rowIndex === -1) {
+        throw new Error("Account row not found in spreadsheet.");
+      }
+      const actualRow = rowIndex + 1;
+      await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!L${actualRow}`, [
+        [newType]
+      ]);
+      showAlert("Account Type Updated", `Account type changed to ${newType}.`);
+      await loadResidentProfile(true);
+    } catch (e: any) {
+      showAlert("Update Failed", e.message, "error");
+    } finally {
+      isChangingType = false;
+    }
+  }
 
   onMount(async () => {
     if (uiSettings.accountingWorkbookId) {
@@ -292,6 +338,36 @@
           >
             View User Profile
           </Button>
+
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              {#snippet child({ props })}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  {...props}
+                  icon={UserCog}
+                  isLoading={isChangingType}
+                >
+                  Account Type{account?.type ? `: ${account.type}` : ""}
+                  <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
+                </Button>
+              {/snippet}
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="start" class="w-48">
+              {#each ACCOUNT_TYPE_OPTIONS as opt}
+                <DropdownMenu.Item
+                  onclick={() => changeAccountType(opt.value)}
+                  class={account.type === opt.value ? "font-bold text-primary" : ""}
+                >
+                  {opt.label}
+                  {#if account.type === opt.value}
+                    <span class="ml-auto text-xs text-primary">✓</span>
+                  {/if}
+                </DropdownMenu.Item>
+              {/each}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
 
           <Button variant="outline" size="sm" disabled icon={FileDown}>
             Export Statement (PDF)

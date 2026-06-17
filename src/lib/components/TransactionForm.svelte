@@ -221,6 +221,7 @@
         residentId: SYSTEM_IDS.FUNDS,
         ledgerId: SYSTEM_IDS.FUNDS,
         checkInDate: "",
+        type: "",
         raw: []
       };
 

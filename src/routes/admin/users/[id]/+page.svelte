@@ -22,7 +22,12 @@
     StickyNote,
     Trash2
   } from "lucide-svelte";
-  import { type UserRecord, USER_TAG_COLORS, type ResidentRecord as Account } from "$lib/schemas";
+  import {
+    type UserRecord,
+    USER_TAG_COLORS,
+    type ResidentRecord as Account,
+    UserTag
+  } from "$lib/schemas";
   import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$lib/resident-logic";
   import { pageState } from "$lib/page-info.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -235,7 +240,7 @@
               <UserIcon class="h-3 w-3" /> User Tags
             </Label>
             <div class="flex flex-wrap gap-1">
-              {#each (user.tags || "STUDENT")
+              {#each (user.tags || UserTag.STUDENT)
                 .split(":")
                 .map((t) => t.trim())
                 .filter(Boolean) as t}

@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { JOURNAL_COL, ACCOUNT_COL, USER_COL, CURR_COL } from "$lib/schemas";
+import { JOURNAL_COL, ACCOUNT_COL, USER_COL, CURR_COL, AccountType } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
@@ -52,16 +52,17 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     // 4. Fetch Accounts for target term
     const targetTerm = url.searchParams.get("term") || activeTerm;
-    const accRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:I");
-    const residentAccount = accRows.find(
-      (r: any) =>
+    const accRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:L");
+    const residentAccount = accRows.find((r: any) => {
+      return (
         r[ACCOUNT_COL.PERIOD] === targetTerm &&
         userRow &&
         r[ACCOUNT_COL.RESIDENT_ID] === userRow[USER_COL.ID]
-    );
+      );
+    });
 
     // 5. Check CURR sheet for potential registration (filter by term)
-    const currRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "CURR!A:L");
+    const currRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "CURR!A:M");
     const currEntry = currRows
       .reverse()
       .find(
@@ -174,7 +175,8 @@ export const GET: RequestHandler = async ({ url, request }) => {
             lastName: userRow[USER_COL.LAST_NAME],
             studentNo: userRow[USER_COL.STUDENT_NO],
             college: (userRow[USER_COL.COLLEGE] || "").split(",").pop()?.trim() || "",
-            program: (userRow[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || ""
+            program: (userRow[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || "",
+            tags: userRow[USER_COL.TAGS] || ""
           }
         : null,
       account: residentAccount
@@ -202,7 +204,8 @@ export const GET: RequestHandler = async ({ url, request }) => {
             ceIssued: (residentAccount[ACCOUNT_COL.CE_ISSUED] || residentAccount[6] || "").trim(),
             ceLink: (residentAccount[ACCOUNT_COL.CE_LINK] || residentAccount[7] || "").trim(),
             college: (userRow?.[USER_COL.COLLEGE] || "").split(",").pop()?.trim() || "",
-            program: (userRow?.[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || ""
+            program: (userRow?.[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || "",
+            type: (residentAccount[ACCOUNT_COL.TYPE] || AccountType.STUDENT).trim().toUpperCase()
           }
         : null,
       currEntry: currEntry
@@ -214,6 +217,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
             college: currEntry[CURR_COL.COLLEGE],
             program: currEntry[CURR_COL.PROGRAM],
             studentNo: currEntry[CURR_COL.STUDENT_NO],
+            accountType: currEntry[CURR_COL.ACCOUNT_TYPE] || AccountType.STUDENT,
             isEvaluated
           }
         : null,

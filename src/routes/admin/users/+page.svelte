@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { uiSettings } from "$lib/settings.svelte";
-  import { type UserRecord as User } from "$lib/schemas";
+  import { UserTag, type UserRecord as User } from "$lib/schemas";
   import { fetchUsers } from "$lib/resident-logic";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { Button } from "$lib/components/ui/button";
@@ -67,7 +67,7 @@
   const tagsOptions = $derived.by(() => {
     const set = new Set<string>();
     users.forEach((u) => {
-      (u.tags || "STUDENT").split(":").forEach((t) => {
+      (u.tags || UserTag.STUDENT).split(":").forEach((t) => {
         const val = t.trim();
         if (val) set.add(val);
       });
@@ -95,7 +95,7 @@
           program === "ALL" || translateProgram(u.program).some((p) => p === program);
 
         const matchesTags =
-          tags === "ALL" || (u.tags || "STUDENT").split(":").some((t) => t.trim() === tags);
+          tags === "ALL" || (u.tags || UserTag.STUDENT).split(":").some((t) => t.trim() === tags);
 
         return matchesSearch && matchesCollege && matchesProgram && matchesTags;
       })

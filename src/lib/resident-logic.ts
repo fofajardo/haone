@@ -88,7 +88,8 @@ export function mapRowToResident(
     program: userRow ? (userRow[USER_COL.DEGREE_PROGRAM] || "").trim() : "",
     residentId: (row[ACCOUNT_COL.RESIDENT_ID] || "").trim(),
     ledgerId: (row[ACCOUNT_COL.ID] || "").trim(),
-    checkInDate: (row[ACCOUNT_COL.CHECK_IN_DATE] || "").trim()
+    checkInDate: (row[ACCOUNT_COL.CHECK_IN_DATE] || "").trim(),
+    type: (row[ACCOUNT_COL.TYPE] || "").trim()
   };
 }
 
@@ -109,7 +110,7 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
   }
 
   const [accRows, userRows, journalRows, constRows] = await Promise.all([
-    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:I", forceRefresh),
+    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L", forceRefresh),
     fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P", forceRefresh),
     fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", forceRefresh),
     fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)

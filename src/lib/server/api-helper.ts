@@ -245,29 +245,47 @@ export async function authenticateResident(request: Request) {
     // Resolve instance admin to allow bypass
     const isInstanceAdmin = email === (INSTANCE_ADMIN || "").trim().toLowerCase();
 
-    // Domain restriction: all sign-ins must be @up.edu.ph, UNLESS it's the instance admin
-    if (!isInstanceAdmin && !email.endsWith("@up.edu.ph")) {
-      return {
-        error: json(
-          { error: "forbidden_domain", message: "Only @up.edu.ph emails are allowed." },
-          { status: 403 }
-        )
-      };
-    }
-
-    // Optionally resolve residentId if needed by common routes
+    // Resolve residentId and check tags if needed
     let residentId = "";
+    let isStudent = true;
     if (email && !isInstanceAdmin) {
       try {
         const { PUBLIC_GS_RR_ID } = await import("$env/static/public");
-        const { USER_COL } = await import("$lib/schemas");
+        const { USER_COL, UserTag } = await import("$lib/schemas");
         const saToken = await getSheetsClient();
         const users = await getSheetValues(saToken, PUBLIC_GS_RR_ID, "users!A:P");
-        const user = users.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
-        if (user) residentId = user[USER_COL.ID];
+        const user = users.find((r: any) => {
+          return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
+        });
+        if (user) {
+          residentId = user[USER_COL.ID];
+          const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
+          const tags = tagsStr.split(":").map((t: string) => {
+            return t.trim();
+          });
+          if (!tags.includes(UserTag.STUDENT)) {
+            isStudent = false;
+          }
+        } else {
+          // New user signup is allowed to proceed to onboarding
+          isStudent = false;
+        }
       } catch (e) {
-        // Silently fail, just email is enough for base auth
+        // Silently fail, assume student check fails if sheet read fails
       }
+    }
+
+    // Domain restriction: all sign-ins must be @up.edu.ph, UNLESS it's the instance admin or non-student
+    if (!isInstanceAdmin && !email.endsWith("@up.edu.ph") && isStudent) {
+      return {
+        error: json(
+          {
+            error: "forbidden_domain",
+            message: "Only @up.edu.ph emails are allowed for students."
+          },
+          { status: 403 }
+        )
+      };
     }
 
     return { email, residentId, isInstanceAdmin };

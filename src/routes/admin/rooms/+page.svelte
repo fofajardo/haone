@@ -49,6 +49,23 @@
   let isCompact = $state(true);
   let previewActions = $state<SyncPreviewAction[]>([]);
   let showPreview = $state(false);
+  let selectedGroups = $state<Set<number>>(new Set());
+
+  const groupedPreview = $derived.by(() => {
+    const groups = new Map<number, SyncPreviewAction[]>();
+    for (const action of previewActions) {
+      const key = action.currIndex ?? -1;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(action);
+    }
+    return Array.from(groups.entries()).map(([currIndex, actions]) => ({ currIndex, actions }));
+  });
+
+  const selectedActions = $derived(
+    previewActions.filter((a) => selectedGroups.has(a.currIndex ?? -1))
+  );
 
   let alertDialog = $state({
     open: false,
@@ -149,6 +166,8 @@
       if (previewActions.length === 0) {
         showAlert("Sync", "All records are already up to date.");
       } else {
+        // Pre-select all groups by default
+        selectedGroups = new Set(previewActions.map((a) => a.currIndex ?? -1));
         showPreview = true;
       }
     } catch (e: any) {
@@ -162,7 +181,7 @@
     isSyncing = true;
     showPreview = false;
     try {
-      const result = await applySync(previewActions);
+      const result = await applySync(selectedActions);
       showAlert(
         "Sync Complete",
         `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
@@ -504,68 +523,88 @@
     <AlertDialog.Header>
       <AlertDialog.Title>Sync Preview</AlertDialog.Title>
       <AlertDialog.Description>
-        Review changes from source sheet before applying.
+        Select the registration groups to apply. Uncheck any you want to skip.
       </AlertDialog.Description>
     </AlertDialog.Header>
-    <div class="max-h-[60vh] overflow-auto py-4">
-      <table class="w-full text-xs">
-        <thead>
-          <tr class="border-b text-left font-bold tracking-widest text-muted-foreground uppercase">
-            <th class="pr-4 pb-2">Action</th>
-            <th class="pr-4 pb-2">Resident</th>
-            <th class="pb-2">Details</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-border/50">
-          {#each previewActions as action}
-            <tr>
-              <td class="py-3 pr-4 align-top">
-                <Badge
-                  variant={action.type.startsWith("CREATE") ? "default" : "outline"}
-                  class="text-xs font-bold tracking-tighter uppercase"
-                >
-                  {action.type.replace("_", " ")}
-                </Badge>
-              </td>
-              <td class="py-3 pr-4 align-top">
-                <p class="font-bold text-foreground">{action.residentName}</p>
-                <p class="text-xs text-muted-foreground">{action.studentNo || action.email}</p>
-              </td>
-              <td class="py-3 align-top text-muted-foreground">
+    <div class="max-h-[60vh] overflow-auto py-4 pr-1">
+      <div class="space-y-3">
+        {#each groupedPreview as group}
+          {@const isChecked = selectedGroups.has(group.currIndex)}
+          {@const primaryAction = group.actions[0]}
+          <div
+            class="rounded-xl border transition-colors {isChecked
+              ? 'border-primary/40 bg-primary/5'
+              : 'border-border bg-muted/20 opacity-60'}"
+          >
+            <div class="flex items-start gap-3 p-3">
+              <Checkbox
+                id={`group-${group.currIndex}`}
+                checked={isChecked}
+                onCheckedChange={(v) => {
+                  const next = new Set(selectedGroups);
+                  if (v) {
+                    next.add(group.currIndex);
+                  } else {
+                    next.delete(group.currIndex);
+                  }
+                  selectedGroups = next;
+                }}
+                class="mt-0.5"
+              />
+              <div class="min-w-0 flex-1">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span>{action.details}</span>
-                  {#if action.from}
-                    <Badge variant="secondary" class="bg-muted text-xs font-bold">
-                      {action.from}
-                    </Badge>
-                  {/if}
-                  {#if action.from && action.to}
-                    <MoveRight class="h-3 w-3" />
-                  {/if}
-                  {#if action.to}
-                    <Badge variant="secondary" class="bg-primary/10 text-xs font-bold text-primary">
-                      {action.to}
-                    </Badge>
-                  {/if}
-                </div>
-                {#if action.warning}
-                  <p
-                    class="mt-1 flex items-center gap-1 text-xs font-bold text-destructive uppercase"
-                  >
-                    <CircleAlert class="h-3 w-3" />
-                    {action.warning}
+                  <p class="text-sm font-bold text-foreground">{primaryAction.residentName}</p>
+                  <p class="text-xs text-muted-foreground">
+                    {primaryAction.studentNo || primaryAction.email}
                   </p>
-                {/if}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+                </div>
+                <div class="mt-2 space-y-1.5">
+                  {#each group.actions as action}
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                      <Badge
+                        variant={action.type.startsWith("CREATE") ? "default" : "outline"}
+                        class="shrink-0 text-xs font-bold tracking-tighter uppercase"
+                      >
+                        {action.type.replace("_", " ")}
+                      </Badge>
+                      <span class="text-muted-foreground">{action.details}</span>
+                      {#if action.from}
+                        <Badge variant="secondary" class="bg-muted text-xs font-bold">
+                          {action.from}
+                        </Badge>
+                      {/if}
+                      {#if action.from && action.to}
+                        <MoveRight class="h-3 w-3 text-muted-foreground" />
+                      {/if}
+                      {#if action.to}
+                        <Badge
+                          variant="secondary"
+                          class="bg-primary/10 text-xs font-bold text-primary"
+                        >
+                          {action.to}
+                        </Badge>
+                      {/if}
+                    </div>
+                    {#if action.warning}
+                      <p
+                        class="flex items-center gap-1 text-xs font-bold text-destructive uppercase"
+                      >
+                        <CircleAlert class="h-3 w-3" />
+                        {action.warning}
+                      </p>
+                    {/if}
+                  {/each}
+                </div>
+              </div>
+            </div>
+          </div>
+        {/each}
+      </div>
     </div>
     <AlertDialog.Footer>
       <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action onclick={confirmSync}>
-        Apply Changes ({previewActions.length})
+      <AlertDialog.Action onclick={confirmSync} disabled={selectedGroups.size === 0}>
+        Apply Selected ({selectedGroups.size} of {groupedPreview.length})
       </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>

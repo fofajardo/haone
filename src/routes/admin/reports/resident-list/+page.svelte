@@ -162,6 +162,7 @@
           residentId: res?.residentId || "",
           ledgerId: res?.ledgerId || "",
           checkInDate: res?.checkInDate || "",
+          type: res?.type || "",
           raw: res?.raw || [],
           position: o.position,
           isOfficer: true

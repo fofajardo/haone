@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/table-core";
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
-import { type UserRecord as User, USER_TAG_COLORS } from "$lib/schemas";
+import { type UserRecord as User, USER_TAG_COLORS, UserTag } from "$lib/schemas";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
 import { translateCollege, translateProgram } from "$lib/receipt-utils";
@@ -60,7 +60,7 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "tags",
     header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Tags" }),
     cell: ({ row }) => {
-      const tagsStr = row.original.tags || "STUDENT";
+      const tagsStr = row.original.tags || UserTag.STUDENT;
       const tags = tagsStr
         .split(":")
         .map((t) => t.trim())

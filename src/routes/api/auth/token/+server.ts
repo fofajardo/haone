@@ -36,7 +36,10 @@ export const POST: RequestHandler = async ({ request }) => {
     });
 
     if (!userinfoResp.ok) {
-      return json({ error: "failed_userinfo", message: "Failed to fetch profile info" }, { status: 500 });
+      return json(
+        { error: "failed_userinfo", message: "Failed to fetch profile info" },
+        { status: 500 }
+      );
     }
 
     const userData = await userinfoResp.json();
@@ -46,10 +49,44 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // Enforce domain check here too
     if (!isInstanceAdmin && !email.endsWith("@up.edu.ph")) {
-      return json(
-        { error: "forbidden_domain", error_description: "Only @up.edu.ph emails allowed." },
-        { status: 403 }
-      );
+      try {
+        const { PUBLIC_GS_RR_ID } = await import("$env/static/public");
+        const { USER_COL, UserTag } = await import("$lib/schemas");
+        const { getSheetsClient, getSheetValues } = await import("$lib/server/api-helper");
+        const saClient = await getSheetsClient();
+        const userRows = await getSheetValues(saClient, PUBLIC_GS_RR_ID, "users!A:P");
+        const user = userRows.find((r: any) => {
+          return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
+        });
+        let isStudent = true;
+        if (user) {
+          const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
+          const tags = tagsStr.split(":").map((t: string) => {
+            return t.trim();
+          });
+          if (!tags.includes(UserTag.STUDENT)) {
+            isStudent = false;
+          }
+        } else {
+          // New user signup is allowed to proceed to onboarding
+          isStudent = false;
+        }
+
+        if (isStudent) {
+          return json(
+            {
+              error: "forbidden_domain",
+              error_description: "Only @up.edu.ph emails allowed for students."
+            },
+            { status: 403 }
+          );
+        }
+      } catch (e) {
+        return json(
+          { error: "forbidden_domain", error_description: "Only @up.edu.ph emails allowed." },
+          { status: 403 }
+        );
+      }
     }
 
     return json({

@@ -20,6 +20,7 @@ class ResidentState {
   }
 
   get needsOnboarding() {
+    // TODO: Consider an alternative flow for alum accounts.
     return (
       this.status &&
       (!this.status.isRegistered || !this.status.hasActiveAccount || !this.status.account?.bed)
