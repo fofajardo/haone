@@ -97,11 +97,8 @@
       !formData.college ||
       !formData.program ||
       !formData.checkInDate ||
-      ( requireSocialMedia && (
-      !formData.likedFBPage ||
-      !formData.joinedFBGroup ||
-      !formData.joinedFBChat
-  ))
+      (requireSocialMedia &&
+        (!formData.likedFBPage || !formData.joinedFBGroup || !formData.joinedFBChat))
     ) {
       toast.error("Please fill in all fields.");
       return;
@@ -434,7 +431,8 @@
               </div>
             {:else}
               <div class="rounded-lg bg-muted/50 p-3">
-                Choose No College Information and No Degree Program Information if you did not attend UPLB as a student.
+                Choose No College Information and No Degree Program Information if you did not
+                attend UPLB as a student.
               </div>
             {/if}
           </div>
