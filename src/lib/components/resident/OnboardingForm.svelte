@@ -35,6 +35,11 @@
 
   const emailVal = $derived(status?.profile?.email || auth.user?.email || "");
   const isUpMail = $derived(emailVal.endsWith("@up.edu.ph"));
+  let requireSocialMedia = $derived(
+    accountType === AccountType.STUDENT ||
+      accountType === AccountType.ALUMNUS ||
+      accountType === AccountType.BOOTCAMP
+  );
 
   $effect.pre(() => {
     if (status) {
@@ -55,7 +60,8 @@
     lastName: "",
     checkInDate: "",
     likedFBPage: false,
-    joinedFBGroup: false
+    joinedFBGroup: false,
+    joinedFBChat: false
   });
 
   $effect(() => {
@@ -91,8 +97,11 @@
       !formData.college ||
       !formData.program ||
       !formData.checkInDate ||
+      ( requireSocialMedia && (
       !formData.likedFBPage ||
-      !formData.joinedFBGroup
+      !formData.joinedFBGroup ||
+      !formData.joinedFBChat
+  ))
     ) {
       toast.error("Please fill in all fields.");
       return;
@@ -371,7 +380,7 @@
               {/if}
             </div>
 
-            {#if accountType === AccountType.STUDENT || accountType === AccountType.ALUMNUS || accountType === AccountType.BOOTCAMP}
+            {#if requireSocialMedia}
               <div class="space-y-4 rounded-xl border bg-muted/20 p-4">
                 <Label
                   class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
@@ -404,6 +413,20 @@
                           class="text-primary underline hover:text-primary/80"
                           >Official Facebook Group</a
                         > of the Association</span
+                      >
+                    </Label>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <Checkbox id="fb-chat" bind:checked={formData.joinedFBChat} />
+                    <Label for="fb-chat" class="text-sm leading-none font-medium">
+                      <span
+                        >I have joined the <a
+                          href="https://m.me/cm/AbaBWk2ZB-a2OA7y/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-primary underline hover:text-primary/80"
+                          >Official Facebook Messenger Group Chat</a
+                        > of the Residence Hall</span
                       >
                     </Label>
                   </div>
