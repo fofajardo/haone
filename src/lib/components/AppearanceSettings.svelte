@@ -63,7 +63,7 @@
           onclick={() => (uiSettings.fontFamily = "inter")}
         >
           <span class="text-sm font-bold">Default</span>
-          <span class="text-xs opacity-60">Inter Sans</span>
+          <span class="text-xs opacity-60">Inter</span>
         </Button>
         <Button
           variant={uiSettings.fontFamily === "archivo" ? "default" : "outline"}
@@ -79,7 +79,7 @@
           onclick={() => (uiSettings.fontFamily = "shantell")}
         >
           <span class="text-sm font-bold">Friendly</span>
-          <span class="font-sans text-xs opacity-60">Shantell</span>
+          <span class="font-sans text-xs opacity-60">Shantell Sans</span>
         </Button>
       </div>
     </div>
