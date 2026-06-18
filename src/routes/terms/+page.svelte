@@ -50,10 +50,18 @@
           <code class="rounded bg-muted px-1">up.edu.ph</code> email account
         </li>
         <li>
+          Select <strong>UPLB Housing Office beneficiaries</strong> residing in residence halls shared
+          with OSH
+        </li>
+        <li>
+          Transient residents or guests with temporary access granted by the residence hall
+          association
+        </li>
+        <li>
           <strong>House Council officers</strong> of the residence hall association with explicit authorization
         </li>
         <li>
-          <strong>Finance personnel</strong> of the residence hall association with explicit authorization
+          <strong>Alumni residents</strong>
         </li>
       </ul>
 
