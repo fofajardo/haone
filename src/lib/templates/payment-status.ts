@@ -256,3 +256,94 @@ export const PaymentStatusTemplate: EmailTemplate<PaymentStatusData> = {
   },
   generateHtml: generatePaymentStatusHtml
 };
+
+/**
+ * Generates HTML for a Statement of Account email.
+ */
+export function generateStatementOfAccountHtml(data: PaymentStatusData, branding: BrandingProfile) {
+  const accountSpecificContent = data.reminders
+    ? `
+    <div style="margin-bottom: 25px; color: #000; font-size: 14px;">
+      ${data.reminders}
+    </div>
+  `
+    : "";
+
+  const replacements = {
+    "{assocBase}": formatAmount(data.assocBase),
+    "{assocHalf}": formatAmount(data.assocBase / 2),
+    "{waterMonthly}": formatAmount(data.waterBase / 4),
+    "{waterHalf}": formatAmount(data.waterBase / 8)
+  };
+
+  const sectionRules =
+    !data.isFullyPaid && branding.sectionRules
+      ? Object.entries(replacements).reduce(
+          (acc, [key, val]) => acc.replace(new RegExp(key, "g"), val),
+          branding.sectionRules
+        )
+      : "";
+
+  const content = `
+    <p style="font-size: 16px; margin-bottom: 5px; font-weight: normal; display: block; color: #000;">Hi, <strong style="font-weight: bold;">${data.accountName}</strong> (Room ${data.room})</p>
+
+    <p style="font-size: 14px; color: #000; margin-bottom: 25px; line-height: 1.5; display: block;"> Please review the breakdown of your water and association fees for the current semester below:</p>
+
+    ${sectionRules}
+
+    <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block; font-weight: bold; margin-top: 20px; text-decoration: underline;">Payment Options and Considerations:</p>
+    <ul style="margin: 15px 0 15px 0; padding: 0 0 0 35px; display: block; list-style-position: outside;">
+      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Refer to the bulletin board or <a href="${branding.paymentInstructionsUrl || "#"}" style="color: #0047AB; text-decoration: underline;">this document</a> for payment instructions.</li>
+      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Residents have the option to pay the full amount upfront.</li>
+      <li style="margin-bottom: 10px; list-style-type: disc; line-height: 1.4; font-size: 14px; color: #000;">Residents experiencing financial difficulties can defer payment by notifying the house council officers.</li>
+    </ul>
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; display: table;">
+      <tr style="background-color: #000; color: #ffffff;">
+        <td colspan="1" style="text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px; font-weight: bold;">DESCRIPTION</td>
+        <td colspan="2" style="text-align: center; padding: 10px; font-size: 13px; letter-spacing: 1px; font-weight: bold;">BILLED AMOUNT FOR THE ENTIRE SEMESTER</td>
+      </tr>
+      <!-- WATER FEES SECTION -->
+      <tr>
+        <td rowspan="1" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: top; width: 30%;">
+          <p style="font-weight: bold; margin-bottom: 2px;">Water Fees</p>
+        </td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.waterBase)}</td>
+      </tr>
+      <!-- ASSOCIATION FEE SECTION -->
+      <tr>
+        <td rowspan="1" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: top; width: 30%;">
+          <p style="font-weight: bold; margin-bottom: 2px;">Association Fee</p>
+        </td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px;">${formatAccounting(data.assocBase)}</td>
+      </tr>
+      <!-- SUMMARY SECTION -->
+      <tr>
+        <td colspan="1" style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle;">
+          <p style="font-weight: bold; margin-bottom: 2px;">Billed Amount</p>
+        </td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; border-right: none; width: 25px; padding-right: 0;"></td>
+        <td style="padding: 10px 12px; border: 1px solid #000; font-size: 13px; vertical-align: middle; text-align: right; border-left: none; width: 100px; font-weight: bold;">${formatAccounting(data.totalBase)}</td>
+      </tr>
+    </table>
+
+    <p style="font-size: 14px; font-weight: bold; margin-top: 12px; margin-bottom: 12px; color: #000; display: block;">Reminders:</p>
+    
+    ${accountSpecificContent}
+
+    <p style="font-size: 14px; color: #000; margin-bottom: 20px; line-height: 1.5; display: block; margin-top: 35px;">
+      For inquiries and comments, please feel free to reach out to the officers in person or contact us at <a href="mailto:${branding.replyTo}" style="color: #0047AB; text-decoration: underline;">${branding.replyTo}</a>.
+    </p>
+  `;
+
+  return wrapEmailHtml(content, branding.emailHeaderUrl, branding.replyTo);
+}
+
+export const StatementOfAccountTemplate: EmailTemplate<PaymentStatusData> = {
+  subject: (_data, branding) => {
+    return `[${branding.shortName}] Statement of Account for Semestral Fees`;
+  },
+  generateHtml: generateStatementOfAccountHtml
+};

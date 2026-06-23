@@ -1,5 +1,5 @@
 import { emailDispatcher } from "./dispatcher.svelte";
-import { PaymentStatusTemplate } from "./templates/payment-status";
+import { PaymentStatusTemplate, StatementOfAccountTemplate } from "./templates/payment-status";
 import { ClearanceCertificateTemplate } from "./templates/clearance";
 import type { BrandingProfile } from "./templates/types";
 import { goto } from "$app/navigation";
@@ -508,8 +508,44 @@ export function stageStatusEmail(
   }
 
   emailDispatcher.push(
-    mapResidentToStagedEmail(resident, branding, emailDispatcher.customReminders)
+    mapResidentToStagedEmail(resident, branding, "REMINDER", emailDispatcher.customReminders)
   );
+
+  if (options.redirect) {
+    goto("/admin/email-dispatcher");
+  }
+}
+
+/**
+ * Stages multiple statement of account emails.
+ */
+export function stageSoaEmailBatch(
+  residents: ResidentRecord[],
+  branding: BrandingProfile,
+  options: {
+    clearQueue?: boolean;
+    customReminders?: string;
+    redirect?: boolean;
+  } = {}
+) {
+  if (options.clearQueue) {
+    emailDispatcher.clear();
+  }
+
+  emailDispatcher.configType = "reminders";
+  emailDispatcher.batchType = "SOA";
+
+  if (options.customReminders) {
+    emailDispatcher.customReminders = options.customReminders;
+  } else if (branding.defaultReminders) {
+    emailDispatcher.customReminders = branding.defaultReminders;
+  }
+
+  for (const r of residents) {
+    emailDispatcher.push(
+      mapResidentToStagedEmail(r, branding, "SOA", emailDispatcher.customReminders)
+    );
+  }
 
   if (options.redirect) {
     goto("/admin/email-dispatcher");
@@ -542,7 +578,9 @@ export function stageStatusEmailBatch(
   }
 
   for (const r of residents) {
-    emailDispatcher.push(mapResidentToStagedEmail(r, branding, emailDispatcher.customReminders));
+    emailDispatcher.push(
+      mapResidentToStagedEmail(r, branding, "REMINDER", emailDispatcher.customReminders)
+    );
   }
 
   if (options.redirect) {
@@ -610,13 +648,14 @@ export function stageClearanceEmailBatch(
 function mapResidentToStagedEmail(
   resident: ResidentRecord,
   branding: BrandingProfile,
+  template: "SOA" | "REMINDER",
   customReminders?: string
 ) {
   return {
     id: resident.stno,
     to: resident.email,
     recipientName: resident.name,
-    template: PaymentStatusTemplate as any,
+    template: template === "SOA" ? StatementOfAccountTemplate : (PaymentStatusTemplate as any),
     data: {
       accountName: resident.name,
       room: resident.room,

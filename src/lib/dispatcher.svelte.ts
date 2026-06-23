@@ -21,7 +21,7 @@ class DispatcherState {
   warnClearance = $state(false); // For Clearance warning
   hideBedNotice = $state(false); // For Registration Form notice
   configType = $state<"reminders" | null>(null);
-  batchType = $state<"ACKNOWLEDGMENT" | "REMINDER" | "CLEARANCE" | null>(null);
+  batchType = $state<"ACKNOWLEDGMENT" | "REMINDER" | "CLEARANCE" | "SOA" | null>(null);
 
   push(email: StagedEmail) {
     this.queue.push(email);

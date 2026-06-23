@@ -7,7 +7,8 @@
     fetchResidents,
     stageStatusEmailBatch,
     stageClearanceEmailBatch,
-    matchesStatusFilter
+    matchesStatusFilter,
+    stageSoaEmailBatch as stageStatementOfAccountEmailBatch
   } from "$lib/resident-logic";
   import { pluralize } from "$lib/receipt-utils";
   import { goto } from "$app/navigation";
@@ -126,7 +127,17 @@
     tableSync.reset();
   }
 
-  function prepareDispatch() {
+  function prepareDispatchForStatementOfAccount() {
+    if (selectedIndices.size === 0) return;
+    const selectedResidents = residents.filter((r) => selectedIndices.has(r.stno));
+    stageStatementOfAccountEmailBatch(selectedResidents, brandingState.profile, {
+      clearQueue: true,
+      customReminders,
+      redirect: true
+    });
+  }
+
+  function prepareDispatchForPaymentStatus() {
     if (selectedIndices.size === 0) return;
     const selectedResidents = residents.filter((r) => selectedIndices.has(r.stno));
     stageStatusEmailBatch(selectedResidents, brandingState.profile, {
@@ -136,7 +147,7 @@
     });
   }
 
-  function prepareClearanceDispatch() {
+  function prepareDispatchForClearance() {
     if (selectedIndices.size === 0) return;
     const selectedResidents = residents.filter(
       (r) =>
@@ -215,7 +226,7 @@
             <DropdownMenu.Trigger disabled={selectedIndices.size === 0}>
               {#snippet child({ props })}
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="sm"
                   disabled={selectedIndices.size === 0}
                   {...props}
@@ -227,11 +238,15 @@
               {/snippet}
             </DropdownMenu.Trigger>
             <DropdownMenu.Content align="end" class="w-56">
-              <DropdownMenu.Item onclick={prepareDispatch}>
+              <DropdownMenu.Item onclick={prepareDispatchForStatementOfAccount}>
+                <Mail class="mr-2 h-4 w-4" />
+                <span>Send Statement of Account</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onclick={prepareDispatchForPaymentStatus}>
                 <Mail class="mr-2 h-4 w-4" />
                 <span>Send Payment Status</span>
               </DropdownMenu.Item>
-              <DropdownMenu.Item onclick={prepareClearanceDispatch}>
+              <DropdownMenu.Item onclick={prepareDispatchForClearance}>
                 <FileCheck class="mr-2 h-4 w-4" />
                 <span>Send Clearance Certificate</span>
               </DropdownMenu.Item>
