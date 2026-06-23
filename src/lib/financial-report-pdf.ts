@@ -131,15 +131,75 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
     ASSOC: { incoming: 0, outgoing: 0 },
     MISC: { incoming: 0, outgoing: 0 }
   };
+
+  // Summary by Fee Type and MOP
+  const feeTypeMopSummary = {
+    WATER: {} as Record<string, { incoming: number; outgoing: number }>,
+    ASSOC: {} as Record<string, { incoming: number; outgoing: number }>,
+    MISC: {} as Record<string, { incoming: number; outgoing: number }>
+  };
+
   processedJournal.forEach((j) => {
-    if (j.water > 0) feeSummary.WATER.incoming += j.water;
-    else feeSummary.WATER.outgoing += Math.abs(j.water);
+    const isWaived = j.type.toUpperCase().includes("WAIVED");
+    if (isWaived) {
+      return;
+    }
+    const rawMop = (j.mop || "").trim().toUpperCase();
+    if (rawMop === "N/A") {
+      return;
+    }
+    const mopKey = rawMop || "CASH";
 
-    if (j.assoc > 0) feeSummary.ASSOC.incoming += j.assoc;
-    else feeSummary.ASSOC.outgoing += Math.abs(j.assoc);
+    if (j.water !== 0) {
+      if (j.water > 0) {
+        feeSummary.WATER.incoming += j.water;
+        if (!feeTypeMopSummary.WATER[mopKey]) {
+          feeTypeMopSummary.WATER[mopKey] = { incoming: 0, outgoing: 0 };
+        }
+        feeTypeMopSummary.WATER[mopKey].incoming += j.water;
+      } else {
+        const absVal = Math.abs(j.water);
+        feeSummary.WATER.outgoing += absVal;
+        if (!feeTypeMopSummary.WATER[mopKey]) {
+          feeTypeMopSummary.WATER[mopKey] = { incoming: 0, outgoing: 0 };
+        }
+        feeTypeMopSummary.WATER[mopKey].outgoing += absVal;
+      }
+    }
 
-    if (j.misc > 0) feeSummary.MISC.incoming += j.misc;
-    else feeSummary.MISC.outgoing += Math.abs(j.misc);
+    if (j.assoc !== 0) {
+      if (j.assoc > 0) {
+        feeSummary.ASSOC.incoming += j.assoc;
+        if (!feeTypeMopSummary.ASSOC[mopKey]) {
+          feeTypeMopSummary.ASSOC[mopKey] = { incoming: 0, outgoing: 0 };
+        }
+        feeTypeMopSummary.ASSOC[mopKey].incoming += j.assoc;
+      } else {
+        const absVal = Math.abs(j.assoc);
+        feeSummary.ASSOC.outgoing += absVal;
+        if (!feeTypeMopSummary.ASSOC[mopKey]) {
+          feeTypeMopSummary.ASSOC[mopKey] = { incoming: 0, outgoing: 0 };
+        }
+        feeTypeMopSummary.ASSOC[mopKey].outgoing += absVal;
+      }
+    }
+
+    if (j.misc !== 0) {
+      if (j.misc > 0) {
+        feeSummary.MISC.incoming += j.misc;
+        if (!feeTypeMopSummary.MISC[mopKey]) {
+          feeTypeMopSummary.MISC[mopKey] = { incoming: 0, outgoing: 0 };
+        }
+        feeTypeMopSummary.MISC[mopKey].incoming += j.misc;
+      } else {
+        const absVal = Math.abs(j.misc);
+        feeSummary.MISC.outgoing += absVal;
+        if (!feeTypeMopSummary.MISC[mopKey]) {
+          feeTypeMopSummary.MISC[mopKey] = { incoming: 0, outgoing: 0 };
+        }
+        feeTypeMopSummary.MISC[mopKey].outgoing += absVal;
+      }
+    }
   });
 
   // Collection Summary
@@ -272,51 +332,116 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
               { text: "BALANCE", style: "tableHeader", alignment: "right" }
             ] as TableCell[],
             [
-              { text: "WATER FEE", fontSize: 9 },
+              { text: "WATER FEE", bold: true, fontSize: 9 },
               {
                 text: formatAccounting(feeSummary.WATER.incoming),
                 alignment: "right",
+                bold: true,
                 fontSize: 9
               },
               {
                 text: formatAccounting(feeSummary.WATER.outgoing),
                 alignment: "right",
+                bold: true,
                 fontSize: 9
               },
               {
                 text: formatAccounting(feeSummary.WATER.incoming - feeSummary.WATER.outgoing),
                 alignment: "right",
+                bold: true,
                 fontSize: 9
               }
             ] as TableCell[],
+            ...Object.entries(feeTypeMopSummary.WATER).map(([mop, data]) => {
+              const mopConst = availableMops.find((m) => {
+                return m.value === mop;
+              });
+              const label = mopConst ? mopConst.label : translateMop(mop);
+              return [
+                { text: label.toUpperCase(), fontSize: 9, margin: [15, 0, 0, 0] },
+                { text: formatAccounting(data.incoming), alignment: "right", fontSize: 9 },
+                { text: formatAccounting(data.outgoing), alignment: "right", fontSize: 9 },
+                {
+                  text: formatAccounting(data.incoming - data.outgoing),
+                  alignment: "right",
+                  fontSize: 9
+                }
+              ] as TableCell[];
+            }),
             [
-              { text: "ASSOCIATION FEE", fontSize: 9 },
+              { text: "ASSOCIATION FEE", bold: true, fontSize: 9 },
               {
                 text: formatAccounting(feeSummary.ASSOC.incoming),
                 alignment: "right",
+                bold: true,
                 fontSize: 9
               },
               {
                 text: formatAccounting(feeSummary.ASSOC.outgoing),
                 alignment: "right",
+                bold: true,
                 fontSize: 9
               },
               {
                 text: formatAccounting(feeSummary.ASSOC.incoming - feeSummary.ASSOC.outgoing),
                 alignment: "right",
+                bold: true,
                 fontSize: 9
               }
             ] as TableCell[],
+            ...Object.entries(feeTypeMopSummary.ASSOC).map(([mop, data]) => {
+              const mopConst = availableMops.find((m) => {
+                return m.value === mop;
+              });
+              const label = mopConst ? mopConst.label : translateMop(mop);
+              return [
+                { text: label.toUpperCase(), fontSize: 9, margin: [15, 0, 0, 0] },
+                { text: formatAccounting(data.incoming), alignment: "right", fontSize: 9 },
+                { text: formatAccounting(data.outgoing), alignment: "right", fontSize: 9 },
+                {
+                  text: formatAccounting(data.incoming - data.outgoing),
+                  alignment: "right",
+                  fontSize: 9
+                }
+              ] as TableCell[];
+            }),
             [
-              { text: "MISCELLANEOUS", fontSize: 9 },
-              { text: formatAccounting(feeSummary.MISC.incoming), alignment: "right", fontSize: 9 },
-              { text: formatAccounting(feeSummary.MISC.outgoing), alignment: "right", fontSize: 9 },
+              { text: "MISCELLANEOUS", bold: true, fontSize: 9 },
+              {
+                text: formatAccounting(feeSummary.MISC.incoming),
+                alignment: "right",
+                bold: true,
+                fontSize: 9
+              },
+              {
+                text: formatAccounting(feeSummary.MISC.outgoing),
+                alignment: "right",
+                bold: true,
+                fontSize: 9
+              },
               {
                 text: formatAccounting(feeSummary.MISC.incoming - feeSummary.MISC.outgoing),
                 alignment: "right",
+                bold: true,
                 fontSize: 9
               }
             ] as TableCell[],
+            ...Object.entries(feeTypeMopSummary.MISC).map(([mop, data]) => {
+              const mopConst = availableMops.find((m) => {
+                return m.value === mop;
+              });
+              const label = mopConst ? mopConst.label : translateMop(mop);
+              return [
+                { text: label.toUpperCase(), fontSize: 9, margin: [15, 0, 0, 0] },
+                { text: formatAccounting(data.incoming), alignment: "right", fontSize: 9 },
+                { text: formatAccounting(data.outgoing), alignment: "right", fontSize: 9 },
+                {
+                  text: formatAccounting(data.incoming - data.outgoing),
+                  alignment: "right",
+                  fontSize: 9
+                }
+              ] as TableCell[];
+            }),
             [
               { text: "ENDING BALANCE", bold: true, fontSize: 9 },
               { text: "" },
