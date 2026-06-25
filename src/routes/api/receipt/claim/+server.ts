@@ -1,9 +1,8 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_AW_ID } from "$env/static/public";
 import { JOURNAL_COL } from "$lib/schemas";
 import type { RequestHandler } from "./$types";
 
-import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
+import { getSheetsClient, fetchSheetsData } from "$lib/server/api-helper";
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
@@ -14,7 +13,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const token = await getSheetsClient();
-    const jorRows = await getSheetValues(token, PUBLIC_GS_AW_ID, "journal_general!A:T");
+    const [jorRows] = await fetchSheetsData(token, ["journal_general!A:T"]);
 
     const row = jorRows
       .slice(1)

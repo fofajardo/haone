@@ -1,11 +1,10 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
 import { ANNOUNCEMENT_COL, USER_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
-  getSheetValues,
-  serverError
+  serverError,
+  fetchSheetsData
 } from "$lib/server/api-helper";
 import { isAnnouncementActive } from "$lib/admin-logic";
 import type { RequestHandler } from "./$types";
@@ -19,10 +18,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
   try {
     const client = await getSheetsClient();
-    const [rows, userRows] = await Promise.all([
-      getSheetValues(client, PUBLIC_GS_SR_ID, "announcements!A:L"),
-      getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P")
-    ]);
+    const [rows, userRows] = await fetchSheetsData(client, ["announcements!A:L", "users!A:P"]);
 
     const userMap = new Map();
     userRows.slice(1).forEach((row: any) => {

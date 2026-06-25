@@ -1,31 +1,44 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID, PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
+import { PUBLIC_GS_SR_ID } from "$env/static/public";
 import { LAUNDRY_COL, ACCOUNT_COL, USER_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
-  getSheetValues,
   appendSheetValue,
-  serverError
+  serverError,
+  fetchSheetsData,
+  resolveResidentAccountType
 } from "$lib/server/api-helper";
 import { parseTime, formatTime } from "$lib/receipt-utils";
+import { canAccessLaundry, canSeeLaundryNames } from "$lib/resident-logic";
 import type { RequestHandler } from "./$types";
 
 /**
  * GET: Fetch all reservations + user room mapping
  */
 export const GET: RequestHandler = async ({ request }) => {
-  const { email: authEmail, error } = await authenticateResident(request);
+  const { residentId, error } = await authenticateResident(request);
   if (error) return error;
 
   try {
     const client = await getSheetsClient();
 
-    const [resRows, accRows, userRows] = await Promise.all([
-      getSheetValues(client, PUBLIC_GS_SR_ID, "laundry!A:I"),
-      getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:E"),
-      getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P")
+    const [resRows, accRows, userRows, activeTerm] = await fetchSheetsData(client, [
+      "laundry!A:I",
+      "accounts!A:L",
+      "users!A:P",
+      "TERM_CURR"
     ]);
+
+    const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
+
+    if (!canAccessLaundry(accountType)) {
+      return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
+    }
+
+    const maskNames = !canSeeLaundryNames(accountType);
+
+    const currentResidentId = residentId;
 
     // Build user map
     const userMap = new Map<string, any>();
@@ -50,7 +63,11 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const reservations = resRows.slice(1).map((row: any) => {
       const resId = (row[LAUNDRY_COL.RESIDENT_ID] || "").trim();
+      const isMine = resId === currentResidentId;
       const user = userMap.get(resId);
+      const rawName = user?.displayName || "Resident";
+      const rawRoom = roomMap.get(resId) || "";
+
       return {
         id: (row[LAUNDRY_COL.ID] || "").trim(),
         residentId: resId,
@@ -61,16 +78,10 @@ export const GET: RequestHandler = async ({ request }) => {
         cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
         creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
         cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim(),
-        displayName: user?.displayName || "Resident",
-        room: roomMap.get(resId) || ""
+        displayName: maskNames && !isMine ? "Reserved" : rawName,
+        room: maskNames && !isMine ? "" : rawRoom
       };
     });
-
-    // Find current resident ID
-    const me = userRows
-      .slice(1)
-      .find((u: any) => (u[USER_COL.EMAIL] || "").toLowerCase() === authEmail.toLowerCase());
-    const currentResidentId = me ? (me[USER_COL.ID] || "").trim() : "";
 
     return json({ reservations, currentResidentId });
   } catch (e: any) {
@@ -82,7 +93,7 @@ export const GET: RequestHandler = async ({ request }) => {
  * POST: Add a new reservation
  */
 export const POST: RequestHandler = async ({ request }) => {
-  const { email: authEmail, error: authError } = await authenticateResident(request);
+  const { residentId, error: authError } = await authenticateResident(request);
   if (authError) return authError;
 
   try {
@@ -91,11 +102,17 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const client = await getSheetsClient();
 
-    // Resolve residentId from email
-    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
-    const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ error: "Resident record not found" }, { status: 404 });
-    const residentId = user[USER_COL.ID];
+    const [accRows, activeTerm, resRows] = await fetchSheetsData(client, [
+      "accounts!A:L",
+      "TERM_CURR",
+      "laundry!A:I"
+    ]);
+
+    const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
+
+    if (!canAccessLaundry(accountType)) {
+      return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
+    }
 
     // Basic Validation
     const startH = parseTime(timeStart);
@@ -105,7 +122,6 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     // Overlap Check
-    const resRows = await getSheetValues(client, PUBLIC_GS_SR_ID, "laundry!A:I");
     const isOverlapping = resRows.slice(1).some((r: any) => {
       if (
         (r[LAUNDRY_COL.STATUS] || "").trim() !== "ACTIVE" ||
@@ -144,7 +160,7 @@ export const POST: RequestHandler = async ({ request }) => {
  * DELETE: Cancel a reservation
  */
 export const DELETE: RequestHandler = async ({ url, request }) => {
-  const { email: authEmail, error: authError } = await authenticateResident(request);
+  const { residentId, error: authError } = await authenticateResident(request);
   if (authError) return authError;
 
   const reservationId = url.searchParams.get("id");
@@ -153,14 +169,18 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
   try {
     const client = await getSheetsClient();
 
-    // Resolve residentId
-    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
-    const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ error: "Resident record not found" }, { status: 404 });
-    const residentId = user[USER_COL.ID];
+    const [accRows, activeTerm, resRows] = await fetchSheetsData(client, [
+      "accounts!A:L",
+      "TERM_CURR",
+      "laundry!A:I"
+    ]);
 
-    // Find row
-    const resRows = await getSheetValues(client, PUBLIC_GS_SR_ID, "laundry!A:I");
+    const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
+
+    if (!canAccessLaundry(accountType)) {
+      return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
+    }
+
     const rowIndex = resRows.findIndex(
       (r: any) => (r[LAUNDRY_COL.ID] || "").trim() === reservationId
     );

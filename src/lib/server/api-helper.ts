@@ -250,10 +250,9 @@ export async function authenticateResident(request: Request) {
     let isStudent = true;
     if (email && !isInstanceAdmin) {
       try {
-        const { PUBLIC_GS_RR_ID } = await import("$env/static/public");
         const { USER_COL, UserTag } = await import("$lib/schemas");
         const saToken = await getSheetsClient();
-        const users = await getSheetValues(saToken, PUBLIC_GS_RR_ID, "users!A:P");
+        const [users] = await fetchSheetsData(saToken, ["users!A:P"]);
         const user = users.find((r: any) => {
           return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
         });
@@ -305,10 +304,9 @@ export async function authenticateAdmin(request: Request) {
   if (auth.error) return auth;
 
   try {
-    const { PUBLIC_GS_RR_ID } = await import("$env/static/public");
     const { OFFICER_COL } = await import("$lib/schemas");
     const token = await getSheetsClient();
-    const directory = await getSheetValues(token, PUBLIC_GS_RR_ID, "directory!A:H");
+    const [directory] = await fetchSheetsData(token, ["directory!A:H"]);
 
     // Check if user email is in the directory sheet
     const officer = directory.find(
@@ -330,19 +328,71 @@ export async function authenticateAdmin(request: Request) {
 }
 
 /**
- * Fetches the current term from the constants sheet.
- */
-export async function fetchTermCurrServer(token: string) {
-  const { PUBLIC_GS_AW_ID } = await import("$env/static/public");
-  const values = await getSheetValues(token, PUBLIC_GS_AW_ID, "constants!A:C");
-  const row = values.find((r: any) => (r[0] || "").trim() === "TERM_CURR");
-  return row ? (row[1] || "").trim() : "";
-}
-
-/**
  * Standardized error response for API routes.
  */
 export function serverError(e: any, context = "API Operation") {
   console.error(`${context} failed:`, e);
   return json({ error: "server_error", message: e.message }, { status: 500 });
+}
+
+export async function getSpreadsheetIdForSheet(sheetName: string): Promise<string> {
+  const { PUBLIC_GS_SR_ID, PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } = await import("$env/static/public");
+  switch (sheetName) {
+    case "laundry":
+    case "achievements":
+    case "achievement_records":
+    case "settings":
+    case "payment_requests":
+    case "announcements":
+      return PUBLIC_GS_SR_ID;
+    case "constants":
+    case "accounts":
+    case "journal_general":
+      return PUBLIC_GS_AW_ID;
+    case "users":
+    case "directory":
+    case "CURR":
+      return PUBLIC_GS_RR_ID;
+    default:
+      throw new Error(`Unknown sheet name: ${sheetName}`);
+  }
+}
+
+/**
+ * Fetches multiple ranges from Google Sheets, including special handling for "TERM_CURR".
+ * Returns an array of results corresponding to the input ranges.
+ * If a range is "TERM_CURR", it fetches the value from the constants sheet.
+ * Otherwise, it fetches the values from the specified sheet and range.
+ */
+export async function fetchSheetsData(token: string, ranges: string[]): Promise<any[]> {
+  const promises = ranges.map(async (range) => {
+    if (range === "TERM_CURR") {
+      const spreadsheetId = await getSpreadsheetIdForSheet("constants");
+      const values = await getSheetValues(token, spreadsheetId, "constants!A:C");
+      const row = values.find((r: any) => (r[0] || "").trim() === "TERM_CURR");
+      return row ? (row[1] || "").trim() : "";
+    }
+    const sheetName = range.split("!")[0];
+    const spreadsheetId = await getSpreadsheetIdForSheet(sheetName);
+    return getSheetValues(token, spreadsheetId, range);
+  });
+  return Promise.all(promises);
+}
+
+/**
+ * Pure helper function to resolve resident account type from accounts sheet rows.
+ */
+export function resolveResidentAccountType(
+  accRows: any[][],
+  activeTerm: string,
+  residentId: string
+): string {
+  // Column indices: RESIDENT_ID = 1, PERIOD = 2, TYPE = 11
+  const account = accRows.find((r: any) => {
+    return (r[2] || "").trim() === activeTerm && (r[1] || "").trim() === residentId;
+  });
+  if (account) {
+    return (account[11] || "STUDENT").trim().toUpperCase();
+  }
+  return "STUDENT";
 }

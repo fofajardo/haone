@@ -809,3 +809,27 @@ export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean 
       return true;
   }
 }
+
+export function canAccessLaundry(accountType: string): boolean {
+  const type = (accountType || "").trim().toUpperCase();
+  if (type === "STUDENT" || type === "BOOTCAMP" || type === "TRANSIENT") {
+    return true;
+  }
+  return false;
+}
+
+export function canSeeLaundryNames(accountType: string): boolean {
+  const type = (accountType || "").trim().toUpperCase();
+  if (type !== "TRANSIENT") {
+    return true;
+  }
+  return false;
+}
+
+export function canAccessAchievements(accountType: string): boolean {
+  const type = (accountType || "").trim().toUpperCase();
+  if (type === "STUDENT" || type === "BOOTCAMP" || type === "ALUMNUS" || type === "ALUMNI") {
+    return true;
+  }
+  return false;
+}

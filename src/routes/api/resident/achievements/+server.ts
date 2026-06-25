@@ -1,35 +1,53 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { ACHIEVEMENT_COL, ACHIEVEMENT_RECORD_COL, USER_COL, USER_SETTINGS_COL } from "$lib/schemas";
+import {
+  ACHIEVEMENT_COL,
+  ACHIEVEMENT_RECORD_COL,
+  USER_COL,
+  USER_SETTINGS_COL,
+  ACCOUNT_COL
+} from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
-  getSheetValues,
-  serverError
+  serverError,
+  fetchSheetsData,
+  resolveResidentAccountType
 } from "$lib/server/api-helper";
+import { canAccessAchievements } from "$lib/resident-logic";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
-  const { email: authEmail, error } = await authenticateResident(request);
+  const { residentId, error } = await authenticateResident(request);
   if (error) return error;
 
   try {
     const client = await getSheetsClient();
 
     // 1. Fetch All Data
-    const [achRows, logRows, settingRows, userRows] = await Promise.all([
-      getSheetValues(client, PUBLIC_GS_SR_ID, "achievements!A:F"),
-      getSheetValues(client, PUBLIC_GS_SR_ID, "achievement_records!A:E"),
-      getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:B"),
-      getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P")
-    ]);
+    const [achRows, logRows, settingRows, userRows, accRows, activeTerm] = await fetchSheetsData(
+      client,
+      [
+        "achievements!A:F",
+        "achievement_records!A:E",
+        "settings!A:B",
+        "users!A:P",
+        "accounts!A:L",
+        "TERM_CURR"
+      ]
+    );
 
     // 2. Resolve Current Resident
-    const currentUser = userRows.find(
-      (r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail
-    );
-    if (!currentUser) return json({ achievements: [], logs: [], currentResidentId: "" });
-    const currentResidentId = currentUser[USER_COL.ID];
+    const currentResidentId = residentId;
+    if (!currentResidentId) return json({ achievements: [], logs: [], currentResidentId: "" });
+
+    const accountType = resolveResidentAccountType(accRows, activeTerm, currentResidentId);
+
+    if (!canAccessAchievements(accountType)) {
+      return json(
+        { error: "Access Denied: Account type cannot access achievements" },
+        { status: 403 }
+      );
+    }
 
     // 3. Map Achievements
     const achievements = achRows.slice(1).map((row: any) => ({

@@ -1,11 +1,10 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
 import { ACCOUNT_COL, USER_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
-  getSheetValues,
-  serverError
+  serverError,
+  fetchSheetsData
 } from "$lib/server/api-helper";
 import { parseCSVAmount } from "$lib/receipt-utils";
 import type { RequestHandler } from "./$types";
@@ -18,11 +17,11 @@ export const GET: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
 
     // 2. Fetch All Data
-    const [accRows, userRows, journalRows, constRows] = await Promise.all([
-      getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:I"),
-      getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P"),
-      getSheetValues(client, PUBLIC_GS_AW_ID, "journal_general!A:T"),
-      getSheetValues(client, PUBLIC_GS_AW_ID, "constants!A:C")
+    const [accRows, userRows, journalRows, constRows] = await fetchSheetsData(client, [
+      "accounts!A:I",
+      "users!A:P",
+      "journal_general!A:T",
+      "constants!A:C"
     ]);
 
     const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);

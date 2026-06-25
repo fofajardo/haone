@@ -1,11 +1,10 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
 import { JOURNAL_COL, ACCOUNT_COL, USER_COL, CURR_COL, AccountType } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
-  getSheetValues,
-  serverError
+  serverError,
+  fetchSheetsData
 } from "$lib/server/api-helper";
 import { parseCSVAmount } from "$lib/receipt-utils";
 import type { RequestHandler } from "./$types";
@@ -17,17 +16,20 @@ export const GET: RequestHandler = async ({ url, request }) => {
   try {
     const client = await getSheetsClient();
 
-    // 1. Fetch Constants to get TERM_CURR
-    const constRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "constants!A:C");
-    const activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
+    // 1. Fetch all relevant sheets data
+    const [constRows, userRows, jorRows, accRows, currRows] = await fetchSheetsData(client, [
+      "constants!A:C",
+      "users!A:P",
+      "journal_general!A:T",
+      "accounts!A:L",
+      "CURR!A:M"
+    ]);
 
-    // 2. Fetch Users to find profile
-    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
+    // 2. Resolve active term and user row
+    const activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
     const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
 
     // 3. Fetch Transaction Types & MOPs
-    const jorRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "journal_general!A:T");
-
     const transactionTypes = constRows
       .slice(1)
       .filter((r: any) => {
@@ -52,7 +54,6 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     // 4. Fetch Accounts for target term
     const targetTerm = url.searchParams.get("term") || activeTerm;
-    const accRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:L");
     const residentAccount = accRows.find((r: any) => {
       return (
         r[ACCOUNT_COL.PERIOD] === targetTerm &&
@@ -62,7 +63,6 @@ export const GET: RequestHandler = async ({ url, request }) => {
     });
 
     // 5. Check CURR sheet for potential registration (filter by term)
-    const currRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "CURR!A:M");
     const currEntry = currRows
       .reverse()
       .find(

@@ -25,6 +25,7 @@
     users = [],
     currentUserId = "",
     isAdminView = false,
+    canSeeNames = true,
     onSelectSlot,
     onCancelReservation,
     isCancelling = false,
@@ -34,6 +35,7 @@
     users: (UserRecord & { room?: string })[];
     currentUserId?: string;
     isAdminView?: boolean;
+    canSeeNames?: boolean;
     onSelectSlot?: (date: string, hour: number) => void;
     onCancelReservation?: (id: string) => void;
     isCancelling?: boolean;
@@ -133,13 +135,19 @@
       // Lookup by ID (UUID) or email (legacy)
       const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
 
+      const isMine =
+        resId === currentUserId ||
+        (auth.user?.email && resId.toLowerCase() === auth.user.email.toLowerCase());
+      const rawName = (user as any)?.name || r.displayName || "Resident";
+      const rawRoom = (user as any)?.room || r.room || "";
+
       return {
         ...r,
         startHour: start,
         endHour: end,
         duration: end - start,
-        name: (user as any)?.name || r.displayName || "Resident",
-        room: (user as any)?.room || r.room || ""
+        name: !canSeeNames && !isMine ? "Reserved" : rawName,
+        room: !canSeeNames && !isMine ? "" : rawRoom
       };
     });
   }

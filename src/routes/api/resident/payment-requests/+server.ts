@@ -1,12 +1,12 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { PAYMENT_REQUEST_COL, USER_COL, PaymentRequestStatus } from "$lib/schemas";
+import { PUBLIC_GS_SR_ID } from "$env/static/public";
+import { PAYMENT_REQUEST_COL, PaymentRequestStatus } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
-  getSheetValues,
   appendSheetValue,
-  serverError
+  serverError,
+  fetchSheetsData
 } from "$lib/server/api-helper";
 import { parseCSVAmount } from "$lib/receipt-utils";
 import type { RequestHandler } from "./$types";
@@ -15,19 +15,13 @@ import type { RequestHandler } from "./$types";
  * GET: Fetch payment requests for the authenticated resident
  */
 export const GET: RequestHandler = async ({ request }) => {
-  const { email: authEmail, error } = await authenticateResident(request);
+  const { residentId, error } = await authenticateResident(request);
   if (error) return error;
 
   try {
     const client = await getSheetsClient();
 
-    // Resolve residentId
-    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
-    const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ requests: [] });
-    const residentId = user[USER_COL.ID];
-
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "payment_requests!A:L");
+    const [rows] = await fetchSheetsData(client, ["payment_requests!A:L"]);
 
     const requests = rows
       .slice(1)
@@ -58,7 +52,7 @@ export const GET: RequestHandler = async ({ request }) => {
  * POST: Submit a new payment request
  */
 export const POST: RequestHandler = async ({ request }) => {
-  const { email: authEmail, error: authError } = await authenticateResident(request);
+  const { residentId, error: authError } = await authenticateResident(request);
   if (authError) return authError;
 
   try {
@@ -67,11 +61,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const client = await getSheetsClient();
 
-    // Resolve residentId
-    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
-    const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ error: "Resident record not found" }, { status: 404 });
-    const residentId = user[USER_COL.ID];
+    if (!residentId) return json({ error: "Resident record not found" }, { status: 404 });
 
     const row = new Array(12).fill("");
     row[PAYMENT_REQUEST_COL.ID] = crypto.randomUUID();
@@ -99,7 +89,7 @@ export const POST: RequestHandler = async ({ request }) => {
  * DELETE: Cancel a pending payment request
  */
 export const DELETE: RequestHandler = async ({ url, request }) => {
-  const { email: authEmail, error: authError } = await authenticateResident(request);
+  const { residentId, error: authError } = await authenticateResident(request);
   if (authError) return authError;
 
   const requestId = url.searchParams.get("id");
@@ -108,14 +98,10 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
   try {
     const client = await getSheetsClient();
 
-    // Resolve residentId
-    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
-    const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ error: "Resident record not found" }, { status: 404 });
-    const residentId = user[USER_COL.ID];
+    if (!residentId) return json({ error: "Resident record not found" }, { status: 404 });
 
     // Find row
-    const prRows = await getSheetValues(client, PUBLIC_GS_SR_ID, "payment_requests!A:L");
+    const [prRows] = await fetchSheetsData(client, ["payment_requests!A:L"]);
     const rowIndex = prRows.findIndex(
       (r: any) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === requestId
     );

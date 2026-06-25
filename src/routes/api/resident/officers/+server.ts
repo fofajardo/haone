@@ -1,12 +1,10 @@
 import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_RR_ID, PUBLIC_GS_AW_ID } from "$env/static/public";
 import { OFFICER_COL, USER_COL, ACCOUNT_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
-  getSheetValues,
   serverError,
-  fetchTermCurrServer
+  fetchSheetsData
 } from "$lib/server/api-helper";
 import type { RequestHandler } from "./$types";
 
@@ -16,11 +14,11 @@ export const GET: RequestHandler = async ({ request }) => {
 
   try {
     const client = await getSheetsClient();
-    const [rows, currentTerm, userRows, accRows] = await Promise.all([
-      getSheetValues(client, PUBLIC_GS_RR_ID, "directory!A:J"),
-      fetchTermCurrServer(client),
-      getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:Z"),
-      getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:Z")
+    const [rows, currentTerm, userRows, accRows] = await fetchSheetsData(client, [
+      "directory!A:J",
+      "TERM_CURR",
+      "users!A:Z",
+      "accounts!A:Z"
     ]);
 
     const emailToUser = new Map();

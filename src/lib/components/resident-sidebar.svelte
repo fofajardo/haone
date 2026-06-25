@@ -16,7 +16,9 @@
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
+  import { residentState } from "$lib/resident-state.svelte";
   import { page } from "$app/state";
+  import { canAccessLaundry, canAccessAchievements } from "$lib/resident-logic";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -66,6 +68,23 @@
       icon: BookUser
     }
   ];
+
+  const filteredServiceItems = $derived.by(() => {
+    const type = residentState.status?.account?.type || "";
+    return serviceItems.filter((item) => {
+      if (item.title === "Laundry") {
+        if (!canAccessLaundry(type)) {
+          return false;
+        }
+      }
+      if (item.title === "Achievements") {
+        if (!canAccessAchievements(type)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  });
 
   const secondaryItems = [
     {
@@ -162,7 +181,7 @@
     <Sidebar.Group>
       <Sidebar.GroupLabel>Services</Sidebar.GroupLabel>
       <Sidebar.Menu>
-        {#each serviceItems as item}
+        {#each filteredServiceItems as item}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton
               size={sidebar.isMobile ? "lg" : "default"}
