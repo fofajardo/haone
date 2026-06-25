@@ -12,7 +12,7 @@
     isDecrypting,
     onAuthenticate,
     title = "Authentication Required",
-    description = "Please enter your UP Student Number to access this document."
+    description = "Please enter your student number (temporary or permanent) to access this document."
   } = $props<{
     studentNo: string;
     rememberMe: boolean;
