@@ -103,9 +103,6 @@
       <History class="h-5 w-5" />
       Transaction History
     </Card.Title>
-    <Badge variant="outline" class="font-bold"
-      >{pluralize(history.length, "entry", "entries")}</Badge
-    >
   </Card.Header>
   <Card.Content>
     {#if history.length > 0}
