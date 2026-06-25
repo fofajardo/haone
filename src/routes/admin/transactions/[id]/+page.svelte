@@ -179,15 +179,17 @@
           </AlertDialog.Root>
         </div>
       {/if}
-      <Button
-        variant={transaction?.receiptUrl ? "secondary" : "default"}
-        size="sm"
-        href="/admin/transactions/{id}/edit"
-        disabled={isDeleting}
-        icon={Pencil}
-      >
-        Edit
-      </Button>
+      {#if transaction && !transaction.wasAudited}
+        <Button
+          variant={transaction?.receiptUrl ? "secondary" : "default"}
+          size="sm"
+          href="/admin/transactions/{id}/edit"
+          disabled={isDeleting}
+          icon={Pencil}
+        >
+          Edit
+        </Button>
+      {/if}
       {#if transaction && transaction.receiptUrl}
         <Button size="sm" href={transaction.receiptUrl} target="_blank" icon={ExternalLink}>
           View Receipt
