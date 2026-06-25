@@ -52,9 +52,6 @@
       <History class="h-5 w-5" />
       Occupancy History
     </Card.Title>
-    <Badge variant="outline" class="font-bold">
-      {pluralize(accounts.length, "record", "records")}
-    </Badge>
   </Card.Header>
   <Card.Content>
     {#if accounts.length > 0}
