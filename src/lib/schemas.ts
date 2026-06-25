@@ -186,7 +186,7 @@ export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   [AccountType.STUDENT]: "Student",
   [AccountType.TRANSIENT]: "Transient without classification",
   [AccountType.BOOTCAMP]: "Bootcamp/Associate Degree Candidate",
-  [AccountType.ALUMNUS]: "Alumnus",
+  [AccountType.ALUMNUS]: "Former Resident/Alum",
   [AccountType.FACULTY]: "UHO Beneficiary: Faculty",
   [AccountType.STAFF]: "UHO Beneficiary: Staff",
   [AccountType.REPS]: "UHO Beneficiary: Research, Extension, and Professional Staff"
