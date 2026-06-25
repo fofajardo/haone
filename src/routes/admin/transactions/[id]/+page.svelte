@@ -138,9 +138,7 @@
   <SubpageHeader title="View Transaction">
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}
-        <Badge class="border-transparent bg-primary px-2 py-0 text-xs font-black text-white"
-          >AUDITED</Badge
-        >
+        <Badge>AUDITED</Badge>
       {/if}
     {/snippet}
     {#snippet actions()}
