@@ -12,7 +12,8 @@
     Banknote,
     Megaphone,
     Trophy,
-    BookUser
+    BookUser,
+    CirclePlus
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -175,6 +176,20 @@
             </Sidebar.MenuButton>
           </Sidebar.MenuItem>
         {/each}
+        {#if residentState.status?.account?.type === "ALUMNUS" || residentState.status?.currEntry?.accountType === "ALUMNUS"}
+          <Sidebar.MenuItem>
+            <Sidebar.MenuButton
+              size={sidebar.isMobile ? "lg" : "default"}
+              onclick={() => {
+                sidebar.setOpenMobile(false);
+                residentState.forceOnboarding = true;
+              }}
+            >
+              <CirclePlus />
+              <span>Check In</span>
+            </Sidebar.MenuButton>
+          </Sidebar.MenuItem>
+        {/if}
       </Sidebar.Menu>
     </Sidebar.Group>
 

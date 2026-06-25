@@ -28,7 +28,7 @@ export interface CurrRecord {
 }
 
 export interface SyncPreviewAction {
-  type: "CREATE_USER" | "UPDATE_USER" | "CREATE_ACCOUNT" | "UPDATE_ACCOUNT";
+  type: "CREATE_USER" | "UPDATE_USER" | "CREATE_ACCOUNT" | "UPDATE_ACCOUNT" | "EVALUATE_ONLY";
   residentName: string;
   email: string;
   studentNo: string;
@@ -119,22 +119,32 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       ? `${user.lastName.toUpperCase()}, ${user.firstName.toUpperCase()}`
       : `${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`;
 
+    const isEmptyRoomBed =
+      !curr.room ||
+      !curr.bed ||
+      curr.room === "NONE" ||
+      curr.bed === "NONE" ||
+      curr.room === "N/A" ||
+      curr.bed === "N/A";
+
     // Check if target room is valid/available
     const targetRoom = roomsState.config.find((r) => r.room_number === curr.room);
     let warning = "";
-    if (!targetRoom) {
-      warning = `Room ${curr.room} not found in configuration.`;
-    } else if (targetRoom.unavailable_reason) {
-      warning = `Room ${curr.room} is marked as unavailable: ${targetRoom.unavailable_reason}`;
-    } else if (curr.room && curr.bed) {
-      const loc = `${curr.room}-${curr.bed}`;
-      const occupant = currentOccupancyMap.get(loc);
-      if (occupant && occupant !== residentName) {
-        warning = `Bed ${loc} is currently occupied by ${occupant} in ${currentTerm}.`;
-      } else if (plannedOccupancyMap.has(loc)) {
-        warning = `Bed ${loc} is already assigned to ${plannedOccupancyMap.get(loc)} in this sync.`;
-      } else {
-        plannedOccupancyMap.set(loc, residentName);
+    if (!isEmptyRoomBed) {
+      if (!targetRoom) {
+        warning = `Room ${curr.room} not found in configuration.`;
+      } else if (targetRoom.unavailable_reason) {
+        warning = `Room ${curr.room} is marked as unavailable: ${targetRoom.unavailable_reason}`;
+      } else if (curr.room && curr.bed) {
+        const loc = `${curr.room}-${curr.bed}`;
+        const occupant = currentOccupancyMap.get(loc);
+        if (occupant && occupant !== residentName) {
+          warning = `Bed ${loc} is currently occupied by ${occupant} in ${currentTerm}.`;
+        } else if (plannedOccupancyMap.has(loc)) {
+          warning = `Bed ${loc} is already assigned to ${plannedOccupancyMap.get(loc)} in this sync.`;
+        } else {
+          plannedOccupancyMap.set(loc, residentName);
+        }
       }
     }
 
@@ -197,25 +207,38 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
         });
       }
 
-      // Always create account for new user found in CURR
-      actions.push({
-        type: "CREATE_ACCOUNT",
-        residentName,
-        email: curr.email,
-        studentNo: curr.studentNo,
-        currIndex: curr.rowIndex,
-        details: `Assign to`,
-        to: `${curr.room}-${curr.bed}`,
-        warning,
-        payload: {
-          residentId: userId,
-          period: currentTerm,
-          room: curr.room,
-          bed: curr.bed,
-          checkInDate: curr.checkInDate,
-          accountType: curr.accountType || AccountType.STUDENT
-        }
-      });
+      if (isEmptyRoomBed) {
+        actions.push({
+          type: "EVALUATE_ONLY",
+          residentName,
+          email: curr.email,
+          studentNo: curr.studentNo,
+          currIndex: curr.rowIndex,
+          details: `Complete registration (No Room/Bed Assigned)`,
+          to: "No Room/Bed Assigned",
+          payload: null
+        });
+      } else {
+        // Always create account for new user found in CURR
+        actions.push({
+          type: "CREATE_ACCOUNT",
+          residentName,
+          email: curr.email,
+          studentNo: curr.studentNo,
+          currIndex: curr.rowIndex,
+          details: `Assign to`,
+          to: `${curr.room}-${curr.bed}`,
+          warning,
+          payload: {
+            residentId: userId,
+            period: currentTerm,
+            room: curr.room,
+            bed: curr.bed,
+            checkInDate: curr.checkInDate,
+            accountType: curr.accountType || AccountType.STUDENT
+          }
+        });
+      }
     } else {
       // User exists, check for updates or bed assignments
       const colleges = (user.college || "")
@@ -254,8 +277,9 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       const existingAcc = existingAccountMap.get(user.id);
       if (existingAcc) {
         if (
-          existingAcc.row[ACCOUNT_COL.ROOM] !== curr.room ||
-          existingAcc.row[ACCOUNT_COL.BED] !== curr.bed
+          !isEmptyRoomBed &&
+          (existingAcc.row[ACCOUNT_COL.ROOM] !== curr.room ||
+            existingAcc.row[ACCOUNT_COL.BED] !== curr.bed)
         ) {
           const oldRoom = existingAcc.row[ACCOUNT_COL.ROOM];
           const oldBed = existingAcc.row[ACCOUNT_COL.BED];
@@ -280,24 +304,40 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           });
         }
       } else {
-        actions.push({
-          type: "CREATE_ACCOUNT",
-          residentName,
-          email: user.email,
-          studentNo: user.studentNo,
-          currIndex: curr.rowIndex,
-          details: `New assignment`,
-          to: `${curr.room}-${curr.bed}`,
-          warning,
-          payload: {
-            residentId: user.id,
-            period: currentTerm,
-            room: curr.room,
-            bed: curr.bed,
-            checkInDate: curr.checkInDate,
-            accountType: curr.accountType || AccountType.STUDENT
+        if (isEmptyRoomBed) {
+          const hasUserAction = actions.some((a) => a.currIndex === curr.rowIndex);
+          if (!hasUserAction) {
+            actions.push({
+              type: "EVALUATE_ONLY",
+              residentName,
+              email: user.email,
+              studentNo: user.studentNo,
+              currIndex: curr.rowIndex,
+              details: `Complete registration (No Room/Bed Assigned)`,
+              to: "No Room/Bed Assigned",
+              payload: null
+            });
           }
-        });
+        } else {
+          actions.push({
+            type: "CREATE_ACCOUNT",
+            residentName,
+            email: user.email,
+            studentNo: user.studentNo,
+            currIndex: curr.rowIndex,
+            details: `New assignment`,
+            to: `${curr.room}-${curr.bed}`,
+            warning,
+            payload: {
+              residentId: user.id,
+              period: currentTerm,
+              room: curr.room,
+              bed: curr.bed,
+              checkInDate: curr.checkInDate,
+              accountType: curr.accountType || AccountType.STUDENT
+            }
+          });
+        }
       }
     }
   }

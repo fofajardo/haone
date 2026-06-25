@@ -74,8 +74,11 @@
   {:else}
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
       <div class="lg:col-span-4">
-        {#if status?.account}
-          <StudentProfileCard account={status.account} semesterCount={occupancyData.length} />
+        {#if status?.account || occupancyData.length > 0}
+          <StudentProfileCard
+            account={status?.account || occupancyData[0]}
+            semesterCount={occupancyData.length}
+          />
         {/if}
       </div>
 

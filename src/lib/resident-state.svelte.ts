@@ -1,6 +1,11 @@
 import { auth } from "./auth.svelte";
 import { fetchServer } from "./utils";
-import type { UserRecord, ResidentRecord, JournalRecord } from "$lib/schemas";
+import {
+  type UserRecord,
+  type ResidentRecord,
+  type JournalRecord,
+  AccountType
+} from "$lib/schemas";
 
 export type ResidentProfile = Pick<
   UserRecord,
@@ -95,8 +100,16 @@ class ResidentState {
     }
   }
 
+  forceOnboarding = $state(false);
+
   get needsOnboarding() {
-    // TODO: Consider an alternative flow for alum accounts.
+    if (this.forceOnboarding) return true;
+    if (
+      this.status?.account?.type === "ALUMNUS" ||
+      this.status?.currEntry?.accountType === "ALUMNUS"
+    ) {
+      return !this.status.isRegistered;
+    }
     return (
       this.status &&
       (!this.status.isRegistered || !this.status.hasActiveAccount || !this.status.account?.bed)

@@ -26,8 +26,10 @@
   import StatusBadge from "$lib/components/residents/StatusBadge.svelte";
   import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
   import { fetchServer } from "$lib/utils";
+  import type { ResidentStatus } from "$lib/resident-state.svelte";
+  import { AccountType } from "$lib/schemas";
 
-  let status = $state<any>(null);
+  let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
@@ -142,68 +144,71 @@
   {:else if status}
     <!-- Quick Stats Grid -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <!-- Amount Due -->
-      <Card.Root
-        class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
-      >
-        <Card.Content class="px-4 py-0 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                Amount Due
-              </p>
-              <h3 class="text-3xl font-black text-foreground">
-                {formatCurrency(status.account?.bal || 0)}
-              </h3>
-            </div>
-            <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-              <Wallet class="h-6 w-6" />
-            </div>
-          </div>
-        </Card.Content>
-      </Card.Root>
-
-      <!-- Payment Status -->
-      <Card.Root
-        class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
-      >
-        <Card.Content class="px-4 py-0 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                Payment Status
-              </p>
-              <div class="pt-1">
-                <StatusBadge account={status.account} />
+      {#if status.account && status.currEntry?.accountType !== AccountType.ALUMNUS}
+        <!-- Amount Due -->
+        <Card.Root
+          class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
+        >
+          <Card.Content class="px-4 py-0 sm:px-6">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                  Amount Due
+                </p>
+                <h3 class="text-3xl font-black text-foreground">
+                  {formatCurrency(status.account?.bal || 0)}
+                </h3>
+              </div>
+              <div class="rounded-2xl bg-brand/5 p-3 text-brand">
+                <Wallet class="h-6 w-6" />
               </div>
             </div>
-            <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-              <ShieldCheck class="h-6 w-6" />
-            </div>
-          </div>
-        </Card.Content>
-      </Card.Root>
+          </Card.Content>
+        </Card.Root>
 
-      <!-- Room Assignment -->
-      <Card.Root
-        class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
-      >
-        <Card.Content class="px-4 py-0 sm:px-6">
-          <div class="flex items-center justify-between">
-            <div class="space-y-1">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                Room & Bed
-              </p>
-              <h3 class="text-3xl font-black text-foreground">
-                {status.account?.room}-{status.account?.bed}
-              </h3>
+        <!-- Payment Status -->
+
+        <Card.Root
+          class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
+        >
+          <Card.Content class="px-4 py-0 sm:px-6">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                  Payment Status
+                </p>
+                <div class="pt-1">
+                  <StatusBadge account={status.account} />
+                </div>
+              </div>
+              <div class="rounded-2xl bg-brand/5 p-3 text-brand">
+                <ShieldCheck class="h-6 w-6" />
+              </div>
             </div>
-            <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-              <MapPin class="h-6 w-6" />
+          </Card.Content>
+        </Card.Root>
+
+        <!-- Room Assignment -->
+        <Card.Root
+          class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
+        >
+          <Card.Content class="px-4 py-0 sm:px-6">
+            <div class="flex items-center justify-between">
+              <div class="space-y-1">
+                <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                  Room & Bed
+                </p>
+                <h3 class="text-3xl font-black text-foreground">
+                  {status.account?.room}-{status.account?.bed}
+                </h3>
+              </div>
+              <div class="rounded-2xl bg-brand/5 p-3 text-brand">
+                <MapPin class="h-6 w-6" />
+              </div>
             </div>
-          </div>
-        </Card.Content>
-      </Card.Root>
+          </Card.Content>
+        </Card.Root>
+      {/if}
     </div>
 
     <AnnouncementsSection />
@@ -235,9 +240,9 @@
         </div>
         <Card.Root class="overflow-hidden border-none bg-card p-0 shadow-md">
           <Card.Content class="divide-y p-0">
-            {#if status.transactions?.filter((t: any) => t.period === status.activeTerm).length > 0}
+            {#if status.transactions?.filter((t: any) => t.period === status?.activeTerm).length > 0}
               {#each status.transactions
-                .filter((t: any) => t.period === status.activeTerm)
+                .filter((t: any) => t.period === status?.activeTerm)
                 .slice(0, 5) as tx}
                 <div
                   class="group flex items-start gap-3 p-3 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4 sm:p-4"

@@ -76,6 +76,10 @@
       };
 
       accounts.forEach((res) => {
+        if (!res) {
+          return;
+        }
+
         // College translation & merging
         const translatedColleges = translateCollege(res.college);
         const college = translatedColleges[translatedColleges.length - 1]; // Take last

@@ -183,7 +183,7 @@ export enum AccountType {
 }
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
-  [AccountType.STUDENT]: "Student",
+  [AccountType.STUDENT]: "Student (UP Mail required)",
   [AccountType.TRANSIENT]: "Transient without classification",
   [AccountType.BOOTCAMP]: "Bootcamp/Associate Degree Candidate",
   [AccountType.ALUMNUS]: "Former Resident/Alum",

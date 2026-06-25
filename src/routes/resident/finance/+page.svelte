@@ -91,11 +91,12 @@
       <Button onclick={() => loadData()} class="mt-4">Retry</Button>
     </ErrorView>
   {:else if status}
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <FinancialStandingCard account={status.account} />
-      <ClearanceCard account={status.account} />
-    </div>
-
+    {#if status.account}
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <FinancialStandingCard account={status.account} />
+        <ClearanceCard account={status.account} />
+      </div>
+    {/if}
     <TransactionHistoryCard
       history={status.transactions || []}
       transactionTypes={status.transactionTypes || []}

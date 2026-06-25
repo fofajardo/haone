@@ -4,7 +4,25 @@
   import { Label } from "$lib/components/ui/label";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { ChevronLeft, ChevronRight, RefreshCcw, Star } from "lucide-svelte";
+  import {
+    ChevronLeft,
+    ChevronRight,
+    RefreshCcw,
+    Star,
+    GraduationCap,
+    Clock,
+    Building,
+    History,
+    ArrowRight
+  } from "lucide-svelte";
+  import {
+    Item,
+    ItemGroup,
+    ItemMedia,
+    ItemContent,
+    ItemTitle,
+    ItemDescription
+  } from "$lib/components/ui/item";
   import colleges from "$lib/colleges.json";
   import programs from "$lib/programs.json";
   import { untrack } from "svelte";
@@ -12,17 +30,20 @@
   import { auth } from "$lib/auth.svelte";
   import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/schemas";
 
-  import { residentState } from "$lib/resident-state.svelte";
+  import { residentState, type ResidentStatus } from "$lib/resident-state.svelte";
   import { roomsState } from "$lib/rooms.svelte";
   import { fetchServer } from "$lib/utils";
   import { translatePeriod } from "$lib/receipt-utils";
   import * as Stepper from "$lib/components/ui/stepper";
 
-  let { status, onSuccess } = $props();
+  let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();
 
   let isSubmitting = $state(false);
   let step = $state(untrack(() => (status?.waitingForConfirmation ? 4 : 1)));
   let isOutdated = $state(false);
+  const emailVal = $derived(status?.profile?.email || auth.user?.email || "");
+  const isUpMail = $derived(emailVal.endsWith("@up.edu.ph"));
+  const blockStudentNoChange = $derived(!!status?.profile?.studentNo);
 
   $effect(() => {
     if (status?.waitingForConfirmation) {
@@ -30,22 +51,119 @@
     }
   });
 
+  let allowedAccountTypes = $state<AccountType[]>([
+    AccountType.STUDENT,
+    AccountType.TRANSIENT,
+    AccountType.BOOTCAMP,
+    AccountType.ALUMNUS,
+    AccountType.FACULTY,
+    AccountType.STAFF,
+    AccountType.REPS
+  ]);
+
   let accountType = $state(AccountType.STUDENT);
   let hasStudentNo = $state(true);
 
-  const emailVal = $derived(status?.profile?.email || auth.user?.email || "");
-  const isUpMail = $derived(emailVal.endsWith("@up.edu.ph"));
+  const accountTypeOptions = $derived(
+    [
+      {
+        value: AccountType.STUDENT,
+        label: ACCOUNT_TYPE_LABELS.STUDENT,
+        disabled: !isUpMail
+      },
+      { value: AccountType.TRANSIENT, label: ACCOUNT_TYPE_LABELS.TRANSIENT },
+      {
+        value: AccountType.BOOTCAMP,
+        label: ACCOUNT_TYPE_LABELS.BOOTCAMP,
+        disabled: blockStudentNoChange
+      },
+      { value: AccountType.FACULTY, label: ACCOUNT_TYPE_LABELS.FACULTY },
+      { value: AccountType.STAFF, label: ACCOUNT_TYPE_LABELS.STAFF },
+      { value: AccountType.REPS, label: ACCOUNT_TYPE_LABELS.REPS }
+    ].filter((opt) => allowedAccountTypes.includes(opt.value))
+  );
+
+  const isAccountTypeDisabled = $derived(allowedAccountTypes.length <= 1);
+
+  async function selectOption(optionId: number) {
+    if (isSubmitting) return;
+
+    if (optionId === 1) {
+      accountType = AccountType.STUDENT;
+      allowedAccountTypes = [AccountType.STUDENT, AccountType.BOOTCAMP];
+      step = 2;
+    } else if (optionId === 2) {
+      accountType = AccountType.TRANSIENT;
+      allowedAccountTypes = [AccountType.TRANSIENT];
+      step = 2;
+    } else if (optionId === 3) {
+      accountType = AccountType.FACULTY;
+      allowedAccountTypes = [AccountType.FACULTY, AccountType.STAFF, AccountType.REPS];
+      // Default to Faculty
+      accountType = AccountType.FACULTY;
+      step = 2;
+    } else if (optionId === 4) {
+      accountType = AccountType.ALUMNUS;
+      allowedAccountTypes = [AccountType.ALUMNUS];
+      formData.room = "";
+      formData.bed = "";
+      formData.checkInDate = "";
+      formData.college = "No College Information";
+      formData.program = "No Degree Program Information";
+
+      if (status?.isRegistered) {
+        isSubmitting = true;
+        step = 4; // Go directly to the evaluation step to avoid spamming
+        try {
+          await fetchServer("/api/resident/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...formData,
+              firstName: status.profile?.firstName || "",
+              lastName: status.profile?.lastName || "",
+              studentNo: status.profile?.studentNo || "",
+              accountType: AccountType.ALUMNUS,
+              email: status.profile?.email || auth.user?.email,
+              term: status.systemActiveTerm
+            })
+          });
+          residentState.forceOnboarding = false;
+          await onSuccess();
+        } catch (e: any) {
+          toast.error(e.message);
+          isSubmitting = false;
+          step = 1;
+        }
+      } else {
+        step = 2;
+      }
+    }
+  }
+
   let requireSocialMedia = $derived(
     accountType === AccountType.STUDENT ||
       accountType === AccountType.ALUMNUS ||
       accountType === AccountType.BOOTCAMP
   );
 
-  $effect.pre(() => {
+  $effect(() => {
     if (status) {
-      if (!isUpMail && accountType === AccountType.STUDENT) {
-        accountType = AccountType.TRANSIENT;
-        hasStudentNo = false;
+      const isAllowed = allowedAccountTypes.includes(accountType);
+      const isDisabled = accountType === AccountType.STUDENT && !isUpMail;
+
+      if (!isAllowed || isDisabled) {
+        const firstEnabled = accountTypeOptions.find((opt) => !opt.disabled);
+        if (firstEnabled) {
+          accountType = firstEnabled.value;
+          if (
+            accountType !== AccountType.STUDENT &&
+            accountType !== AccountType.BOOTCAMP &&
+            accountType !== AccountType.ALUMNUS
+          ) {
+            hasStudentNo = false;
+          }
+        }
       }
     }
   });
@@ -89,14 +207,21 @@
   });
 
   async function handleSubmit() {
-    const isStudentNoRequired = accountType === AccountType.STUDENT || hasStudentNo;
+    if (accountType === AccountType.ALUMNUS) {
+      formData.room = "";
+      formData.bed = "";
+      formData.checkInDate = "";
+    }
+
+    const isStudentNoRequired =
+      accountType === AccountType.STUDENT || accountType === AccountType.ALUMNUS || hasStudentNo;
+    const isRoomRequired = accountType !== AccountType.ALUMNUS;
+
     if (
-      !formData.room ||
-      !formData.bed ||
+      (isRoomRequired && (!formData.room || !formData.bed || !formData.checkInDate)) ||
       (!formData.studentNo && isStudentNoRequired) ||
       !formData.college ||
       !formData.program ||
-      !formData.checkInDate ||
       (requireSocialMedia &&
         (!formData.likedFBPage || !formData.joinedFBGroup || !formData.joinedFBChat))
     ) {
@@ -118,6 +243,7 @@
         })
       });
 
+      residentState.forceOnboarding = false;
       await onSuccess();
     } catch (e: any) {
       toast.error(e.message);
@@ -166,41 +292,54 @@
     !!(status.profile?.studentNo || status.currEntry?.studentNo)
   );
 
-  const blockStudentNoChange = $derived(!!status.profile?.studentNo);
-
   const isAcademicDisabled = $derived(
     !!(status.profile?.college && status.profile?.program && !isOutdated)
   );
 
-  const isStep2Complete = $derived(!!(formData.room && formData.bed && formData.checkInDate));
+  const isRoomComplete = $derived(!!(formData.room && formData.bed && formData.checkInDate));
+  const isProfileComplete = $derived.by(() => {
+    const isStudentNoRequired =
+      accountType === AccountType.STUDENT || accountType === AccountType.ALUMNUS || hasStudentNo;
+    if (!status.isRegistered) {
+      if (!formData.firstName || !formData.lastName) return false;
+    }
+    if (!formData.college || !formData.program) return false;
+    if (isStudentNoRequired && !formData.studentNo) return false;
+    if (
+      requireSocialMedia &&
+      (!formData.likedFBPage || !formData.joinedFBGroup || !formData.joinedFBChat)
+    )
+      return false;
+    return true;
+  });
 </script>
 
 <Stepper.Root bind:step>
   <div class="flex flex-col gap-8">
     <Stepper.Nav orientation="horizontal" class="justify-between">
       <Stepper.Item class="flex-1">
-        <Stepper.Trigger disabled={step === 4}>
+        <Stepper.Trigger disabled={true}>
           <Stepper.Indicator>1</Stepper.Indicator>
           <Stepper.Title hideTitle="inactive">Welcome</Stepper.Title>
         </Stepper.Trigger>
         <Stepper.Separator />
       </Stepper.Item>
       <Stepper.Item class="flex-1">
-        <Stepper.Trigger disabled={step === 4}>
+        <Stepper.Trigger disabled={true}>
           <Stepper.Indicator>2</Stepper.Indicator>
-          <Stepper.Title hideTitle="inactive">Room</Stepper.Title>
-        </Stepper.Trigger>
-        <Stepper.Separator />
-      </Stepper.Item>
-      <Stepper.Item class="flex-1">
-        <Stepper.Trigger disabled={step === 4 || !isStep2Complete}>
-          <Stepper.Indicator>3</Stepper.Indicator>
           <Stepper.Title hideTitle="inactive">Profile</Stepper.Title>
         </Stepper.Trigger>
         <Stepper.Separator />
       </Stepper.Item>
       <Stepper.Item class="flex-1">
-        <Stepper.Trigger disabled={step < 4}>
+        <Stepper.Trigger disabled={true}>
+          <Stepper.Indicator>3</Stepper.Indicator>
+          <Stepper.Title hideTitle="inactive">Room</Stepper.Title>
+        </Stepper.Trigger>
+        <Stepper.Separator />
+      </Stepper.Item>
+      <Stepper.Item class="flex-1">
+        <Stepper.Trigger disabled={true}>
           <Stepper.Indicator>4</Stepper.Indicator>
           <Stepper.Title hideTitle="inactive">Evaluation</Stepper.Title>
         </Stepper.Trigger>
@@ -209,69 +348,75 @@
 
     <div class="min-h-[300px]">
       {#if step === 1}
-        <div class="space-y-4">
-          <div class="space-y-2">
-            <p>
-              We couldn't find an active record for <strong
-                >{translatePeriod(status?.activeTerm) || "the current term"}</strong
-              > associated with your account.
-            </p>
-          </div>
-
-          <p>
-            To access your dashboard, track your financial standing, and manage your clearance, you
-            need to register your assignment for this term. Please have your student number and room
-            details ready.
-          </p>
-
-          <div class="flex justify-end pt-4">
-            <Stepper.Next>
-              Get Started
-              <ChevronRight class="ml-2 h-4 w-4" />
-            </Stepper.Next>
-          </div>
+        <div class="space-y-6">
+          <ItemGroup>
+            <div role="listitem" class="w-full">
+              <Item variant="muted" onclick={() => selectOption(1)}>
+                <ItemMedia variant="icon">
+                  <GraduationCap class="size-5" />
+                </ItemMedia>
+                <ItemContent>
+                  <ItemTitle>I am a student or associate degree candidate</ItemTitle>
+                  <ItemDescription>
+                    Register your room and bed assignment for the semester.
+                  </ItemDescription>
+                </ItemContent>
+                <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
+              </Item>
+            </div>
+            <div role="listitem" class="w-full">
+              <Item variant="muted" onclick={() => selectOption(2)}>
+                <ItemMedia variant="icon">
+                  <Clock class="size-5" />
+                </ItemMedia>
+                <ItemContent>
+                  <ItemTitle>I am a transient resident</ItemTitle>
+                  <ItemDescription>Register for short-term residency.</ItemDescription>
+                </ItemContent>
+                <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
+              </Item>
+            </div>
+            <div role="listitem" class="w-full">
+              <Item variant="muted" onclick={() => selectOption(3)}>
+                <ItemMedia variant="icon">
+                  <Building class="size-5" />
+                </ItemMedia>
+                <ItemContent>
+                  <ItemTitle>I am a UHO Beneficiary</ItemTitle>
+                  <ItemDescription>Register as Faculty, Staff, or REPS.</ItemDescription>
+                </ItemContent>
+                <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
+              </Item>
+            </div>
+            {#if !residentState.forceOnboarding}
+              <div role="listitem" class="w-full">
+                <Item variant="muted" onclick={() => selectOption(4)}>
+                  <ItemMedia variant="icon">
+                    <History class="size-5" />
+                  </ItemMedia>
+                  <ItemContent>
+                    <ItemTitle>I am a former resident or alum</ItemTitle>
+                    <ItemDescription>Access clearances, history, and achievements.</ItemDescription>
+                  </ItemContent>
+                  <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
+                </Item>
+              </div>
+            {/if}
+          </ItemGroup>
+          {#if status.isRegistered}
+            <div class="flex justify-center pt-6">
+              <Button
+                variant="outline"
+                onclick={() => {
+                  residentState.forceOnboarding = false;
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          {/if}
         </div>
       {:else if step === 2}
-        <div class="space-y-6">
-          <div class="grid gap-6 md:grid-cols-2">
-            <div class="space-y-2">
-              <Label for="room">Room Number</Label>
-              <Combobox
-                bind:value={formData.room}
-                options={roomOptions}
-                placeholder="Search room…"
-                class="w-full"
-              />
-            </div>
-            <div class="space-y-2">
-              <Label for="bed">Bed Assignment</Label>
-              <Combobox
-                bind:value={formData.bed}
-                options={bedOptions}
-                placeholder="Select a bed…"
-                class="w-full"
-                disabled={!formData.room}
-              />
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <Label for="checkInDate">Expected Check-in Date</Label>
-            <Input id="checkInDate" type="date" bind:value={formData.checkInDate} class="w-full" />
-          </div>
-
-          <div class="flex justify-between pt-6">
-            <Stepper.Previous>
-              <ChevronLeft class="mr-2 h-4 w-4" />
-              Back
-            </Stepper.Previous>
-            <Stepper.Next disabled={!formData.room || !formData.bed || !formData.checkInDate}>
-              Next
-              <ChevronRight class="ml-2 h-4 w-4" />
-            </Stepper.Next>
-          </div>
-        </div>
-      {:else if step === 3}
         <div class="space-y-6">
           <div class="space-y-4">
             {#if !status.isRegistered}
@@ -290,25 +435,10 @@
               <Label>Account Type</Label>
               <Combobox
                 bind:value={accountType}
-                options={[
-                  {
-                    value: AccountType.STUDENT,
-                    label: ACCOUNT_TYPE_LABELS.STUDENT,
-                    disabled: !isUpMail
-                  },
-                  { value: AccountType.TRANSIENT, label: ACCOUNT_TYPE_LABELS.TRANSIENT },
-                  {
-                    value: AccountType.BOOTCAMP,
-                    label: ACCOUNT_TYPE_LABELS.BOOTCAMP,
-                    disabled: blockStudentNoChange
-                  },
-                  { value: AccountType.ALUMNUS, label: ACCOUNT_TYPE_LABELS.ALUMNUS },
-                  { value: AccountType.FACULTY, label: ACCOUNT_TYPE_LABELS.FACULTY },
-                  { value: AccountType.STAFF, label: ACCOUNT_TYPE_LABELS.STAFF },
-                  { value: AccountType.REPS, label: ACCOUNT_TYPE_LABELS.REPS }
-                ]}
+                options={accountTypeOptions}
                 placeholder="Select account type…"
                 class="w-full"
+                disabled={isAccountTypeDisabled}
               />
             </div>
 
@@ -437,6 +567,75 @@
             {/if}
           </div>
           <div class="flex justify-between pt-6">
+            {#if accountType === AccountType.ALUMNUS}
+              <Button
+                variant="ghost"
+                onclick={() => {
+                  step = 1;
+                  allowedAccountTypes = [
+                    AccountType.STUDENT,
+                    AccountType.TRANSIENT,
+                    AccountType.BOOTCAMP,
+                    AccountType.ALUMNUS,
+                    AccountType.FACULTY,
+                    AccountType.STAFF,
+                    AccountType.REPS
+                  ];
+                }}
+              >
+                <ChevronLeft class="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              <Button
+                onclick={handleSubmit}
+                isLoading={isSubmitting}
+                icon={ChevronRight}
+                iconPosition="right"
+              >
+                {isSubmitting ? "Submitting…" : "Submit"}
+              </Button>
+            {:else}
+              <Stepper.Previous>
+                <ChevronLeft class="mr-2 h-4 w-4" />
+                Back
+              </Stepper.Previous>
+              <Stepper.Next disabled={!isProfileComplete}>
+                Next
+                <ChevronRight class="ml-2 h-4 w-4" />
+              </Stepper.Next>
+            {/if}
+          </div>
+        </div>
+      {:else if step === 3}
+        <div class="space-y-6">
+          <div class="grid gap-6 md:grid-cols-2">
+            <div class="space-y-2">
+              <Label for="room">Room Number</Label>
+              <Combobox
+                bind:value={formData.room}
+                options={roomOptions}
+                placeholder="Search room…"
+                class="w-full"
+              />
+            </div>
+            <div class="space-y-2">
+              <Label for="bed">Bed Assignment</Label>
+              <Combobox
+                bind:value={formData.bed}
+                options={bedOptions}
+                placeholder="Select a bed…"
+                class="w-full"
+                disabled={!formData.room}
+              />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <Label for="checkInDate">Expected Check-in Date</Label>
+            <Input id="checkInDate" type="date" bind:value={formData.checkInDate} class="w-full" />
+          </div>
+
+          <div class="flex justify-between pt-6">
             <Stepper.Previous>
               <ChevronLeft class="mr-2 h-4 w-4" />
               Back
@@ -444,10 +643,11 @@
             <Button
               onclick={handleSubmit}
               isLoading={isSubmitting}
+              disabled={!isRoomComplete}
               icon={ChevronRight}
               iconPosition="right"
             >
-              {isSubmitting ? "Submitting…" : "Next"}
+              {isSubmitting ? "Submitting…" : "Submit"}
             </Button>
           </div>
         </div>
@@ -455,9 +655,13 @@
         <div class="space-y-6">
           <div class="space-y-4">
             <p class="leading-relaxed">
-              We've received your registration for <strong
-                >{translatePeriod(status?.activeTerm) || "the current term"}</strong
-              >.
+              {#if status?.currEntry?.accountType === AccountType.ALUMNUS}
+                We've received your registration for an <strong>alumni account</strong>.
+              {:else}
+                We've received your registration for <strong
+                  >{translatePeriod(status?.activeTerm) || "the current term"}</strong
+                >.
+              {/if}
             </p>
             <p>
               An administrator is currently reviewing your assignment. This usually takes less than

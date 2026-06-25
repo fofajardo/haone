@@ -788,7 +788,9 @@ export function getPaymentStatus(r: ResidentRecord): string {
  * Standardized logic for matching a resident record against payment status filters.
  */
 export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean {
-  if (filter === "ALL") return true;
+  if (filter === "ALL" || !r) {
+    return true;
+  }
 
   const status = getPaymentStatus(r);
 

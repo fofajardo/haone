@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { PUBLIC_GS_RR_ID, PUBLIC_GS_AW_ID } from "$env/static/public";
-import { AccountType, CURR_COL } from "$lib/schemas";
+import { AccountType, CURR_COL, USER_COL } from "$lib/schemas";
 import {
   authenticateResident,
   getSheetsClient,
@@ -52,6 +52,12 @@ export const POST: RequestHandler = async ({ request }) => {
         return r[0] === "TERM_CURR";
       })?.[1] || "";
 
+    // Fetch users sheet to check if already registered
+    const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
+    const isAlreadyRegistered = userRows.some(
+      (r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === targetEmail
+    );
+
     // Generate random code for temporary student number if resident is not a student
     // and the student number field is empty
     let finalStudentNo = studentNo;
@@ -72,7 +78,8 @@ export const POST: RequestHandler = async ({ request }) => {
     newRow[CURR_COL.PROGRAM] = program;
     newRow[CURR_COL.STUDENT_NO] = finalStudentNo;
     newRow[CURR_COL.CHECK_IN_DATE] = checkInDate || "";
-    newRow[CURR_COL.EVALUATED] = "FALSE";
+    newRow[CURR_COL.EVALUATED] =
+      resolvedAccountType === AccountType.ALUMNUS && isAlreadyRegistered ? "TRUE" : "FALSE";
     newRow[CURR_COL.TERM] = activeTerm;
     newRow[CURR_COL.ACCOUNT_TYPE] = resolvedAccountType;
 
