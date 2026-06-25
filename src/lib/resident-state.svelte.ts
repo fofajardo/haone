@@ -104,10 +104,7 @@ class ResidentState {
 
   get needsOnboarding() {
     if (this.forceOnboarding) return true;
-    if (
-      this.status?.account?.type === "ALUMNUS" ||
-      this.status?.currEntry?.accountType === "ALUMNUS"
-    ) {
+    if (this.status?.currEntry?.accountType === AccountType.ALUMNUS) {
       return !this.status.isRegistered;
     }
     return (

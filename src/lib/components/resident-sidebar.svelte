@@ -20,6 +20,7 @@
   import { residentState } from "$lib/resident-state.svelte";
   import { page } from "$app/state";
   import { canAccessLaundry, canAccessAchievements } from "$lib/resident-logic";
+  import { AccountType } from "$lib/schemas";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -70,6 +71,8 @@
     }
   ];
 
+  const isAlum = $derived(residentState.status?.currEntry?.accountType === AccountType.ALUMNUS);
+
   const filteredServiceItems = $derived.by(() => {
     const type = residentState.status?.account?.type || "";
     return serviceItems.filter((item) => {
@@ -79,6 +82,9 @@
         }
       }
       if (item.title === "Achievements") {
+        if (isAlum) {
+          return true;
+        }
         if (!canAccessAchievements(type)) {
           return false;
         }
@@ -176,7 +182,7 @@
             </Sidebar.MenuButton>
           </Sidebar.MenuItem>
         {/each}
-        {#if residentState.status?.account?.type === "ALUMNUS" || residentState.status?.currEntry?.accountType === "ALUMNUS"}
+        {#if isAlum}
           <Sidebar.MenuItem>
             <Sidebar.MenuButton
               size={sidebar.isMobile ? "lg" : "default"}

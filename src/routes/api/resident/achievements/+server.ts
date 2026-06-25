@@ -4,7 +4,8 @@ import {
   ACHIEVEMENT_RECORD_COL,
   USER_COL,
   USER_SETTINGS_COL,
-  ACCOUNT_COL
+  AccountType,
+  CURR_COL
 } from "$lib/schemas";
 import {
   authenticateResident,
@@ -24,23 +25,45 @@ export const GET: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
 
     // 1. Fetch All Data
-    const [achRows, logRows, settingRows, userRows, accRows, activeTerm] = await fetchSheetsData(
-      client,
-      [
+    const [achRows, logRows, settingRows, userRows, accRows, activeTerm, currRows] =
+      await fetchSheetsData(client, [
         "achievements!A:F",
         "achievement_records!A:E",
         "settings!A:B",
         "users!A:P",
         "accounts!A:L",
-        "TERM_CURR"
-      ]
-    );
+        "TERM_CURR",
+        "CURR!A:M"
+      ]);
 
     // 2. Resolve Current Resident
     const currentResidentId = residentId;
     if (!currentResidentId) return json({ achievements: [], logs: [], currentResidentId: "" });
 
-    const accountType = resolveResidentAccountType(accRows, activeTerm, currentResidentId);
+    const userRow = userRows.find((r: any) => (r[USER_COL.ID] || "").trim() === currentResidentId);
+    const email = (userRow?.[USER_COL.EMAIL] || "").trim().toLowerCase();
+
+    const currEntry = currRows
+      .slice()
+      .reverse()
+      .find(
+        (r: any) =>
+          (r[CURR_COL.EMAIL] || "").trim().toLowerCase() === email &&
+          (r[CURR_COL.TERM] || "") === activeTerm
+      );
+
+    const isAlum = currEntry?.[CURR_COL.ACCOUNT_TYPE] === AccountType.ALUMNUS;
+
+    let accountType = isAlum
+      ? AccountType.ALUMNUS
+      : resolveResidentAccountType(accRows, activeTerm, currentResidentId);
+
+    if (!accountType) {
+      return json(
+        { error: "Access Denied: Resident does not have an account for the current term" },
+        { status: 403 }
+      );
+    }
 
     if (!canAccessAchievements(accountType)) {
       return json(
@@ -89,7 +112,15 @@ export const GET: RequestHandler = async ({ request }) => {
       };
     });
 
-    return json({ achievements, logs, currentResidentId });
+    let displayedAchievements = achievements;
+    if (accountType === AccountType.ALUMNUS) {
+      const currentResidentEarnedIds = new Set(
+        logs.filter((l) => l.accountId === currentResidentId).map((l) => l.achievementId)
+      );
+      displayedAchievements = achievements.filter((a) => currentResidentEarnedIds.has(a.id));
+    }
+
+    return json({ achievements: displayedAchievements, logs, currentResidentId });
   } catch (e: any) {
     return serverError(e, "Achievements fetch");
   }

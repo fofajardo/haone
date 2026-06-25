@@ -386,7 +386,7 @@ export function resolveResidentAccountType(
   accRows: any[][],
   activeTerm: string,
   residentId: string
-): string {
+): string | null {
   // Column indices: RESIDENT_ID = 1, PERIOD = 2, TYPE = 11
   const account = accRows.find((r: any) => {
     return (r[2] || "").trim() === activeTerm && (r[1] || "").trim() === residentId;
@@ -394,5 +394,5 @@ export function resolveResidentAccountType(
   if (account) {
     return (account[11] || "STUDENT").trim().toUpperCase();
   }
-  return "STUDENT";
+  return null;
 }
