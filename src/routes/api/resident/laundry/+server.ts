@@ -202,7 +202,14 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        values: [["CANCELLED_BY_USER", "Cancelled by user", "", new Date().toISOString()]]
+        values: [
+          [
+            "CANCELLED_BY_USER",
+            "Cancelled by user",
+            targetRow[LAUNDRY_COL.CREATION_TIMESTAMP] || "",
+            new Date().toISOString()
+          ]
+        ]
       })
     });
 
