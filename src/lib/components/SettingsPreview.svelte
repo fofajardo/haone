@@ -11,7 +11,7 @@
         ? `acc-density-${uiSettings.displayDensity}`
         : ''}"
       data-slot="sandbox"
-      class:font-sans={uiSettings.fontFamily === "inter"}
+      class:font-sans={uiSettings.fontFamily === "default"}
       class:font-archivo={uiSettings.fontFamily === "archivo"}
       class:font-shantell={uiSettings.fontFamily === "shantell"}
       class:acc-reduced-motion={uiSettings.reducedMotion}

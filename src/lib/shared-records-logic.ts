@@ -138,7 +138,7 @@ export async function fetchUserSettings(forceRefresh = false): Promise<UserSetti
         residentNav: "home,finance,laundry",
         adminNav: "dashboard,history,residents",
         density: "default",
-        typography: "inter",
+        typography: "default",
         theme: "system",
         isReducedMotion: false,
         clockFormat: "12h",

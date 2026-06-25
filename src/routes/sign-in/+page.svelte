@@ -1,6 +1,5 @@
 <script lang="ts">
   import { auth } from "$lib/auth.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/crypto";
   import { Button } from "$lib/components/ui/button";
@@ -156,15 +155,7 @@
 </script>
 
 <div
-  class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 md:p-12 {uiSettings.fontFamily ===
-  'inter'
-    ? 'font-sans'
-    : ''} {uiSettings.displayDensity !== 'default'
-    ? `acc-density-${uiSettings.displayDensity}`
-    : ''}"
-  class:font-archivo={uiSettings.fontFamily === "archivo"}
-  class:font-shantell={uiSettings.fontFamily === "shantell"}
-  class:acc-reduced-motion={uiSettings.reducedMotion}
+  class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 md:p-12"
 >
   <div class="relative z-10 w-full max-w-sm space-y-6">
     <div class="flex flex-col items-center space-y-8 text-center">

@@ -58,9 +58,9 @@
       <Label>Typography</Label>
       <div class="grid grid-cols-3 gap-2">
         <Button
-          variant={uiSettings.fontFamily === "inter" ? "default" : "outline"}
+          variant={uiSettings.fontFamily === "default" ? "default" : "outline"}
           class="flex h-14 flex-col gap-1"
-          onclick={() => (uiSettings.fontFamily = "inter")}
+          onclick={() => (uiSettings.fontFamily = "default")}
         >
           <span class="text-sm font-bold">Default</span>
           <span class="text-xs opacity-60">Inter</span>

@@ -8,11 +8,11 @@ import {
   PUBLIC_APP_FIREBASE_ENABLED
 } from "$env/static/public";
 
-export type UIFont = "inter" | "archivo" | "shantell";
+export type UIFont = "default" | "archivo" | "shantell";
 export type DisplayDensity = "default" | "compact" | "comfortable";
 
 class UISettings {
-  #fontFamily = $state<UIFont>("inter");
+  #fontFamily = $state<UIFont>("default");
   #reducedMotion = $state(false);
   #displayDensity = $state<DisplayDensity>("default");
   #theme = $state<string>("system");
@@ -28,7 +28,7 @@ class UISettings {
 
   constructor() {
     if (browser) {
-      this.#fontFamily = (localStorage.getItem(LS_KEYS.UI_FONT) as UIFont) || "inter";
+      this.#fontFamily = (localStorage.getItem(LS_KEYS.UI_FONT) as UIFont) || "default";
       this.#reducedMotion = localStorage.getItem(LS_KEYS.ACC_REDUCED_MOTION) === "true";
       this.#currentTerm = localStorage.getItem("halsk.ui.current_term") || "";
       this.#displayDensity =

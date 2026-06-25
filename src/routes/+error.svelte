@@ -63,7 +63,7 @@
 </script>
 
 <div
-  class="flex min-h-[100dvh] flex-col items-center justify-center bg-background p-4 font-sans text-foreground md:p-8"
+  class="flex min-h-[100dvh] flex-col items-center justify-center bg-background p-4 text-foreground md:p-8"
 >
   <div class="w-full max-w-2xl" in:fade={{ duration: 300 }}>
     <Card.Root class="border shadow-none sm:shadow-sm">

@@ -31,7 +31,7 @@ export const GET: RequestHandler = async ({ request }) => {
         residentNav: "home,finance,laundry",
         adminNav: "dashboard,history,residents",
         density: "default",
-        typography: "inter",
+        typography: "default",
         theme: "system",
         isReducedMotion: false,
         clockFormat: "12h"
@@ -67,7 +67,7 @@ export const GET: RequestHandler = async ({ request }) => {
         ? settings[USER_SETTINGS_COL.ADMIN_NAV] || "dashboard,history,residents"
         : "dashboard,history,residents",
       density: settings ? settings[USER_SETTINGS_COL.DENSITY] || "default" : "default",
-      typography: settings ? settings[USER_SETTINGS_COL.TYPOGRAPHY] || "inter" : "inter",
+      typography: settings ? settings[USER_SETTINGS_COL.TYPOGRAPHY] || "default" : "default",
       theme: settings ? settings[USER_SETTINGS_COL.THEME] || "system" : "system",
       isReducedMotion: settings
         ? (settings[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE"

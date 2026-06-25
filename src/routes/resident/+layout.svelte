@@ -5,7 +5,6 @@
   import AdminHeader from "$lib/components/admin-header.svelte";
   import MobileNav from "$lib/components/mobile-nav.svelte";
   import { auth } from "$lib/auth.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
   import { residentState } from "$lib/resident-state.svelte";
   import { onMount } from "svelte";
   import { LoaderCircle } from "lucide-svelte";
@@ -75,15 +74,7 @@
     <LoaderCircle class="h-8 w-8 animate-spin text-foreground" />
   </div>
 {:else}
-  <Sidebar.Provider
-    class="{uiSettings.fontFamily === 'inter'
-      ? 'font-sans'
-      : uiSettings.fontFamily === 'archivo'
-        ? 'font-archivo'
-        : 'font-shantell'} 
-      {uiSettings.reducedMotion ? 'acc-reduced-motion' : ''} 
-      {uiSettings.displayDensity !== 'default' ? `acc-density-${uiSettings.displayDensity}` : ''}"
-  >
+  <Sidebar.Provider>
     {#if !residentState.needsOnboarding}
       <ResidentSidebar />
     {/if}
