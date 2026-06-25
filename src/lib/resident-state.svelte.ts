@@ -14,7 +14,16 @@ export type ResidentAccount = Omit<
 
 export type Transaction = Pick<
   JournalRecord,
-  "id" | "date" | "type" | "amount" | "period" | "mop" | "notes" | "creator" | "prRefNo" | "runningBalance"
+  | "id"
+  | "date"
+  | "type"
+  | "amount"
+  | "period"
+  | "mop"
+  | "notes"
+  | "creator"
+  | "prRefNo"
+  | "runningBalance"
 >;
 
 export interface OnboardingAccountEntry {
