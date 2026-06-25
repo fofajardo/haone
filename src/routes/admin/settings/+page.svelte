@@ -3,7 +3,8 @@
   import { Label } from "$lib/components/ui/label";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Input } from "$lib/components/ui/input";
-  import { TriangleAlert } from "lucide-svelte";
+  import { TriangleAlert, ExternalLink } from "lucide-svelte";
+  import { Button } from "$lib/components/ui/button";
   import branding from "$lib/branding.json";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
@@ -71,10 +72,21 @@
             <div class="space-y-4">
               <div class="space-y-2">
                 <Label>Accounting Workbook</Label>
-                <Input
-                  placeholder="Enter Accounting Workbook ID (GS_AW_ID)"
-                  bind:value={uiSettings.accountingWorkbookId}
-                />
+                <div class="flex gap-2">
+                  <Input
+                    placeholder="Enter Accounting Workbook ID (GS_AW_ID)"
+                    bind:value={uiSettings.accountingWorkbookId}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!uiSettings.accountingWorkbookId}
+                    href={`https://docs.google.com/spreadsheets/d/${uiSettings.accountingWorkbookId}/edit`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    icon={ExternalLink}
+                  />
+                </div>
                 {#if uiSettings.accountingWorkbookId && uiSettings.accountingWorkbookId !== PUBLIC_GS_AW_ID}
                   <div
                     class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
@@ -92,10 +104,21 @@
 
               <div class="space-y-2">
                 <Label>Resident Records</Label>
-                <Input
-                  placeholder="Enter Resident Records ID (GS_RR_ID)"
-                  bind:value={uiSettings.residentRecordsId}
-                />
+                <div class="flex gap-2">
+                  <Input
+                    placeholder="Enter Resident Records ID (GS_RR_ID)"
+                    bind:value={uiSettings.residentRecordsId}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!uiSettings.residentRecordsId}
+                    href={`https://docs.google.com/spreadsheets/d/${uiSettings.residentRecordsId}/edit`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    icon={ExternalLink}
+                  />
+                </div>
                 {#if uiSettings.residentRecordsId && uiSettings.residentRecordsId !== PUBLIC_GS_RR_ID}
                   <div
                     class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
@@ -113,10 +136,21 @@
 
               <div class="space-y-2">
                 <Label>Shared Records</Label>
-                <Input
-                  placeholder="Enter Shared Records ID (GS_SR_ID)"
-                  bind:value={uiSettings.sharedRecordsId}
-                />
+                <div class="flex gap-2">
+                  <Input
+                    placeholder="Enter Shared Records ID (GS_SR_ID)"
+                    bind:value={uiSettings.sharedRecordsId}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled={!uiSettings.sharedRecordsId}
+                    href={`https://docs.google.com/spreadsheets/d/${uiSettings.sharedRecordsId}/edit`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    icon={ExternalLink}
+                  />
+                </div>
                 {#if uiSettings.sharedRecordsId && uiSettings.sharedRecordsId !== PUBLIC_GS_SR_ID}
                   <div
                     class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
