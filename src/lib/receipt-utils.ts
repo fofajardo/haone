@@ -48,7 +48,7 @@ export function translateMop(mop: string) {
   return mop;
 }
 
-export function translatePeriod(period: string) {
+export function translatePeriod(period: string | null | undefined) {
   if (!period) return "N/A";
   const p = period.trim();
   const match = p.match(/^(\d{2})(\d{2})_(MY|[1-3]S)$/);
