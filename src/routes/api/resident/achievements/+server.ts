@@ -33,7 +33,7 @@ export const GET: RequestHandler = async ({ request }) => {
         "users!A:P",
         "accounts!A:L",
         "TERM_CURR",
-        "CURR!A:M"
+        "CURR!A:O"
       ]);
 
     // 2. Resolve Current Resident

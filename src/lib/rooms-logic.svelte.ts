@@ -23,6 +23,8 @@ export interface CurrRecord {
   isEvaluated: boolean;
   term: string;
   accountType: string;
+  suffix?: string;
+  overrideName?: string;
   rowIndex: number; // 1-indexed
   raw: string[];
 }
@@ -44,7 +46,7 @@ export interface SyncPreviewAction {
 export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]> {
   if (!uiSettings.residentRecordsId) return [];
 
-  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:M", forceRefresh);
+  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:O", forceRefresh);
   if (rows.length <= 1) return [];
 
   return rows.slice(1).map((row, idx) => ({
@@ -61,6 +63,8 @@ export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]
     isEvaluated: (row[CURR_COL.EVALUATED] || "").toUpperCase() === "TRUE",
     term: row[CURR_COL.TERM] || "",
     accountType: (row[CURR_COL.ACCOUNT_TYPE] || "").trim().toUpperCase(),
+    suffix: row[CURR_COL.SUFFIX] || "",
+    overrideName: row[CURR_COL.OVERRIDE_NAME] || "",
     rowIndex: idx + 2, // +1 for header, +1 for 1-indexing
     raw: row
   }));
@@ -202,7 +206,9 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             program: curr.program,
             firstName: curr.firstName.toUpperCase(),
             lastName: curr.lastName.toUpperCase(),
-            tags: accountTypeTag
+            tags: accountTypeTag,
+            suffix: curr.suffix || "",
+            overrideName: curr.overrideName || ""
           }
         });
       }
@@ -253,10 +259,14 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       const lastCollege = colleges[colleges.length - 1] || "";
       const lastProgram = programs[programs.length - 1] || "";
 
-      const needsUpdate = curr.college !== lastCollege || curr.program !== lastProgram;
+      const needsUpdate =
+        curr.college !== lastCollege ||
+        curr.program !== lastProgram ||
+        (curr.suffix !== undefined && curr.suffix !== (user.suffix || "")) ||
+        (curr.overrideName !== undefined && curr.overrideName !== (user.overrideName || ""));
       if (needsUpdate) {
-        const newColleges = [...colleges, curr.college];
-        const newPrograms = [...programs, curr.program];
+        const newColleges = curr.college !== lastCollege ? [...colleges, curr.college] : colleges;
+        const newPrograms = curr.program !== lastProgram ? [...programs, curr.program] : programs;
 
         actions.push({
           type: "UPDATE_USER",
@@ -264,11 +274,13 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           email: user.email,
           studentNo: user.studentNo,
           currIndex: curr.rowIndex,
-          details: `Update profile (College: ${curr.college}, Program: ${curr.program})`,
+          details: `Update profile`,
           payload: {
             id: user.id,
             college: newColleges.join(","),
-            program: newPrograms.join(":")
+            program: newPrograms.join(":"),
+            suffix: curr.suffix || "",
+            overrideName: curr.overrideName || ""
           }
         });
       }

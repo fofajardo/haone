@@ -168,6 +168,8 @@
     }
   });
 
+  let useLivedName = $state(false);
+
   let formData = $state({
     room: "",
     bed: "",
@@ -176,6 +178,8 @@
     program: "",
     firstName: "",
     lastName: "",
+    suffix: "",
+    overrideName: "",
     checkInDate: "",
     likedFBPage: false,
     joinedFBGroup: false,
@@ -202,6 +206,15 @@
         formData.firstName || status.currEntry?.firstName || status.profile?.firstName || "";
       formData.lastName =
         formData.lastName || status.currEntry?.lastName || status.profile?.lastName || "";
+      formData.suffix = formData.suffix || status.currEntry?.suffix || status.profile?.suffix || "";
+      formData.overrideName =
+        formData.overrideName ||
+        status.currEntry?.overrideName ||
+        status.profile?.overrideName ||
+        "";
+      if (formData.overrideName) {
+        useLivedName = true;
+      }
       formData.checkInDate = formData.checkInDate || status.currEntry?.checkInDate || "";
     }
   });
@@ -216,6 +229,15 @@
     const isStudentNoRequired =
       accountType === AccountType.STUDENT || accountType === AccountType.ALUMNUS || hasStudentNo;
     const isRoomRequired = accountType !== AccountType.ALUMNUS;
+
+    if (!useLivedName) {
+      formData.overrideName = "";
+    }
+
+    if (useLivedName && !formData.overrideName.trim()) {
+      toast.error("Please fill in your preferred lived name.");
+      return;
+    }
 
     if (
       (isRoomRequired && (!formData.room || !formData.bed || !formData.checkInDate)) ||
@@ -303,6 +325,7 @@
     if (!status.isRegistered) {
       if (!formData.firstName || !formData.lastName) return false;
     }
+    if (useLivedName && !formData.overrideName.trim()) return false;
     if (!formData.college || !formData.program) return false;
     if (isStudentNoRequired && !formData.studentNo) return false;
     if (
@@ -420,7 +443,7 @@
         <div class="space-y-6">
           <div class="space-y-4">
             {#if !status.isRegistered}
-              <div class="grid gap-4 md:grid-cols-2">
+              <div class="grid gap-4 md:grid-cols-3">
                 <div class="space-y-2">
                   <Label for="firstName">First Name</Label>
                   <Input id="firstName" bind:value={formData.firstName} />
@@ -429,8 +452,37 @@
                   <Label for="lastName">Last Name</Label>
                   <Input id="lastName" bind:value={formData.lastName} />
                 </div>
+                <div class="space-y-2">
+                  <Label for="suffix"
+                    >Suffix <span class="text-xs font-normal text-muted-foreground">(Optional)</span
+                    ></Label
+                  >
+                  <Input id="suffix" bind:value={formData.suffix} placeholder="Jr., III, etc." />
+                </div>
               </div>
             {/if}
+
+            <div class="space-y-3 rounded-lg border bg-card p-3.5 text-card-foreground">
+              <div class="flex items-center space-x-3">
+                <Checkbox id="useLivedName" bind:checked={useLivedName} />
+                <Label for="useLivedName" class="cursor-pointer text-sm font-medium">
+                  I would prefer to use a lived name for transactions
+                </Label>
+              </div>
+              {#if useLivedName}
+                <div class="animate-in space-y-2 pt-1.5 duration-200 fade-in slide-in-from-top-1">
+                  <Label for="overrideName">Lived Name / Preferred Name</Label>
+                  <Input
+                    id="overrideName"
+                    bind:value={formData.overrideName}
+                    placeholder="Enter preferred display name…"
+                  />
+                  <p class="text-xs text-muted-foreground">
+                    This will override your name on receipts and transactions.
+                  </p>
+                </div>
+              {/if}
+            </div>
             <div class="space-y-2">
               <Label>Account Type</Label>
               <Combobox

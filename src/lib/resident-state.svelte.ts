@@ -9,7 +9,16 @@ import {
 
 export type ResidentProfile = Pick<
   UserRecord,
-  "id" | "email" | "firstName" | "lastName" | "studentNo" | "college" | "program" | "tags"
+  | "id"
+  | "email"
+  | "firstName"
+  | "lastName"
+  | "studentNo"
+  | "college"
+  | "program"
+  | "tags"
+  | "suffix"
+  | "overrideName"
 >;
 
 export type ResidentAccount = Omit<
@@ -41,6 +50,9 @@ export interface OnboardingAccountEntry {
   studentNo: string;
   accountType: string;
   isEvaluated: boolean;
+  checkInDate: string;
+  suffix: string;
+  overrideName: string;
 }
 
 export interface OccupiedBed {

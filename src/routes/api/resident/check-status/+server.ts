@@ -22,7 +22,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
       "users!A:P",
       "journal_general!A:T",
       "accounts!A:L",
-      "CURR!A:M"
+      "CURR!A:O"
     ]);
 
     // 2. Resolve active term and user row
@@ -176,7 +176,9 @@ export const GET: RequestHandler = async ({ url, request }) => {
             studentNo: userRow[USER_COL.STUDENT_NO],
             college: (userRow[USER_COL.COLLEGE] || "").split(",").pop()?.trim() || "",
             program: (userRow[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || "",
-            tags: userRow[USER_COL.TAGS] || ""
+            tags: userRow[USER_COL.TAGS] || "",
+            suffix: userRow[USER_COL.SUFFIX] || "",
+            overrideName: userRow[USER_COL.OVERRIDE_NAME] || ""
           }
         : null,
       account: residentAccount
@@ -218,6 +220,8 @@ export const GET: RequestHandler = async ({ url, request }) => {
             program: currEntry[CURR_COL.PROGRAM],
             studentNo: currEntry[CURR_COL.STUDENT_NO],
             accountType: currEntry[CURR_COL.ACCOUNT_TYPE] || AccountType.STUDENT,
+            suffix: currEntry[CURR_COL.SUFFIX] || "",
+            overrideName: currEntry[CURR_COL.OVERRIDE_NAME] || "",
             isEvaluated
           }
         : null,

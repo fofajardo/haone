@@ -26,7 +26,9 @@ export const POST: RequestHandler = async ({ request }) => {
       room,
       bed,
       checkInDate,
-      accountType
+      accountType,
+      suffix,
+      overrideName
     } = data;
 
     const targetEmail = (authEmail || email).toLowerCase();
@@ -66,8 +68,8 @@ export const POST: RequestHandler = async ({ request }) => {
       finalStudentNo = `${resolvedAccountType}-${activeTerm}-${randomUuid}`;
     }
 
-    // Append to CURR sheet (13 columns now)
-    const newRow = new Array(13).fill("");
+    // Append to CURR sheet (15 columns now)
+    const newRow = new Array(15).fill("");
     newRow[CURR_COL.TIMESTAMP] = new Date().toISOString();
     newRow[CURR_COL.EMAIL] = targetEmail;
     newRow[CURR_COL.ROOM] = room;
@@ -82,8 +84,10 @@ export const POST: RequestHandler = async ({ request }) => {
       resolvedAccountType === AccountType.ALUMNUS && isAlreadyRegistered ? "TRUE" : "FALSE";
     newRow[CURR_COL.TERM] = activeTerm;
     newRow[CURR_COL.ACCOUNT_TYPE] = resolvedAccountType;
+    newRow[CURR_COL.SUFFIX] = (suffix || "").trim().toUpperCase();
+    newRow[CURR_COL.OVERRIDE_NAME] = (overrideName || "").trim().toUpperCase();
 
-    await appendSheetValue(client, PUBLIC_GS_RR_ID, "CURR!A:M", [newRow]);
+    await appendSheetValue(client, PUBLIC_GS_RR_ID, "CURR!A:O", [newRow]);
 
     return json({ success: true });
   } catch (e: any) {
