@@ -47,8 +47,8 @@ export const actions: Actions = {
         const issuerId = row[9]; // Column J (ISSUER_ID)
         const period = row[ACCOUNT_COL.PERIOD];
 
-        let signatory = "HALL ADMINISTRATIVE OFFICER";
-        let signatoryTitle = "Administrative Officer";
+        let signatory = "HOUSE COUNCIL OFFICER";
+        let signatoryTitle = "Officer";
 
         if (issuerId) {
           const issuerUser = userRows.find((u: any) => u[USER_COL.ID] === issuerId);
