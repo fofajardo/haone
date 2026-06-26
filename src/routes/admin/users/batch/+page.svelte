@@ -87,9 +87,9 @@
     }
   }
 
-  const exampleCsv = `email,last name,first name,student number,college,program,tags
-juan.delacruz@up.edu.ph,Dela Cruz,Juan,2020-12345,CS,BS CS,STUDENT
-maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
+  const exampleCsv = `email,last name,first name,middle name,student number,college,program,tags
+juan.delacruz@up.edu.ph,Dela Cruz,Juan,M.,2020-12345,CS,BS CS,STUDENT
+maria.clara@up.edu.ph,Clara,Maria,S.,2018-54321,CAL,BA EL,ALUMNUS`;
 </script>
 
 <div class="space-y-6">
@@ -145,8 +145,9 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
         <Card.Content>
           <ul class="space-y-1 text-xs text-muted-foreground">
             <li><strong class="text-foreground">email</strong> (Required)</li>
-            <li><strong class="text-foreground">first name</strong> (Required)</li>
             <li><strong class="text-foreground">last name</strong> (Required)</li>
+            <li><strong class="text-foreground">first name</strong> (Required)</li>
+            <li>middle name</li>
             <li>student number</li>
             <li>college, program</li>
             <li>tags (separate with :)</li>
@@ -198,7 +199,9 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
                 <thead class="bg-muted">
                   <tr>
                     <th class="p-2 font-bold">Email</th>
-                    <th class="p-2 font-bold">Name</th>
+                    <th class="p-2 font-bold">Last Name</th>
+                    <th class="p-2 font-bold">First Name</th>
+                    <th class="p-2 font-bold">Middle Name</th>
                     <th class="p-2 font-bold">Student No</th>
                     <th class="p-2 font-bold">Tags</th>
                   </tr>
@@ -207,7 +210,9 @@ maria.clara@up.edu.ph,Clara,Maria,2018-54321,CAL,BA EL,ALUMNUS`;
                   {#each previewRows as row}
                     <tr>
                       <td class="p-2 text-muted-foreground">{row.email}</td>
-                      <td class="p-2 font-medium">{row.lastName}, {row.firstName}</td>
+                      <td class="p-2 font-medium">{row.lastName}</td>
+                      <td class="p-2">{row.firstName}</td>
+                      <td class="p-2">{row.middleName || "—"}</td>
                       <td class="p-2 font-mono">{row.studentNo || "—"}</td>
                       <td class="p-2">
                         <div class="flex flex-wrap gap-1">
