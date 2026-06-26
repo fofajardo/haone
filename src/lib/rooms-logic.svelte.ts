@@ -581,7 +581,7 @@ export async function manualDelistResident(
         jRow[JOURNAL_COL.MOP_REFNO] = "";
         jRow[JOURNAL_COL.PR_DATE_ISSUED] = "";
         jRow[JOURNAL_COL.PR_REFNO] = "";
-        jRow[JOURNAL_COL.CREATOR_NAME] = auth.user?.name || "";
+        jRow[JOURNAL_COL.CREATOR_NAME] = auth.displayName;
         jRow[JOURNAL_COL.NAME] = resRecord.name;
         jRow[JOURNAL_COL.STNO] = resRecord.stno;
         jRow[JOURNAL_COL.WAS_AUDITED] = "FALSE";

@@ -22,6 +22,20 @@
 
   onMount(async () => {
     isLoadingAuth = false;
+    if (auth.accessToken && auth.user?.email && !auth.adminDisplayName) {
+      try {
+        const { fetchUsers } = await import("$lib/resident-logic");
+        const users = await fetchUsers();
+        const found = users.find((u) => {
+          return u.email.toLowerCase() === auth.user!.email.toLowerCase();
+        });
+        if (found && found.displayName) {
+          auth.setAdminDisplayName(found.displayName);
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin display name:", err);
+      }
+    }
   });
 
   // Handle errors from anywhere (e.g., session expired)

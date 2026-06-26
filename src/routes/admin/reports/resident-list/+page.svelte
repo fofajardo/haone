@@ -52,7 +52,7 @@
 
   // Export Options
   let exportFormat = $state("pdf");
-  let issuedBy = $state(auth.user?.name || "");
+  let issuedBy = $state(auth.displayName || "");
   let issuedByEmail = $state(auth.user?.email || "");
   let assessedBy = $state("");
   let assessedByEmail = $state("");
@@ -203,8 +203,12 @@
       }
 
       if (auth.user) {
-        if (!issuedBy) issuedBy = auth.user.name;
-        if (!issuedByEmail) issuedByEmail = auth.user.email;
+        if (!issuedBy) {
+          issuedBy = auth.displayName;
+        }
+        if (!issuedByEmail) {
+          issuedByEmail = auth.user.email;
+        }
       }
     } catch (e: any) {
       error = e.message;

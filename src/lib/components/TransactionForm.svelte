@@ -80,7 +80,7 @@
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
     creatorEmail: auth.user?.email || "",
-    creatorName: auth.user?.name || "",
+    creatorName: auth.displayName || "",
     creatorStNo: "",
     accountEmail: "",
     accountName: "",

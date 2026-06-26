@@ -32,7 +32,7 @@
   let availableMops = $state<{ value: string; label: string }[]>([]);
 
   // Form State
-  let issuedBy = $state(auth.user?.name || "");
+  let issuedBy = $state(auth.displayName || "");
   let issuedByEmail = $state(auth.user?.email || "");
   let assessedBy = $state("");
   let assessedByEmail = $state("");

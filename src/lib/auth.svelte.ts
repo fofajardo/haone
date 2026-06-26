@@ -10,6 +10,7 @@ export interface UserInfo {
 class AuthState {
   accessToken = $state<string | null>(null);
   user = $state<UserInfo | null>(null);
+  adminDisplayName = $state<string | null>(null);
   isRemembered = $state(false);
   lastError = $state<{ title: string; description: string } | null>(null);
   redirectTo = $state<string | null>(null);
@@ -17,6 +18,10 @@ class AuthState {
   cachedPicture = $state<string | null>(null);
   authType = $state<"admin" | "resident" | null>(null);
   isInstanceAdmin = $state(false);
+
+  get displayName(): string {
+    return this.adminDisplayName || this.user?.name || "";
+  }
 
   constructor() {
     if (browser) {
@@ -31,16 +36,31 @@ class AuthState {
         this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
         this.authType = (localStorage.getItem("halsk.auth.type") as "admin" | "resident") || null;
         this.isInstanceAdmin = localStorage.getItem("halsk.auth.is_admin") === "true";
+        const savedDisplayName = localStorage.getItem(LS_KEYS.DISPLAY_NAME);
+        if (savedDisplayName) {
+          this.adminDisplayName = savedDisplayName;
+        }
       }
       this.initialized = true;
     }
   }
 
+  setAdminDisplayName(name: string) {
+    this.adminDisplayName = name;
+    if (browser) {
+      localStorage.setItem(LS_KEYS.DISPLAY_NAME, name);
+    }
+  }
+
   async ensureCachedPicture() {
-    if (!this.user || !browser) return;
+    if (!this.user || !browser) {
+      return;
+    }
 
     // If we already have a cached picture in memory, skip
-    if (this.cachedPicture) return;
+    if (this.cachedPicture) {
+      return;
+    }
 
     try {
       const response = await fetch(this.user.picture);
@@ -85,6 +105,7 @@ class AuthState {
   logout() {
     this.accessToken = null;
     this.user = null;
+    this.adminDisplayName = null;
     this.isRemembered = false;
 
     if (browser) {
@@ -92,6 +113,7 @@ class AuthState {
       localStorage.removeItem(LS_KEYS.USER);
       localStorage.removeItem(LS_KEYS.REMEMBER);
       localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
+      localStorage.removeItem(LS_KEYS.DISPLAY_NAME);
       localStorage.removeItem("halsk.auth.type");
       localStorage.removeItem("halsk.auth.is_admin");
       this.cachedPicture = null;
@@ -104,7 +126,9 @@ class AuthState {
     const resp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
       headers: { Authorization: `Bearer ${token}` }
     });
-    if (!resp.ok) throw new Error("Failed to fetch user info");
+    if (!resp.ok) {
+      throw new Error("Failed to fetch user info");
+    }
     return (await resp.json()) as UserInfo;
   }
 }

@@ -14,7 +14,8 @@ export const LS_KEYS = {
   GS_RR_ID: "halsk.gs.rr_id",
   GS_SR_ID: "halsk.gs.sr_id",
   CLEARANCE_TITLE: "halsk.clearance.signatory_title",
-  CACHED_PICTURE: "halsk.auth.cached_picture"
+  CACHED_PICTURE: "halsk.auth.cached_picture",
+  DISPLAY_NAME: "halsk.auth.display_name"
 } as const;
 
 export const SYSTEM_IDS = {

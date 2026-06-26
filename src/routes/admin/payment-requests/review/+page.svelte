@@ -75,7 +75,7 @@
           mopRefNo: "",
           prDateIssued: "",
           prRefNo: "",
-          creatorName: auth.user?.name || "",
+          creatorName: auth.displayName || "",
           name: resident?.name || user?.displayName || "",
           stno: resident?.stno || user?.studentNo || "",
           wasAudited: false,
