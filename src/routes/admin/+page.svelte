@@ -141,9 +141,14 @@
 
       // Stats from Accounts
       const currentSem = uiSettings.currentTerm.trim();
-      const accounts = allResidents.filter(
-        (r) => r.period === currentSem && r.email && r.email !== "_vacant"
-      );
+      const accounts = allResidents.filter((r) => {
+        return (
+          r.period === currentSem &&
+          r.email &&
+          r.email !== "_vacant" &&
+          !(r.bed || "").includes("(")
+        );
+      });
 
       stats.activeResidents = accounts.length;
 
