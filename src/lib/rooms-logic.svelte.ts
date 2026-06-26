@@ -3,11 +3,20 @@ import {
   fetchSheetRowsRaw,
   updateSheetValue,
   batchUpdateValues,
-  appendSheetRow
+  appendSheetRow,
+  deleteSheetRow
 } from "./google-sheets";
-import { ACCOUNT_COL, CURR_COL, AccountType, UserTag, type UserRecord } from "./schemas";
-import { fetchUsers, addUser, updateUser } from "./resident-logic";
+import {
+  ACCOUNT_COL,
+  CURR_COL,
+  JOURNAL_COL,
+  AccountType,
+  UserTag,
+  type UserRecord
+} from "./schemas";
+import { fetchUsers, addUser, updateUser, fetchResidents } from "./resident-logic";
 import { roomsState } from "./rooms.svelte";
+import { auth } from "./auth.svelte";
 
 export interface CurrRecord {
   timestamp: string;
@@ -453,5 +462,134 @@ export async function manualAssignBed(residentId: string, room: string, bed: str
     newRow[ACCOUNT_COL.ROOM] = room;
     newRow[ACCOUNT_COL.BED] = bed;
     await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", [newRow]);
+  }
+}
+
+export async function manualDelistResident(
+  residentId: string,
+  term: string,
+  reason: "remove" | "early_checkout" | "transferred" | "deceased" | "loa",
+  waiveBalance = false
+) {
+  if (!uiSettings.accountingWorkbookId) {
+    throw new Error("Accounting Workbook ID not configured");
+  }
+
+  const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
+  const rowIndex = accRows.findIndex((r) => {
+    return r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term;
+  });
+
+  if (rowIndex === -1) {
+    throw new Error("Active account entry for resident not found in this term.");
+  }
+
+  if (reason === "remove") {
+    // 1. Remove account completely (deletes the account row for this user)
+    await deleteSheetRow(uiSettings.accountingWorkbookId, "accounts", rowIndex);
+  } else {
+    // 2. Early check-out / 3. Transferred to another residence hall / 4. Deceased / 5. Leave of Absence
+    const actualRow = rowIndex + 1;
+    const currentBed = (accRows[rowIndex][ACCOUNT_COL.BED] || "").trim();
+
+    let reasonText = "";
+    if (reason === "early_checkout") {
+      reasonText = "Early checkout";
+    } else if (reason === "transferred") {
+      reasonText = "Transferred to another residence hall";
+    } else if (reason === "deceased") {
+      reasonText = "Deceased";
+      await updateUser(residentId, { tags: UserTag.DECEASED });
+    } else if (reason === "loa") {
+      reasonText = "Leave of Absence";
+    }
+
+    const updatedBed = `${currentBed} (${reasonText})`;
+    await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!E${actualRow}`, [
+      [updatedBed]
+    ]);
+
+    if (
+      (reason === "early_checkout" ||
+        reason === "loa" ||
+        reason === "deceased" ||
+        reason === "transferred") &&
+      waiveBalance
+    ) {
+      const residents = await fetchResidents(true);
+      const resRecord = residents.find((r) => {
+        return r.residentId === residentId && r.period === term;
+      });
+      if (resRecord && resRecord.bal > 0) {
+        // Retrieve PMT_WAIVED type from constants sheet
+        const constRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
+        const getConst = (key: string) => {
+          const found = constRows.find((r) => {
+            return r[0] === key;
+          });
+          return found ? found[1] : "0";
+        };
+        const pmtWaived = getConst("PMT_WAIVED") || "WAIVED";
+
+        let remainingToWaive = resRecord.bal;
+        let waterWaiveAmt = 0;
+        let assocWaiveAmt = 0;
+        let miscWaiveAmt = 0;
+
+        if (resRecord.waterBal > 0) {
+          waterWaiveAmt = Math.min(resRecord.waterBal, remainingToWaive);
+          remainingToWaive -= waterWaiveAmt;
+        }
+        if (remainingToWaive > 0 && resRecord.assocBal > 0) {
+          assocWaiveAmt = Math.min(resRecord.assocBal, remainingToWaive);
+          remainingToWaive -= assocWaiveAmt;
+        }
+        if (remainingToWaive > 0) {
+          miscWaiveAmt = remainingToWaive;
+        }
+
+        const dateStr = new Date()
+          .toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+          })
+          .toUpperCase();
+        let noteLabel = "";
+        if (reason === "early_checkout") {
+          noteLabel = `EARLY CHECKOUT (${dateStr})`;
+        } else if (reason === "loa") {
+          noteLabel = `LEAVE OF ABSENCE (${dateStr})`;
+        } else if (reason === "deceased") {
+          noteLabel = `DECEASED (${dateStr})`;
+        } else if (reason === "transferred") {
+          noteLabel = `TRANSFERRED TO ANOTHER RESIDENCE HALL (${dateStr})`;
+        }
+
+        const jRow = new Array(20).fill("");
+        jRow[JOURNAL_COL.DATE] = new Date().toISOString().split("T")[0];
+        jRow[JOURNAL_COL.CREATOR] = auth.user?.email || "";
+        jRow[JOURNAL_COL.ACCOUNT] = resRecord.email;
+        jRow[JOURNAL_COL.WATER] = waterWaiveAmt > 0 ? waterWaiveAmt.toString() : "";
+        jRow[JOURNAL_COL.ASSOC] = assocWaiveAmt > 0 ? assocWaiveAmt.toString() : "";
+        jRow[JOURNAL_COL.MISC] = miscWaiveAmt > 0 ? miscWaiveAmt.toString() : "";
+        jRow[JOURNAL_COL.MOP] = "";
+        jRow[JOURNAL_COL.PERIOD] = term;
+        jRow[JOURNAL_COL.TYPE] = pmtWaived;
+        jRow[JOURNAL_COL.NOTES] = noteLabel;
+        jRow[JOURNAL_COL.NOTES_PRIVATE] = "";
+        jRow[JOURNAL_COL.MOP_REFNO] = "";
+        jRow[JOURNAL_COL.PR_DATE_ISSUED] = "";
+        jRow[JOURNAL_COL.PR_REFNO] = "";
+        jRow[JOURNAL_COL.CREATOR_NAME] = auth.user?.name || "";
+        jRow[JOURNAL_COL.NAME] = resRecord.name;
+        jRow[JOURNAL_COL.STNO] = resRecord.stno;
+        jRow[JOURNAL_COL.WAS_AUDITED] = "FALSE";
+        jRow[JOURNAL_COL.RECEIPT_URL] = "";
+        jRow[JOURNAL_COL.ID] = crypto.randomUUID();
+
+        await appendSheetRow(uiSettings.accountingWorkbookId, "journal_general!A:T", [jRow]);
+      }
+    }
   }
 }

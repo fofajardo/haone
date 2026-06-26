@@ -1,14 +1,12 @@
 <script lang="ts">
   import { roomsState } from "$lib/rooms.svelte";
   import { fetchResidents, fetchUsers, fetchTermCurr } from "$lib/resident-logic";
-  import { manualAssignBed } from "$lib/rooms-logic.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/schemas";
+  import AssignmentDialog from "$lib/components/admin/AssignmentDialog.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Label } from "$lib/components/ui/label";
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { RefreshCcw, Users, Bed, Info } from "lucide-svelte";
@@ -84,37 +82,20 @@
     type: "info" as "info" | "error"
   });
 
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
-  }
-
   let assignmentDialog = $state({
     open: false,
     bed: "",
-    userId: ""
+    userId: "",
+    isOccupied: false
   });
 
   function openAssign(bed: string, currentRes?: ResidentRecord) {
     assignmentDialog = {
       open: true,
       bed,
-      userId: currentRes?.residentId || ""
+      userId: currentRes?.residentId || "",
+      isOccupied: !!currentRes
     };
-  }
-
-  async function confirmAssign() {
-    if (!assignmentDialog.userId || !assignmentDialog.bed) return;
-    isLoading = true;
-    try {
-      await manualAssignBed(assignmentDialog.userId, roomNumber, assignmentDialog.bed, activeTerm);
-      showAlert("Success", "Bed assignment updated.");
-      assignmentDialog.open = false;
-      await loadData(true);
-    } catch (e: any) {
-      showAlert("Assignment Failed", e.message, "error");
-    } finally {
-      isLoading = false;
-    }
   }
 </script>
 
@@ -190,7 +171,7 @@
                   onclick={() => openAssign(slot, resident)}
                   disabled={!isSlotAvailable && !resident}
                 >
-                  {resident ? "Change" : "Assign"}
+                  {resident ? "Delist" : "Assign"}
                 </Button>
               </div>
             {/each}
@@ -257,48 +238,17 @@
   {/if}
 </div>
 
-<AlertDialog.Root bind:open={assignmentDialog.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Assign Resident</AlertDialog.Title>
-      <AlertDialog.Description>
-        Assign a resident to Room <strong>{roomNumber}</strong>{#if assignmentDialog.bed}
-          , Bed <strong>{assignmentDialog.bed}</strong>{/if}.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <div class="space-y-4 pb-4">
-      {#if !assignmentDialog.bed}
-        <div class="space-y-2">
-          <Label>Select Bed</Label>
-          <Combobox
-            bind:value={assignmentDialog.bed}
-            options={availableBedOptions}
-            placeholder="Select a bed…"
-            class="w-full"
-          />
-        </div>
-      {/if}
-      <div class="space-y-2">
-        <Label>Resident</Label>
-        <Combobox
-          bind:value={assignmentDialog.userId}
-          options={userOptions}
-          placeholder="Search for a resident…"
-          class="w-full"
-        />
-      </div>
-    </div>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action
-        onclick={confirmAssign}
-        disabled={!assignmentDialog.userId || !assignmentDialog.bed}
-      >
-        Assign Bed
-      </AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
+<AssignmentDialog
+  bind:open={assignmentDialog.open}
+  room={roomNumber}
+  bind:bed={assignmentDialog.bed}
+  bind:userId={assignmentDialog.userId}
+  isOccupied={assignmentDialog.isOccupied}
+  {activeTerm}
+  {userOptions}
+  {availableBedOptions}
+  onSuccess={() => loadData(true)}
+/>
 
 <AlertDialog.Root bind:open={alertDialog.open}>
   <AlertDialog.Content>

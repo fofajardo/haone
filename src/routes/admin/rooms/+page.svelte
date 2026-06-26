@@ -5,12 +5,7 @@
   import { roomsState } from "$lib/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$lib/resident-logic";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import {
-    getSyncPreview,
-    applySync,
-    type SyncPreviewAction,
-    manualAssignBed
-  } from "$lib/rooms-logic.svelte";
+  import { getSyncPreview, applySync, type SyncPreviewAction } from "$lib/rooms-logic.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/schemas";
   import { pluralize } from "$lib/receipt-utils";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -24,6 +19,7 @@
   import * as Card from "$lib/components/ui/card";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import AssignmentDialog from "$lib/components/admin/AssignmentDialog.svelte";
   import {
     RefreshCcw,
     User,
@@ -198,7 +194,8 @@
     open: false,
     room: "",
     bed: "",
-    userId: ""
+    userId: "",
+    isOccupied: false
   });
 
   function openAssign(room: string, bed: string, currentRes?: ResidentRecord) {
@@ -206,28 +203,9 @@
       open: true,
       room,
       bed,
-      userId: currentRes?.residentId || ""
+      userId: currentRes?.residentId || "",
+      isOccupied: !!currentRes
     };
-  }
-
-  async function confirmAssign() {
-    if (!assignmentDialog.userId) return;
-    isLoading = true;
-    try {
-      await manualAssignBed(
-        assignmentDialog.userId,
-        assignmentDialog.room,
-        assignmentDialog.bed,
-        activeTerm
-      );
-      showAlert("Success", "Bed assignment updated.");
-      assignmentDialog.open = false;
-      await loadData(true);
-    } catch (e: any) {
-      showAlert("Assignment Failed", e.message, "error");
-    } finally {
-      isLoading = false;
-    }
   }
 </script>
 
@@ -413,7 +391,8 @@
                         ? 'cursor-not-allowed opacity-40 grayscale'
                         : ''}"
                       onclick={() =>
-                        isSlotAvailable && openAssign(room.room_number, slot, resident)}
+                        (isSlotAvailable || !!resident) &&
+                        openAssign(room.room_number, slot, resident)}
                       disabled={!isSlotAvailable && !resident}
                     >
                       <div class="flex w-full items-center justify-between">
@@ -459,48 +438,17 @@
   {/if}
 </div>
 
-<AlertDialog.Root bind:open={assignmentDialog.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Assign Resident</AlertDialog.Title>
-      <AlertDialog.Description>
-        Assign a resident to Room <strong>{assignmentDialog.room}</strong>{#if assignmentDialog.bed}
-          , Bed <strong>{assignmentDialog.bed}</strong>{/if}.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <div class="space-y-4 pb-4">
-      {#if !assignmentDialog.bed}
-        <div class="space-y-2">
-          <Label>Select Bed</Label>
-          <Combobox
-            bind:value={assignmentDialog.bed}
-            options={availableBedOptions}
-            placeholder="Select a bed…"
-            class="w-full"
-          />
-        </div>
-      {/if}
-      <div class="space-y-2">
-        <Label>Resident</Label>
-        <Combobox
-          bind:value={assignmentDialog.userId}
-          options={userOptions}
-          placeholder="Search for a resident…"
-          class="w-full"
-        />
-      </div>
-    </div>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action
-        onclick={confirmAssign}
-        disabled={!assignmentDialog.userId || !assignmentDialog.bed}
-      >
-        Assign Bed
-      </AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
+<AssignmentDialog
+  bind:open={assignmentDialog.open}
+  room={assignmentDialog.room}
+  bind:bed={assignmentDialog.bed}
+  bind:userId={assignmentDialog.userId}
+  isOccupied={assignmentDialog.isOccupied}
+  {activeTerm}
+  {userOptions}
+  {availableBedOptions}
+  onSuccess={() => loadData(true)}
+/>
 
 <AlertDialog.Root bind:open={alertDialog.open}>
   <AlertDialog.Content>

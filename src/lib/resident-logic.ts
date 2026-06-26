@@ -11,7 +11,8 @@ import {
   USER_COL,
   type ResidentRecord,
   type JournalRecord,
-  type UserRecord
+  type UserRecord,
+  AccountType
 } from "./schemas";
 
 /**
@@ -814,7 +815,11 @@ export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean 
 
 export function canAccessLaundry(accountType: string): boolean {
   const type = (accountType || "").trim().toUpperCase();
-  if (type === "STUDENT" || type === "BOOTCAMP" || type === "TRANSIENT") {
+  if (
+    type === AccountType.STUDENT ||
+    type === AccountType.BOOTCAMP ||
+    type === AccountType.TRANSIENT
+  ) {
     return true;
   }
   return false;
@@ -822,7 +827,7 @@ export function canAccessLaundry(accountType: string): boolean {
 
 export function canSeeLaundryNames(accountType: string): boolean {
   const type = (accountType || "").trim().toUpperCase();
-  if (type !== "TRANSIENT") {
+  if (type !== AccountType.TRANSIENT) {
     return true;
   }
   return false;
@@ -830,7 +835,11 @@ export function canSeeLaundryNames(accountType: string): boolean {
 
 export function canAccessAchievements(accountType: string): boolean {
   const type = (accountType || "").trim().toUpperCase();
-  if (type === "STUDENT" || type === "BOOTCAMP" || type === "ALUMNUS" || type === "ALUMNI") {
+  if (
+    type === AccountType.STUDENT ||
+    type === AccountType.BOOTCAMP ||
+    type === AccountType.ALUMNUS
+  ) {
     return true;
   }
   return false;
