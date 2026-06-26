@@ -38,7 +38,7 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Badge } from "$lib/components/ui/badge";
-  import { fetchResidents } from "$lib/resident-logic";
+  import { fetchResidents, mapRowToJournal } from "$lib/resident-logic";
   import type { ResidentRecord, JournalRecord } from "$lib/schemas";
   import { JOURNAL_COL as JOR } from "$lib/schemas";
 
@@ -98,6 +98,75 @@
     receiptUrl: "",
     prDateIssued: "",
     prRefNo: ""
+  });
+
+  let carryoverTerm = $state("");
+  const isEos = $derived(formData.type === "PMT_EOS");
+
+  $effect(() => {
+    if (isEos && formData.mop && uiSettings.accountingWorkbookId) {
+      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T").then((rows) => {
+        // Compute balances for this MOP exactly copying the financial report code
+        const currentSem = formData.period || uiSettings.currentTerm;
+        const journal = rows.slice(1).map((r, idx) => {
+          return mapRowToJournal(r, idx + 2);
+        });
+
+        // 1. Filter out j.type === "EOS" to match financial report page filtering
+        const semJournal = journal.filter((j) => {
+          return j.period === currentSem && j.type !== "EOS";
+        });
+
+        // 2. Data Processing (exact map from financial-report-pdf.ts)
+        const processedJournal = semJournal.map((j) => {
+          const isWaived = j.type.toUpperCase().includes("WAIVED");
+          const amount = j.water + j.assoc + j.misc;
+          const incoming = !isWaived && amount > 0 ? amount : 0;
+          const outgoing = !isWaived && amount < 0 ? Math.abs(amount) : 0;
+          return {
+            ...j,
+            isWaived,
+            incoming,
+            outgoing
+          };
+        });
+
+        // 3. Filter by MOP (exact match from financial-report-pdf.ts)
+        const targetMop = formData.mop.trim().toUpperCase();
+        const filtered = processedJournal.filter((j) => {
+          const rawMop = (j.mop || "").trim().toUpperCase();
+          if (rawMop === "N/A") {
+            return false;
+          }
+          const key = rawMop || "CASH";
+          return key === targetMop;
+        });
+
+        // 4. Compute water, assoc, misc sums (exclude waived and N/A)
+        const nonWaivedFiltered = filtered.filter((j) => {
+          return !j.isWaived;
+        });
+
+        const waterSum = nonWaivedFiltered.reduce((sum, j) => {
+          return sum + j.water;
+        }, 0);
+        const assocSum = nonWaivedFiltered.reduce((sum, j) => {
+          return sum + j.assoc;
+        }, 0);
+        const miscSum = nonWaivedFiltered.reduce((sum, j) => {
+          return sum + j.misc;
+        }, 0);
+
+        const waterBal = Math.round(waterSum * 100) / 100;
+        const assocBal = Math.round(assocSum * 100) / 100;
+        const miscBal = Math.round(miscSum * 100) / 100;
+
+        // Populate fields with negated balances
+        formData.waterFee = (-waterBal).toString();
+        formData.assocFee = (-assocBal).toString();
+        formData.miscFee = (-miscBal).toString();
+      });
+    }
   });
 
   const isCollection = $derived.by(() => {
@@ -471,7 +540,37 @@
         row[JOR.ID] = crypto.randomUUID();
       }
 
-      await onSave(row);
+      if (mode === "add" && isEos && carryoverTerm) {
+        const carryoverRow = new Array(20).fill("");
+        carryoverRow[JOR.DATE] = formData.date;
+        carryoverRow[JOR.CREATOR] = formData.creatorEmail;
+        carryoverRow[JOR.ACCOUNT] = formData.accountEmail;
+        carryoverRow[JOR.WATER] = water !== 0 ? (-water).toString() : "0";
+        carryoverRow[JOR.ASSOC] = assoc !== 0 ? (-assoc).toString() : "0";
+        carryoverRow[JOR.MISC] = misc !== 0 ? (-misc).toString() : "0";
+        carryoverRow[JOR.MOP] = formData.mop;
+        carryoverRow[JOR.PERIOD] = carryoverTerm;
+        const mappedCarryoverType =
+          transactionTypes.find((t) => {
+            return t.value === "PMT_CARRYOVER";
+          })?.val || "PMT_CARRYOVER";
+        carryoverRow[JOR.TYPE] = mappedCarryoverType;
+        carryoverRow[JOR.NOTES] = "";
+        carryoverRow[JOR.NOTES_PRIVATE] = "";
+        carryoverRow[JOR.MOP_REFNO] = row[JOR.MOP_REFNO];
+        carryoverRow[JOR.PR_DATE_ISSUED] = "";
+        carryoverRow[JOR.PR_REFNO] = "N/A";
+        carryoverRow[JOR.CREATOR_NAME] = formData.creatorName;
+        carryoverRow[JOR.NAME] = formData.accountName;
+        carryoverRow[JOR.STNO] = formData.accountStNo;
+        carryoverRow[JOR.RECEIPT_URL] = "";
+        carryoverRow[JOR.WAS_AUDITED] = "FALSE";
+        carryoverRow[JOR.ID] = crypto.randomUUID();
+
+        await onSave([row, carryoverRow]);
+      } else {
+        await onSave(row);
+      }
     } catch (e: any) {
       error = `Submission failed: ${e.message}`;
     }
@@ -540,6 +639,20 @@
               >
               <Combobox bind:value={formData.type} options={transactionTypes} class="h-10 w-full" />
             </div>
+
+            {#if isEos && mode === "add"}
+              <div class="animate-in space-y-2 duration-200 fade-in">
+                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+                  >Carryover Academic Term</Label
+                >
+                <Combobox
+                  bind:value={carryoverTerm}
+                  options={academicTerms}
+                  placeholder="Select term to carry over entries to…"
+                  class="h-10 w-full"
+                />
+              </div>
+            {/if}
           </div>
 
           <div class="space-y-4 border-t pt-4">
@@ -659,7 +772,7 @@
                       step="0.01"
                       bind:value={formData.waterFee}
                       max={isCollection && !allowOverpayment ? waterLimit : undefined}
-                      disabled={!formData.accountEmail || isSubmitting}
+                      disabled={!formData.accountEmail || isSubmitting || isEos}
                       class="text-right font-mono"
                     />
                     {#if isCollection && selectedResident}
@@ -720,7 +833,7 @@
                       step="0.01"
                       bind:value={formData.assocFee}
                       max={isCollection && !allowOverpayment ? assocLimit : undefined}
-                      disabled={!formData.accountEmail || isSubmitting}
+                      disabled={!formData.accountEmail || isSubmitting || isEos}
                       class="text-right font-mono"
                     />
                     {#if isCollection && selectedResident}
@@ -779,7 +892,7 @@
                     type="number"
                     step="0.01"
                     bind:value={formData.miscFee}
-                    disabled={!formData.accountEmail || isSubmitting}
+                    disabled={!formData.accountEmail || isSubmitting || isEos}
                     class="text-right font-mono"
                   />
                 </div>

@@ -6,10 +6,11 @@
 
   let isSubmitting = $state(false);
 
-  async function handleSave(row: any[]) {
+  async function handleSave(row: any[] | any[][]) {
     isSubmitting = true;
     try {
-      await appendSheetRow(uiSettings.accountingWorkbookId, "journal_general!A:T", [row]);
+      const rows = Array.isArray(row[0]) ? (row as any[][]) : [row as any[]];
+      await appendSheetRow(uiSettings.accountingWorkbookId, "journal_general!A:T", rows);
       goto("/admin/transactions");
     } finally {
       isSubmitting = false;
