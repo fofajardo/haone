@@ -3,14 +3,14 @@
   import { goto } from "$app/navigation";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, batchUpdateValues } from "$lib/google-sheets";
   import { translateMop, parseDateWeight } from "$lib/receipt-utils";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import { RefreshCcw, ListFilter, Plus, Search, FunnelX } from "lucide-svelte";
+  import { RefreshCcw, ListFilter, Plus, Search, FunnelX, ShieldCheck } from "lucide-svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -23,6 +23,8 @@
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
+  let selectedIds = $state<Set<string>>(new Set());
+  let isAuditing = $state(false);
 
   // Filters
   const tableSync = new TableSync({
@@ -31,13 +33,16 @@
     searchKey: "search"
   });
 
-  import { type JournalRecord } from "$lib/schemas";
+  import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/schemas";
   import { mapRowToJournal } from "$lib/resident-logic";
 
   async function loadData(forceRefresh = false) {
-    if (!uiSettings.accountingWorkbookId) return;
+    if (!uiSettings.accountingWorkbookId) {
+      return;
+    }
     isLoading = true;
     error = null;
+    selectedIds = new Set();
 
     try {
       const rows = await fetchSheetRowsRaw(
@@ -78,7 +83,7 @@
       const mappedJournal: JournalRecord[] = rows
         .slice(1)
         .map((row, idx) => {
-          const res = mapRowToJournal(row, idx);
+          const res = mapRowToJournal(row, idx + 2);
           return {
             ...res,
             dateWeight: parseDateWeight(res.date)
@@ -103,6 +108,40 @@
       error = e.message;
     } finally {
       isLoading = false;
+    }
+  }
+
+  async function handleBatchAudit() {
+    if (selectedIds.size === 0 || !uiSettings.accountingWorkbookId) {
+      return;
+    }
+    isAuditing = true;
+    try {
+      const rows = await fetchSheetRowsRaw(
+        uiSettings.accountingWorkbookId,
+        "journal_general!A:T",
+        true
+      );
+      const updates = Array.from(selectedIds).map((id) => {
+        const idx = rows.findIndex((row) => {
+          return row[JOR.ID] === id;
+        });
+        if (idx === -1) {
+          throw new Error(`Transaction ${id} not found in the ledger`);
+        }
+        return {
+          range: `journal_general!R${idx + 1}`,
+          values: [["TRUE"]]
+        };
+      });
+
+      await batchUpdateValues(uiSettings.accountingWorkbookId, updates);
+      selectedIds = new Set();
+      await loadData(true);
+    } catch (e: any) {
+      error = `Audit update failed: ${e.message}`;
+    } finally {
+      isAuditing = false;
     }
   }
 
@@ -142,6 +181,11 @@
           {isLoading}
           icon={RefreshCcw}
         />
+        {#if selectedIds.size > 0}
+          <Button size="sm" onclick={handleBatchAudit} isLoading={isAuditing} icon={ShieldCheck}>
+            Mark as Audited
+          </Button>
+        {/if}
         <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
       </div>
     {/snippet}
@@ -209,8 +253,10 @@
         pagination={tableSync.pagination}
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+        onSelectionChange={(ids) => (selectedIds = ids)}
         meta={{ transactionTypes }}
         rowId="id"
+        enableSelection
       />
     {:else}
       <EmptyView>

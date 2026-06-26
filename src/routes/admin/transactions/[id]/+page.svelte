@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, deleteSheetRow } from "$lib/google-sheets";
+  import { fetchSheetRowsRaw, deleteSheetRow, updateSheetValue } from "$lib/google-sheets";
   import {
     formatCurrency,
     formatAccounting,
@@ -47,8 +47,26 @@
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
   let rowIndex = $state<number | null>(null);
+  let isAuditing = $state(false);
   let isDialogOpen = $state(false);
   let isSystemAlertOpen = $state(false);
+
+  async function handleMarkAudited() {
+    if (rowIndex === null || !uiSettings.accountingWorkbookId) {
+      return;
+    }
+    isAuditing = true;
+    try {
+      await updateSheetValue(uiSettings.accountingWorkbookId, `journal_general!R${rowIndex + 1}`, [
+        ["TRUE"]
+      ]);
+      await loadTransaction();
+    } catch (e: any) {
+      error = `Audit update failed: ${e.message}`;
+    } finally {
+      isAuditing = false;
+    }
+  }
 
   async function loadTransaction() {
     if (!uiSettings.accountingWorkbookId) return;
@@ -178,6 +196,17 @@
             </AlertDialog.Content>
           </AlertDialog.Root>
         </div>
+      {/if}
+      {#if transaction && !transaction.wasAudited}
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={handleMarkAudited}
+          isLoading={isAuditing}
+          icon={ShieldCheck}
+        >
+          Mark as Audited
+        </Button>
       {/if}
       {#if transaction && !transaction.wasAudited}
         <Button

@@ -2,10 +2,30 @@ import type { ColumnDef } from "@tanstack/table-core";
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
 import { formatDate, formatAccounting, translateMop, translateType } from "$lib/receipt-utils";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
+import DataTableCheckbox from "$lib/components/ui/data-table/data-table-checkbox.svelte";
 import { type JournalRecord } from "$lib/schemas";
 import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<JournalRecord>[] = [
+  {
+    id: "select",
+    header: ({ table }) =>
+      renderComponent(DataTableCheckbox, {
+        checked: table.getIsAllPageRowsSelected(),
+        indeterminate: table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
+        onCheckedChange: (value: boolean) => table.toggleAllPageRowsSelected(!!value),
+        "aria-label": "Select all"
+      }),
+    cell: ({ row }) =>
+      renderComponent(DataTableCheckbox, {
+        checked: row.getIsSelected(),
+        onCheckedChange: (value: boolean) => row.toggleSelected(!!value),
+        "aria-label": "Select row",
+        onclick: (e: MouseEvent) => e.stopPropagation()
+      }),
+    enableSorting: false,
+    enableHiding: false
+  },
   {
     accessorKey: "date",
     header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Date" }),
