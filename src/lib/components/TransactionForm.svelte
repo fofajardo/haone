@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
   import { auth } from "$lib/auth.svelte";
+  import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
@@ -226,9 +227,9 @@
   $effect(() => {
     if (isFundsOnly && formData.accountEmail !== "_funds") {
       formData.accountEmail = "_funds";
-      formData.accountName = "Association Funds";
+      formData.accountName = (brandingState.profile.issuerName || "").toUpperCase();
       formData.accountStNo = "SYSTEM";
-      accountSearch = "Association Funds";
+      accountSearch = (brandingState.profile.issuerName || "").toUpperCase();
       selectedResident = accounts.find((a) => a.email === "_funds") || null;
     }
   });
@@ -262,7 +263,7 @@
 
       const fundsAccount: ResidentRecord = {
         email: "_funds",
-        name: "Association Funds",
+        name: (brandingState.profile.issuerName || "").toUpperCase(),
         stno: "SYSTEM",
         period: "ALWAYS",
         room: "",
