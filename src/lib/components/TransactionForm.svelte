@@ -121,7 +121,7 @@
       }
       const year = parseInt(match[1]);
       const term = match[3];
-      const termWeight = term === "MY" ? 3 : (term === "2S" ? 2 : (term === "1S" ? 1 : 0));
+      const termWeight = term === "MY" ? 3 : term === "2S" ? 2 : term === "1S" ? 1 : 0;
       return year * 10 + termWeight;
     };
     const currentWeight = getWeight(formData.period);
