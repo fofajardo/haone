@@ -102,7 +102,33 @@
   });
 
   let carryoverTerm = $state("");
-  const isEos = $derived(formData.type === "PMT_EOS");
+  const isEos = $derived(formData.type === "PMT_EOS" || formData.type === "PMT_EOS_UNSETTLED");
+
+  const typeOptions = $derived(
+    transactionTypes.filter((t) => {
+      return t.value !== "PMT_CARRYOVER";
+    })
+  );
+
+  const carryoverAcademicTerms = $derived.by(() => {
+    if (!formData.period) {
+      return [];
+    }
+    const getWeight = (p: string) => {
+      const match = p.match(/^(\d{2})(\d{2})_(MY|[1-3]S)$/);
+      if (!match) {
+        return 0;
+      }
+      const year = parseInt(match[1]);
+      const term = match[3];
+      const termWeight = term === "MY" ? 3 : (term === "2S" ? 2 : (term === "1S" ? 1 : 0));
+      return year * 10 + termWeight;
+    };
+    const currentWeight = getWeight(formData.period);
+    return academicTerms.filter((t) => {
+      return getWeight(t.value) > currentWeight;
+    });
+  });
 
   $effect(() => {
     if (isEos && formData.mop && uiSettings.accountingWorkbookId) {
@@ -115,7 +141,7 @@
 
         // 1. Filter out j.type === "EOS" to match financial report page filtering
         const semJournal = journal.filter((j) => {
-          return j.period === currentSem && j.type !== "EOS";
+          return j.period === currentSem && j.type !== "EOS" && j.type !== "EOS_UNSETTLED";
         });
 
         // 2. Data Processing (exact map from financial-report-pdf.ts)
@@ -638,7 +664,7 @@
               <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                 >Type</Label
               >
-              <Combobox bind:value={formData.type} options={transactionTypes} class="h-10 w-full" />
+              <Combobox bind:value={formData.type} options={typeOptions} class="h-10 w-full" />
             </div>
 
             {#if isEos && mode === "add"}
@@ -648,7 +674,7 @@
                 >
                 <Combobox
                   bind:value={carryoverTerm}
-                  options={academicTerms}
+                  options={carryoverAcademicTerms}
                   placeholder="Select term to carry over entries to…"
                   class="h-10 w-full"
                 />
