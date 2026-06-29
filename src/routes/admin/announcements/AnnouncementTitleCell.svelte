@@ -9,7 +9,9 @@
 
 <div class="flex flex-col gap-0.5">
   <div class="flex items-center gap-2">
-    <span class="line-clamp-1 font-medium">{announcement.title}</span>
+    <span class="block max-w-100 truncate font-medium" title={announcement.title}>
+      {announcement.title}
+    </span>
     {#if announcement.isAdminOnly}
       <Badge
         variant="outline"
@@ -19,7 +21,7 @@
       </Badge>
     {/if}
   </div>
-  <span class="line-clamp-1 max-w-[300px] break-all text-muted-foreground">
+  <span class="block max-w-100 truncate text-muted-foreground" title={contentPreview}>
     {contentPreview}
   </span>
 </div>
