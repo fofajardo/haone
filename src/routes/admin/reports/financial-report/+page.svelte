@@ -200,10 +200,10 @@
 
       <!-- KPI Grid -->
       <div class="grid gap-4 sm:grid-cols-3">
-        <!-- Incoming (Total Collections) -->
+        <!-- Incoming -->
         <Card.Root class="flex flex-col gap-3">
           <Card.Header class="flex flex-row items-center justify-between pb-0">
-            <Card.Title class="text-sm font-semibold">Total Collections</Card.Title>
+            <Card.Title class="text-sm font-semibold">Incoming</Card.Title>
             <div
               class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
             >
@@ -215,10 +215,10 @@
           </Card.Content>
         </Card.Root>
 
-        <!-- Outgoing (Total Disbursements) -->
+        <!-- Outgoing -->
         <Card.Root class="flex flex-col gap-3">
           <Card.Header class="flex flex-row items-center justify-between pb-0">
-            <Card.Title class="text-sm font-semibold">Total Disbursements</Card.Title>
+            <Card.Title class="text-sm font-semibold">Outgoing</Card.Title>
             <div
               class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
             >
@@ -230,10 +230,10 @@
           </Card.Content>
         </Card.Root>
 
-        <!-- Net Cash (Net Cash Balance) -->
+        <!-- Balance -->
         <Card.Root class="flex flex-col gap-3">
           <Card.Header class="flex flex-row items-center justify-between pb-0">
-            <Card.Title class="text-sm font-semibold">Net Cash Balance</Card.Title>
+            <Card.Title class="text-sm font-semibold">Balance</Card.Title>
             <div
               class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
             >
