@@ -475,7 +475,7 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
             [
               {
                 text: "WATER FEE",
-                rowSpan: 10,
+                rowSpan: waterColl.aquaAltria > 0 ? 10 : 9,
                 bold: true,
                 alignment: "center",
                 verticalAlignment: "middle",
@@ -491,7 +491,7 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
             ] as TableCell[],
             [
               "",
-              { text: "TOTAL COLLECTION FOR RESIDENTS", fontSize: 9 },
+              { text: "TOTAL COLLECTION FROM RESIDENTS", fontSize: 9 },
               { text: formatAccounting(waterColl.resident), alignment: "right", fontSize: 9 }
             ] as TableCell[],
             [
@@ -505,7 +505,7 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
             ] as TableCell[],
             [
               "",
-              { text: "TOTAL COLLECTION FOR UHO", fontSize: 9 },
+              { text: "TOTAL COLLECTION FROM UHO", fontSize: 9 },
               { text: formatAccounting(waterColl.uho), alignment: "right", fontSize: 9 }
             ] as TableCell[],
             [
@@ -528,19 +528,27 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
                 fontSize: 9
               }
             ] as TableCell[],
+            ...(waterColl.aquaAltria > 0
+              ? [
+                  [
+                    "",
+                    { text: `PAID TO WATER SUPPLIER (AQUA ALTRIA)³`, fontSize: 9 },
+                    {
+                      text: formatAccounting(waterColl.aquaAltria),
+                      alignment: "right",
+                      fontSize: 9
+                    }
+                  ] as TableCell[]
+                ]
+              : []),
             [
               "",
-              { text: `PAID TO WATER (AQUA ALTRIA)³`, fontSize: 9 },
-              { text: formatAccounting(waterColl.aquaAltria), alignment: "right", fontSize: 9 }
-            ] as TableCell[],
-            [
-              "",
-              { text: `PAID TO WATER³`, fontSize: 9 },
+              { text: `PAID TO WATER SUPPLIER³`, fontSize: 9 },
               { text: formatAccounting(waterColl.paidToWater), alignment: "right", fontSize: 9 }
             ] as TableCell[],
             [
               "",
-              { text: "PAID TO WATER (TOTAL)³", bold: true, fontSize: 9 },
+              { text: "PAID TO WATER SUPPLIER (TOTAL)³", bold: true, fontSize: 9 },
               {
                 text: formatAccounting(waterColl.aquaAltria + waterColl.paidToWater),
                 alignment: "right",
@@ -549,48 +557,52 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
               }
             ] as TableCell[],
             // ASSOC FEE
-            [
-              {
-                text: "ASSOCIATION FEE",
-                rowSpan: 5,
-                bold: true,
-                alignment: "center",
-                verticalAlignment: "middle",
-                fontSize: 9
-              } as any,
-              { text: "TARGET", fontSize: 9 },
-              { text: formatAccounting(assocColl.target), alignment: "right", fontSize: 9 }
-            ] as TableCell[],
-            [
-              "",
-              { text: "LESS: WAIVED", fontSize: 9 },
-              { text: formatAccounting(assocColl.waived), alignment: "right", fontSize: 9 }
-            ] as TableCell[],
-            [
-              "",
-              { text: "TOTAL COLLECTION FOR RESIDENTS", fontSize: 9 },
-              { text: formatAccounting(assocColl.resident), alignment: "right", fontSize: 9 }
-            ] as TableCell[],
-            [
-              "",
-              { text: "LESS: COLLECTION REFUNDS", bold: true, fontSize: 9 },
-              {
-                text: formatAccounting(assocColl.resident - assocColl.refunds),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              }
-            ] as TableCell[],
-            [
-              "",
-              { text: "OVERDUE ACCOUNTS²", bold: true, fontSize: 9 },
-              {
-                text: formatAccounting(assocColl.overdue),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              }
-            ] as TableCell[]
+            ...(assocColl.target > 0
+              ? [
+                  [
+                    {
+                      text: "ASSOCIATION FEE",
+                      rowSpan: 5,
+                      bold: true,
+                      alignment: "center",
+                      verticalAlignment: "middle",
+                      fontSize: 9
+                    } as any,
+                    { text: "TARGET", fontSize: 9 },
+                    { text: formatAccounting(assocColl.target), alignment: "right", fontSize: 9 }
+                  ] as TableCell[],
+                  [
+                    "",
+                    { text: "LESS: WAIVED", fontSize: 9 },
+                    { text: formatAccounting(assocColl.waived), alignment: "right", fontSize: 9 }
+                  ] as TableCell[],
+                  [
+                    "",
+                    { text: "TOTAL COLLECTION FROM RESIDENTS", fontSize: 9 },
+                    { text: formatAccounting(assocColl.resident), alignment: "right", fontSize: 9 }
+                  ] as TableCell[],
+                  [
+                    "",
+                    { text: "LESS: COLLECTION REFUNDS", bold: true, fontSize: 9 },
+                    {
+                      text: formatAccounting(assocColl.resident - assocColl.refunds),
+                      alignment: "right",
+                      bold: true,
+                      fontSize: 9
+                    }
+                  ] as TableCell[],
+                  [
+                    "",
+                    { text: "OVERDUE ACCOUNTS²", bold: true, fontSize: 9 },
+                    {
+                      text: formatAccounting(assocColl.overdue),
+                      alignment: "right",
+                      bold: true,
+                      fontSize: 9
+                    }
+                  ] as TableCell[]
+                ]
+              : [])
           ]
         },
         layout: {
