@@ -209,3 +209,22 @@ export function formatTime(hour: number): string {
   const ampm = hour >= 12 ? "PM" : "AM";
   return `${h}:00 ${ampm}`;
 }
+
+export function getJournalDateRange(journal: { date: string }[]): { start: string; end: string } {
+  const sortedDates = journal
+    .map((j) => {
+      return j.date;
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      return parseDateWeight(a) - parseDateWeight(b);
+    });
+
+  if (sortedDates.length > 0) {
+    return {
+      start: sortedDates[0],
+      end: sortedDates[sortedDates.length - 1]
+    };
+  }
+  return { start: "", end: "" };
+}

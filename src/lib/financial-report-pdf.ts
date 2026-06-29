@@ -1,13 +1,13 @@
 import branding from "./branding.json";
-import { formatAccounting, translateMop, translateType } from "./receipt-utils";
+import { formatAccounting, translateMop, parseDateWeight } from "./receipt-utils";
+import { fetchSheetRowsRaw } from "./google-sheets";
+import { fetchResidents, mapRowToJournal } from "./resident-logic";
 import type { JournalRecord, ResidentRecord } from "./schemas";
 import type {
   TDocumentDefinitions,
   Content,
   Alignment,
-  Margins,
   TableCell,
-  Size,
   CustomTableLayout
 } from "pdfmake/interfaces";
 
@@ -42,48 +42,63 @@ export interface FinancialReportOptions {
   availableMops: { value: string; label: string }[];
 }
 
-export async function exportFinancialReportPDF(options: FinancialReportOptions) {
-  const {
-    journal,
-    accounts,
-    semester,
-    brandingKey,
-    issuedBy,
-    assessedBy,
-    certifiedBy,
-    periodCovered,
-    transactionTypes,
-    availableMops
-  } = options;
-
-  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
-    import("pdfmake/build/pdfmake"),
-    import("pdfmake/build/vfs_fonts")
+export async function fetchFinancialReportData(workbookId: string, forceRefresh = false) {
+  const [journalRows, mappedAccounts, constRows] = await Promise.all([
+    fetchSheetRowsRaw(workbookId, "journal_general!A:T", forceRefresh),
+    fetchResidents(forceRefresh),
+    fetchSheetRowsRaw(workbookId, "constants!A:C", forceRefresh)
   ]);
 
-  const pdfMake = pdfMakeMod.default;
-  const pdfFonts = pdfFontsMod.default;
-
-  const vfs = (pdfFonts as any).pdfMake
-    ? (pdfFonts as any).pdfMake.vfs
-    : (pdfFonts as any).vfs || pdfFonts;
-  (pdfMake as any).vfs = vfs;
-
-  const fontBase = "https://raw.githubusercontent.com/Omnibus-Type/Archivo/master/fonts/ttf";
-  (pdfMake as any).addFonts({
-    Archivo: {
-      normal: `${fontBase}/Archivo-Regular.ttf`,
-      bold: `${fontBase}/Archivo-SemiBold.ttf`,
-      italics: `${fontBase}/Archivo-Italic.ttf`,
-      bolditalics: `${fontBase}/Archivo-SemiBoldItalic.ttf`
-    }
+  // Fetch Journal
+  const allJournal = journalRows.slice(1).map((row, idx) => {
+    const res = mapRowToJournal(row, idx);
+    return {
+      ...res,
+      dateWeight: parseDateWeight(res.date)
+    };
   });
 
-  const profile = branding[brandingKey as keyof typeof branding] || branding.default;
-  const letterheadData = await imgToDataUrl(
-    (profile as any).letterheadHalfInchUrl || profile.letterheadUrl
-  );
+  // Fetch Accounts
+  const allAccounts = mappedAccounts;
 
+  // Fetch Constants (Transaction Types & MOPs)
+  const transactionTypes = constRows
+    .slice(1)
+    .filter((r) => {
+      return (r[0] || "").startsWith("PMT_");
+    })
+    .map((r) => {
+      return {
+        value: r[1] || r[0],
+        label: r[2] || r[1] || r[0]
+      };
+    });
+
+  const availableMops = constRows
+    .slice(1)
+    .filter((r) => {
+      return (r[0] || "").startsWith("MOP_");
+    })
+    .map((r) => {
+      return {
+        value: r[1] || r[0],
+        label: r[2] || r[1] || r[0]
+      };
+    });
+
+  return {
+    allJournal,
+    allAccounts,
+    transactionTypes,
+    availableMops
+  };
+}
+
+export function computeFinancialReportData(
+  journal: JournalRecord[],
+  accounts: ResidentRecord[],
+  availableMops: { value: string; label: string }[]
+) {
   // 1. Sort Journal chronologically
   const sortedJournal = [...journal].sort(
     (a, b) =>
@@ -239,6 +254,68 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
     ),
     overdue: accounts.reduce((s, r) => s + (r.assocBal > 0 ? r.assocBal : 0), 0)
   };
+
+  return {
+    processedJournal,
+    runningBalance,
+    mopSummary,
+    feeSummary,
+    feeTypeMopSummary,
+    waterColl,
+    assocColl
+  };
+}
+
+export async function exportFinancialReportPDF(options: FinancialReportOptions) {
+  const {
+    journal,
+    accounts,
+    semester,
+    brandingKey,
+    issuedBy,
+    assessedBy,
+    certifiedBy,
+    periodCovered,
+    availableMops
+  } = options;
+
+  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
+    import("pdfmake/build/pdfmake"),
+    import("pdfmake/build/vfs_fonts")
+  ]);
+
+  const pdfMake = pdfMakeMod.default;
+  const pdfFonts = pdfFontsMod.default;
+
+  const vfs = (pdfFonts as any).pdfMake
+    ? (pdfFonts as any).pdfMake.vfs
+    : (pdfFonts as any).vfs || pdfFonts;
+  (pdfMake as any).vfs = vfs;
+
+  const fontBase = "https://raw.githubusercontent.com/Omnibus-Type/Archivo/master/fonts/ttf";
+  (pdfMake as any).addFonts({
+    Archivo: {
+      normal: `${fontBase}/Archivo-Regular.ttf`,
+      bold: `${fontBase}/Archivo-SemiBold.ttf`,
+      italics: `${fontBase}/Archivo-Italic.ttf`,
+      bolditalics: `${fontBase}/Archivo-SemiBoldItalic.ttf`
+    }
+  });
+
+  const profile = branding[brandingKey as keyof typeof branding] || branding.default;
+  const letterheadData = await imgToDataUrl(
+    (profile as any).letterheadHalfInchUrl || profile.letterheadUrl
+  );
+
+  const {
+    processedJournal,
+    runningBalance,
+    mopSummary,
+    feeSummary,
+    feeTypeMopSummary,
+    waterColl,
+    assocColl
+  } = computeFinancialReportData(journal, accounts, availableMops);
 
   const summaryLayout: CustomTableLayout = {
     hLineWidth: () => 0.5,

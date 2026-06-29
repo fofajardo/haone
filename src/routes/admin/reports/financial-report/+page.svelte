@@ -1,113 +1,127 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
-  import { auth } from "$lib/auth.svelte";
-  import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { HandCoins, RefreshCcw } from "@lucide/svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
-  import { parseDateWeight, translatePeriod, pluralize } from "$lib/receipt-utils";
-  import { exportFinancialReportPDF } from "$lib/financial-report-pdf";
+  import * as Card from "$lib/components/ui/card";
+  import { RefreshCcw, FileDown, TrendingUp, TrendingDown, Wallet } from "@lucide/svelte";
+  import {
+    formatAccounting,
+    translateMop,
+    translateType,
+    getJournalDateRange
+  } from "$lib/receipt-utils";
   import type { JournalRecord, ResidentRecord } from "$lib/schemas";
+  import * as Table from "$lib/components/ui/table";
+  import { computeFinancialReportData, fetchFinancialReportData } from "$lib/financial-report-pdf";
+  import * as Chart from "$lib/components/ui/chart";
+  import { PieChart } from "layerchart";
 
   let isLoading = $state(true);
-  let isProcessing = $state(false);
   let error = $state<string | null>(null);
   let allJournal = $state<JournalRecord[]>([]);
   let allAccounts = $state<ResidentRecord[]>([]);
-  let journal = $derived(
-    allJournal.filter((j) => j.period === uiSettings.currentTerm.trim() && j.type !== "EOS")
-  );
-  let accounts = $derived(allAccounts.filter((r) => r.period === uiSettings.currentTerm.trim()));
+  let availableMops = $state<{ value: string; label: string }[]>([]);
   let allAccountsForAutocomplete = $state<ResidentRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
-  let availableMops = $state<{ value: string; label: string }[]>([]);
-
-  // Form State
-  let issuedBy = $state(auth.displayName || "");
-  let issuedByEmail = $state(auth.user?.email || "");
-  let assessedBy = $state("");
-  let assessedByEmail = $state("");
-  let certifiedBy = $state("");
-  let certifiedByEmail = $state("");
   let periodStart = $state("");
   let periodEnd = $state("");
 
-  // Auto-Period based on filtered journal
-  $effect(() => {
-    if (journal.length > 0) {
-      const sortedDates = [...journal]
-        .map((j) => j.date)
-        .filter(Boolean)
-        .sort((a, b) => parseDateWeight(a) - parseDateWeight(b));
+  // Derived data computations using shared computeFinancialReportData
+  let reportData = $derived(
+    computeFinancialReportData(
+      allJournal.filter((j) => {
+        return j.period === uiSettings.currentTerm.trim() && j.type !== "EOS";
+      }),
+      allAccounts.filter((r) => {
+        return r.period === uiSettings.currentTerm.trim();
+      }),
+      availableMops
+    )
+  );
 
-      if (sortedDates.length > 0) {
-        periodStart = sortedDates[0];
-        periodEnd = sortedDates[sortedDates.length - 1];
+  let processedJournal = $derived(reportData.processedJournal);
+  let totalIncoming = $derived(
+    processedJournal.reduce((s, j) => {
+      return s + j.incoming;
+    }, 0)
+  );
+  let totalOutgoing = $derived(
+    processedJournal.reduce((s, j) => {
+      return s + j.outgoing;
+    }, 0)
+  );
+  let netBalance = $derived(totalIncoming - totalOutgoing);
+  let mopSummary = $derived(reportData.mopSummary);
+  let fundSummary = $derived({
+    feeSummary: reportData.feeSummary,
+    feeTypeMopSummary: reportData.feeTypeMopSummary
+  });
+  let waterColl = $derived(reportData.waterColl);
+  let assocColl = $derived(reportData.assocColl);
+
+  const chartConfig = {
+    value: { label: "Amount" },
+    "chart-1": { label: "Group 1", color: "var(--chart-1)" },
+    "chart-2": { label: "Group 2", color: "var(--chart-2)" },
+    "chart-3": { label: "Group 3", color: "var(--chart-3)" },
+    "chart-4": { label: "Group 4", color: "var(--chart-4)" },
+    "chart-5": { label: "Group 5", color: "var(--chart-5)" }
+  } as const;
+
+  // Disbursements grouped by transaction type for the chart
+  let disbursementChartData = $derived.by(() => {
+    const groupMap: Record<string, number> = {};
+    processedJournal.forEach((j) => {
+      if (j.outgoing > 0) {
+        const typeLabel = translateType(j.type, transactionTypes) || j.type;
+        groupMap[typeLabel] = (groupMap[typeLabel] || 0) + j.outgoing;
       }
-    }
+    });
+
+    const entries = Object.entries(groupMap)
+      .map(([label, value]) => {
+        return {
+          label,
+          value,
+          percentage: totalOutgoing > 0 ? ((value / totalOutgoing) * 100).toFixed(1) + "%" : "0%"
+        };
+      })
+      .sort((a, b) => {
+        return b.value - a.value;
+      });
+
+    return entries.map((item, i) => {
+      return {
+        ...item,
+        fill: `var(--chart-${(i % 5) + 1})`
+      };
+    });
   });
 
   async function loadData() {
-    if (!uiSettings.accountingWorkbookId) return;
+    if (!uiSettings.accountingWorkbookId) {
+      return;
+    }
     isLoading = true;
     error = null;
 
     try {
-      // Fetch Journal
-      const journalRows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "journal_general!A:T"
-      );
-      allJournal = journalRows.slice(1).map((row, idx) => {
-        const res = mapRowToJournal(row, idx);
-        return {
-          ...res,
-          dateWeight: parseDateWeight(res.date)
-        };
-      });
-
-      // Fetch Accounts
-      const mappedAccounts = await fetchResidents();
-
-      allAccounts = mappedAccounts;
-      allAccountsForAutocomplete = mappedAccounts;
-
-      // Fetch Constants (Transaction Types & MOPs)
-      const constRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
-      transactionTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("PMT_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: r[2] || r[1] || r[0]
-        }));
-
-      availableMops = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("MOP_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: r[2] || r[1] || r[0]
-        }));
+      const data = await fetchFinancialReportData(uiSettings.accountingWorkbookId);
+      allJournal = data.allJournal;
+      allAccounts = data.allAccounts;
+      allAccountsForAutocomplete = data.allAccounts;
+      transactionTypes = data.transactionTypes;
+      availableMops = data.availableMops;
 
       // Auto-Period
-      const sortedDates = journal
-        .map((j) => j.date)
-        .filter(Boolean)
-        .sort((a, b) => parseDateWeight(a) - parseDateWeight(b));
-
-      if (sortedDates.length > 0) {
-        periodStart = sortedDates[0];
-        periodEnd = sortedDates[sortedDates.length - 1];
+      const range = getJournalDateRange(processedJournal);
+      if (range.start && range.end) {
+        periodStart = range.start;
+        periodEnd = range.end;
       }
     } catch (e: any) {
       error = e.message;
@@ -117,51 +131,25 @@
   }
 
   onMount(loadData);
-
-  async function handleGenerate() {
-    isProcessing = true;
-    try {
-      const pStart = new Date(periodStart).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
-      const pEnd = new Date(periodEnd).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-      });
-
-      await exportFinancialReportPDF({
-        journal,
-        accounts,
-        semester: translatePeriod(uiSettings.currentTerm),
-        brandingKey: brandingState.selectedKey,
-        issuedBy: issuedBy ? `${issuedBy} <${issuedByEmail}>` : "—",
-        assessedBy: assessedBy ? `${assessedBy} <${assessedByEmail}>` : "—",
-        certifiedBy: certifiedBy ? `${certifiedBy} <${certifiedByEmail}>` : "—",
-        periodCovered: `${pStart} – ${pEnd}`,
-        transactionTypes,
-        availableMops
-      });
-    } catch (e: any) {
-      alert("Failed to generate report: " + e.message);
-    } finally {
-      isProcessing = false;
-    }
-  }
 </script>
 
 <div class="space-y-6 pb-20">
   <SubpageHeader title="Financial Report" isTopLevel={true}>
     {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData()}
-        {isLoading}
-        icon={RefreshCcw}
-      />
+      <div class="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => {
+            return loadData();
+          }}
+          {isLoading}
+          icon={RefreshCcw}
+        />
+        <Button size="sm" href="/admin/reports/financial-report/export" icon={FileDown}>
+          Export PDF
+        </Button>
+      </div>
     {/snippet}
   </SubpageHeader>
 
@@ -173,150 +161,381 @@
         variant="outline"
         size="sm"
         class="mt-2"
-        onclick={() => loadData()}
+        onclick={() => {
+          return loadData();
+        }}
         {isLoading}
         icon={RefreshCcw}>Try Again</Button
       >
     </ErrorView>
   {:else}
-    <div class="mx-auto max-w-2xl space-y-8 {isProcessing ? 'pointer-events-none opacity-50' : ''}">
-      <section class="space-y-4">
-        <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-          >1. Scope</Label
-        >
-        <div class="grid gap-6 rounded-2xl border bg-card p-6">
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <TermFilter />
-            </div>
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div class="space-y-2">
-                <Label class="text-xs font-bold text-muted-foreground uppercase">Period Start</Label
-                >
-                <Input type="date" bind:value={periodStart} class="h-10 text-sm font-medium" />
-              </div>
-              <div class="space-y-2">
-                <Label class="text-xs font-bold text-muted-foreground uppercase">Period End</Label>
-                <Input type="date" bind:value={periodEnd} class="h-10 text-sm font-medium" />
-              </div>
-            </div>
-          </div>
-          <div class="rounded-xl bg-muted/30 p-4 text-xs">
-            Found <span class="font-bold text-foreground"
-              >{pluralize(journal.length, "transaction", "transactions")}</span
+    <div class="mx-auto max-w-5xl space-y-6">
+      <!-- Scope / Term filter -->
+      <div class="max-w-xs">
+        <TermFilter
+          onSelect={() => {
+            return loadData();
+          }}
+        />
+      </div>
+
+      <!-- KPI Grid -->
+      <div class="grid gap-4 sm:grid-cols-3">
+        <!-- Incoming (Total Collections) -->
+        <Card.Root class="flex flex-col gap-3">
+          <Card.Header class="flex flex-row items-center justify-between pb-0">
+            <Card.Title class="text-sm font-semibold">Total Collections</Card.Title>
+            <div
+              class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
             >
-            and
-            <span class="font-bold text-foreground"
-              >{pluralize(accounts.length, "resident record", "resident records")}</span
-            >.
+              <TrendingUp />
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <p class="text-3xl font-semibold tracking-tight">₱{formatAccounting(totalIncoming)}</p>
+          </Card.Content>
+        </Card.Root>
+
+        <!-- Outgoing (Total Disbursements) -->
+        <Card.Root class="flex flex-col gap-3">
+          <Card.Header class="flex flex-row items-center justify-between pb-0">
+            <Card.Title class="text-sm font-semibold">Total Disbursements</Card.Title>
+            <div
+              class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
+            >
+              <Wallet />
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <p class="text-3xl font-semibold tracking-tight">₱{formatAccounting(totalOutgoing)}</p>
+          </Card.Content>
+        </Card.Root>
+
+        <!-- Net Cash (Net Cash Balance) -->
+        <Card.Root class="flex flex-col gap-3">
+          <Card.Header class="flex flex-row items-center justify-between pb-0">
+            <Card.Title class="text-sm font-semibold">Net Cash Balance</Card.Title>
+            <div
+              class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
+            >
+              {#if netBalance >= 0}
+                <TrendingUp />
+              {:else}
+                <TrendingDown />
+              {/if}
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <p class="text-3xl font-semibold tracking-tight">₱{formatAccounting(netBalance)}</p>
+          </Card.Content>
+        </Card.Root>
+      </div>
+
+      <!-- ACCOUNT SUMMARY (Summary of Funds) -->
+      <div class="space-y-3">
+        <h3 class="text-base font-bold uppercase text-foreground">Account Summary</h3>
+
+        <div class="space-y-6">
+          <!-- Table 1: BY MODE OF PAYMENT -->
+          <div class="rounded-xl border overflow-hidden">
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.Head>BY MODE OF PAYMENT¹</Table.Head>
+                  <Table.Head class="text-right">INCOMING</Table.Head>
+                  <Table.Head class="text-right">OUTGOING</Table.Head>
+                  <Table.Head class="text-right">BALANCE</Table.Head>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {#each Object.entries(mopSummary) as [mop, data]}
+                  <Table.Row>
+                    <Table.Cell class="uppercase"
+                      >{availableMops.find((m) => m.value === mop)?.label ||
+                        translateMop(mop)}</Table.Cell
+                    >
+                    <Table.Cell class="text-right">{formatAccounting(data.incoming)}</Table.Cell>
+                    <Table.Cell class="text-right">{formatAccounting(data.outgoing)}</Table.Cell>
+                    <Table.Cell class="text-right"
+                      >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
+                    >
+                  </Table.Row>
+                {/each}
+                <Table.Row class="font-bold bg-muted/30">
+                  <Table.Cell>ENDING BALANCE</Table.Cell>
+                  <Table.Cell class="text-right"></Table.Cell>
+                  <Table.Cell class="text-right"></Table.Cell>
+                  <Table.Cell class="text-right">{formatAccounting(netBalance)}</Table.Cell>
+                </Table.Row>
+              </Table.Body>
+            </Table.Root>
+          </div>
+
+          <!-- Table 2: BY FEE TYPE -->
+          <div class="rounded-xl border overflow-hidden">
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.Head>BY FEE TYPE¹</Table.Head>
+                  <Table.Head class="text-right">INCOMING</Table.Head>
+                  <Table.Head class="text-right">OUTGOING</Table.Head>
+                  <Table.Head class="text-right">BALANCE</Table.Head>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                <!-- WATER FEE Group -->
+                <Table.Row class="font-bold">
+                  <Table.Cell>WATER FEE</Table.Cell>
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(fundSummary.feeSummary.WATER.incoming)}</Table.Cell
+                  >
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(fundSummary.feeSummary.WATER.outgoing)}</Table.Cell
+                  >
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(
+                      fundSummary.feeSummary.WATER.incoming - fundSummary.feeSummary.WATER.outgoing
+                    )}</Table.Cell
+                  >
+                </Table.Row>
+                {#each Object.entries(fundSummary.feeTypeMopSummary.WATER) as [mop, data]}
+                  <Table.Row>
+                    <Table.Cell class="pl-6 uppercase"
+                      >{availableMops.find((m) => m.value === mop)?.label ||
+                        translateMop(mop)}</Table.Cell
+                    >
+                    <Table.Cell class="text-right">{formatAccounting(data.incoming)}</Table.Cell>
+                    <Table.Cell class="text-right">{formatAccounting(data.outgoing)}</Table.Cell>
+                    <Table.Cell class="text-right"
+                      >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
+                    >
+                  </Table.Row>
+                {/each}
+
+                <!-- ASSOCIATION FEE Group -->
+                <Table.Row class="font-bold">
+                  <Table.Cell>ASSOCIATION FEE</Table.Cell>
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(fundSummary.feeSummary.ASSOC.incoming)}</Table.Cell
+                  >
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(fundSummary.feeSummary.ASSOC.outgoing)}</Table.Cell
+                  >
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(
+                      fundSummary.feeSummary.ASSOC.incoming - fundSummary.feeSummary.ASSOC.outgoing
+                    )}</Table.Cell
+                  >
+                </Table.Row>
+                {#each Object.entries(fundSummary.feeTypeMopSummary.ASSOC) as [mop, data]}
+                  <Table.Row>
+                    <Table.Cell class="pl-6 uppercase"
+                      >{availableMops.find((m) => m.value === mop)?.label ||
+                        translateMop(mop)}</Table.Cell
+                    >
+                    <Table.Cell class="text-right">{formatAccounting(data.incoming)}</Table.Cell>
+                    <Table.Cell class="text-right">{formatAccounting(data.outgoing)}</Table.Cell>
+                    <Table.Cell class="text-right"
+                      >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
+                    >
+                  </Table.Row>
+                {/each}
+
+                <!-- MISCELLANEOUS Group -->
+                <Table.Row class="font-bold">
+                  <Table.Cell>MISCELLANEOUS</Table.Cell>
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(fundSummary.feeSummary.MISC.incoming)}</Table.Cell
+                  >
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(fundSummary.feeSummary.MISC.outgoing)}</Table.Cell
+                  >
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(
+                      fundSummary.feeSummary.MISC.incoming - fundSummary.feeSummary.MISC.outgoing
+                    )}</Table.Cell
+                  >
+                </Table.Row>
+                {#each Object.entries(fundSummary.feeTypeMopSummary.MISC) as [mop, data]}
+                  <Table.Row>
+                    <Table.Cell class="pl-6 uppercase"
+                      >{availableMops.find((m) => m.value === mop)?.label ||
+                        translateMop(mop)}</Table.Cell
+                    >
+                    <Table.Cell class="text-right">{formatAccounting(data.incoming)}</Table.Cell>
+                    <Table.Cell class="text-right">{formatAccounting(data.outgoing)}</Table.Cell>
+                    <Table.Cell class="text-right"
+                      >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
+                    >
+                  </Table.Row>
+                {/each}
+
+                <!-- ENDING BALANCE final row -->
+                <Table.Row class="font-bold bg-muted/30">
+                  <Table.Cell>ENDING BALANCE</Table.Cell>
+                  <Table.Cell class="text-right"></Table.Cell>
+                  <Table.Cell class="text-right"></Table.Cell>
+                  <Table.Cell class="text-right">{formatAccounting(netBalance)}</Table.Cell>
+                </Table.Row>
+              </Table.Body>
+            </Table.Root>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="space-y-4">
-        <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-          >2. Signatories</Label
-        >
-        <div class="grid gap-6 rounded-2xl border bg-card p-6">
-          <!-- Issued By -->
-          <div class="space-y-3">
-            <AccountAutocomplete
-              label="Issued By"
-              accounts={allAccountsForAutocomplete}
-              bind:value={issuedBy}
-              filter={(a) => a.period === uiSettings.currentTerm}
-              onSelect={(a) => {
-                issuedBy = a.name;
-                issuedByEmail = a.email;
-              }}
-            />
-            <div
-              class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
-            >
-              <div class="flex flex-col">
-                <span class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
-                  >Current Selection</span
+      <!-- COLLECTION SUMMARY -->
+      <div class="space-y-3">
+        <h3 class="text-base font-bold uppercase text-foreground">Collection Summary</h3>
+        <div class="rounded-xl border overflow-hidden">
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.Head class="w-[180px]">CATEGORY</Table.Head>
+                <Table.Head>DETAILS</Table.Head>
+                <Table.Head class="text-right">AMOUNT</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              <!-- WATER FEE Group -->
+              <Table.Row>
+                <Table.Cell
+                  rowspan={waterColl.aquaAltria > 0 ? 10 : 9}
+                  class="font-bold align-middle border-r">WATER FEE</Table.Cell
                 >
-                <span class="text-sm font-bold text-foreground/80"
-                  >{issuedBy || "None selected"}</span
+                <Table.Cell class="text-foreground">TARGET</Table.Cell>
+                <Table.Cell class="text-right">{formatAccounting(waterColl.target)}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell class="text-foreground">LESS: WAIVED</Table.Cell>
+                <Table.Cell class="text-right">{formatAccounting(waterColl.waived)}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell class="text-foreground">TOTAL COLLECTION FROM RESIDENTS</Table.Cell>
+                <Table.Cell class="text-right">{formatAccounting(waterColl.resident)}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell class="text-foreground">LESS: COLLECTION REFUNDS</Table.Cell>
+                <Table.Cell class="text-right">{formatAccounting(waterColl.refunds)}</Table.Cell>
+              </Table.Row>
+              <Table.Row>
+                <Table.Cell class="text-foreground">TOTAL COLLECTION FROM UHO</Table.Cell>
+                <Table.Cell class="text-right">{formatAccounting(waterColl.uho)}</Table.Cell>
+              </Table.Row>
+              <Table.Row class="bg-muted/30 font-bold">
+                <Table.Cell>TOTAL COLLECTION</Table.Cell>
+                <Table.Cell class="text-right"
+                  >{formatAccounting(
+                    waterColl.resident - waterColl.refunds + waterColl.uho
+                  )}</Table.Cell
                 >
-                <span class="mt-0.5 font-mono text-xs text-muted-foreground"
-                  >{issuedByEmail || "No email"}</span
+              </Table.Row>
+              <Table.Row class="font-bold">
+                <Table.Cell>OVERDUE ACCOUNTS²</Table.Cell>
+                <Table.Cell class="text-right">{formatAccounting(waterColl.overdue)}</Table.Cell>
+              </Table.Row>
+              {#if waterColl.aquaAltria > 0}
+                <Table.Row>
+                  <Table.Cell class="text-foreground"
+                    >PAID TO WATER SUPPLIER (AQUA ALTRIA)³</Table.Cell
+                  >
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(waterColl.aquaAltria)}</Table.Cell
+                  >
+                </Table.Row>
+              {/if}
+              <Table.Row>
+                <Table.Cell class="text-foreground">PAID TO WATER SUPPLIER³</Table.Cell>
+                <Table.Cell class="text-right">{formatAccounting(waterColl.paidToWater)}</Table.Cell
                 >
-              </div>
-            </div>
-          </div>
+              </Table.Row>
+              <Table.Row class="bg-muted/40 font-bold">
+                <Table.Cell>PAID TO WATER SUPPLIER (TOTAL)³</Table.Cell>
+                <Table.Cell class="text-right"
+                  >{formatAccounting(waterColl.aquaAltria + waterColl.paidToWater)}</Table.Cell
+                >
+              </Table.Row>
 
-          <!-- Assessed By -->
-          <div class="space-y-3">
-            <AccountAutocomplete
-              label="Assessed By"
-              accounts={allAccountsForAutocomplete}
-              bind:value={assessedBy}
-              filter={(a) => a.period === uiSettings.currentTerm}
-              onSelect={(a) => {
-                assessedBy = a.name;
-                assessedByEmail = a.email;
-              }}
-            />
-            <div
-              class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
-            >
-              <div class="flex flex-col">
-                <span class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
-                  >Current Selection</span
-                >
-                <span class="text-xs font-bold text-foreground/80"
-                  >{assessedBy || "None selected"}</span
-                >
-                <span class="mt-0.5 font-mono text-xs text-muted-foreground"
-                  >{assessedByEmail || "No email"}</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <!-- Certified By -->
-          <div class="space-y-3">
-            <AccountAutocomplete
-              label="Certified By"
-              accounts={allAccountsForAutocomplete}
-              bind:value={certifiedBy}
-              filter={(a) => a.period === uiSettings.currentTerm}
-              onSelect={(a) => {
-                certifiedBy = a.name;
-                certifiedByEmail = a.email;
-              }}
-            />
-            <div
-              class="flex items-center justify-between rounded-lg border border-dashed border-muted bg-muted/20 p-3"
-            >
-              <div class="flex flex-col">
-                <span class="mb-1 text-xs leading-none font-bold text-muted-foreground uppercase"
-                  >Current Selection</span
-                >
-                <span class="text-xs font-bold text-foreground/80"
-                  >{certifiedBy || "None selected"}</span
-                >
-                <span class="mt-0.5 font-mono text-xs text-muted-foreground"
-                  >{certifiedByEmail || "No email"}</span
-                >
-              </div>
-            </div>
-          </div>
+              <!-- ASSOCIATION FEE Group -->
+              {#if assocColl.target > 0}
+                <Table.Row class="border-t">
+                  <Table.Cell rowspan={5} class="font-bold align-middle border-r"
+                    >ASSOCIATION FEE</Table.Cell
+                  >
+                  <Table.Cell class="text-foreground">TARGET</Table.Cell>
+                  <Table.Cell class="text-right">{formatAccounting(assocColl.target)}</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.Cell class="text-foreground">LESS: WAIVED</Table.Cell>
+                  <Table.Cell class="text-right">{formatAccounting(assocColl.waived)}</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.Cell class="text-foreground">TOTAL COLLECTION FROM RESIDENTS</Table.Cell>
+                  <Table.Cell class="text-right">{formatAccounting(assocColl.resident)}</Table.Cell>
+                </Table.Row>
+                <Table.Row class="font-bold">
+                  <Table.Cell>LESS: COLLECTION REFUNDS</Table.Cell>
+                  <Table.Cell class="text-right"
+                    >{formatAccounting(assocColl.resident - assocColl.refunds)}</Table.Cell
+                  >
+                </Table.Row>
+                <Table.Row class="font-bold">
+                  <Table.Cell>OVERDUE ACCOUNTS²</Table.Cell>
+                  <Table.Cell class="text-right">{formatAccounting(assocColl.overdue)}</Table.Cell>
+                </Table.Row>
+              {/if}
+            </Table.Body>
+          </Table.Root>
         </div>
-      </section>
+      </div>
 
-      <Button
-        size="lg"
-        class="w-full gap-3 font-bold"
-        onclick={handleGenerate}
-        isLoading={isProcessing}
-        disabled={journal.length === 0}
-        icon={HandCoins}
-      >
-        Generate Financial Report
-      </Button>
+      <!-- DISBURSEMENT BY TYPE CHART -->
+      {#if disbursementChartData.length > 0}
+        <Card.Root>
+          <Card.Header>
+            <Card.Title class="flex items-center gap-2 text-lg">
+              <TrendingDown class="h-5 w-5" />
+              Disbursements by Transaction Type
+            </Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-6">
+            <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-[300px]">
+              <PieChart
+                data={disbursementChartData}
+                key="label"
+                value="value"
+                c="fill"
+                innerRadius={-20}
+                cornerRadius={4}
+                padAngle={0.02}
+              />
+            </Chart.Container>
+
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {#each disbursementChartData as item}
+                <div
+                  class="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
+                >
+                  <div class="flex items-center gap-2 truncate">
+                    <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
+                    <span
+                      class="truncate text-xs font-semibold text-foreground/80"
+                      title={item.label}
+                    >
+                      {item.label}
+                    </span>
+                  </div>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <span class="text-xs font-bold text-foreground"
+                      >₱{formatAccounting(item.value)}</span
+                    >
+                    <span class="text-xs text-muted-foreground">({item.percentage})</span>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
     </div>
   {/if}
 </div>
