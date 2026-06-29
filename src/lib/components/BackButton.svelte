@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ChevronLeft } from "lucide-svelte";
+  import { ChevronLeft } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import { useSidebar } from "$lib/components/ui/sidebar/context.svelte.js";
 

@@ -21,7 +21,7 @@
     UserCog,
     StickyNote,
     Trash2
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import {
     type UserRecord,
     USER_TAG_COLORS,

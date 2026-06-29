@@ -4,7 +4,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { Lock } from "lucide-svelte";
+  import { Lock } from "@lucide/svelte";
 
   let {
     studentNo = $bindable(),

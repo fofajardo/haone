@@ -5,8 +5,7 @@
   import * as Drawer from "$lib/components/ui/drawer/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { onMount, tick } from "svelte";
-  import Check from "lucide-svelte/icons/check";
-  import ChevronsUpDown from "lucide-svelte/icons/chevrons-up-down";
+  import { Check, ChevronsUpDown } from "@lucide/svelte";
   import { cn } from "$lib/utils.js";
 
   let {

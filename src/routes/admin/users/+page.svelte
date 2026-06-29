@@ -9,13 +9,13 @@
   import { Input } from "$lib/components/ui/input";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Label } from "$lib/components/ui/label";
-  import { RefreshCcw, Users, Search, FunnelX } from "lucide-svelte";
+  import { RefreshCcw, Users, Search, FunnelX } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import { Plus, UserPlus, FileUp } from "lucide-svelte";
+  import { Plus, UserPlus, FileUp } from "@lucide/svelte";
   import { columns } from "./columns";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { translateCollege, translateProgram } from "$lib/receipt-utils";

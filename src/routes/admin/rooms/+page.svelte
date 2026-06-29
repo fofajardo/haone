@@ -32,7 +32,7 @@
     ShieldCheck,
     ChevronRight,
     MoveRight
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let users = $state<UserRecord[]>([]);

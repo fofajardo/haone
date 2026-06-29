@@ -9,7 +9,7 @@
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { RefreshCcw, Users, Bed, Info } from "lucide-svelte";
+  import { RefreshCcw, Users, Bed, Info } from "@lucide/svelte";
 
   let { data } = $props();
   const roomNumber = $derived(data.roomNumber);

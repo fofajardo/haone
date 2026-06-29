@@ -8,7 +8,7 @@
     ShieldCheck,
     Share2,
     StickyNote
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { Spinner } from "$lib/components/ui/spinner";
   import branding from "$lib/branding.json";
   import { translatePeriod } from "$lib/receipt-utils";

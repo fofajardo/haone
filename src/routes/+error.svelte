@@ -12,7 +12,7 @@
     Zap,
     CircleAlert,
     Construction
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { fade, slide } from "svelte/transition";
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";

@@ -3,7 +3,7 @@
   import { brandingState } from "$lib/branding.svelte";
   import { auth } from "$lib/auth.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { LogOut } from "lucide-svelte";
+  import { LogOut } from "@lucide/svelte";
 
   interface Props {
     hideToggle?: boolean;

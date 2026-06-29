@@ -6,7 +6,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { ChevronLeft, Save, Archive, Trash2 } from "lucide-svelte";
+  import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { auth } from "$lib/auth.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

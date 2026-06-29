@@ -3,7 +3,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";
   import { Switch } from "$lib/components/ui/switch";
-  import { Monitor, Sun, Moon } from "lucide-svelte";
+  import { Monitor, Sun, Moon } from "@lucide/svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
 

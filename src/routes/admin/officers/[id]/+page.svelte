@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
-  import { Save, Trash2 } from "lucide-svelte";
+  import { Save, Trash2 } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import {

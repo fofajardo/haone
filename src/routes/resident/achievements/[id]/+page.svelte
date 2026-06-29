@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Trophy, Users, Lock as LockIcon } from "lucide-svelte";
+  import { RefreshCcw, Trophy, Users, Lock as LockIcon } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";

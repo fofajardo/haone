@@ -23,7 +23,7 @@
     Settings2,
     Calculator,
     Users
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import { Label } from "$lib/components/ui/label";
 

@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/crypto";
   import { Button } from "$lib/components/ui/button";
-  import { LoaderIcon } from "lucide-svelte";
+  import { LoaderIcon } from "@lucide/svelte";
   import { goto, replaceState } from "$app/navigation";
   import branding from "$lib/branding.json";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";

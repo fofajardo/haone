@@ -2,7 +2,7 @@
   import { auth } from "$lib/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Plus, CircleX, Funnel } from "lucide-svelte";
+  import { RefreshCcw, Plus, CircleX, Funnel } from "@lucide/svelte";
   import * as NativeSelect from "$lib/components/ui/native-select";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
@@ -28,7 +28,7 @@
   import { Label } from "$lib/components/ui/label";
   import { Combobox } from "$lib/components/ui/combobox";
   import { toast } from "svelte-sonner";
-  import { FileUp } from "lucide-svelte";
+  import { FileUp } from "@lucide/svelte";
   import { pageState } from "$lib/page-info.svelte";
   import { parseTime, formatTime, parseDateWeight, sortPeriods } from "$lib/receipt-utils";
 

@@ -9,7 +9,7 @@
   import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
   import StatusBadge from "./StatusBadge.svelte";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
-  import { Clock, History } from "lucide-svelte";
+  import { Clock, History } from "@lucide/svelte";
 
   interface Props {
     accounts: Account[];

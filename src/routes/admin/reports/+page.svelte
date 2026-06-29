@@ -1,6 +1,6 @@
 <script lang="ts">
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import { HandCoins, Users, ChartPie, ArrowRight } from "lucide-svelte";
+  import { HandCoins, Users, ChartPie, ArrowRight } from "@lucide/svelte";
 
   const reports = [
     {

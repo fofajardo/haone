@@ -14,7 +14,7 @@
     Building,
     History,
     ArrowRight
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import {
     Item,
     ItemGroup,

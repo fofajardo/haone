@@ -4,7 +4,7 @@
   import { Textarea } from "$lib/components/ui/textarea";
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Save, FileUp, Info, CircleAlert } from "lucide-svelte";
+  import { Save, FileUp, Info, CircleAlert } from "@lucide/svelte";
   import { type UserRecord } from "$lib/schemas";
   import { addUsersBatch } from "$lib/resident-logic";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

@@ -5,7 +5,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { ChevronLeft, Save } from "lucide-svelte";
+  import { ChevronLeft, Save } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import { addAnnouncement } from "$lib/admin-logic";

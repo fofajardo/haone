@@ -21,7 +21,7 @@
     Megaphone,
     Trophy,
     BookUser
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import { auth } from "$lib/auth.svelte";
   import { page } from "$app/state";

@@ -21,7 +21,7 @@
     Upload,
     ImageIcon,
     Trash2
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import * as Tooltip from "$lib/components/ui/tooltip";

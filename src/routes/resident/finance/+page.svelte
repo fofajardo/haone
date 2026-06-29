@@ -2,7 +2,7 @@
   import { auth } from "$lib/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw } from "lucide-svelte";
+  import { RefreshCcw } from "@lucide/svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

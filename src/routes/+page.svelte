@@ -2,7 +2,7 @@
   import { browser } from "$app/environment";
   import { onMount, onDestroy } from "svelte";
   import { auth } from "$lib/auth.svelte";
-  import { ArrowRight, LoaderCircle } from "lucide-svelte";
+  import { ArrowRight, LoaderCircle } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import HeroVisual from "$lib/components/HeroVisual.svelte";
 

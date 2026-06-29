@@ -3,7 +3,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Textarea } from "$lib/components/ui/textarea";
   import { Label } from "$lib/components/ui/label";
-  import { FileDown, ClipboardPaste, LoaderIcon } from "lucide-svelte";
+  import { FileDown, ClipboardPaste, LoaderIcon } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
   import Papa from "papaparse";
   import { fetchUsers } from "$lib/resident-logic";

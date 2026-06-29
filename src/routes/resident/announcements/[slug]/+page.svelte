@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
-  import { ChevronLeft } from "lucide-svelte";
+  import { ChevronLeft } from "@lucide/svelte";
   import { goto } from "$app/navigation";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";

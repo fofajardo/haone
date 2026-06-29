@@ -29,7 +29,7 @@
     Save,
     ArrowLeftToLine,
     TriangleAlert
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Checkbox } from "$lib/components/ui/checkbox";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

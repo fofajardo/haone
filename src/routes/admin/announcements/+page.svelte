@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Plus, Megaphone } from "lucide-svelte";
+  import { RefreshCcw, Plus, Megaphone } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -20,7 +20,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Combobox } from "$lib/components/ui/combobox";
-  import { Search, FunnelX } from "lucide-svelte";
+  import { Search, FunnelX } from "@lucide/svelte";
 
   import { getAnnouncementStatus } from "$lib/admin-logic";
   import { AnnouncementStatus } from "$lib/schemas";

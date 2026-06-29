@@ -2,7 +2,7 @@
   import type { LaundryRecord, UserRecord } from "$lib/schemas";
   import { auth } from "$lib/auth.svelte";
   import { cn } from "$lib/utils";
-  import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "lucide-svelte";
+  import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "@lucide/svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { Button } from "$lib/components/ui/button";
   import { parseTime } from "$lib/receipt-utils";
@@ -18,7 +18,7 @@
     Trash2,
     CalendarPlus,
     Share2
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
 
   let {
     reservations,

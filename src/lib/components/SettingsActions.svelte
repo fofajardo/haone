@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { Save } from "lucide-svelte";
+  import { Save } from "@lucide/svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { auth } from "$lib/auth.svelte";
   import { fetchUsers } from "$lib/resident-logic";

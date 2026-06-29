@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { ChevronLeft, Save } from "lucide-svelte";
+  import { ChevronLeft, Save } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import { addOfficer, fetchOfficers } from "$lib/admin-logic";

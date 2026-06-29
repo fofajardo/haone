@@ -3,7 +3,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Label } from "$lib/components/ui/label";
   import { Button } from "$lib/components/ui/button";
-  import { ShieldCheck, ClipboardCheck, Calendar, Hash, ArrowUpRight } from "lucide-svelte";
+  import { ShieldCheck, ClipboardCheck, Calendar, Hash, ArrowUpRight } from "@lucide/svelte";
   import type { ResidentRecord } from "$lib/schemas";
 
   interface Props {

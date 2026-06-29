@@ -52,7 +52,7 @@
     SquareCheckBig,
     Rows2,
     Columns2
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
 
   let {
     content = $bindable(),

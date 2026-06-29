@@ -6,7 +6,7 @@
   import { fetchUsers } from "$lib/resident-logic";
   import type { ResidentRecord, AchievementRecord } from "$lib/schemas";
   import { pluralize } from "$lib/receipt-utils";
-  import { X, Trophy } from "lucide-svelte";
+  import { X, Trophy } from "@lucide/svelte";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Label } from "$lib/components/ui/label";
   import { toast } from "svelte-sonner";

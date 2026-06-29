@@ -26,7 +26,7 @@
     FileCheck,
     FileDown,
     UserCog
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import {
     JOURNAL_COL as JOR,
     ACCOUNT_COL,

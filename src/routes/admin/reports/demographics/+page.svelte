@@ -3,7 +3,13 @@
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { RefreshCcw, GraduationCap, School, CalendarDays, CircleDollarSign } from "lucide-svelte";
+  import {
+    RefreshCcw,
+    GraduationCap,
+    School,
+    CalendarDays,
+    CircleDollarSign
+  } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import { uiSettings } from "$lib/settings.svelte";
   import TermFilter from "$lib/components/TermFilter.svelte";

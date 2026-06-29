@@ -18,7 +18,7 @@
     Trash2,
     MapPin,
     AwardIcon
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { type UserRecord, UserTag } from "$lib/schemas";
   import { translateCollege, translateProgram } from "$lib/receipt-utils";
   import collegesJson from "$lib/colleges.json";

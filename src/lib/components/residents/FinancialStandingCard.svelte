@@ -2,7 +2,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Label } from "$lib/components/ui/label";
   import { formatCurrency, formatAmount } from "$lib/receipt-utils";
-  import { CreditCard, Droplets, Users, Wallet } from "lucide-svelte";
+  import { CreditCard, Droplets, Users, Wallet } from "@lucide/svelte";
   import type { ResidentRecord } from "$lib/schemas";
 
   interface Props {

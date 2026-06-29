@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { CircleAlert } from "lucide-svelte";
+  import { CircleAlert } from "@lucide/svelte";
 
   let { error, onRetry } = $props<{
     error: string;

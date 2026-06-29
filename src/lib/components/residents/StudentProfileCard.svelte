@@ -10,7 +10,7 @@
     AwardIcon,
     MapPin,
     Bed as BedIcon
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { translateCollege, translateProgram } from "$lib/receipt-utils";
   import type { ResidentRecord } from "$lib/schemas";
 

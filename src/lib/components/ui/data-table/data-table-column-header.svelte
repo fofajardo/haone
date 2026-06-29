@@ -1,6 +1,6 @@
 <script lang="ts">
   import { type Column } from "@tanstack/table-core";
-  import ArrowUpDown from "lucide-svelte/icons/arrow-up-down";
+  import { ArrowUpDown } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { cn } from "$lib/utils";
 

@@ -7,7 +7,7 @@ import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-colu
 import { createRawSnippet } from "svelte";
 import { Button } from "$lib/components/ui/button";
 import CompositionCell from "$lib/components/CompositionCell.svelte";
-import { Trash2 } from "lucide-svelte";
+import { Trash2 } from "@lucide/svelte";
 
 export const columns: ColumnDef<PaymentRequestRecord>[] = [
   {

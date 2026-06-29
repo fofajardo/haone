@@ -21,7 +21,7 @@
     Save,
     Calculator,
     CircleCheck
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Badge } from "$lib/components/ui/badge";

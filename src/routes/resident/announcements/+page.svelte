@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Megaphone, ArrowRight } from "lucide-svelte";
+  import { RefreshCcw, Megaphone, ArrowRight } from "@lucide/svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

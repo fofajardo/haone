@@ -3,7 +3,7 @@
   import { fetchAnnouncements } from "$lib/shared-records-logic";
   import type { AnnouncementRecord } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
-  import { Clock, ChevronRight } from "lucide-svelte";
+  import { Clock, ChevronRight } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import RichEditor from "$lib/components/RichEditor.svelte";
 

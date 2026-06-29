@@ -21,7 +21,7 @@
     ChevronUp,
     ChevronDown,
     X
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { page } from "$app/state";
 

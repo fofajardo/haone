@@ -2,7 +2,7 @@
   import * as Calendar from "$lib/components/ui/calendar/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { ChevronDown, Calendar as CalendarIcon } from "lucide-svelte";
+  import { ChevronDown, Calendar as CalendarIcon } from "@lucide/svelte";
   import { getLocalTimeZone, CalendarDate, parseDate } from "@internationalized/date";
   import { cn } from "$lib/utils";
   import type { HTMLAttributes } from "svelte/elements";

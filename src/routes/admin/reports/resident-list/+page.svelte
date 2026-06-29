@@ -26,7 +26,7 @@
     ExternalLink,
     Copy,
     BookUser
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import {
     fetchSheetRowsRaw,
     updateSheetValue,

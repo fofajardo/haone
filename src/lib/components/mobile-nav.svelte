@@ -17,7 +17,7 @@
     Mail,
     Settings,
     BookUser
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { useSidebar } from "$lib/components/ui/sidebar";
   import { page } from "$app/state";
   import { cn } from "$lib/utils";

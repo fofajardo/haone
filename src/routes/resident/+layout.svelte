@@ -7,7 +7,7 @@
   import { auth } from "$lib/auth.svelte";
   import { residentState } from "$lib/resident-state.svelte";
   import { onMount } from "svelte";
-  import { LoaderCircle } from "lucide-svelte";
+  import { LoaderCircle } from "@lucide/svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
 

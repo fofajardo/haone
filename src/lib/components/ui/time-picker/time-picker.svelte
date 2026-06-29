@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Input } from "$lib/components/ui/input/index.js";
-  import { Clock } from "lucide-svelte";
+  import { Clock } from "@lucide/svelte";
   import { cn } from "$lib/utils";
   import type { HTMLAttributes } from "svelte/elements";
 

@@ -7,7 +7,7 @@
   import { clearResident } from "$lib/resident-logic";
   import type { ResidentRecord } from "$lib/schemas";
   import { pluralize } from "$lib/receipt-utils";
-  import { X, ShieldCheck } from "lucide-svelte";
+  import { X, ShieldCheck } from "@lucide/svelte";
 
   let {
     open = $bindable(false),

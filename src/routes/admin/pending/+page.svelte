@@ -12,7 +12,7 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import { Search, RefreshCcw, FileCheck, CircleCheckBig } from "lucide-svelte";
+  import { Search, RefreshCcw, FileCheck, CircleCheckBig } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";

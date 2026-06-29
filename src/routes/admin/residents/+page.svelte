@@ -29,7 +29,7 @@
     FileCheck,
     ShieldCheck,
     Trophy
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";

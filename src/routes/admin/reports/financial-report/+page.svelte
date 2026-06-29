@@ -11,7 +11,7 @@
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import { HandCoins, RefreshCcw } from "lucide-svelte";
+  import { HandCoins, RefreshCcw } from "@lucide/svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";
   import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
   import { parseDateWeight, translatePeriod, pluralize } from "$lib/receipt-utils";

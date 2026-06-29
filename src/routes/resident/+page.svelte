@@ -17,7 +17,7 @@
     Trophy,
     House,
     Settings
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import AnnouncementsSection from "$lib/components/residents/AnnouncementsSection.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";

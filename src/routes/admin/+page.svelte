@@ -16,7 +16,7 @@
     CircleCheck,
     FileSpreadsheet,
     Bed
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { auth } from "$lib/auth.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { fetchSheetRowsRaw } from "$lib/google-sheets";

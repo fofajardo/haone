@@ -10,7 +10,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import { RefreshCcw, ListFilter, Plus, Search, FunnelX, ShieldCheck } from "lucide-svelte";
+  import { RefreshCcw, ListFilter, Plus, Search, FunnelX, ShieldCheck } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";

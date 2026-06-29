@@ -3,7 +3,7 @@
   import { Label } from "$lib/components/ui/label";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Input } from "$lib/components/ui/input";
-  import { TriangleAlert, ExternalLink } from "lucide-svelte";
+  import { TriangleAlert, ExternalLink } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import branding from "$lib/branding.json";
   import { brandingState } from "$lib/branding.svelte";

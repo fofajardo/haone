@@ -59,7 +59,7 @@
 </script>
 
 <script lang="ts">
-  import { LoaderCircle } from "lucide-svelte";
+  import { LoaderCircle } from "@lucide/svelte";
 
   let {
     class: className,

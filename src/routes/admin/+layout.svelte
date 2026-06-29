@@ -6,7 +6,7 @@
   import MobileNav from "$lib/components/mobile-nav.svelte";
   import { auth } from "$lib/auth.svelte";
   import { onMount } from "svelte";
-  import { LoaderCircle } from "lucide-svelte";
+  import { LoaderCircle } from "@lucide/svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
 

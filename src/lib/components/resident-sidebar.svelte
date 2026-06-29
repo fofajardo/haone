@@ -14,7 +14,7 @@
     Trophy,
     BookUser,
     CirclePlus
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
   import { residentState } from "$lib/resident-state.svelte";

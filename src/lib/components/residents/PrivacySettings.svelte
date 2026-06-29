@@ -2,7 +2,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Label } from "$lib/components/ui/label";
   import { Switch } from "$lib/components/ui/switch";
-  import { Bell, BellOff, Info, Trophy } from "lucide-svelte";
+  import { Bell, BellOff, Info, Trophy } from "@lucide/svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { notifications } from "$lib/notifications.svelte";
   import { PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";

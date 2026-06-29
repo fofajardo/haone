@@ -30,7 +30,7 @@
     Hash,
     Info,
     Lock
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";

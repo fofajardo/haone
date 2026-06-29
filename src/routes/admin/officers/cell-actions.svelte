@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from "$lib/components/ui/button";
-  import { Trash2, Ellipsis, FilePen } from "lucide-svelte";
+  import { Trash2, Ellipsis, FilePen } from "@lucide/svelte";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import type { OfficerRecord } from "$lib/schemas";
   import { deleteOfficer } from "$lib/admin-logic";

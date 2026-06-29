@@ -1,11 +1,7 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-  import Check from "lucide-svelte/icons/check";
-  import Clock from "lucide-svelte/icons/clock";
-  import TriangleAlert from "lucide-svelte/icons/triangle-alert";
-  import CircleAlert from "lucide-svelte/icons/circle-alert";
-  import ShieldCheck from "lucide-svelte/icons/shield-check";
+  import { Check, Clock, TriangleAlert, CircleAlert, ShieldCheck } from "@lucide/svelte";
   import { type ResidentRecord as Resident } from "$lib/schemas";
 
   let { resident }: { resident: Resident } = $props();

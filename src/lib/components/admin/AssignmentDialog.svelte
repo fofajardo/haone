@@ -5,7 +5,7 @@
   import { Combobox } from "$lib/components/ui/combobox";
   import { manualAssignBed, manualDelistResident } from "$lib/rooms-logic.svelte";
   import { toast } from "svelte-sonner";
-  import { Info, TriangleAlert } from "lucide-svelte";
+  import { Info, TriangleAlert } from "@lucide/svelte";
 
   let {
     open = $bindable(false),

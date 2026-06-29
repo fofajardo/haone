@@ -12,7 +12,7 @@
   import { createRawSnippet } from "svelte";
   import * as Card from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import { History, Clock } from "lucide-svelte";
+  import { History, Clock } from "@lucide/svelte";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
 

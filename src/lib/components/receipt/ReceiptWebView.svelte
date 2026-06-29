@@ -9,7 +9,7 @@
     ReceiptText,
     Share2,
     StickyNote
-  } from "lucide-svelte";
+  } from "@lucide/svelte";
   import { Spinner } from "$lib/components/ui/spinner";
   import branding from "$lib/branding.json";
   import type { ReceiptData } from "$lib/types";
