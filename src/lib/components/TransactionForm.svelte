@@ -90,6 +90,7 @@
     assocFee: "0",
     miscFee: "0",
     mop: "CASH",
+    mopTo: "CASH",
     period: uiSettings.currentTerm || "",
     type: "PMT_COLLECTION",
     notes: "",
@@ -104,11 +105,16 @@
   let carryoverTerm = $state("");
   const isEos = $derived(formData.type === "PMT_EOS" || formData.type === "PMT_EOS_UNSETTLED");
 
-  const typeOptions = $derived(
-    transactionTypes.filter((t) => {
-      return t.value !== "PMT_CARRYOVER";
-    })
-  );
+  const typeOptions = $derived([
+    ...transactionTypes.filter((t) => {
+      return (
+        t.value !== "PMT_CARRYOVER" &&
+        t.value !== "PMT_TRANSFER_FROM" &&
+        t.value !== "PMT_TRANSFER_TO"
+      );
+    }),
+    { value: "PMT_FUND_TRANSFER", val: "FUND_TRANSFER", label: "Fund Transfer" }
+  ]);
 
   const carryoverAcademicTerms = $derived.by(() => {
     if (!formData.period) {
@@ -451,6 +457,11 @@
       return;
     }
 
+    if (formData.type === "PMT_FUND_TRANSFER" && formData.mop === formData.mopTo) {
+      error = "Source (From) and destination (To) payment processors cannot be the same.";
+      return;
+    }
+
     const water = parseFloat(formData.waterFee) || 0;
     const assoc = parseFloat(formData.assocFee) || 0;
     const misc = parseFloat(formData.miscFee) || 0;
@@ -460,7 +471,12 @@
       return;
     }
 
-    if (misc > 0 && !formData.notes.trim()) {
+    const isTransfer =
+      formData.type === "PMT_FUND_TRANSFER" ||
+      formData.type === "PMT_TRANSFER_FROM" ||
+      formData.type === "PMT_TRANSFER_TO";
+
+    if (!isTransfer && misc > 0 && !formData.notes.trim()) {
       error = "Public remarks are required for miscellaneous payments.";
       return;
     }
@@ -484,6 +500,61 @@
     error = null;
 
     try {
+      if (formData.type === "PMT_FUND_TRANSFER") {
+        // From Row: Negative amount, MOP From
+        const fromRow = new Array(20).fill("");
+        fromRow[JOR.DATE] = formData.date;
+        fromRow[JOR.CREATOR] = formData.creatorEmail;
+        fromRow[JOR.ACCOUNT] = formData.accountEmail;
+        fromRow[JOR.WATER] = water !== 0 ? `-${Math.abs(water)}` : "0";
+        fromRow[JOR.ASSOC] = assoc !== 0 ? `-${Math.abs(assoc)}` : "0";
+        fromRow[JOR.MISC] = misc !== 0 ? `-${Math.abs(misc)}` : "0";
+        fromRow[JOR.MOP] = formData.mop;
+        fromRow[JOR.PERIOD] = formData.period;
+        fromRow[JOR.TYPE] = "TRANSFER_FROM";
+        fromRow[JOR.NOTES] = formData.notes;
+        fromRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
+        fromRow[JOR.MOP_REFNO] = formData.instapayInvoice
+          ? `${formData.mopRefNo};${formData.instapayInvoice}`
+          : formData.mopRefNo;
+        fromRow[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
+        fromRow[JOR.PR_REFNO] = "N/A";
+        fromRow[JOR.CREATOR_NAME] = formData.creatorName;
+        fromRow[JOR.NAME] = formData.accountName;
+        fromRow[JOR.STNO] = formData.accountStNo;
+        fromRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
+        fromRow[JOR.WAS_AUDITED] = mode === "edit" && initialData?.wasAudited ? "TRUE" : "FALSE";
+        fromRow[JOR.ID] = mode === "edit" && initialData ? initialData.id : crypto.randomUUID();
+
+        // To Row: Positive amount, MOP To
+        const toRow = new Array(20).fill("");
+        toRow[JOR.DATE] = formData.date;
+        toRow[JOR.CREATOR] = formData.creatorEmail;
+        toRow[JOR.ACCOUNT] = formData.accountEmail;
+        toRow[JOR.WATER] = water !== 0 ? `${Math.abs(water)}` : "0";
+        toRow[JOR.ASSOC] = assoc !== 0 ? `${Math.abs(assoc)}` : "0";
+        toRow[JOR.MISC] = misc !== 0 ? `${Math.abs(misc)}` : "0";
+        toRow[JOR.MOP] = formData.mopTo;
+        toRow[JOR.PERIOD] = formData.period;
+        toRow[JOR.TYPE] = "TRANSFER_TO";
+        toRow[JOR.NOTES] = formData.notes;
+        toRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
+        toRow[JOR.MOP_REFNO] = formData.instapayInvoice
+          ? `${formData.mopRefNo};${formData.instapayInvoice}`
+          : formData.mopRefNo;
+        toRow[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
+        toRow[JOR.PR_REFNO] = "N/A";
+        toRow[JOR.CREATOR_NAME] = formData.creatorName;
+        toRow[JOR.NAME] = formData.accountName;
+        toRow[JOR.STNO] = formData.accountStNo;
+        toRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
+        toRow[JOR.WAS_AUDITED] = "FALSE";
+        toRow[JOR.ID] = crypto.randomUUID();
+
+        await onSave([fromRow, toRow]);
+        return;
+      }
+
       const row = new Array(20).fill("");
       row[JOR.DATE] = formData.date;
       row[JOR.CREATOR] = formData.creatorEmail;
@@ -941,10 +1012,16 @@
             </div>
 
             {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
-              <div class="grid gap-6 pt-2">
+              <div
+                class="grid gap-6 pt-2 {formData.type === 'PMT_FUND_TRANSFER'
+                  ? 'md:grid-cols-2'
+                  : ''}"
+              >
                 <div class="space-y-1.5">
                   <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Payment Processor</Label
+                    >{formData.type === "PMT_FUND_TRANSFER"
+                      ? "Payment Processor (From)"
+                      : "Payment Processor"}</Label
                   >
                   <Combobox
                     bind:value={formData.mop}
@@ -953,6 +1030,19 @@
                     class="h-10 w-full"
                   />
                 </div>
+                {#if formData.type === "PMT_FUND_TRANSFER"}
+                  <div class="space-y-1.5">
+                    <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+                      >Payment Processor (To)</Label
+                    >
+                    <Combobox
+                      bind:value={formData.mopTo}
+                      options={mopOptions}
+                      disabled={!formData.accountEmail || isSubmitting}
+                      class="h-10 w-full"
+                    />
+                  </div>
+                {/if}
               </div>
             {/if}
 
