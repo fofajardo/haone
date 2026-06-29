@@ -25,10 +25,30 @@
   let allJournal = $state<JournalRecord[]>([]);
   let allAccounts = $state<ResidentRecord[]>([]);
   let availableMops = $state<{ value: string; label: string }[]>([]);
-  let allAccountsForAutocomplete = $state<ResidentRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let periodStart = $state("");
   let periodEnd = $state("");
+
+  let periodCovered = $derived.by(() => {
+    if (!periodStart || !periodEnd) {
+      return "N/A";
+    }
+    try {
+      const start = new Date(periodStart).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+      const end = new Date(periodEnd).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+      return `${start} to ${end}`;
+    } catch (e) {
+      return `${periodStart} to ${periodEnd}`;
+    }
+  });
 
   // Derived data computations using shared computeFinancialReportData
   let reportData = $derived(
@@ -113,7 +133,6 @@
       const data = await fetchFinancialReportData(uiSettings.accountingWorkbookId);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
-      allAccountsForAutocomplete = data.allAccounts;
       transactionTypes = data.transactionTypes;
       availableMops = data.availableMops;
 
@@ -536,6 +555,19 @@
           </Card.Content>
         </Card.Root>
       {/if}
+
+      <!-- FOOTNOTES -->
+      <div class="space-y-1.5 pt-6 text-xs text-foreground/80 leading-relaxed border-t mt-6">
+        <p>
+          ¹ Amounts may appear inflated due to internal transfers between accounts (e.g., Cash to
+          GCash).
+        </p>
+        <p>
+          ² Residents who have not settled their accounts by the due date and are considered to be
+          in arrears.
+        </p>
+        <p>³ Period covered: {periodCovered} (excluding transaction fees).</p>
+      </div>
     </div>
   {/if}
 </div>
