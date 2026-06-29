@@ -181,11 +181,16 @@
           {isLoading}
           icon={RefreshCcw}
         />
-        {#if selectedIds.size > 0}
-          <Button size="sm" onclick={handleBatchAudit} isLoading={isAuditing} icon={ShieldCheck}>
-            Mark as Audited
-          </Button>
-        {/if}
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={handleBatchAudit}
+          isLoading={isAuditing}
+          icon={ShieldCheck}
+          disabled={selectedIds.size === 0}
+        >
+          Mark as Audited
+        </Button>
         <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
       </div>
     {/snippet}
