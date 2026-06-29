@@ -29,7 +29,8 @@
     ListFilter as ListFilterIcon,
     Hash,
     Info,
-    Lock
+    Lock,
+    TriangleAlert
   } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -143,6 +144,19 @@
   const total = $derived(fees.reduce((sum: number, f: { amount: number }) => sum + f.amount, 0));
   const mopInfo = $derived(transaction ? parseRef(transaction.mopRefNo) : null);
 
+  const isSpecialType = $derived.by(() => {
+    if (!transaction) {
+      return false;
+    }
+    const type = transaction.type.toUpperCase();
+    return (
+      type === "TRANSFER_FROM" ||
+      type === "TRANSFER_TO" ||
+      type === "CARRYOVER" ||
+      type === "PMT_CARRYOVER"
+    );
+  });
+
   const headerColors = $derived(() => {
     if (!transaction) return "bg-muted/5";
     const mop = (transaction.mop || "").toUpperCase();
@@ -179,9 +193,26 @@
             <AlertDialog.Content>
               <AlertDialog.Header>
                 <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
-                <AlertDialog.Description>
-                  This will permanently delete this transaction record from the ledger. This action
-                  cannot be undone.
+                <AlertDialog.Description class="space-y-3">
+                  <span
+                    >This will permanently delete this transaction record from the ledger. This
+                    action cannot be undone.</span
+                  >
+                  {#if isSpecialType}
+                    <div
+                      class="flex animate-in items-start gap-2 rounded-lg border border-border bg-muted/50 p-3 text-xs text-foreground duration-200 fade-in slide-in-from-top-1 mt-2"
+                    >
+                      <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
+                      <div>
+                        <p class="mb-1 font-bold tracking-wider uppercase">
+                          Special Transaction Type
+                        </p>
+                        This is a special transaction type ({transaction?.type}). Deleting this row
+                        requires manually deleting any related or balancing ledger entries to
+                        maintain consistency.
+                      </div>
+                    </div>
+                  {/if}
                 </AlertDialog.Description>
               </AlertDialog.Header>
               <AlertDialog.Footer>

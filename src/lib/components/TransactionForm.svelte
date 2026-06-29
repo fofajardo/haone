@@ -107,6 +107,9 @@
 
   const typeOptions = $derived([
     ...transactionTypes.filter((t) => {
+      if (t.value === formData.type) {
+        return true;
+      }
       return (
         t.value !== "PMT_CARRYOVER" &&
         t.value !== "PMT_TRANSFER_FROM" &&
@@ -115,6 +118,13 @@
     }),
     { value: "PMT_FUND_TRANSFER", val: "FUND_TRANSFER", label: "Fund Transfer" }
   ]);
+
+  const isTypeDisabled = $derived(
+    isSubmitting ||
+      formData.type === "PMT_TRANSFER_FROM" ||
+      formData.type === "PMT_TRANSFER_TO" ||
+      formData.type === "PMT_CARRYOVER"
+  );
 
   const carryoverAcademicTerms = $derived.by(() => {
     if (!formData.period) {
@@ -735,7 +745,17 @@
               <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
                 >Type</Label
               >
-              <Combobox bind:value={formData.type} options={typeOptions} class="h-10 w-full" />
+              <Combobox
+                bind:value={formData.type}
+                options={typeOptions}
+                disabled={isTypeDisabled}
+                class="h-10 w-full"
+              />
+              {#if isTypeDisabled && !isSubmitting}
+                <p class="text-xs text-muted-foreground mt-1">
+                  This is a special transaction type and cannot be changed.
+                </p>
+              {/if}
             </div>
 
             {#if isEos && mode === "add"}
