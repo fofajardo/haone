@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { page } from "$app/state";
   import { Button } from "$lib/components/ui/button";
   import { ChevronLeft } from "@lucide/svelte";
   import { goto } from "$app/navigation";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
-  import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
+  import { ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
   import { Badge } from "$lib/components/ui/badge";
 
   let { data } = $props();
@@ -42,7 +40,7 @@
   {:else if error}
     <ErrorView {error} />
   {:else if announcement}
-    <div class="border-b bg-muted/30 pb-8">
+    <div class="border-b pb-8">
       <div class="mx-auto max-w-4xl px-6">
         <div class="space-y-6">
           <div class="flex flex-wrap gap-2">
