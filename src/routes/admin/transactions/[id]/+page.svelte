@@ -276,17 +276,11 @@
               <h2 class="text-3xl font-bold tracking-tight text-foreground">
                 {formatCurrency(total)}
               </h2>
-              <div class="h-6 w-px bg-border"></div>
-              <div
-                class="flex items-center gap-1.5 font-bold tracking-widest text-foreground uppercase"
-              >
-                {#if (transaction.mop || "").toUpperCase() === "CASH"}
-                  <Banknote class="h-3.5 w-3.5 opacity-60" />
-                {:else if (transaction.mop || "").toUpperCase() === "GCASH" || (transaction.mop || "").toUpperCase() === "MAYA"}
-                  <Smartphone class="h-3.5 w-3.5 opacity-60" />
-                {/if}
-                <span class="text-xs">{translateMop(transaction.mop)}</span>
-              </div>
+            </div>
+            <div
+              class="flex items-center gap-1.5 font-bold tracking-widest text-foreground uppercase"
+            >
+              <span class="text-xs">{translateMop(transaction.mop)}</span>
             </div>
           </div>
           <div class="flex gap-10">
