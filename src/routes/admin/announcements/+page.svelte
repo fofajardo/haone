@@ -198,7 +198,7 @@
   {:else}
     <div class="grid gap-4 lg:grid-cols-12">
       <div class="space-y-1 lg:col-span-5">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Search</Label>
+        <Label>Search</Label>
         <div class="relative">
           <Search
             class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -212,7 +212,7 @@
       </div>
 
       <div class="space-y-1 lg:col-span-3">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Status</Label>
+        <Label>Status</Label>
         <Combobox
           bind:value={tableSync.filters!.status}
           options={[
@@ -226,7 +226,7 @@
       </div>
 
       <div class="space-y-1 lg:col-span-3">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Tags</Label>
+        <Label>Tags</Label>
         <Combobox
           bind:value={tableSync.filters!.tags}
           options={[
@@ -242,7 +242,7 @@
           variant="outline"
           size="sm"
           onclick={resetFilters}
-          class="mb-1 h-9 w-full px-2"
+          class="h-9 w-full px-2"
           icon={FunnelX}
         >
           Clear
