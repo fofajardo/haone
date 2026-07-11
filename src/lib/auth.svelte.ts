@@ -5,6 +5,7 @@ export interface UserInfo {
   name: string;
   email: string;
   picture: string;
+  given_name?: string;
 }
 
 class AuthState {
@@ -79,6 +80,13 @@ class AuthState {
     }
   }
 
+  getHighResPictureUrl(url: string): string {
+    if (!url) return url;
+    // Google photo URLs standard pattern contains sizing parameters like =s96-c, =s64-c, /s96-c/, etc.
+    // Replace size parameters with =s384-c for high-quality rendering (e.g. 384x384 px)
+    return url.replace(/([=|\/])s\d+(-[c|p|o|g])?(\/|$)/, "$1s384-c$3");
+  }
+
   setSession(
     token: string,
     user: UserInfo,
@@ -87,6 +95,12 @@ class AuthState {
     isInstanceAdmin: boolean = false
   ) {
     this.accessToken = token;
+
+    // Normalize user photo URL to high resolution
+    if (user.picture) {
+      user.picture = this.getHighResPictureUrl(user.picture);
+    }
+
     this.user = user;
     this.isRemembered = remember;
     this.authType = type;
@@ -129,7 +143,11 @@ class AuthState {
     if (!resp.ok) {
       throw new Error("Failed to fetch user info");
     }
-    return (await resp.json()) as UserInfo;
+    const info = (await resp.json()) as UserInfo;
+    if (info.picture) {
+      info.picture = this.getHighResPictureUrl(info.picture);
+    }
+    return info;
   }
 }
 
