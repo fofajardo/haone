@@ -20,7 +20,8 @@
     TriangleAlert,
     Upload,
     ImageIcon,
-    Trash2
+    Trash2,
+    HandCoins
   } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
@@ -427,39 +428,46 @@
               </div>
             </div>
           </div>
-
-          <!-- Summary Section -->
-          <div class="space-y-4">
-            <div
-              class="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-700 dark:text-amber-500"
-            >
-              <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
-              <p class="font-medium">
-                Once submitted, this request cannot be modified. If you make a mistake, please
-                create a new request and cancel the previous one.
-              </p>
-            </div>
-
-            <div class="rounded-xl border border-brand/10 bg-brand/5 p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-xs font-bold tracking-widest text-brand uppercase">Total Amount</p>
-                  <p class="text-3xl font-black text-brand tabular-nums">
-                    {formatCurrency(
-                      (parseFloat(formData.waterFee) || 0) +
-                        (parseFloat(formData.assocFee) || 0) +
-                        (parseFloat(formData.miscFee) || 0)
-                    )}
-                  </p>
-                </div>
-                <Button size="lg" class="px-8" onclick={handleSubmit} isLoading={isSubmitting}>
-                  Submit Payment
-                </Button>
-              </div>
-            </div>
-          </div>
         </Card.Content>
       </Card.Root>
+
+      <!-- Summary Section -->
+      <div class="space-y-4">
+        <div
+          class="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-700 dark:text-amber-500"
+        >
+          <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
+          <p class="font-medium text-sm">
+            Once submitted, this request cannot be modified. If you make a mistake, please create a
+            new request and cancel the previous one.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-brand/10 bg-brand/5 p-6">
+          <div class="flex">
+            <div>
+              <p class="text-xs font-bold tracking-widest text-brand uppercase">Total Amount</p>
+              <p class="text-3xl font-black text-brand tabular-nums">
+                {formatCurrency(
+                  (parseFloat(formData.waterFee) || 0) +
+                    (parseFloat(formData.assocFee) || 0) +
+                    (parseFloat(formData.miscFee) || 0)
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Button
+        size="lg"
+        class="w-full gap-3 font-bold"
+        onclick={handleSubmit}
+        isLoading={isSubmitting}
+        icon={HandCoins}
+      >
+        Submit Payment
+      </Button>
     {/if}
   </div>
 </div>
