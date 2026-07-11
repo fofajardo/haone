@@ -44,9 +44,8 @@ export const columns: ColumnDef<JournalRecord>[] = [
         const r = p().record;
         return {
           render: () => `
-            <div class="flex flex-col">
+            <div class="flex md:block md:whitespace-normal md:max-w-55 md:wrap-break-word">
               <span class="text-sm font-medium">${r.creatorName}</span>
-              <span class="text-sm text-muted-foreground">${r.creator}</span>
             </div>
           `
         };
@@ -62,9 +61,8 @@ export const columns: ColumnDef<JournalRecord>[] = [
         const r = p().record;
         return {
           render: () => `
-            <div class="flex flex-col">
+            <div class="flex md:block md:whitespace-normal md:max-w-50 md:wrap-break-word">
               <span class="text-sm font-medium">${r.name}</span>
-              <span class="text-sm text-muted-foreground">${r.account}</span>
             </div>
           `
         };
