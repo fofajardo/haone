@@ -81,7 +81,7 @@
     },
     {
       title: "Announcements",
-      description: "View updates and announcements from hall officers.",
+      description: "View updates and announcements from house council officers.",
       href: "/resident/announcements",
       icon: Megaphone,
       color: "text-brand",
@@ -117,7 +117,7 @@
     },
     {
       title: "Officers",
-      description: "View profiles and contacts of hall officers.",
+      description: "View profiles and contacts of house council officers.",
       href: "/resident/officers",
       icon: BookUser,
       color: "text-brand",
