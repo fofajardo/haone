@@ -108,8 +108,8 @@
       formData.room = "";
       formData.bed = "";
       formData.checkInDate = "";
-      formData.college = "No College Information";
-      formData.program = "No Degree Program Information";
+      formData.college = "";
+      formData.program = "";
 
       if (status?.isRegistered) {
         isSubmitting = true;
@@ -136,6 +136,8 @@
           step = 1;
         }
       } else {
+        formData.college = "No College Information";
+        formData.program = "No Degree Program Information";
         step = 2;
       }
     }
