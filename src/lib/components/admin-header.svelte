@@ -3,7 +3,7 @@
   import { brandingState } from "$lib/branding.svelte";
   import { auth } from "$lib/auth.svelte";
   import { Button } from "$lib/components/ui/button";
-  import { LogOut } from "@lucide/svelte";
+  import { LogOut, CircleUser } from "@lucide/svelte";
 
   interface Props {
     hideToggle?: boolean;
@@ -37,7 +37,24 @@
     </div>
   </div>
 
-  {#if hideToggle}
-    <Button variant="ghost" size="sm" onclick={() => auth.logout()} icon={LogOut}>Sign Out</Button>
-  {/if}
+  <div class="flex items-center gap-2">
+    {#if hideToggle}
+      <Button variant="ghost" size="sm" onclick={() => auth.logout()} icon={LogOut}>Sign Out</Button
+      >
+    {/if}
+
+    {#if !hideToggle}
+      <button
+        onclick={() => sidebar.setOpenMobile(true)}
+        class="md:hidden flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-opacity hover:opacity-80"
+        aria-label="Open menu"
+      >
+        {#if auth.user?.picture}
+          <img src={auth.user.picture} alt={auth.user.name} class="h-full w-full object-cover" />
+        {:else}
+          <CircleUser class="h-6 w-6 text-muted-foreground" />
+        {/if}
+      </button>
+    {/if}
+  </div>
 </header>

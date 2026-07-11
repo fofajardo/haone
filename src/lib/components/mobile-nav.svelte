@@ -2,7 +2,6 @@
   import {
     LayoutDashboard,
     History,
-    CircleUser,
     Users,
     Wallet,
     WashingMachine,
@@ -18,15 +17,10 @@
     Settings,
     BookUser
   } from "@lucide/svelte";
-  import { useSidebar } from "$lib/components/ui/sidebar";
   import { page } from "$app/state";
-  import { cn } from "$lib/utils";
   import { uiSettings } from "$lib/settings.svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/auth.svelte";
-  import { Button } from "$lib/components/ui/button";
-
-  const sidebar = useSidebar();
 
   const MAP_RESIDENT: Record<string, any> = {
     home: { label: "Home", href: "/resident", icon: LayoutDashboard },
@@ -77,35 +71,33 @@
   });
 </script>
 
-<div class="fixed right-0 bottom-6 left-0 z-50 flex justify-center px-4 md:hidden">
-  <nav
-    class="flex h-16 w-full max-w-md items-center justify-around rounded-2xl border border-border bg-background/80 px-4 shadow-xl backdrop-blur-lg"
-  >
+<div
+  class="relative w-full shrink-0 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-lg supports-[backdrop-filter]:bg-background/80 md:hidden z-10"
+>
+  <nav class="flex h-20 items-center justify-around px-2">
     {#each navItems as item}
-      <Button
-        variant="nav"
-        href={item.href}
-        class={cn(
-          "flex h-auto flex-col items-center gap-1 p-0 transition-colors",
-          isActive(item.href) ? "text-primary" : "text-muted-foreground hover:text-foreground"
-        )}
-        icon={item.icon}
-        iconPosition="top"
-        iconClass="size-6"
-      >
-        <span class="text-xs font-medium">{item.label}</span>
-      </Button>
+      {@const active = isActive(item.href)}
+      {@const IconComponent = item.icon}
+      <a href={item.href} class="group flex flex-1 flex-col items-center justify-center gap-1 outline-none">
+        <div
+          class="flex h-8 w-16 items-center justify-center rounded-full transition-all duration-200 {active
+            ? 'bg-brand/15'
+            : 'group-hover:bg-muted'}"
+        >
+          <IconComponent
+            class="size-6 transition-colors duration-200 {active
+              ? 'text-brand'
+              : 'text-muted-foreground group-hover:text-foreground'}"
+          />
+        </div>
+        <span
+          class="max-w-18 truncate text-xs font-medium transition-colors duration-200 {active
+            ? 'text-brand'
+            : 'text-muted-foreground group-hover:text-foreground'}"
+        >
+          {item.label}
+        </span>
+      </a>
     {/each}
-
-    <Button
-      variant="nav"
-      class="flex h-auto flex-col items-center gap-1 p-0 text-muted-foreground transition-colors hover:text-foreground"
-      onclick={() => sidebar.setOpenMobile(true)}
-      icon={CircleUser}
-      iconPosition="top"
-      iconClass="size-6"
-    >
-      <span class="text-xs font-medium">You</span>
-    </Button>
   </nav>
 </div>
