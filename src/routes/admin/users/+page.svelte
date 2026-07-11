@@ -126,7 +126,7 @@
             {/snippet}
           </DropdownMenu.Trigger>
           <DropdownMenu.Content align="end">
-            <DropdownMenu.Item onclick={() => goto("/admin/users/new")}>
+            <DropdownMenu.Item onclick={() => goto("/admin/users/add")}>
               <UserPlus class="mr-2 h-4 w-4" /> Single User
             </DropdownMenu.Item>
             <DropdownMenu.Item onclick={() => goto("/admin/users/batch")}>
