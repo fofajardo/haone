@@ -428,7 +428,7 @@
               </div>
             {/if}
           </ItemGroup>
-          {#if status.isRegistered}
+          {#if status.isRegistered && residentState.forceOnboarding}
             <div class="flex justify-center pt-6">
               <Button
                 variant="outline"
