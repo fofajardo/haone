@@ -69,7 +69,7 @@
     {/if}
   </Card.Content>
   {#if account.ceIssued && account.ceLink && account.ceLink !== "N/A" && account.ceLink !== ""}
-    <Card.Footer>
+    <Card.Footer class="flex flex-col gap-2">
       <Button
         variant="secondary"
         size="sm"
@@ -79,6 +79,12 @@
       >
         View Certificate <ArrowUpRight class="ml-2 h-4 w-4" />
       </Button>
+      {#if account.ceLink.includes("drive.google.com")}
+        <p class="mt-2 text-center text-xs">
+          The certificate is hosted on Google Drive. The password is either your student number or
+          your full UP email address.
+        </p>
+      {/if}
     </Card.Footer>
   {/if}
 </Card.Root>
