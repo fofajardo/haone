@@ -295,7 +295,7 @@
           <Button
             variant="outline"
             size="sm"
-            href="/admin/transactions/add?account={account.email}"
+            href="/admin/transactions/add?account={account.stno}"
             icon={ArrowUpRight}
           >
             Add Transaction

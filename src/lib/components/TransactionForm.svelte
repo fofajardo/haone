@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
   import { auth } from "$lib/auth.svelte";
+  import { page } from "$app/state";
   import { brandingState } from "$lib/branding.svelte";
   import { uiSettings } from "$lib/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
@@ -424,7 +425,6 @@
         if (creatorAcc) {
           formData.creatorStNo = creatorAcc.stno;
         }
-      } else if (mode === "add") {
         // Populate current user stNo and official name if matching
         const userMail = auth.user?.email;
         if (userMail) {
@@ -433,6 +433,19 @@
             formData.creatorStNo = myAcc.stno;
             formData.creatorName = myAcc.name;
             creatorSearch = myAcc.email;
+          }
+        }
+
+        // Pre-fill target account from query parameters if provided
+        const targetAccountParam = page.url.searchParams.get("account");
+        if (targetAccountParam) {
+          const targetAcc = accounts.find(
+            (a) =>
+              a.stno.toLowerCase() === targetAccountParam.toLowerCase() ||
+              a.email.toLowerCase() === targetAccountParam.toLowerCase()
+          );
+          if (targetAcc) {
+            selectAccount(targetAcc);
           }
         }
       }
