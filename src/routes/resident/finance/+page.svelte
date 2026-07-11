@@ -7,7 +7,6 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import ResidentTermFilter from "$lib/components/residents/ResidentTermFilter.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
   import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$lib/components/residents/ClearanceCard.svelte";
   import TransactionHistoryCard from "$lib/components/residents/TransactionHistoryCard.svelte";
@@ -20,7 +19,7 @@
   let status = $state<any>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let localTerm = $state(page.url.searchParams.get("term") || uiSettings.currentTerm);
+  let localTerm = $state(page.url.searchParams.get("term") || "");
 
   async function loadData(term?: string) {
     if (!auth.accessToken) return;
