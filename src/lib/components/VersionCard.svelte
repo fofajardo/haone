@@ -3,7 +3,7 @@
 </script>
 
 <Card.Root class="overflow-hidden">
-  <Card.Content class="pt-6">
+  <Card.Content>
     <div class="flex flex-col gap-6">
       <div class="flex items-center gap-2.5">
         <img src="/ha1.svg" alt="HAOne" class="h-10 w-10" />
@@ -33,6 +33,21 @@
             >
           </div>
         </div>
+
+        <p>HAOne is a comprehensive administrative suite for UPLB Residence Hall Associations.</p>
+        <p class="text-xs">
+          By using this platform, you agree to our <a
+            href="/terms"
+            class="underline underline-offset-2 transition-colors hover:text-foreground"
+            >Terms of Service</a
+          >
+          and
+          <a
+            href="/privacy"
+            class="underline underline-offset-2 transition-colors hover:text-foreground"
+            >Privacy Policy</a
+          >.
+        </p>
       </div>
     </div>
   </Card.Content>
