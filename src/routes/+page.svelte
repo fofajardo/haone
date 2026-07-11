@@ -2,7 +2,7 @@
   import { browser } from "$app/environment";
   import { onMount, onDestroy } from "svelte";
   import { auth } from "$lib/auth.svelte";
-  import { ArrowRight, LoaderCircle } from "@lucide/svelte";
+  import { ArrowRight, LoaderIcon } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import HeroVisual from "$lib/components/HeroVisual.svelte";
 
@@ -63,7 +63,7 @@
       <div class="grid min-h-[56px] gap-4">
         {#if !auth.initialized}
           <div class="flex items-center justify-center py-4">
-            <LoaderCircle class="h-6 w-6 animate-spin text-muted-foreground" />
+            <LoaderIcon class="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         {:else if !auth.accessToken}
           <Button

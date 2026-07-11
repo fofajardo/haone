@@ -177,9 +177,6 @@
           class="flex h-[116px] animate-in items-center justify-center space-x-3 duration-500 zoom-in-95 fade-in"
         >
           <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
-          {#if isSigningIn}
-            <p class="text-sm font-bold tracking-tight text-foreground uppercase">Signing in…</p>
-          {/if}
         </div>
       {:else}
         <Button

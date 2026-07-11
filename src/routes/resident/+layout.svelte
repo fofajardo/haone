@@ -7,7 +7,7 @@
   import { auth } from "$lib/auth.svelte";
   import { residentState } from "$lib/resident-state.svelte";
   import { onMount } from "svelte";
-  import { LoaderCircle } from "@lucide/svelte";
+  import { LoaderIcon } from "@lucide/svelte";
   import { page } from "$app/state";
   import { fly } from "svelte/transition";
   import { goto } from "$app/navigation";
@@ -76,7 +76,7 @@
 
 {#if isLoadingAuth || (auth.accessToken && !residentState.status) || (!auth.accessToken && page.url.pathname !== "/sign-in")}
   <div class="flex min-h-screen items-center justify-center">
-    <LoaderCircle class="h-8 w-8 animate-spin text-foreground" />
+    <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
   </div>
 {:else}
   <Sidebar.Provider>
