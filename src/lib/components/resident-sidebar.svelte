@@ -97,8 +97,8 @@
           return false;
         }
       }
-      if (item.title === "Static IP") {
-        if (!room || !isStaticIpEnabled(room, "ati")) {
+      if (item.title === "Static IP Address") {
+        if (!room || !isStaticIpEnabled(room, "ati") || !canAccessLaundry(type)) {
           return false;
         }
       }
