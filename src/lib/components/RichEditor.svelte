@@ -246,6 +246,12 @@
     };
   });
 
+  $effect(() => {
+    if (editor && content !== undefined && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  });
+
   function openLinkDialog() {
     linkUrl = editor?.getAttributes("link").href || "";
     linkDialogOpen = true;
