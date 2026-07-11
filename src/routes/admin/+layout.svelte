@@ -9,10 +9,14 @@
   import { LoaderCircle } from "@lucide/svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
+  import { fly } from "svelte/transition";
+  import { createHeaderScrollState } from "$lib/utils/scroll.svelte";
 
   let { children } = $props();
   let isLoadingAuth = $state(true);
   let alertState = $state({ open: false, title: "", description: "" });
+
+  const scrollState = createHeaderScrollState();
 
   function showError(title: string, description: string) {
     alertState.title = title;
@@ -69,11 +73,30 @@
 {:else}
   <Sidebar.Provider>
     <AdminSidebar />
-    <Sidebar.Inset>
-      <AdminHeader />
-      <main class="flex-1 overflow-auto p-4 pb-24 md:p-8 md:pb-8">
-        {@render children()}
-      </main>
+    <Sidebar.Inset class="relative flex flex-col overflow-hidden">
+      <div
+        class="transition-transform duration-300 {scrollState.headerHidden
+          ? '-translate-y-full'
+          : 'translate-y-0'} shrink-0 z-10"
+      >
+        <AdminHeader />
+      </div>
+      {#key page.url.pathname}
+        <div
+          in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
+          out:fly={{ duration: 120, y: -6, opacity: 0 }}
+          class="absolute left-0 right-0 overflow-y-auto transition-[top] duration-300 {scrollState.headerHidden
+            ? 'top-0'
+            : 'top-16'} bottom-20 md:bottom-0"
+          onscroll={scrollState.handleScroll}
+        >
+          <main class="p-4 md:p-8">
+            {@render children()}
+          </main>
+        </div>
+      {/key}
+      <!-- Flex spacer pushes nav to bottom of screen flow -->
+      <div class="flex-1"></div>
       <MobileNav />
     </Sidebar.Inset>
   </Sidebar.Provider>
