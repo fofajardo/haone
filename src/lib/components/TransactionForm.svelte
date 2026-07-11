@@ -722,7 +722,7 @@
       <Card.Root>
         <Card.Content class="space-y-8">
           <!-- Basic Details -->
-          <div class="space-y-4 pt-4">
+          <div class="space-y-4">
             <Label
               class="flex items-center gap-2 text-xs font-bold tracking-widest text-foreground uppercase"
             >
@@ -730,20 +730,12 @@
             </Label>
             <div class="grid gap-6 md:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Transaction Date</Label
-                >
+                <Label>Transaction Date</Label>
                 <Input type="date" bind:value={formData.date} />
               </div>
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Academic Term</Label
-                >
-                <Combobox
-                  bind:value={formData.period}
-                  options={academicTerms}
-                  class="h-10 w-full"
-                />
+                <Label>Academic Term</Label>
+                <Combobox bind:value={formData.period} options={academicTerms} class="w-full" />
                 {#if formData.period !== uiSettings.currentTerm}
                   <div
                     class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs font-bold text-amber-600 uppercase dark:bg-amber-500/20 dark:text-amber-500"
@@ -755,14 +747,12 @@
               </div>
             </div>
             <div class="space-y-2">
-              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                >Type</Label
-              >
+              <Label>Type</Label>
               <Combobox
                 bind:value={formData.type}
                 options={typeOptions}
                 disabled={isTypeDisabled}
-                class="h-10 w-full"
+                class="w-full"
               />
               {#if isTypeDisabled && !isSubmitting}
                 <p class="text-xs text-muted-foreground mt-1">
@@ -773,14 +763,12 @@
 
             {#if isEos && mode === "add"}
               <div class="animate-in space-y-2 duration-200 fade-in">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Carryover Academic Term</Label
-                >
+                <Label>Carryover Academic Term</Label>
                 <Combobox
                   bind:value={carryoverTerm}
                   options={carryoverAcademicTerms}
                   placeholder="Select term to carry over entries to…"
-                  class="h-10 w-full"
+                  class="w-full"
                 />
               </div>
             {/if}
@@ -894,9 +882,7 @@
               <!-- Water Fee Row -->
               <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Water Fee</Label
-                  >
+                  <Label>Water Fee</Label>
                   <div class="flex items-center gap-2">
                     <Input
                       type="number"
@@ -931,9 +917,7 @@
                 </div>
                 {#if isCollection && selectedResident}
                   <div class="space-y-1.5">
-                    <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                      >Remaining Water Balance</Label
-                    >
+                    <Label>Remaining Water Balance</Label>
                     <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
                       {#if currentWaterBal < 0}
                         <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
@@ -955,9 +939,7 @@
               <!-- Association Fee Row -->
               <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Association Fee</Label
-                  >
+                  <Label>Association Fee</Label>
                   <div class="flex items-center gap-2">
                     <Input
                       type="number"
@@ -992,9 +974,7 @@
                 </div>
                 {#if isCollection && selectedResident}
                   <div class="space-y-1.5">
-                    <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                      >Remaining Association Balance</Label
-                    >
+                    <Label>Remaining Association Balance</Label>
                     <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
                       {#if currentAssocBal < 0}
                         <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
@@ -1016,9 +996,7 @@
               {#if formData.type !== "PMT_WAIVED"}
                 <!-- Misc Fee Row -->
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Misc</Label
-                  >
+                  <Label>Misc</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -1051,7 +1029,7 @@
                   : ''}"
               >
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
+                  <Label
                     >{formData.type === "PMT_FUND_TRANSFER"
                       ? "Payment Processor (From)"
                       : "Payment Processor"}</Label
@@ -1060,19 +1038,17 @@
                     bind:value={formData.mop}
                     options={mopOptions}
                     disabled={!formData.accountEmail || isSubmitting}
-                    class="h-10 w-full"
+                    class="w-full"
                   />
                 </div>
                 {#if formData.type === "PMT_FUND_TRANSFER"}
                   <div class="space-y-1.5">
-                    <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                      >Payment Processor (To)</Label
-                    >
+                    <Label>Payment Processor (To)</Label>
                     <Combobox
                       bind:value={formData.mopTo}
                       options={mopOptions}
                       disabled={!formData.accountEmail || isSubmitting}
-                      class="h-10 w-full"
+                      class="w-full"
                     />
                   </div>
                 {/if}
@@ -1082,9 +1058,7 @@
             {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
               <div class="grid gap-6 md:grid-cols-2">
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Reference Number</Label
-                  >
+                  <Label>Reference Number</Label>
                   <Input
                     bind:value={formData.mopRefNo}
                     disabled={!formData.accountEmail || isSubmitting}
@@ -1092,9 +1066,7 @@
                   />
                 </div>
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >InstaPay Invoice Number</Label
-                  >
+                  <Label>InstaPay Invoice Number</Label>
                   <Input
                     bind:value={formData.instapayInvoice}
                     disabled={!formData.accountEmail || isSubmitting}
@@ -1114,9 +1086,7 @@
             </Label>
             <div class="grid gap-6 md:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Public Remarks</Label
-                >
+                <Label>Public Remarks</Label>
                 <Textarea
                   bind:value={formData.notes}
                   placeholder="Description for the resident…"
@@ -1124,9 +1094,7 @@
                 />
               </div>
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Private Notes</Label
-                >
+                <Label>Private Notes</Label>
                 <Textarea
                   bind:value={formData.notesPrivate}
                   placeholder="Internal context only (not visible to resident)…"

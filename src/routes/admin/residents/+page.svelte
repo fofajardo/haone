@@ -294,7 +294,7 @@
           <TermFilter onSelect={() => loadData()} />
         </div>
         <div class="space-y-1 lg:col-span-4">
-          <Label class="text-xs font-bold text-muted-foreground uppercase">Search</Label>
+          <Label>Search</Label>
           <div class="relative">
             <Search
               class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -308,12 +308,12 @@
         </div>
 
         <div class="space-y-1 lg:col-span-2">
-          <Label class="text-xs font-bold text-muted-foreground uppercase">Room</Label>
+          <Label>Room</Label>
           <Combobox bind:value={tableSync.filters!.room} options={roomOptions} class="h-9" />
         </div>
 
         <div class="space-y-1 lg:col-span-2">
-          <Label class="text-xs font-bold text-muted-foreground uppercase">Payment Status</Label>
+          <Label>Payment Status</Label>
           <Combobox bind:value={tableSync.filters!.status} options={statusOptions} class="h-9" />
         </div>
 
@@ -322,7 +322,7 @@
             variant="outline"
             size="sm"
             onclick={resetFilters}
-            class="mb-1 h-9 w-full px-2"
+            class="h-9 w-full px-2"
             icon={FunnelX}
           >
             Clear

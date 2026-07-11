@@ -42,7 +42,7 @@
           {...props}
           variant="outline"
           class={cn(
-            "h-10 w-full justify-start gap-2 rounded-xl border-muted-foreground/20 px-3 font-medium",
+            "h-9 w-full justify-start gap-2 rounded-md border-muted-foreground/20 px-3 font-medium",
             !calendarValue && "text-muted-foreground"
           )}
         >

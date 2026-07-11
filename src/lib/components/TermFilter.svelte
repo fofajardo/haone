@@ -93,9 +93,7 @@
 </script>
 
 <div class="mb-0 min-w-0 space-y-1">
-  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-    >Academic Term</Label
-  >
+  <Label>Academic Term</Label>
   {#if terms.length > 0}
     <Combobox
       value={activeTerm}

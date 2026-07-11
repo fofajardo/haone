@@ -56,27 +56,23 @@
   <Card.Content class="space-y-6 pt-6">
     <div class="grid gap-4 md:grid-cols-2">
       <div class="space-y-2">
-        <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Date</Label>
+        <Label>Date</Label>
         <Input type="date" bind:value={formData.date} disabled={isSubmitting} />
       </div>
       <div class="space-y-2">
-        <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Mode of Payment</Label
-        >
+        <Label>Mode of Payment</Label>
         <Combobox
           bind:value={formData.mop}
           options={mopTypes}
           disabled={isLoading || isSubmitting}
-          class="h-10 w-full"
+          class="h-9 w-full"
         />
       </div>
     </div>
 
     <div class="grid gap-4 md:grid-cols-3">
       <div class="space-y-2">
-        <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Water Fee</Label
-        >
+        <Label>Water Fee</Label>
         <Input
           type="number"
           step="0.01"
@@ -86,9 +82,7 @@
         />
       </div>
       <div class="space-y-2">
-        <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Assoc Fee</Label
-        >
+        <Label>Assoc Fee</Label>
         <Input
           type="number"
           step="0.01"
@@ -98,7 +92,7 @@
         />
       </div>
       <div class="space-y-2">
-        <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Misc</Label>
+        <Label>Misc</Label>
         <Input
           type="number"
           step="0.01"
@@ -110,9 +104,7 @@
     </div>
 
     <div class="space-y-2">
-      <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-        >Proof of Payment Link</Label
-      >
+      <Label>Proof of Payment Link</Label>
       <Input
         placeholder="Drive or Image Link"
         bind:value={formData.proofLink}

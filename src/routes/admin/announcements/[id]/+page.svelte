@@ -206,9 +206,7 @@
         </div>
 
         <div class="space-y-2">
-          <Label for="slug" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Slug</Label
-          >
+          <Label>Slug</Label>
           <Input
             id="slug"
             bind:value={formData.slug}

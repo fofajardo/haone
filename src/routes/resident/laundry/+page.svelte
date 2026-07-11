@@ -402,24 +402,18 @@
     </Dialog.Header>
     <div class="space-y-6 pb-4">
       <div class="space-y-2">
-        <Label class="ml-1 text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Date</Label
-        >
+        <Label>Date</Label>
         <DatePicker.Root bind:value={newReservation.date} class="w-full" />
       </div>
 
       <div class="grid grid-cols-2 gap-4">
         <div class="space-y-2">
-          <Label class="ml-1 text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Start Time</Label
-          >
+          <Label>Start Time</Label>
           <TimePicker.Root bind:value={newReservation.timeStart} class="w-full" />
         </div>
 
         <div class="space-y-2">
-          <Label class="ml-1 text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >End Time</Label
-          >
+          <Label>End Time</Label>
           <TimePicker.Root bind:value={newReservation.timeEnd} class="w-full" />
         </div>
       </div>
@@ -431,20 +425,10 @@
       {/if}
     </div>
     <Dialog.Footer>
-      <Button
-        variant="outline"
-        onclick={() => (isBookingOpen = false)}
-        isLoading={isBooking}
-        icon={CircleX}
-      >
+      <Button variant="outline" onclick={() => (isBookingOpen = false)} isLoading={isBooking}>
         Cancel
       </Button>
-      <Button
-        onclick={handleBook}
-        isLoading={isBooking}
-        disabled={!!validationError}
-        icon={CircleCheck}
-      >
+      <Button onclick={handleBook} isLoading={isBooking} disabled={!!validationError}>
         Confirm
       </Button>
     </Dialog.Footer>

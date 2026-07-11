@@ -70,13 +70,7 @@
   </Card.Content>
   {#if account.ceIssued && account.ceLink && account.ceLink !== "N/A" && account.ceLink !== ""}
     <Card.Footer class="flex flex-col gap-2">
-      <Button
-        variant="secondary"
-        size="sm"
-        class="h-10 w-full"
-        href={account.ceLink}
-        target="_blank"
-      >
+      <Button variant="secondary" size="sm" class="w-full" href={account.ceLink} target="_blank">
         View Certificate <ArrowUpRight class="ml-2 h-4 w-4" />
       </Button>
       {#if account.ceLink.includes("drive.google.com")}

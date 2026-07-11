@@ -227,12 +227,12 @@
         <Combobox
           bind:value={awardData.achievementId}
           options={achievementOptions}
-          class="h-10 w-full"
+          class="h-9 w-full"
         />
       </div>
       <div class="space-y-2">
         <Label>Resident</Label>
-        <Combobox bind:value={awardData.residentId} options={residentOptions} class="h-10 w-full" />
+        <Combobox bind:value={awardData.residentId} options={residentOptions} class="h-9 w-full" />
       </div>
     </div>
     <Dialog.Footer>

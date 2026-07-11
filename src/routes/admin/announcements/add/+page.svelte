@@ -85,25 +85,12 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="New Announcement">
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => goto("/admin/announcements")}
-        icon={ChevronLeft}
-      >
-        Back
-      </Button>
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader title="New Announcement" />
 
   <div class="mx-auto max-w-3xl">
     <div class="space-y-6 rounded-xl border bg-card p-6">
       <div class="space-y-2">
-        <Label for="title" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Title</Label
-        >
+        <Label for="title">Title</Label>
         <Input
           id="title"
           bind:value={formData.title}
@@ -113,9 +100,7 @@
       </div>
 
       <div class="space-y-2">
-        <Label for="slug" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Slug</Label
-        >
+        <Label for="slug">Slug</Label>
         <Input
           id="slug"
           bind:value={formData.slug}
@@ -129,10 +114,7 @@
       </div>
 
       <div class="space-y-2">
-        <Label
-          for="content"
-          class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Content</Label
-        >
+        <Label for="content">Content</Label>
         <RichEditor
           bind:content={formData.content}
           bind:actions={editorActions}
@@ -143,11 +125,7 @@
 
       <div class="grid gap-6 md:grid-cols-2">
         <div class="space-y-2">
-          <Label
-            for="start"
-            class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Start Date & Time</Label
-          >
+          <Label for="start">Start Date & Time</Label>
           <Input
             type="datetime-local"
             id="start"
@@ -157,11 +135,7 @@
         </div>
         {#if !formData.isIndefinite}
           <div class="space-y-2">
-            <Label
-              for="end"
-              class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-              >Expiry Date & Time</Label
-            >
+            <Label for="end">Expiry Date & Time</Label>
             <Input
               type="datetime-local"
               id="end"
@@ -188,9 +162,7 @@
       </div>
 
       <div class="space-y-2">
-        <Label for="tags" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-          >Tags</Label
-        >
+        <Label for="tags">Tags</Label>
         <TagsInput
           id="tags"
           bind:value={tagList}

@@ -235,7 +235,7 @@
 
   <div class="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <div class="space-y-1">
-      <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Unit</Label>
+      <Label>Unit</Label>
       <Combobox
         bind:value={selectedUnit}
         options={[

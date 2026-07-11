@@ -48,9 +48,9 @@
 
 <div class="relative space-y-1 {className}">
   {#if label}
-    <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase">{label}</Label>
+    <Label>{label}</Label>
   {/if}
-  <div class="relative">
+  <div class="relative py-1">
     <Search class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
     <Input
       {placeholder}

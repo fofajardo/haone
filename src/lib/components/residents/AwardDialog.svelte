@@ -127,7 +127,7 @@
           <Combobox
             bind:value={selectedAchievementId}
             options={achievementOptions}
-            class="h-10 w-full"
+            class="w-full"
             placeholder="Select an achievement…"
           />
         {/if}

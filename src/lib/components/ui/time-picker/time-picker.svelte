@@ -19,7 +19,7 @@
     id="{id}-time"
     step="1"
     bind:value
-    class="h-10 appearance-none rounded-xl border-muted-foreground/20 bg-background px-3 pl-9 font-medium [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+    class="h-9 appearance-none rounded-md border-muted-foreground/20 bg-background px-3 pl-9 font-medium [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
   />
   <Clock
     class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"

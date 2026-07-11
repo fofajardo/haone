@@ -98,7 +98,7 @@
       </div>
 
       <div class="space-y-1 lg:col-span-8">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Search</Label>
+        <Label>Search</Label>
         <div class="relative">
           <Search
             class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"

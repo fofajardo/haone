@@ -163,13 +163,12 @@
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-xs font-bold text-muted-foreground uppercase">Period Start</Label
-                >
-                <Input type="date" bind:value={periodStart} class="h-10 text-sm font-medium" />
+                <Label>Period Start</Label>
+                <Input type="date" bind:value={periodStart} />
               </div>
               <div class="space-y-2">
-                <Label class="text-xs font-bold text-muted-foreground uppercase">Period End</Label>
-                <Input type="date" bind:value={periodEnd} class="h-10 text-sm font-medium" />
+                <Label>Period End</Label>
+                <Input type="date" bind:value={periodEnd} />
               </div>
             </div>
           </div>

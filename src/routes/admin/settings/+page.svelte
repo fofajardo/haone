@@ -49,7 +49,7 @@
                     value: key,
                     label: (branding as any)[key].name
                   }))}
-                  class="h-10 w-full"
+                  class="w-full"
                 />
               </div>
             </div>

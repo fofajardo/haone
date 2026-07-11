@@ -215,26 +215,26 @@
         <TermFilter onSelect={() => loadData()} />
       </div>
       <div class="space-y-1 lg:col-span-4">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Search</Label>
+        <Label>Search</Label>
         <div class="relative">
           <Search
             class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
           />
           <Input
             bind:value={tableSync.filters!.search}
-            placeholder="Name, account, or notes…"
+            placeholder="Search by name, account, or notes…"
             class="h-9 pl-9 text-xs"
           />
         </div>
       </div>
 
       <div class="space-y-1 lg:col-span-2">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Transaction Type</Label>
+        <Label>Transaction Type</Label>
         <Combobox bind:value={tableSync.filters!.type} options={transactionOptions} class="h-9" />
       </div>
 
       <div class="space-y-1 lg:col-span-2">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Payment Processor</Label>
+        <Label>Payment Processor</Label>
         <Combobox bind:value={tableSync.filters!.mop} options={mopOptions} class="h-9" />
       </div>
 
@@ -243,7 +243,7 @@
           variant="outline"
           size="sm"
           onclick={resetFilters}
-          class="mb-1 h-9 w-full px-2"
+          class="h-9 w-full px-2"
           icon={FunnelX}
         >
           Clear

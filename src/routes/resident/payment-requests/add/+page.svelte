@@ -183,7 +183,7 @@
       </Card.Root>
     {:else}
       <Card.Root>
-        <Card.Content class="space-y-8 pt-6">
+        <Card.Content class="space-y-8">
           <!-- General Info Section -->
           <div class="space-y-4">
             <Label
@@ -193,20 +193,16 @@
             </Label>
             <div class="grid gap-6 md:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Transaction Date</Label
-                >
+                <Label>Transaction Date</Label>
                 <Input type="date" bind:value={formData.date} disabled={isSubmitting} />
               </div>
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Payment Method</Label
-                >
+                <Label>Payment Method</Label>
                 <Combobox
                   bind:value={formData.mop}
                   options={mopTypes}
                   disabled={isSubmitting}
-                  class="h-10 w-full"
+                  class="w-full"
                 />
               </div>
             </div>
@@ -224,9 +220,7 @@
               <!-- Water Fee Row -->
               <div class="grid gap-4 md:grid-cols-2">
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Water Fee</Label
-                  >
+                  <Label>Water Fee</Label>
                   <div class="flex items-center gap-2">
                     <Input
                       type="number"
@@ -256,9 +250,7 @@
                   </div>
                 </div>
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >New Water Balance</Label
-                  >
+                  <Label>New Water Balance</Label>
                   <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
                     {#if currentWaterBal < 0}
                       <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
@@ -279,9 +271,7 @@
               <!-- Association Fee Row -->
               <div class="grid gap-4 md:grid-cols-2">
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Association Fee</Label
-                  >
+                  <Label>Association Fee</Label>
                   <div class="flex items-center gap-2">
                     <Input
                       type="number"
@@ -311,9 +301,7 @@
                   </div>
                 </div>
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >New Association Balance</Label
-                  >
+                  <Label>New Association Balance</Label>
                   <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
                     {#if currentAssocBal < 0}
                       <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
@@ -333,9 +321,7 @@
 
               <!-- Misc Fee Row -->
               <div class="space-y-1.5">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Misc / Other Payments</Label
-                >
+                <Label>Misc / Other Payments</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -356,9 +342,7 @@
             </Label>
             <div class="space-y-4">
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Proof of Payment Link</Label
-                >
+                <Label>Proof of Payment Link</Label>
                 {#if uiSettings.firebaseEnabled}
                   {#if formData.proofLink}
                     <Card.Root
@@ -434,9 +418,7 @@
                 {/if}
               </div>
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Remarks</Label
-                >
+                <Label>Remarks</Label>
                 <Input
                   placeholder="Optional notes about this payment…"
                   bind:value={formData.notes}
@@ -452,7 +434,7 @@
               class="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-700 dark:text-amber-500"
             >
               <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
-              <p class="text-xs leading-relaxed font-medium">
+              <p class="font-medium">
                 Once submitted, this request cannot be modified. If you make a mistake, please
                 create a new request and cancel the previous one.
               </p>

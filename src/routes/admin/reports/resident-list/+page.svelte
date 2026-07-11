@@ -433,9 +433,7 @@
             <TermFilter onSelect={() => loadData()} />
 
             <div class="space-y-3">
-              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                >Report Categories</Label
-              >
+              <Label>Report Categories</Label>
               <div class="grid gap-3 sm:grid-cols-2">
                 {#each categories as cat}
                   <div
@@ -478,23 +476,17 @@
 
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Period Start</Label
-                >
-                <Input type="date" bind:value={periodStart} class="h-10 text-sm font-medium" />
+                <Label>Period Start</Label>
+                <Input type="date" bind:value={periodStart} />
               </div>
               <div class="space-y-2">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >Period End</Label
-                >
-                <Input type="date" bind:value={periodEnd} class="h-10 text-sm font-medium" />
+                <Label>Period End</Label>
+                <Input type="date" bind:value={periodEnd} />
               </div>
             </div>
 
             <div class="space-y-4">
-              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                >Privacy</Label
-              >
+              <Label>Privacy</Label>
               <div class="flex flex-col gap-4">
                 <div class="flex items-start gap-3">
                   <Checkbox id="isPublicPage" bind:checked={isPublic} />
@@ -605,9 +597,7 @@
             class="mt-4 grid animate-in gap-6 rounded-2xl border bg-muted/30 p-6 fade-in slide-in-from-top-2"
           >
             <div class="space-y-3">
-              <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                >Destination</Label
-              >
+              <Label>Destination</Label>
               <div class="grid gap-2">
                 <button
                   class="flex items-center gap-4 rounded-xl border bg-background p-4 text-left transition-all {sheetsTarget ===
@@ -642,21 +632,13 @@
 
             {#if sheetsTarget === "new"}
               <div class="animate-in space-y-2 fade-in slide-in-from-top-1">
-                <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                  >New Spreadsheet Title</Label
-                >
-                <Input
-                  placeholder="e.g., Resident List"
-                  bind:value={newSheetTitle}
-                  class="h-10 text-sm font-medium"
-                />
+                <Label>New Spreadsheet Title</Label>
+                <Input placeholder="e.g., Resident List" bind:value={newSheetTitle} />
               </div>
             {:else if sheetsTarget === "existing"}
               <div class="animate-in space-y-3 fade-in slide-in-from-top-1">
                 <div class="flex items-center justify-between">
-                  <Label class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                    >Target Spreadsheet</Label
-                  >
+                  <Label>Target Spreadsheet</Label>
                   {#if existingSheetId}
                     <Button
                       variant="ghost"

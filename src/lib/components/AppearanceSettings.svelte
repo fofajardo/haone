@@ -92,7 +92,6 @@
       <div class="grid grid-cols-3 gap-2">
         <Button
           variant={uiSettings.theme === "light" ? "default" : "outline"}
-          class="h-10"
           onclick={() => updateTheme("light")}
           icon={Sun}
         >
@@ -100,7 +99,6 @@
         </Button>
         <Button
           variant={uiSettings.theme === "dark" ? "default" : "outline"}
-          class="h-10"
           onclick={() => updateTheme("dark")}
           icon={Moon}
         >
@@ -108,7 +106,6 @@
         </Button>
         <Button
           variant={uiSettings.theme === "system" ? "default" : "outline"}
-          class="h-10"
           onclick={() => updateTheme("system")}
           icon={Monitor}
         >
@@ -133,14 +130,12 @@
       <div class="grid grid-cols-2 gap-2">
         <Button
           variant={uiSettings.clockFormat === "12h" ? "default" : "outline"}
-          class="h-10"
           onclick={() => (uiSettings.clockFormat = "12h")}
         >
           12-hour (AM/PM)
         </Button>
         <Button
           variant={uiSettings.clockFormat === "24h" ? "default" : "outline"}
-          class="h-10"
           onclick={() => (uiSettings.clockFormat = "24h")}
         >
           24-hour
