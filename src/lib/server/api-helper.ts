@@ -122,7 +122,8 @@ export async function fetchGoogleAPI(url: string, token: string, options: Reques
 
   if (!resp.ok) {
     if (resp.status === 429) {
-      throw new Error("Google API rate limit exceeded. Please try again later.");
+      // Google API rate limit exceeded. This is user-facing, so we should provide a clear message.
+      throw new Error("Too many people are using the platform right now. Please try again later.");
     }
     const err = await resp.text();
     throw new Error(`Google API Error (${resp.status}): ${err}`);
