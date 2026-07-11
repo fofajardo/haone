@@ -78,7 +78,10 @@
     {#each navItems as item}
       {@const active = isActive(item.href)}
       {@const IconComponent = item.icon}
-      <a href={item.href} class="group flex flex-1 flex-col items-center justify-center gap-1 outline-none">
+      <a
+        href={item.href}
+        class="group flex flex-1 flex-col items-center justify-center gap-1 outline-none"
+      >
         <div
           class="flex h-8 w-16 items-center justify-center rounded-full transition-all duration-200 {active
             ? 'bg-brand/15'

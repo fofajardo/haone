@@ -85,7 +85,7 @@
     {/if}
     <Sidebar.Inset class="relative flex flex-col overflow-hidden">
       <div
-        class="transition-transform duration-300 {scrollState.headerHidden
+        class="md:hidden transition-transform duration-300 {scrollState.headerHidden
           ? '-translate-y-full'
           : 'translate-y-0'} shrink-0 z-10"
       >
@@ -95,7 +95,7 @@
         <div
           in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
           out:fly={{ duration: 120, y: -6, opacity: 0 }}
-          class="absolute left-0 right-0 overflow-y-auto transition-[top] duration-300 {scrollState.headerHidden
+          class="absolute left-0 right-0 overflow-y-auto transition-[top] duration-300 md:top-0 {scrollState.headerHidden
             ? 'top-0'
             : 'top-16'} {residentState.needsOnboarding ? 'bottom-0' : 'bottom-20 md:bottom-0'}"
           onscroll={scrollState.handleScroll}

@@ -23,6 +23,8 @@
   import { canAccessLaundry, canAccessAchievements } from "$lib/resident-logic";
   import { AccountType } from "$lib/schemas";
   import { isStaticIpEnabled } from "$lib/rooms-utils";
+  import ProfileHeader from "$lib/components/ProfileHeader.svelte";
+  import MobileProfileCard from "$lib/components/MobileProfileCard.svelte";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -124,58 +126,12 @@
 </script>
 
 <Sidebar.Root collapsible="icon" class="data-[mobile=true]:w-full!">
-  <Sidebar.Header>
-    <div class="flex items-center gap-2 px-2 py-4">
-      <img src="/ha1.svg" alt="HAOne" class="h-8 w-8" />
-      <span class="text-xl font-bold tracking-tight group-data-[collapsible=icon]:hidden"
-        >HAOne</span
-      >
-      {#if sidebar.isMobile}
-        <div class="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            class="h-10 gap-2 px-3 text-muted-foreground hover:text-foreground"
-            onclick={() => auth.logout()}
-          >
-            <LogOut class="h-5 w-5" />
-            <span class="text-sm font-medium">Sign out</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            class="size-10 [&_svg]:size-6"
-            onclick={() => sidebar.setOpenMobile(false)}
-          >
-            <X />
-          </Button>
-        </div>
-      {/if}
-    </div>
-    {#if sidebar.isMobile && auth.user}
-      <div class="flex flex-col gap-4 px-4 pt-2 pb-6">
-        <div class="flex items-center gap-4">
-          {#if !imgError}
-            <img
-              src={auth.cachedPicture || auth.user.picture}
-              alt={auth.user.name}
-              class="h-16 w-16 rounded-full border-2 border-primary/20 object-cover shadow-sm"
-              onerror={() => (imgError = true)}
-            />
-          {:else}
-            <CircleUser class="h-16 w-16 text-muted-foreground" />
-          {/if}
-          <div class="flex flex-col">
-            <span class="text-lg font-bold tracking-tight">{auth.user.name}</span>
-            <span class="text-sm text-muted-foreground">{auth.user.email}</span>
-          </div>
-        </div>
-      </div>
-      <Sidebar.Separator />
-    {/if}
+  <Sidebar.Header class="p-0 shrink-0">
+    <ProfileHeader />
   </Sidebar.Header>
 
   <Sidebar.Content>
+    <MobileProfileCard />
     <Sidebar.Group>
       <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
       <Sidebar.Menu>
@@ -259,32 +215,33 @@
   <Sidebar.Footer>
     <Sidebar.Menu>
       <Sidebar.MenuItem>
-        {#if auth.user && !sidebar.isMobile}
-          <div class="flex items-center gap-3 p-2 group-data-[collapsible=icon]:p-0">
-            {#if !imgError}
-              <img
-                src={auth.cachedPicture || auth.user.picture}
-                alt={auth.user.name}
-                class="h-8 w-8 rounded-full border border-border"
-                onerror={() => (imgError = true)}
+        {#if auth.user}
+          {#if !sidebar.isMobile}
+            <div class="flex items-center gap-3 p-2 group-data-[collapsible=icon]:p-0">
+              {#if !imgError}
+                <img
+                  src={auth.cachedPicture || auth.user.picture}
+                  alt={auth.user.name}
+                  class="h-8 w-8 rounded-full border border-border"
+                  onerror={() => (imgError = true)}
+                />
+              {:else}
+                <CircleUser class="h-8 w-8 text-muted-foreground" />
+              {/if}
+              <div class="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
+                <span class="truncate text-xs font-semibold">{auth.user.name}</span>
+                <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onclick={() => auth.logout()}
+                class="ml-auto group-data-[collapsible=icon]:hidden"
+                icon={LogOut}
+                title="Logout"
               />
-            {:else}
-              <CircleUser class="h-8 w-8 text-muted-foreground" />
-            {/if}
-            <div class="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-              <span class="truncate text-xs font-semibold">{auth.user.name}</span>
-              <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
             </div>
-            <button
-              onclick={() => auth.logout()}
-              class="ml-auto rounded group-data-[collapsible=icon]:hidden hover:bg-muted {sidebar.isMobile
-                ? 'p-2'
-                : 'p-1'}"
-              title="Logout"
-            >
-              <LogOut class={sidebar.isMobile ? "h-5 w-5" : "h-4 w-4"} />
-            </button>
-          </div>
+          {/if}
         {/if}
       </Sidebar.MenuItem>
     </Sidebar.Menu>
