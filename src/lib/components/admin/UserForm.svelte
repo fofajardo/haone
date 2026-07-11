@@ -8,15 +8,11 @@
   import {
     Save,
     User as UserIcon,
-    Mail,
-    Contact,
     IdCard,
     GraduationCap,
     UserCog,
-    StickyNote,
     Plus,
     Trash2,
-    MapPin,
     AwardIcon
   } from "@lucide/svelte";
   import { type UserRecord, UserTag } from "$lib/schemas";
@@ -248,14 +244,14 @@
         <Card.Content class="space-y-4 overflow-visible">
           <div class="space-y-2">
             <Label for="email" class="flex items-center gap-1.5">
-              <Mail class="h-3 w-3" /> Email Address
+              Email Address
             </Label>
             <Input id="email" type="email" bind:value={formData.email} />
           </div>
 
           <div class="space-y-2">
             <Label for="secondaryContact" class="flex items-center gap-1.5">
-              <Contact class="h-3 w-3" /> Secondary Contact
+              Secondary Contact
             </Label>
             <Input
               id="secondaryContact"
@@ -266,7 +262,7 @@
 
           <div class="space-y-2">
             <Label for="address" class="flex items-center gap-1.5">
-              <MapPin class="h-3 w-3" /> Permanent Address
+              Permanent Address
             </Label>
             <Textarea
               id="address"
@@ -278,14 +274,14 @@
 
           <div class="space-y-2">
             <Label for="studentNo" class="flex items-center gap-1.5">
-              <IdCard class="h-3 w-3" /> Student Number
+              Student Number
             </Label>
             <Input id="studentNo" bind:value={formData.studentNo} />
           </div>
 
           <div class="space-y-2">
             <Label for="tags" class="flex items-center gap-1.5">
-              <UserCog class="h-3 w-3" /> Tags
+              Tags
             </Label>
             <TagsInput
               id="tags"
@@ -299,7 +295,7 @@
 
           <div class="space-y-2 pt-2">
             <Label for="notes" class="flex items-center gap-1.5">
-              <StickyNote class="h-3 w-3" /> Notes
+              Notes
             </Label>
             <Textarea
               id="notes"
