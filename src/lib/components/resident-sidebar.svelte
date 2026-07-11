@@ -13,7 +13,8 @@
     Megaphone,
     Trophy,
     BookUser,
-    CirclePlus
+    CirclePlus,
+    Network
   } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button/index.js";
   import { auth } from "$lib/auth.svelte";
@@ -21,6 +22,7 @@
   import { page } from "$app/state";
   import { canAccessLaundry, canAccessAchievements } from "$lib/resident-logic";
   import { AccountType } from "$lib/schemas";
+  import { isStaticIpEnabled } from "$lib/rooms-utils";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -55,6 +57,11 @@
       icon: Banknote
     },
     {
+      title: "Static IP Address",
+      url: "/resident/static-ip",
+      icon: Network
+    },
+    {
       title: "Announcements",
       url: "/resident/announcements",
       icon: Megaphone
@@ -75,6 +82,7 @@
 
   const filteredServiceItems = $derived.by(() => {
     const type = residentState.status?.account?.type || "";
+    const room = residentState.status?.account?.room || "";
     return serviceItems.filter((item) => {
       if (item.title === "Laundry") {
         if (!canAccessLaundry(type)) {
@@ -86,6 +94,11 @@
           return true;
         }
         if (!canAccessAchievements(type)) {
+          return false;
+        }
+      }
+      if (item.title === "Static IP") {
+        if (!room || !isStaticIpEnabled(room, "ati")) {
           return false;
         }
       }

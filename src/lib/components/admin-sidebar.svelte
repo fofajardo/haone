@@ -20,7 +20,8 @@
     Banknote,
     Megaphone,
     Trophy,
-    BookUser
+    BookUser,
+    Network
   } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import { auth } from "$lib/auth.svelte";
@@ -131,6 +132,11 @@
       title: "Achievements",
       url: "/admin/achievements",
       icon: Trophy
+    },
+    {
+      title: "Static IP Address",
+      url: "/admin/static-ip",
+      icon: Network
     }
   ];
 </script>

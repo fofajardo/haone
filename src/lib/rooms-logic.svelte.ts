@@ -10,6 +10,7 @@ import {
   ACCOUNT_COL,
   CURR_COL,
   JOURNAL_COL,
+  STATIC_IP_COL,
   AccountType,
   UserTag,
   type UserRecord
@@ -417,6 +418,58 @@ export async function applySync(actions: SyncPreviewAction[]) {
       return row;
     });
     await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", rows);
+
+    // Carry forward any prior term static IP addresses
+    if (uiSettings.sharedRecordsId) {
+      try {
+        const staticIpRows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "static_ip!A:G");
+        const carryForwardRows: any[][] = [];
+
+        for (const a of accountCreations) {
+          const rid = a.payload.residentId;
+          const targetPeriod = a.payload.period;
+
+          const priorRows = staticIpRows.slice(1).filter((r) => {
+            return r[STATIC_IP_COL.RESIDENT_ID] === rid && r[STATIC_IP_COL.PERIOD] !== targetPeriod;
+          });
+
+          if (priorRows.length > 0) {
+            const sortedPeriods = [
+              ...new Set(
+                priorRows.map((r) => {
+                  return r[STATIC_IP_COL.PERIOD];
+                })
+              )
+            ].sort((p1, p2) => {
+              return p2.localeCompare(p1);
+            });
+            const latestPeriod = sortedPeriods[0];
+            const latestEntries = priorRows.filter((r) => {
+              return r[STATIC_IP_COL.PERIOD] === latestPeriod;
+            });
+
+            for (const entry of latestEntries) {
+              const newRow = new Array(7).fill("");
+              newRow[STATIC_IP_COL.ID] = crypto.randomUUID();
+              newRow[STATIC_IP_COL.RECORDER_ID] =
+                entry[STATIC_IP_COL.RECORDER_ID] || auth.user?.email || "";
+              newRow[STATIC_IP_COL.RESIDENT_ID] = rid;
+              newRow[STATIC_IP_COL.PERIOD] = targetPeriod;
+              newRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
+              newRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
+              newRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
+              carryForwardRows.push(newRow);
+            }
+          }
+        }
+
+        if (carryForwardRows.length > 0) {
+          await appendSheetRow(uiSettings.sharedRecordsId, "static_ip!A:G", carryForwardRows);
+        }
+      } catch (e) {
+        console.error("Failed to carry forward static IPs in applySync:", e);
+      }
+    }
   }
 
   // 5. Mark CURR as Evaluated
@@ -440,12 +493,14 @@ export async function applySync(actions: SyncPreviewAction[]) {
 }
 
 export async function manualAssignBed(residentId: string, room: string, bed: string, term: string) {
-  if (!uiSettings.accountingWorkbookId) throw new Error("Accounting Workbook ID not configured");
+  if (!uiSettings.accountingWorkbookId) {
+    throw new Error("Accounting Workbook ID not configured");
+  }
 
   const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
-  const rowIndex = accRows.findIndex(
-    (r) => r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term
-  );
+  const rowIndex = accRows.findIndex((r) => {
+    return r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term;
+  });
 
   if (rowIndex !== -1) {
     const actualRow = rowIndex + 1;
@@ -462,6 +517,51 @@ export async function manualAssignBed(residentId: string, room: string, bed: str
     newRow[ACCOUNT_COL.ROOM] = room;
     newRow[ACCOUNT_COL.BED] = bed;
     await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", [newRow]);
+
+    // Carry forward any prior term static IP addresses
+    if (uiSettings.sharedRecordsId) {
+      try {
+        const staticIpRows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "static_ip!A:G");
+        const priorRows = staticIpRows.slice(1).filter((r) => {
+          return r[STATIC_IP_COL.RESIDENT_ID] === residentId && r[STATIC_IP_COL.PERIOD] !== term;
+        });
+
+        if (priorRows.length > 0) {
+          const sortedPeriods = [
+            ...new Set(
+              priorRows.map((r) => {
+                return r[STATIC_IP_COL.PERIOD];
+              })
+            )
+          ].sort((p1, p2) => {
+            return p2.localeCompare(p1);
+          });
+          const latestPeriod = sortedPeriods[0];
+          const latestEntries = priorRows.filter((r) => {
+            return r[STATIC_IP_COL.PERIOD] === latestPeriod;
+          });
+
+          const carryForwardRows = latestEntries.map((entry) => {
+            const newIpRow = new Array(7).fill("");
+            newIpRow[STATIC_IP_COL.ID] = crypto.randomUUID();
+            newIpRow[STATIC_IP_COL.RECORDER_ID] =
+              entry[STATIC_IP_COL.RECORDER_ID] || auth.user?.email || "";
+            newIpRow[STATIC_IP_COL.RESIDENT_ID] = residentId;
+            newIpRow[STATIC_IP_COL.PERIOD] = term;
+            newIpRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
+            newIpRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
+            newIpRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
+            return newIpRow;
+          });
+
+          if (carryForwardRows.length > 0) {
+            await appendSheetRow(uiSettings.sharedRecordsId, "static_ip!A:G", carryForwardRows);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to carry forward static IPs in manualAssignBed:", e);
+      }
+    }
   }
 }
 

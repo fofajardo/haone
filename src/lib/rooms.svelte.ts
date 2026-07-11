@@ -1,5 +1,6 @@
 import { brandingState } from "./branding.svelte";
 import roomsData from "./rooms.json";
+import { getAllRooms } from "./rooms-utils";
 
 export interface RoomSlot {
   room_number: string;
@@ -21,16 +22,16 @@ class RoomsState {
   }
 
   getUnit(roomNumber: string): string {
-    if (!roomNumber) return "N/A";
+    if (!roomNumber) {
+      return "N/A";
+    }
     const chars = this.unitChars;
     return roomNumber.substring(0, chars).toUpperCase();
   }
 
   get config(): RoomConfig[] {
     const key = brandingState.selectedKey;
-    // @ts-ignore
-    const profile = roomsData[key] || roomsData["default"];
-    return profile?.rooms || [];
+    return getAllRooms(key);
   }
 
   get allSlots(): RoomSlot[] {
@@ -48,8 +49,12 @@ class RoomsState {
 
   isAvailable(roomNumber: string, slot: string): boolean {
     const room = this.config.find((r) => r.room_number === roomNumber);
-    if (!room) return false;
-    if (room.unavailable_reason) return false;
+    if (!room) {
+      return false;
+    }
+    if (room.unavailable_reason) {
+      return false;
+    }
     return room.available_slots.includes(slot);
   }
 }

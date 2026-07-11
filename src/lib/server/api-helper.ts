@@ -344,6 +344,7 @@ export async function getSpreadsheetIdForSheet(sheetName: string): Promise<strin
     case "settings":
     case "payment_requests":
     case "announcements":
+    case "static_ip":
       return PUBLIC_GS_SR_ID;
     case "constants":
     case "accounts":
