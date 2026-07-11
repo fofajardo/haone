@@ -243,9 +243,7 @@
         </Card.Header>
         <Card.Content class="space-y-4 overflow-visible">
           <div class="space-y-2">
-            <Label for="email" class="flex items-center gap-1.5">
-              Email Address
-            </Label>
+            <Label for="email" class="flex items-center gap-1.5">Email Address</Label>
             <Input id="email" type="email" bind:value={formData.email} />
           </div>
 
@@ -261,9 +259,7 @@
           </div>
 
           <div class="space-y-2">
-            <Label for="address" class="flex items-center gap-1.5">
-              Permanent Address
-            </Label>
+            <Label for="address" class="flex items-center gap-1.5">Permanent Address</Label>
             <Textarea
               id="address"
               bind:value={formData.address}
@@ -273,16 +269,12 @@
           </div>
 
           <div class="space-y-2">
-            <Label for="studentNo" class="flex items-center gap-1.5">
-              Student Number
-            </Label>
+            <Label for="studentNo" class="flex items-center gap-1.5">Student Number</Label>
             <Input id="studentNo" bind:value={formData.studentNo} />
           </div>
 
           <div class="space-y-2">
-            <Label for="tags" class="flex items-center gap-1.5">
-              Tags
-            </Label>
+            <Label for="tags" class="flex items-center gap-1.5">Tags</Label>
             <TagsInput
               id="tags"
               bind:value={userTypes}
@@ -294,9 +286,7 @@
           </div>
 
           <div class="space-y-2 pt-2">
-            <Label for="notes" class="flex items-center gap-1.5">
-              Notes
-            </Label>
+            <Label for="notes" class="flex items-center gap-1.5">Notes</Label>
             <Textarea
               id="notes"
               bind:value={formData.notes}
