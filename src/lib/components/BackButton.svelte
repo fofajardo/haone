@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ChevronLeft } from "@lucide/svelte";
+  import { goto } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
   import { useSidebar } from "$lib/components/ui/sidebar/context.svelte.js";
 
@@ -15,6 +16,12 @@
 
   const sidebar = useSidebar();
 
+  function getParentPath(pathname: string): string {
+    const segments = pathname.split("/").filter(Boolean);
+    segments.pop();
+    return "/" + segments.join("/");
+  }
+
   function handleBack(e: MouseEvent) {
     if (sidebar.isMobile && sidebar.openMobile) {
       e.preventDefault();
@@ -25,7 +32,7 @@
     if (onclick) {
       onclick();
     } else if (!href) {
-      history.back();
+      goto(getParentPath(window.location.pathname));
     }
   }
 </script>
