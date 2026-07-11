@@ -114,14 +114,17 @@ class ResidentState {
 
   forceOnboarding = $state(false);
 
-  get needsOnboarding() {
+  get needsOnboarding(): boolean {
     if (this.forceOnboarding) return true;
-    if (this.status?.currEntry?.accountType === AccountType.ALUMNUS) {
+    if (!this.status) {
+      return false;
+    }
+    if (this.status.currEntry?.accountType === AccountType.ALUMNUS) {
       return !this.status.isRegistered;
     }
     return (
-      this.status &&
-      (!this.status.isRegistered || !this.status.hasActiveAccount || !this.status.account?.bed)
+      !!(this.status.isRegistered && this.status.hasActiveAccount && this.status.account?.bed) ===
+      false
     );
   }
 }
