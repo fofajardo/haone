@@ -72,7 +72,7 @@ export function patchCacheRange(spreadsheetId: string, range: string, values: an
       for (let r = 0; r < values.length; r++) {
         const targetRow = startRow + r;
 
-        // Fill gaps if appending beyond current data length (e.g. empty rows in sheet)
+        // Fill gaps if appending beyond current data length (e.g., empty rows in sheet)
         while (targetRow > data.length) {
           data.push(new Array(data[0]?.length || 0).fill(""));
         }

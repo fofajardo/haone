@@ -121,7 +121,7 @@ export function generatePaymentStatusHtml(data: PaymentStatusData, branding: Bra
     <div style="margin-top: 25px; margin-bottom: 25px; padding: 20px; border: 2px solid #dc2626; background-color: #fef2f2; border-radius: 8px;">
       <p style="margin: 0; font-size: 16px; font-weight: bold; color: #991b1b; text-transform: uppercase;">⚠️ CLEARANCE WARNING</p>
       <p style="margin: 10px 0 0 0; font-size: 14px; color: #b91c1c; line-height: 1.5; font-style: italic;">
-        25. The resident shall pay a semestral association fee to the Residence Hall Association and other fees (e.g. Water fees, Gas fees, etc.) determined and agreed upon by the Association and the hall residents. Non-payment or insufficient payment to the Association will incur an accountability and may be cause for holding the resident’s next dorm application and University clearance until settled.
+        25. The resident shall pay a semestral association fee to the Residence Hall Association and other fees (e.g., Water fees, Gas fees, etc.) determined and agreed upon by the Association and the hall residents. Non-payment or insufficient payment to the Association will incur an accountability and may be cause for holding the resident’s next dorm application and University clearance until settled.
       </p>
       <p style="margin: 10px 0 0 0; font-size: 11px; color: #7f1d1d; font-weight: bold;">SECTION 25 (NORMS OF CONDUCT AND RESPONSIBILITIES) OF THE RESIDENCE HALL AGREEMENT</p>
     </div>`

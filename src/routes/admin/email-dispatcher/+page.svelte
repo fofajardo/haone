@@ -113,7 +113,7 @@
 
         await sendEmail(auth.accessToken, raw);
 
-        // Execute post-send logic if any (e.g. updating sheets)
+        // Execute post-send logic if any (e.g., updating sheets)
         if (item.onSuccess) {
           await item.onSuccess();
         }

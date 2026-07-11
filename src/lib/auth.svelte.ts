@@ -83,7 +83,7 @@ class AuthState {
   getHighResPictureUrl(url: string): string {
     if (!url) return url;
     // Google photo URLs standard pattern contains sizing parameters like =s96-c, =s64-c, /s96-c/, etc.
-    // Replace size parameters with =s384-c for high-quality rendering (e.g. 384x384 px)
+    // Replace size parameters with =s384-c for high-quality rendering (e.g., 384x384 px)
     return url.replace(/([=|\/])s\d+(-[c|p|o|g])?(\/|$)/, "$1s384-c$3");
   }
 
