@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { LoaderCircle } from "@lucide/svelte";
-
   let { class: className = "" } = $props();
 </script>
 
-<div class="flex flex-col items-center justify-center gap-3 py-12 {className}">
-  <LoaderCircle class="h-8 w-8 animate-spin text-primary" />
+<div class="flex flex-col gap-4 {className}">
+  <div class="h-50 w-full animate-pulse rounded-md bg-muted"></div>
 </div>
