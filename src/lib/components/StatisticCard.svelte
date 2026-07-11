@@ -6,12 +6,14 @@
     title,
     value,
     isLoading = false,
-    icon: IconSnippet
+    icon: IconSnippet,
+    children
   }: {
     title: string;
-    value: string | number;
+    value?: string | number;
     isLoading?: boolean;
     icon?: Snippet;
+    children?: Snippet;
   } = $props();
 </script>
 
@@ -29,6 +31,8 @@
   <Card.Content>
     {#if isLoading}
       <div class="h-9 w-24 animate-pulse rounded bg-muted/50"></div>
+    {:else if children}
+      {@render children()}
     {:else}
       <p class="text-3xl font-semibold tracking-tight">{value}</p>
     {/if}
