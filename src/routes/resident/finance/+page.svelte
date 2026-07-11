@@ -28,14 +28,23 @@
 
     // Sync URL without reload
     const url = new URL(window.location.href);
-    url.searchParams.set("term", targetTerm);
+    if (targetTerm) {
+      url.searchParams.set("term", targetTerm);
+    }
     replaceState(url.toString(), {});
 
     isLoading = true;
     error = null;
     try {
       status = await fetchServer(`/api/resident/check-status?term=${targetTerm}`);
-      if (status.activeTerm) {
+      if (status.activeTerm && !targetTerm) {
+        // First load with no term — reload with resolved active term so transactions are filtered
+        localTerm = status.activeTerm;
+        status = await fetchServer(`/api/resident/check-status?term=${localTerm}`);
+        const u = new URL(window.location.href);
+        u.searchParams.set("term", localTerm);
+        replaceState(u.toString(), {});
+      } else if (status.activeTerm) {
         localTerm = status.activeTerm;
       }
       pageState.title = "Finance";

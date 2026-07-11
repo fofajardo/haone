@@ -118,8 +118,8 @@ export const GET: RequestHandler = async ({ url, request }) => {
       )
     ].filter(Boolean);
 
-    // If no transactions yet, at least show the system active term
-    if (allTerms.length === 0) allTerms.push(activeTerm);
+    // Always ensure activeTerm is present in the list
+    if (activeTerm && !allTerms.includes(activeTerm)) allTerms.push(activeTerm);
 
     // Calculate financials
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
