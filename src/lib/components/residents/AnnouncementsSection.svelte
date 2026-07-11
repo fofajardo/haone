@@ -3,30 +3,34 @@
   import { fetchAnnouncements } from "$lib/shared-records-logic";
   import type { AnnouncementRecord } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
-  import { Clock, ChevronRight } from "@lucide/svelte";
+  import { ChevronRight, ChevronLeft } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import RichEditor from "$lib/components/RichEditor.svelte";
 
+  import { Badge } from "$lib/components/ui/badge";
+  import { ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
+  import { goto } from "$app/navigation";
+
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
+  let activeIndex = $state(0);
 
   async function loadData() {
     try {
-      const all = await fetchAnnouncements();
-      const now = new Date().toISOString().split("T")[0];
-      announcements = all
-        .filter((a) => {
-          if (a.isAdminOnly) return false;
-          if (a.startDate > now) return false;
-          if (a.isIndefinite) return true;
-          return a.expiryDate >= now;
-        })
-        .sort((a, b) => b.dateCreated.localeCompare(a.dateCreated));
+      announcements = await fetchAnnouncements();
     } catch (e) {
       console.error(e);
     } finally {
       isLoading = false;
     }
+  }
+
+  function nextSlide() {
+    activeIndex = (activeIndex + 1) % announcements.length;
+  }
+
+  function prevSlide() {
+    activeIndex = (activeIndex - 1 + announcements.length) % announcements.length;
   }
 
   onMount(loadData);
@@ -36,41 +40,111 @@
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h2 class="flex items-center gap-2 text-xl font-bold text-foreground">Announcements</h2>
-      <Button variant="ghost" size="sm" href="/resident/announcements">
-        View All <ChevronRight class="ml-1 h-4 w-4" />
-      </Button>
+      <div class="flex items-center gap-2">
+        {#if announcements.length > 1}
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            onclick={prevSlide}
+            title="Previous"
+            aria-label="Previous announcement"
+          >
+            <ChevronLeft class="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-8 w-8"
+            onclick={nextSlide}
+            title="Next"
+            aria-label="Next announcement"
+          >
+            <ChevronRight class="h-4 w-4" />
+          </Button>
+        {/if}
+      </div>
     </div>
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {#each announcements.slice(0, 3) as a}
-        <Card.Root
-          size="sm"
-          class="overflow-hidden border-l-4 border-none border-l-brand bg-card transition-all"
-        >
-          <Card.Content class="space-y-3 p-4">
-            <div class="flex items-center justify-between">
-              <div class="flex flex-wrap gap-1">
-                {#each (a.tags || "")
-                  .split(",")
-                  .map((t) => t.trim())
-                  .filter(Boolean) as tag}
-                  <span
-                    class="rounded-full bg-brand/10 px-1.5 py-0.5 text-xs font-black tracking-tighter text-brand uppercase"
-                    >{tag}</span
-                  >
-                {/each}
+
+    <div
+      class="relative w-full max-w-full mx-auto overflow-hidden rounded-xl border bg-card cursor-pointer transition-colors hover:bg-muted/30"
+      onclick={() => goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
+      onkeydown={(e) =>
+        e.key === "Enter" && goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
+      role="button"
+      tabindex="0"
+    >
+      <div
+        class="flex transition-transform duration-300 ease-out"
+        style="transform: translateX(-{activeIndex * 100}%);"
+      >
+        {#each announcements as a}
+          <div class="w-full shrink-0">
+            <Card.Content class="space-y-4 p-6 pb-2">
+              <div class="space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-xl font-bold text-foreground flex-1 line-clamp-1">{a.title}</h3>
+                  <div class="flex flex-wrap gap-1 shrink-0">
+                    {#each (a.tags || "")
+                      .split(",")
+                      .map((t) => t.trim())
+                      .filter(Boolean) as tag}
+                      <Badge
+                        variant="secondary"
+                        class="text-xs py-0.5 px-2 {ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
+                          ANNOUNCEMENT_TAG_COLORS.DEFAULT}"
+                      >
+                        {tag}
+                      </Badge>
+                    {/each}
+                  </div>
+                </div>
+
+                <div class="line-clamp-8 text-sm text-muted-foreground">
+                  <RichEditor content={a.content} editable={false} />
+                </div>
               </div>
-              <span
-                class="flex items-center gap-1 text-xs font-bold text-muted-foreground uppercase"
-              >
-                <Clock class="h-2.5 w-2.5" />
-                {a.startDate}
-              </span>
-            </div>
-            <h3 class="line-clamp-1 leading-tight font-black text-foreground">{a.title}</h3>
-            <RichEditor content={a.content} editable={false} />
-          </Card.Content>
-        </Card.Root>
-      {/each}
+            </Card.Content>
+          </div>
+        {/each}
+      </div>
+
+      <!-- Fixed Footer Block -->
+      <div class="flex items-center justify-between border-t border-border p-6 bg-card shrink-0">
+        <div class="flex flex-col">
+          <span class="text-sm font-medium text-foreground"
+            >{announcements[activeIndex].creatorName || "Officer"}</span
+          >
+          <span class="text-xs text-muted-foreground">
+            {new Date(
+              announcements[activeIndex].startDate || announcements[activeIndex].dateCreated
+            ).toLocaleString(undefined, {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit"
+            })}
+          </span>
+        </div>
+
+        {#if announcements.length > 1}
+          <div class="flex gap-1 items-center">
+            {#each announcements as _, idx}
+              <button
+                onclick={(e) => {
+                  e.stopPropagation();
+                  activeIndex = idx;
+                }}
+                class="h-1.5 rounded-full transition-all {activeIndex === idx
+                  ? 'w-4 bg-brand'
+                  : 'w-1.5 bg-muted-foreground/35'}"
+                aria-label="Go to announcement slide {idx + 1}"
+              ></button>
+            {/each}
+          </div>
+        {/if}
+      </div>
     </div>
   </div>
 {/if}

@@ -187,29 +187,19 @@
   onMount(loadDashboardData);
 </script>
 
-<div class="space-y-12 pb-12">
+<div class="space-y-6 pb-12">
   <!-- Header Section -->
   <div
-    class="relative overflow-hidden rounded-3xl bg-brand px-4 py-8 text-brand-foreground shadow-2xl sm:px-8 sm:py-12"
+    class="relative overflow-hidden rounded-3xl bg-brand/10 px-4 py-8 text-brand sm:px-8 sm:py-12"
   >
-    <div
-      class="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
-    ></div>
-    <div
-      class="absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
-    ></div>
-
     <div class="relative z-10 space-y-4">
-      <div
-        class="flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-white/60 uppercase"
-      ></div>
-      <h1 class="text-4xl font-black tracking-tight text-brand-foreground md:text-5xl lg:text-6xl">
-        Welcome back, <span class="text-brand-foreground">{auth.user?.name.split(" ")[0]}</span>
+      <div class="flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase"></div>
+      <h1 class="text-4xl font-black tracking-tight md:text-5xl lg:text-6xl">
+        Welcome back, {auth.user?.name.split(" ")[0]}
       </h1>
-      <p class="max-w-[600px] text-lg text-brand-foreground md:text-xl">
+      <p class="text-lg text-brand md:text-xl">
         Manage residents, track collections, and automate communications for <span
-          class="font-semibold text-brand-foreground"
-          >{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
+          class="font-semibold">{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
         >.
       </p>
     </div>
@@ -238,86 +228,15 @@
     </StatisticCard>
   </div>
 
-  <div class="grid gap-8 lg:grid-cols-3">
-    <!-- Tools Section -->
-    <div class="lg:col-span-2">
-      <div class="mb-6 flex items-center justify-between">
-        <h2 class="text-xl font-bold text-foreground">Administrative Tools</h2>
-      </div>
-      <div class="grid gap-4 sm:grid-cols-2">
-        {#each actions as tool}
-          <DashboardActionCard {...tool} />
-        {/each}
-      </div>
+  <!-- Administrative Tools -->
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-bold text-foreground">Administrative Tools</h2>
     </div>
-
-    <!-- Recent Activity -->
-    <div>
-      <div class="mb-6 flex items-center justify-between">
-        <h2 class="text-xl font-bold text-foreground">Recent Transactions</h2>
-        <Button variant="ghost" size="icon" href="/admin/transactions" title="View All">
-          <ArrowRight class="h-4 w-4" />
-        </Button>
-      </div>
-      <Card.Root class="overflow-hidden border-none bg-card p-0 shadow-md">
-        <Card.Content class="divide-y p-0">
-          {#if isLoading}
-            {#each Array(5) as _}
-              <div class="flex animate-pulse items-center gap-4 p-4">
-                <div class="h-10 w-10 rounded-full bg-muted"></div>
-                <div class="flex-1 space-y-2">
-                  <div class="h-3 w-1/2 rounded bg-muted/50"></div>
-                  <div class="h-2 w-1/3 rounded bg-muted/50"></div>
-                </div>
-              </div>
-            {/each}
-          {:else if recentTransactions.length > 0}
-            {#each recentTransactions as tx}
-              <div
-                class="group flex items-start gap-3 p-3 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4 sm:p-4"
-              >
-                <div
-                  class="shrink-0 rounded-full p-2.5 transition-colors group-hover:bg-card group-hover:shadow-sm {tx.amount >
-                  0
-                    ? 'bg-emerald-500/10 text-emerald-600'
-                    : tx.amount < 0
-                      ? 'bg-rose-500/10 text-rose-600'
-                      : 'bg-brand/5 text-brand'}"
-                >
-                  {#if tx.amount > 0}
-                    <TrendingUp class="h-4 w-4" />
-                  {:else if tx.amount < 0}
-                    <TrendingDown class="h-4 w-4" />
-                  {:else}
-                    <History class="h-4 w-4" />
-                  {/if}
-                </div>
-
-                <div
-                  class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div class="min-w-0 flex-1">
-                    <p class="truncate text-sm font-bold text-foreground">{tx.name}</p>
-                    <p class="truncate text-xs font-bold text-muted-foreground uppercase">
-                      {translateType(tx.type, transactionTypes)} • {formatDate(tx.date)}
-                    </p>
-                  </div>
-                  <div class="shrink-0 text-left sm:text-right">
-                    <p class="font-mono text-sm font-bold text-foreground tabular-nums">
-                      {formatCurrency(tx.amount)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            {/each}
-          {:else}
-            <div class="flex h-40 flex-col items-center justify-center p-8 text-center">
-              <History class="mb-2 h-8 w-8 text-muted-foreground/30" />
-              <p class="text-sm font-medium text-muted-foreground">No recent transactions</p>
-            </div>
-          {/if}
-        </Card.Content>
-      </Card.Root>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {#each actions as tool}
+        <DashboardActionCard {...tool} />
+      {/each}
     </div>
   </div>
 </div>

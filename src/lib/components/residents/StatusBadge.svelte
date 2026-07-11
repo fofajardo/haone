@@ -3,7 +3,7 @@
   import { getPaymentStatus } from "$lib/resident-logic";
   import type { ResidentRecord as Account } from "$lib/schemas";
 
-  let { account }: { account: Account } = $props();
+  let { account, textOnly = false }: { account: Account; textOnly?: boolean } = $props();
 
   const status = $derived(getPaymentStatus(account));
 
@@ -26,8 +26,27 @@
     NO_PAYMENT: "bg-destructive/15 text-destructive border-destructive/20",
     NO_RECORD: "bg-muted text-muted-foreground border-transparent opacity-50"
   };
+
+  const textColors: Record<string, string> = {
+    CLEARED: "text-foreground",
+    OVERPAID: "text-blue-600 dark:text-blue-400",
+    FULLY_PAID: "text-emerald-600 dark:text-emerald-400",
+    HALF_FULLY_PAID: "text-amber-600 dark:text-amber-400",
+    PARTIALLY_PAID: "text-orange-600 dark:text-orange-400",
+    NO_PAYMENT: "text-destructive",
+    NO_RECORD: "text-muted-foreground"
+  };
 </script>
 
-<Badge class="font-bold uppercase {styles[status] || styles.NO_RECORD}">
-  {labels[status] || status}
-</Badge>
+{#if textOnly}
+  <p
+    class="text-3xl font-semibold tracking-tight uppercase {textColors[status] ||
+      textColors.NO_RECORD}"
+  >
+    {labels[status] || status}
+  </p>
+{:else}
+  <Badge class="uppercase {styles[status] || styles.NO_RECORD}">
+    {labels[status] || status}
+  </Badge>
+{/if}

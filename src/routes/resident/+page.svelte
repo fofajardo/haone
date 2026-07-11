@@ -16,7 +16,10 @@
     Banknote,
     Trophy,
     House,
-    Settings
+    Settings,
+    Megaphone,
+    BookUser,
+    Network
   } from "@lucide/svelte";
   import AnnouncementsSection from "$lib/components/residents/AnnouncementsSection.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -28,6 +31,7 @@
   import { fetchServer } from "$lib/utils";
   import type { ResidentStatus } from "$lib/resident-state.svelte";
   import { AccountType } from "$lib/schemas";
+  import StatisticCard from "$lib/components/StatisticCard.svelte";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
@@ -52,37 +56,82 @@
       title: "Finance",
       description: "View your financial standing and history.",
       href: "/resident/finance",
-      icon: Wallet
+      icon: Wallet,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
     },
     {
       title: "Laundry",
       description: "Book and manage your laundry reservations.",
       href: "/resident/laundry",
-      icon: WashingMachine
+      icon: WashingMachine,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
     },
     {
       title: "Payment Requests",
       description: "Upload your transaction entries for verification.",
       href: "/resident/payment-requests",
-      icon: Banknote
+      icon: Banknote,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
+    },
+    {
+      title: "Announcements",
+      description: "View updates and announcements from hall officers.",
+      href: "/resident/announcements",
+      icon: Megaphone,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
+    },
+    {
+      title: "Static IP Address",
+      description: "Request and manage your room network configuration.",
+      href: "/resident/static-ip",
+      icon: Network,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
     },
     {
       title: "Achievements",
       description: "View your earned achievements and leaderboard.",
       href: "/resident/achievements",
-      icon: Trophy
+      icon: Trophy,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
     },
     {
       title: "Occupancy",
       description: "View your current room details and history.",
       href: "/resident/occupancy",
-      icon: House
+      icon: House,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
+    },
+    {
+      title: "Officers",
+      description: "View profiles and contacts of hall officers.",
+      href: "/resident/officers",
+      icon: BookUser,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
     },
     {
       title: "Settings",
       description: "Customize your profile and application preferences.",
       href: "/resident/settings",
-      icon: Settings
+      icon: Settings,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
     }
   ];
 
@@ -97,27 +146,16 @@
 <div class="space-y-6 pb-12">
   <!-- Hero Section -->
   <div
-    class="relative overflow-hidden rounded-3xl bg-brand px-4 py-8 text-brand-foreground shadow-2xl sm:px-8 sm:py-12"
+    class="relative overflow-hidden rounded-3xl bg-brand/10 px-4 py-8 text-brand sm:px-8 sm:py-12"
   >
-    <div
-      class="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
-    ></div>
-    <div
-      class="absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
-    ></div>
-
     <div class="relative z-10 space-y-4">
-      <div
-        class="flex items-center gap-2 text-xs font-bold tracking-[0.2em] text-white/60 uppercase"
-      ></div>
-      <h1 class="text-4xl font-black tracking-tight text-brand-foreground md:text-5xl lg:text-6xl">
-        Welcome back, <span class="text-brand-foreground"
-          >{auth.user?.name?.split(" ")[0] || "Resident"}</span
-        >
+      <div class="flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase"></div>
+      <h1 class="text-4xl font-black tracking-tight md:text-5xl lg:text-6xl">
+        Welcome back, {auth.user?.name?.split(" ")[0] || "Resident"}
       </h1>
-      <p class="max-w-[600px] text-lg text-brand-foreground md:text-xl">
+      <p class="text-lg text-brand md:text-xl">
         View your profile, track your financial standing, and manage your clearance for <span
-          class="font-semibold text-brand-foreground"
+          class="font-semibold text-brand"
           >{translatePeriod(status?.activeTerm || status?.systemActiveTerm) || "Active Term"}</span
         >.
       </p>
@@ -127,7 +165,7 @@
       <Button
         variant="ghost"
         size="icon"
-        class="h-10 w-10 rounded-xl text-white/50 transition-all hover:bg-white/10 hover:text-white"
+        class="h-10 w-10 rounded-xl text-brand/50 transition-all hover:bg-brand/10 hover:text-brand"
         onclick={() => loadStatus()}
         {isLoading}
         icon={RefreshCcw}
@@ -145,107 +183,51 @@
     <!-- Quick Stats Grid -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {#if status.account && status.currEntry?.accountType !== AccountType.ALUMNUS}
-        <!-- Amount Due -->
-        <Card.Root
-          class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
+        <StatisticCard
+          title="Amount Due"
+          value={formatCurrency(status.account?.bal || 0)}
+          {isLoading}
         >
-          <Card.Content class="px-4 py-0 sm:px-6">
-            <div class="flex items-center justify-between">
-              <div class="space-y-1">
-                <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                  Amount Due
-                </p>
-                <h3 class="text-3xl font-black text-foreground">
-                  {formatCurrency(status.account?.bal || 0)}
-                </h3>
-              </div>
-              <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-                <Wallet class="h-6 w-6" />
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
+          {#snippet icon()}<Wallet class="h-6 w-6" />{/snippet}
+        </StatisticCard>
 
-        <!-- Payment Status -->
+        <StatisticCard title="Payment Status" value="" {isLoading}>
+          {#snippet icon()}<ShieldCheck class="h-6 w-6" />{/snippet}
+          <StatusBadge account={status.account} textOnly={true} />
+        </StatisticCard>
 
-        <Card.Root
-          class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
+        <StatisticCard
+          title="Room & Bed"
+          value={`${status.account?.room}-${status.account?.bed}`}
+          {isLoading}
         >
-          <Card.Content class="px-4 py-0 sm:px-6">
-            <div class="flex items-center justify-between">
-              <div class="space-y-1">
-                <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                  Payment Status
-                </p>
-                <div class="pt-1">
-                  <StatusBadge account={status.account} />
-                </div>
-              </div>
-              <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-                <ShieldCheck class="h-6 w-6" />
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
-
-        <!-- Room Assignment -->
-        <Card.Root
-          class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg"
-        >
-          <Card.Content class="px-4 py-0 sm:px-6">
-            <div class="flex items-center justify-between">
-              <div class="space-y-1">
-                <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                  Room & Bed
-                </p>
-                <h3 class="text-3xl font-black text-foreground">
-                  {status.account?.room}-{status.account?.bed}
-                </h3>
-              </div>
-              <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-                <MapPin class="h-6 w-6" />
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
+          {#snippet icon()}<MapPin class="h-6 w-6" />{/snippet}
+        </StatisticCard>
       {/if}
     </div>
 
-    <AnnouncementsSection />
-
-    <div class="grid gap-8 lg:grid-cols-3">
-      <!-- Quick Access Section -->
-      <div class="lg:col-span-2">
-        <div class="mb-6 flex items-center justify-between">
-          <h2 class="text-xl font-bold text-foreground">Quick Access</h2>
-        </div>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {#each actions as tool}
-            <DashboardActionCard {...tool} />
-          {/each}
-        </div>
+    <div class="grid gap-8 lg:grid-cols-3 min-w-0">
+      <!-- Announcements Section (2 cols) -->
+      <div class="lg:col-span-2 min-w-0">
+        <AnnouncementsSection />
       </div>
 
-      <!-- Recent Transactions -->
-      <div>
-        <div class="mb-6 flex items-center justify-between">
+      <!-- Recent Transactions (1 col) -->
+      <div class="space-y-4 min-w-0">
+        <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold text-foreground">Recent Activity</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            href="/resident/finance"
-            title="View All"
-            icon={ArrowRight}
-          />
+          <Button variant="ghost" size="sm" href="/resident/finance" title="View All">
+            View All <ArrowRight class="ml-1 h-4 w-4" />
+          </Button>
         </div>
-        <Card.Root class="overflow-hidden border-none bg-card p-0 shadow-md">
-          <Card.Content class="divide-y p-0">
+        <Card.Root class="overflow-hidden bg-card shadow-none">
+          <Card.Content class="divide-y p-6">
             {#if status.transactions?.filter((t: any) => t.period === status?.activeTerm).length > 0}
               {#each status.transactions
                 .filter((t: any) => t.period === status?.activeTerm)
                 .slice(0, 5) as tx}
                 <div
-                  class="group flex items-start gap-3 p-3 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4 sm:p-4"
+                  class="group flex items-start gap-3 py-3.5 px-0 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4"
                 >
                   <div
                     class="shrink-0 rounded-full p-2.5 transition-colors group-hover:bg-card group-hover:shadow-sm {tx.amount >
@@ -289,6 +271,18 @@
             {/if}
           </Card.Content>
         </Card.Root>
+      </div>
+    </div>
+
+    <!-- Quick Access Section (3 cols) -->
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold text-foreground">Quick Access</h2>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {#each actions as tool}
+          <DashboardActionCard {...tool} />
+        {/each}
       </div>
     </div>
   {/if}
