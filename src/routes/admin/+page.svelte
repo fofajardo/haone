@@ -211,7 +211,7 @@
       {#snippet icon()}<Users class="h-6 w-6" />{/snippet}
     </StatisticCard>
 
-    <StatisticCard title="Pending Settlements" value={stats.pendingSettlements} {isLoading}>
+    <StatisticCard title="Pending Receipts" value={stats.pendingSettlements} {isLoading}>
       {#snippet icon()}<Clock class="h-6 w-6" />{/snippet}
     </StatisticCard>
 
