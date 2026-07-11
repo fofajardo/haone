@@ -23,6 +23,7 @@
   import { formatCurrency, formatDate, translatePeriod, translateType } from "$lib/receipt-utils";
   import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
   import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
+  import StatisticCard from "$lib/components/StatisticCard.svelte";
   import { onMount } from "svelte";
 
   let stats = $state({
@@ -216,89 +217,25 @@
 
   <!-- Quick Stats -->
   <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-    <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-4 py-0 sm:px-6">
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Active Residents
-            </p>
-            {#if isLoading}
-              <div class="h-9 w-16 animate-pulse rounded bg-muted/50"></div>
-            {:else}
-              <h3 class="text-3xl font-black text-foreground">{stats.activeResidents}</h3>
-            {/if}
-          </div>
-          <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-            <Users class="h-6 w-6" />
-          </div>
-        </div>
-      </Card.Content>
-    </Card.Root>
+    <StatisticCard title="Active Residents" value={stats.activeResidents} {isLoading}>
+      {#snippet icon()}<Users class="h-6 w-6" />{/snippet}
+    </StatisticCard>
 
-    <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-4 py-0 sm:px-6">
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Pending Receipts
-            </p>
-            {#if isLoading}
-              <div class="h-9 w-12 animate-pulse rounded bg-muted/50"></div>
-            {:else}
-              <h3 class="text-3xl font-black text-foreground">{stats.pendingSettlements}</h3>
-            {/if}
-          </div>
-          <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-            <Clock class="h-6 w-6" />
-          </div>
-        </div>
-      </Card.Content>
-    </Card.Root>
+    <StatisticCard title="Pending Settlements" value={stats.pendingSettlements} {isLoading}>
+      {#snippet icon()}<Clock class="h-6 w-6" />{/snippet}
+    </StatisticCard>
 
-    <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-4 py-0 sm:px-6">
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Total Collected
-            </p>
-            {#if isLoading}
-              <div class="h-8 w-32 animate-pulse rounded bg-muted/50"></div>
-            {:else}
-              <h3 class="text-2xl font-black text-foreground">
-                {formatCurrency(stats.totalCollected)}
-              </h3>
-            {/if}
-          </div>
-          <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-            <TrendingUp class="h-6 w-6" />
-          </div>
-        </div>
-      </Card.Content>
-    </Card.Root>
+    <StatisticCard title="Total Collected" value={formatCurrency(stats.totalCollected)} {isLoading}>
+      {#snippet icon()}<TrendingUp class="h-6 w-6" />{/snippet}
+    </StatisticCard>
 
-    <Card.Root class="overflow-hidden border-none bg-card shadow-md transition-all hover:shadow-lg">
-      <Card.Content class="px-4 py-0 sm:px-6">
-        <div class="flex items-center justify-between">
-          <div class="space-y-1">
-            <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Collection Rate
-            </p>
-            {#if isLoading}
-              <div class="h-9 w-20 animate-pulse rounded bg-muted/50"></div>
-            {:else}
-              <h3 class="text-3xl font-black text-foreground">
-                {stats.collectionRate.toFixed(1)}%
-              </h3>
-            {/if}
-          </div>
-          <div class="rounded-2xl bg-brand/5 p-3 text-brand">
-            <CircleCheck class="h-6 w-6" />
-          </div>
-        </div>
-      </Card.Content>
-    </Card.Root>
+    <StatisticCard
+      title="Collection Rate"
+      value={`${stats.collectionRate.toFixed(1)}%`}
+      {isLoading}
+    >
+      {#snippet icon()}<CircleCheck class="h-6 w-6" />{/snippet}
+    </StatisticCard>
   </div>
 
   <div class="grid gap-8 lg:grid-cols-3">

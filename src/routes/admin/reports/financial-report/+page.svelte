@@ -7,6 +7,7 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
+  import StatisticCard from "$lib/components/StatisticCard.svelte";
   import { RefreshCcw, FileDown, TrendingUp, TrendingDown, Wallet } from "@lucide/svelte";
   import {
     formatAccounting,
@@ -200,54 +201,23 @@
 
       <!-- KPI Grid -->
       <div class="grid gap-4 sm:grid-cols-3">
-        <!-- Incoming -->
-        <Card.Root class="flex flex-col gap-3">
-          <Card.Header class="flex flex-row items-center justify-between pb-0">
-            <Card.Title class="text-sm font-semibold">Incoming</Card.Title>
-            <div
-              class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
-            >
+        <StatisticCard title="Incoming" value={`₱${formatAccounting(totalIncoming)}`}>
+          {#snippet icon()}<TrendingUp />{/snippet}
+        </StatisticCard>
+
+        <StatisticCard title="Outgoing" value={`₱${formatAccounting(totalOutgoing)}`}>
+          {#snippet icon()}<Wallet />{/snippet}
+        </StatisticCard>
+
+        <StatisticCard title="Balance" value={`₱${formatAccounting(netBalance)}`}>
+          {#snippet icon()}
+            {#if netBalance >= 0}
               <TrendingUp />
-            </div>
-          </Card.Header>
-          <Card.Content>
-            <p class="text-3xl font-semibold tracking-tight">₱{formatAccounting(totalIncoming)}</p>
-          </Card.Content>
-        </Card.Root>
-
-        <!-- Outgoing -->
-        <Card.Root class="flex flex-col gap-3">
-          <Card.Header class="flex flex-row items-center justify-between pb-0">
-            <Card.Title class="text-sm font-semibold">Outgoing</Card.Title>
-            <div
-              class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
-            >
-              <Wallet />
-            </div>
-          </Card.Header>
-          <Card.Content>
-            <p class="text-3xl font-semibold tracking-tight">₱{formatAccounting(totalOutgoing)}</p>
-          </Card.Content>
-        </Card.Root>
-
-        <!-- Balance -->
-        <Card.Root class="flex flex-col gap-3">
-          <Card.Header class="flex flex-row items-center justify-between pb-0">
-            <Card.Title class="text-sm font-semibold">Balance</Card.Title>
-            <div
-              class="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-[18px] [&>svg]:w-[18px]"
-            >
-              {#if netBalance >= 0}
-                <TrendingUp />
-              {:else}
-                <TrendingDown />
-              {/if}
-            </div>
-          </Card.Header>
-          <Card.Content>
-            <p class="text-3xl font-semibold tracking-tight">₱{formatAccounting(netBalance)}</p>
-          </Card.Content>
-        </Card.Root>
+            {:else}
+              <TrendingDown />
+            {/if}
+          {/snippet}
+        </StatisticCard>
       </div>
 
       <!-- ACCOUNT SUMMARY (Summary of Funds) -->
