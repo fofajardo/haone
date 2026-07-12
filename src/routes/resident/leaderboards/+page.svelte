@@ -8,11 +8,11 @@
   import TermFilter from "$lib/components/TermFilter.svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import AchievementLeaderboard from "$lib/components/achievements/AchievementLeaderboard.svelte";
-  import { fetchAchievements, fetchAchievementLogs } from "$lib/shared-records-logic";
-  import { fetchTermCurr } from "$lib/resident-logic";
+  import { fetchAchievements } from "$lib/shared-records-logic";
   import { uiSettings } from "$lib/settings.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
   import { pageState } from "$lib/page-info.svelte";
+  import { fetchServer } from "$lib/utils";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -28,18 +28,17 @@
     error = null;
 
     try {
-      const [achResult, logResult, term] = await Promise.all([
+      const [achResult, statusJson] = await Promise.all([
         fetchAchievements(true),
-        fetchAchievementLogs(true),
-        fetchTermCurr(true)
+        fetchServer("/api/resident/check-status")
       ]);
 
       achievements = Array.isArray(achResult) ? achResult : achResult.achievements;
-      logs = Array.isArray(logResult) ? logResult : logResult.logs;
-      currentTerm = term;
+      logs = Array.isArray(achResult) ? achResult : achResult.logs;
+      currentTerm = statusJson.currentTerm;
 
       if (!uiSettings.currentTerm) {
-        uiSettings.currentTerm = term;
+        uiSettings.currentTerm = statusJson.currentTerm;
       }
     } catch (e: any) {
       error = e.message;

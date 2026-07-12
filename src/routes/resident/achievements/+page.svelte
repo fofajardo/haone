@@ -8,7 +8,6 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import {
     fetchAchievements,
-    fetchAchievementLogs,
     calculateAchievementPercentage
   } from "$lib/shared-records-logic";
   import { fetchUsers } from "$lib/resident-logic";
@@ -28,10 +27,8 @@
     isLoading = true;
     error = null;
     try {
-      const [achResult, logResult, allU] = await Promise.all([
+      const [achResult] = await Promise.all([
         fetchAchievements(true),
-        fetchAchievementLogs(true),
-        fetchUsers(true)
       ]);
 
       if (Array.isArray(achResult)) {
@@ -41,11 +38,7 @@
         currentResidentId = achResult.currentResidentId;
       }
 
-      if (Array.isArray(logResult)) {
-        logs = logResult;
-      } else {
-        logs = logResult.logs;
-      }
+      logs = achResult.logs;
     } catch (e: any) {
       error = e.message;
     } finally {

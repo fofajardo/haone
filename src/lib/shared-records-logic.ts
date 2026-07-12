@@ -101,14 +101,6 @@ export async function fetchAchievements(forceRefresh = false): Promise<{
   };
 }
 
-export async function fetchAchievementLogs(forceRefresh = false): Promise<{
-  achievements: AchievementRecord[];
-  logs: AchievementLogRecord[];
-  currentResidentId: string;
-}> {
-  return await fetchAchievements(forceRefresh);
-}
-
 /**
  * User Settings
  */
