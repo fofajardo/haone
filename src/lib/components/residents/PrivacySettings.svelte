@@ -41,9 +41,9 @@
           <Trophy class="h-5 w-5" />
         </div>
         <div class="space-y-0.5">
-          <Label for="public-achievements" class="text-base font-bold">Public Achievements</Label>
+          <Label for="public-achievements" class="text-base font-bold">Public Achievements and Leaderboards</Label>
           <p class="text-sm text-muted-foreground">
-            Allow others to see your name in achievement earner lists.
+            Allow others to see your name in achievement earner lists and leaderboards.
           </p>
         </div>
       </div>
