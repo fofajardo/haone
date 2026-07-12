@@ -57,7 +57,7 @@
     <Card.Root class="flex flex-col h-full bg-black text-white border-neutral-800">
       <Card.Header>
         <div class="flex items-center justify-between">
-          <div class="text-5xl">👀</div>
+          <div class="text-5xl">👻</div>
         </div>
         <Card.Title class="mt-4 text-xl font-bold text-white">
           {isConsolidated
