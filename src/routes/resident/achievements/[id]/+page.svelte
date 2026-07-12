@@ -6,7 +6,7 @@
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchAchievements, fetchAchievementLogs } from "$lib/shared-records-logic";
+  import { fetchAchievements } from "$lib/shared-records-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
 
   import AchievementDetailsView from "$lib/components/achievements/AchievementDetailsView.svelte";
@@ -31,9 +31,8 @@
     isLoading = true;
     error = null;
     try {
-      const [achResult, logResult] = await Promise.all([
-        fetchAchievements(true),
-        fetchAchievementLogs(true)
+      const [achResult] = await Promise.all([
+        fetchAchievements(true)
       ]);
 
       let allA: AchievementRecord[];
@@ -45,11 +44,7 @@
         currentResidentId = achResult.currentResidentId;
       }
 
-      if (Array.isArray(logResult)) {
-        allLogs = logResult;
-      } else {
-        allLogs = logResult.logs;
-      }
+      allLogs = achResult.logs;
 
       achievement =
         allA.find((a) => {
