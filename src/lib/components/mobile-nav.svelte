@@ -9,6 +9,7 @@
     House,
     Banknote,
     Trophy,
+    ListOrdered,
     Receipt,
     Bed,
     Contact,
@@ -29,7 +30,12 @@
     laundry: { label: "Laundry", href: "/resident/laundry", icon: WashingMachine },
     payments: { label: "Payments", href: "/resident/payment-requests", icon: Banknote },
     news: { label: "News", href: "/resident/announcements", icon: Megaphone },
-    achievements: { label: "Trophy", href: "/resident/achievements", icon: Trophy }
+    achievements: { label: "Trophy", href: "/resident/achievements", icon: Trophy },
+    leaderboards: {
+      label: "Ranks",
+      href: "/resident/leaderboards",
+      icon: ListOrdered
+    }
   };
 
   const MAP_ADMIN: Record<string, any> = {
@@ -46,7 +52,12 @@
     laundry: { label: "Laundry", href: "/admin/laundry", icon: WashingMachine },
     payments: { label: "Payments", href: "/admin/payment-requests", icon: Banknote },
     news: { label: "News", href: "/admin/announcements", icon: Megaphone },
-    achievements: { label: "Trophy", href: "/admin/achievements", icon: Trophy }
+    achievements: { label: "Trophy", href: "/admin/achievements", icon: Trophy },
+    leaderboards: {
+      label: "Ranks",
+      href: "/admin/leaderboards",
+      icon: ListOrdered
+    }
   };
 
   const isAdmin = $derived(page.url.pathname.startsWith("/admin"));

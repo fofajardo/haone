@@ -6,13 +6,17 @@
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchAchievements, fetchAchievementLogs } from "$lib/shared-records-logic";
+  import {
+    fetchAchievements,
+    fetchAchievementLogs,
+    calculateAchievementPercentage
+  } from "$lib/shared-records-logic";
   import { fetchUsers } from "$lib/resident-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
-  import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
   import { pageState } from "$lib/page-info.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
+
+  import AchievementCard from "$lib/components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -58,24 +62,44 @@
     new Set(
       logs
         .filter((l) => {
-          if (!currentResidentId && !auth.user?.email) return false;
+          if (!currentResidentId && !auth.user?.email) {
+            return false;
+          }
           return l.accountId === currentResidentId || l.accountId === auth.user?.email;
         })
-        .map((l) => l.achievementId)
+        .map((l) => {
+          return l.achievementId;
+        })
     )
+  );
+
+  let earnedAchievements = $derived(
+    achievements.filter((a) => {
+      return earnedIds.has(a.id);
+    })
+  );
+
+  let lockedAchievements = $derived(
+    achievements.filter((a) => {
+      return !earnedIds.has(a.id);
+    })
   );
 </script>
 
 <div class="space-y-6">
   <SubpageHeader title="Achievements" isTopLevel={true}>
     {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData()}
-        {isLoading}
-        icon={RefreshCcw}
-      />
+      <div class="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => {
+            loadData();
+          }}
+          {isLoading}
+          icon={RefreshCcw}
+        />
+      </div>
     {/snippet}
   </SubpageHeader>
 
@@ -83,41 +107,46 @@
     <LoadingView />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4">Retry</Button>
+      <Button
+        onclick={() => {
+          loadData();
+        }}
+        class="mt-4">Retry</Button
+      >
     </ErrorView>
   {:else}
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {#each achievements as a}
-        {@const isEarned = earnedIds.has(a.id)}
-        <a href="/resident/achievements/{a.id}" class="group block">
-          <Card.Root
-            class="h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-xl {isEarned
-              ? 'border-brand/50 bg-brand/5'
-              : 'opacity-70 grayscale'}"
-          >
-            <Card.Header>
-              <div class="flex items-center justify-between">
-                <div class="text-5xl transition-transform duration-500 group-hover:scale-110">
-                  {isEarned ? a.icon || "🏆" : "🔒"}
-                </div>
-                {#if isEarned}
-                  <Badge
-                    variant="default"
-                    class="bg-brand font-black tracking-tighter text-brand-foreground uppercase"
-                    >Earned</Badge
-                  >
-                {:else}
-                  <Badge variant="secondary" class="font-black tracking-tighter uppercase"
-                    >Locked</Badge
-                  >
-                {/if}
-              </div>
-              <Card.Title class="mt-4 text-xl font-black">{a.name}</Card.Title>
-              <Card.Description class="mt-1 line-clamp-2">{a.description}</Card.Description>
-            </Card.Header>
-          </Card.Root>
-        </a>
-      {:else}
+      {#each earnedAchievements as a}
+        <div class="h-full">
+          <AchievementCard
+            achievement={a}
+            isEarned={true}
+            percentage={calculateAchievementPercentage(
+              logs.filter((l) => {
+                return l.achievementId === a.id;
+              }).length,
+              a.totalEligibleCount || 0
+            )}
+            href="/resident/achievements/{a.id}"
+            showStatusBadge={true}
+          />
+        </div>
+      {/each}
+
+      {#if lockedAchievements.length > 0}
+        <div class="h-full">
+          <AchievementCard
+            achievement={lockedAchievements[0]}
+            isEarned={false}
+            percentage={0}
+            href=""
+            showStatusBadge={true}
+            lockedCount={lockedAchievements.length}
+          />
+        </div>
+      {/if}
+
+      {#if achievements.length === 0}
         <div class="col-span-full">
           <EmptyView
             title="No Achievements Available"
@@ -128,7 +157,7 @@
             {/snippet}
           </EmptyView>
         </div>
-      {/each}
+      {/if}
     </div>
   {/if}
 </div>

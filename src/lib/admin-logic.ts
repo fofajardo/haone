@@ -13,6 +13,7 @@ import {
   ANNOUNCEMENT_COL,
   ACHIEVEMENT_COL,
   ACHIEVEMENT_RECORD_COL,
+  USER_SETTINGS_COL,
   JOURNAL_COL,
   OFFICER_COL,
   type LaundryRecord,
@@ -21,6 +22,7 @@ import {
   type OfficerRecord,
   type AchievementRecord,
   type AchievementLogRecord,
+  type UserSettingsRecord,
   PaymentRequestStatus,
   AnnouncementStatus,
   OfficerStatus
@@ -368,9 +370,11 @@ export async function deleteAnnouncement(id: string, accessToken: string) {
  */
 export async function fetchAchievements(forceRefresh = false): Promise<AchievementRecord[]> {
   const spreadsheetId = uiSettings.sharedRecordsId;
-  if (!spreadsheetId) return [];
+  if (!spreadsheetId) {
+    return [];
+  }
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "achievements!A:F", forceRefresh);
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "achievements!A:H", forceRefresh);
   return rows.slice(1).map((row) => ({
     id: (row[ACHIEVEMENT_COL.ID] || "").trim(),
     creatorId: (row[ACHIEVEMENT_COL.CREATOR_ID] || "").trim(),
@@ -378,38 +382,95 @@ export async function fetchAchievements(forceRefresh = false): Promise<Achieveme
     description: (row[ACHIEVEMENT_COL.DESCRIPTION] || "").trim(),
     icon: (row[ACHIEVEMENT_COL.ICON] || "").trim(),
     extraUrl: (row[ACHIEVEMENT_COL.EXTRA_URL] || "").trim(),
+    term: (row[ACHIEVEMENT_COL.TERM] || "").trim(),
+    points: Number(row[ACHIEVEMENT_COL.POINTS] || 0),
     raw: row
   }));
 }
 
 export async function fetchAchievementLogs(forceRefresh = false): Promise<AchievementLogRecord[]> {
   const spreadsheetId = uiSettings.sharedRecordsId;
-  if (!spreadsheetId) return [];
+  if (!spreadsheetId) {
+    return [];
+  }
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "achievement_records!A:E", forceRefresh);
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "achievement_records!A:F", forceRefresh);
   return rows.slice(1).map((row) => ({
     id: (row[ACHIEVEMENT_RECORD_COL.ID] || "").trim(),
     recorderId: (row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] || "").trim(),
     accountId: (row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] || "").trim(),
     date: (row[ACHIEVEMENT_RECORD_COL.DATE] || "").trim(),
     achievementId: (row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] || "").trim(),
+    term: (row[ACHIEVEMENT_RECORD_COL.TERM] || "").trim(),
+    raw: row
+  }));
+}
+
+export async function fetchUserSettings(forceRefresh = false): Promise<UserSettingsRecord[]> {
+  const spreadsheetId = uiSettings.sharedRecordsId;
+  if (!spreadsheetId) {
+    return [];
+  }
+
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "settings!A:I", forceRefresh);
+  return rows.slice(1).map((row) => ({
+    residentId: (row[USER_SETTINGS_COL.RESIDENT_ID] || "").trim(),
+    isPublicAchievementList:
+      (row[USER_SETTINGS_COL.IS_PUBLIC_ACHIEVEMENT_LIST] || "").toUpperCase() !== "FALSE",
+    residentNav: row[USER_SETTINGS_COL.RESIDENT_NAV] || "",
+    adminNav: row[USER_SETTINGS_COL.ADMIN_NAV] || "",
+    density: row[USER_SETTINGS_COL.DENSITY] || "",
+    typography: row[USER_SETTINGS_COL.TYPOGRAPHY] || "",
+    theme: row[USER_SETTINGS_COL.THEME] || "",
+    isReducedMotion: (row[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE",
+    clockFormat: row[USER_SETTINGS_COL.CLOCK_FORMAT] || "",
     raw: row
   }));
 }
 
 export async function addAchievement(data: Omit<AchievementRecord, "raw">) {
   const spreadsheetId = uiSettings.sharedRecordsId;
-  if (!spreadsheetId) throw new Error("Shared Records ID not configured");
+  if (!spreadsheetId) {
+    throw new Error("Shared Records ID not configured");
+  }
 
-  const row = new Array(6).fill("");
+  const row = new Array(8).fill("");
   row[ACHIEVEMENT_COL.ID] = data.id || crypto.randomUUID();
   row[ACHIEVEMENT_COL.CREATOR_ID] = data.creatorId;
   row[ACHIEVEMENT_COL.NAME] = data.name;
   row[ACHIEVEMENT_COL.DESCRIPTION] = data.description;
   row[ACHIEVEMENT_COL.ICON] = data.icon;
   row[ACHIEVEMENT_COL.EXTRA_URL] = data.extraUrl;
+  row[ACHIEVEMENT_COL.TERM] = data.term || "";
+  row[ACHIEVEMENT_COL.POINTS] = data.points || 0;
 
-  await appendSheetRow(spreadsheetId, "achievements!A:F", [row]);
+  await appendSheetRow(spreadsheetId, "achievements!A:H", [row]);
+}
+
+export async function updateAchievement(data: Omit<AchievementRecord, "raw">) {
+  const spreadsheetId = uiSettings.sharedRecordsId;
+  if (!spreadsheetId) {
+    throw new Error("Shared Records ID not configured");
+  }
+
+  const rows = await fetchSheetRowsRaw(spreadsheetId, "achievements!A:H");
+  const rowIndex = rows.findIndex((row) => (row[ACHIEVEMENT_COL.ID] || "").trim() === data.id);
+  if (rowIndex === -1) {
+    throw new Error("Achievement not found");
+  }
+
+  const actualRow = rowIndex + 1; // 1-based index including header
+  const row = new Array(8).fill("");
+  row[ACHIEVEMENT_COL.ID] = data.id;
+  row[ACHIEVEMENT_COL.CREATOR_ID] = data.creatorId;
+  row[ACHIEVEMENT_COL.NAME] = data.name;
+  row[ACHIEVEMENT_COL.DESCRIPTION] = data.description;
+  row[ACHIEVEMENT_COL.ICON] = data.icon;
+  row[ACHIEVEMENT_COL.EXTRA_URL] = data.extraUrl;
+  row[ACHIEVEMENT_COL.TERM] = data.term || "";
+  row[ACHIEVEMENT_COL.POINTS] = data.points || 0;
+
+  await updateSheetValue(spreadsheetId, `achievements!A${actualRow}:H${actualRow}`, [row]);
 }
 
 export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) {
@@ -418,14 +479,24 @@ export async function awardAchievement(data: Omit<AchievementLogRecord, "raw">) 
     throw new Error("Shared Records ID not configured");
   }
 
-  const row = new Array(5).fill("");
+  // Block duplicates: check if this resident already has this achievement
+  const currentLogs = await fetchAchievementLogs(true);
+  const isDuplicate = currentLogs.some(
+    (l) => l.accountId === data.accountId && l.achievementId === data.achievementId
+  );
+  if (isDuplicate) {
+    throw new Error("This resident has already been awarded this achievement.");
+  }
+
+  const row = new Array(6).fill("");
   row[ACHIEVEMENT_RECORD_COL.ID] = data.id || crypto.randomUUID();
   row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] = data.recorderId;
   row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] = data.accountId;
-  row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || new Date().toISOString().split("T")[0];
+  row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || new Date().toISOString();
   row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId;
+  row[ACHIEVEMENT_RECORD_COL.TERM] = data.term || "";
 
-  await appendSheetRow(spreadsheetId, "achievement_records!A:E", [row]);
+  await appendSheetRow(spreadsheetId, "achievement_records!A:F", [row]);
 }
 
 export async function awardAchievementBatch(records: Omit<AchievementLogRecord, "raw">[]) {
@@ -437,17 +508,29 @@ export async function awardAchievementBatch(records: Omit<AchievementLogRecord, 
     throw new Error("Shared Records ID not configured");
   }
 
-  const rows = records.map((data) => {
-    const row = new Array(5).fill("");
+  const currentLogs = await fetchAchievementLogs(true);
+  const rows = [];
+
+  for (const data of records) {
+    const isDuplicate = currentLogs.some(
+      (l) => l.accountId === data.accountId && l.achievementId === data.achievementId
+    );
+    if (isDuplicate) {
+      continue; // Skip duplicates in batch
+    }
+    const row = new Array(6).fill("");
     row[ACHIEVEMENT_RECORD_COL.ID] = data.id || crypto.randomUUID();
     row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] = data.recorderId;
     row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] = data.accountId;
-    row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || new Date().toISOString().split("T")[0];
+    row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || new Date().toISOString();
     row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId;
-    return row;
-  });
+    row[ACHIEVEMENT_RECORD_COL.TERM] = data.term || "";
+    rows.push(row);
+  }
 
-  await appendSheetRow(spreadsheetId, "achievement_records!A:E", rows);
+  if (rows.length > 0) {
+    await appendSheetRow(spreadsheetId, "achievement_records!A:F", rows);
+  }
 }
 
 /**

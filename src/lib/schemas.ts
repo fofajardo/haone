@@ -283,7 +283,9 @@ export const ACHIEVEMENT_COL = {
   NAME: 2,
   DESCRIPTION: 3,
   ICON: 4,
-  EXTRA_URL: 5
+  EXTRA_URL: 5,
+  TERM: 6,
+  POINTS: 7
 } as const;
 
 export const ACHIEVEMENT_RECORD_COL = {
@@ -291,7 +293,8 @@ export const ACHIEVEMENT_RECORD_COL = {
   RECORDER_ID: 1,
   ACCOUNT_ID: 2,
   DATE: 3,
-  ACHIEVEMENT_ID: 4
+  ACHIEVEMENT_ID: 4,
+  TERM: 5
 } as const;
 
 export const OFFICER_COL = {
@@ -440,6 +443,9 @@ export interface AchievementRecord {
   description: string;
   icon: string;
   extraUrl: string;
+  term?: string;
+  points: number;
+  totalEligibleCount?: number;
   raw: string[];
 }
 
@@ -449,6 +455,7 @@ export interface AchievementLogRecord {
   accountId: string;
   date: string;
   achievementId: string;
+  term?: string;
   displayName?: string;
   isPublic?: boolean;
   raw: string[];

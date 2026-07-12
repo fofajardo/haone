@@ -20,6 +20,7 @@
     Banknote,
     Megaphone,
     Trophy,
+    ListOrdered,
     BookUser,
     Network
   } from "@lucide/svelte";
@@ -134,6 +135,11 @@
       title: "Achievements",
       url: "/admin/achievements",
       icon: Trophy
+    },
+    {
+      title: "Leaderboards",
+      url: "/admin/leaderboards",
+      icon: ListOrdered
     },
     {
       title: "Static IP Address",

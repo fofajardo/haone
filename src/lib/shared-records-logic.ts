@@ -200,3 +200,55 @@ export async function deletePushSubscription(endpoint: string) {
     }
   );
 }
+
+/**
+ * Achievements Shared Helpers
+ */
+export function formatAwardDate(dateStr: string): string {
+  if (!dateStr) {
+    return "—";
+  }
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return dateStr;
+    }
+    if (dateStr.includes("T") || dateStr.includes(" ")) {
+      return date.toLocaleString(undefined, {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+    return date.toLocaleDateString(undefined, {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+export function calculateAchievementPercentage(
+  earnersCount: number,
+  totalEligibleCount: number
+): number {
+  if (totalEligibleCount <= 0) {
+    return 0;
+  }
+  return Math.round((earnersCount / totalEligibleCount) * 100);
+}
+
+export function getEligibleCount(
+  term: string | undefined,
+  residentsCount: number,
+  usersCount: number
+): number {
+  if (term) {
+    return residentsCount;
+  }
+  return usersCount;
+}

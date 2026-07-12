@@ -2,41 +2,41 @@
   import { page } from "$app/state";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
-  import { RefreshCcw, Trophy, Users, Lock as LockIcon } from "@lucide/svelte";
+  import { RefreshCcw } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import {
-    fetchAchievements,
-    fetchAchievementLogs,
-    fetchUserSettings
-  } from "$lib/shared-records-logic";
-  import { fetchUsers } from "$lib/resident-logic";
+  import { fetchAchievements, fetchAchievementLogs } from "$lib/shared-records-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
-  import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
+
+  import AchievementDetailsView from "$lib/components/achievements/AchievementDetailsView.svelte";
+  import AchievementStoryShareButton from "$lib/components/achievements/AchievementStoryShareButton.svelte";
 
   const id = page.params.id;
 
   let achievement = $state<AchievementRecord | null>(null);
+  let allLogs = $state<AchievementLogRecord[]>([]);
   let earners = $state<{ residentId: string; name: string; date: string; isPublic: boolean }[]>([]);
   let currentResidentId = $state("");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
+  let isEarned = $derived(
+    allLogs.some((l) => {
+      return l.achievementId === id && l.accountId === currentResidentId;
+    })
+  );
+
   async function loadData() {
     isLoading = true;
     error = null;
     try {
-      const [achResult, logResult, allU, allS] = await Promise.all([
+      const [achResult, logResult] = await Promise.all([
         fetchAchievements(true),
-        fetchAchievementLogs(true),
-        fetchUsers(true),
-        fetchUserSettings(true)
+        fetchAchievementLogs(true)
       ]);
 
       let allA: AchievementRecord[];
-      let allL: AchievementLogRecord[];
 
       if (Array.isArray(achResult)) {
         allA = achResult;
@@ -46,15 +46,22 @@
       }
 
       if (Array.isArray(logResult)) {
-        allL = logResult;
+        allLogs = logResult;
       } else {
-        allL = logResult.logs;
+        allLogs = logResult.logs;
       }
 
-      achievement = allA.find((a) => a.id === id) || null;
-      if (!achievement) throw new Error("Achievement not found");
+      achievement =
+        allA.find((a) => {
+          return a.id === id;
+        }) || null;
+      if (!achievement) {
+        throw new Error("Achievement not found");
+      }
 
-      const achievementLogs = allL.filter((l) => l.achievementId === id);
+      const achievementLogs = allLogs.filter((l) => {
+        return l.achievementId === id;
+      });
 
       earners = achievementLogs.map((l) => {
         return {
@@ -75,76 +82,36 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Achievement Details" />
+  <SubpageHeader title="Achievement Details">
+    {#snippet actions()}
+      {#if achievement && isEarned}
+        <AchievementStoryShareButton {achievement} />
+      {/if}
+    {/snippet}
+  </SubpageHeader>
 
   {#if isLoading}
     <LoadingView />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
+      <Button
+        onclick={() => {
+          loadData();
+        }}
+        class="mt-4"
+        {isLoading}
+        icon={RefreshCcw}>Retry</Button
+      >
     </ErrorView>
+  {:else if achievement && isEarned}
+    <AchievementDetailsView {achievement} {earners} isAdmin={false} {currentResidentId} />
   {:else if achievement}
-    <div class="grid gap-8 lg:grid-cols-3">
-      <div class="lg:col-span-1">
-        <Card.Root class="border-brand/20 bg-brand/5 p-8 text-center">
-          <div class="mb-6 text-8xl">{achievement.icon || "🏆"}</div>
-          <h2 class="text-3xl font-black tracking-tight">{achievement.name}</h2>
-          <p class="mt-4 leading-relaxed text-muted-foreground">{achievement.description}</p>
-          {#if achievement.extraUrl}
-            <Button variant="link" href={achievement.extraUrl} target="_blank" class="mt-4"
-              >Learn More</Button
-            >
-          {/if}
-        </Card.Root>
-      </div>
-
-      <div class="space-y-6 lg:col-span-2">
-        <div class="flex items-center justify-between">
-          <h3 class="flex items-center gap-2 text-xl font-bold">
-            <Users class="h-5 w-5 text-brand" /> Earned By
-          </h3>
-          <Badge variant="secondary" class="font-black tracking-tighter uppercase"
-            >{earners.length} Residents</Badge
-          >
-        </div>
-
-        {#if earners.some((e) => e.residentId === currentResidentId)}
-          <div class="grid gap-3 sm:grid-cols-2">
-            {#each earners as earner}
-              <Card.Root class={earner.isPublic ? "border-brand/20" : "bg-muted/20 opacity-60"}>
-                <Card.Content class="flex items-center justify-between p-4">
-                  <div class="space-y-0.5">
-                    <div
-                      class="text-sm font-bold {earner.isPublic
-                        ? 'text-foreground'
-                        : 'text-muted-foreground italic'}"
-                    >
-                      {earner.name}
-                    </div>
-                    <div
-                      class="text-xs font-black tracking-tighter text-muted-foreground uppercase"
-                    >
-                      {earner.date}
-                    </div>
-                  </div>
-                  {#if earner.isPublic}
-                    <Trophy class="h-4 w-4 text-brand" />
-                  {/if}
-                </Card.Content>
-              </Card.Root>
-            {/each}
-          </div>
-        {:else}
-          <div
-            class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed bg-muted/5 p-12"
-          >
-            <LockIcon class="mb-4 h-8 w-8 text-muted-foreground" />
-            <p class="text-sm font-medium text-muted-foreground">
-              Earn this achievement to see who else has it!
-            </p>
-          </div>
-        {/if}
-      </div>
+    <div class="flex flex-col items-center justify-center gap-6 py-24 text-center">
+      <div class="text-9xl animate-pulse">🔒</div>
+      <h2 class="text-3xl font-bold tracking-tight">Locked Achievement</h2>
+      <p class="max-w-sm text-muted-foreground">
+        This achievement is still waiting for you… keep going and you might just unlock it.
+      </p>
     </div>
   {/if}
 </div>

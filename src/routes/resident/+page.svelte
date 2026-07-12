@@ -99,7 +99,7 @@
     },
     {
       title: "Achievements",
-      description: "View your earned achievements and leaderboard.",
+      description: "View your earned achievements and leaderboards.",
       href: "/resident/achievements",
       icon: Trophy,
       color: "text-brand",

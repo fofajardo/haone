@@ -10,6 +10,7 @@
     Banknote,
     Megaphone,
     Trophy,
+    ListOrdered,
     Users,
     Bed,
     Contact,
@@ -34,7 +35,8 @@
     { id: "laundry", label: "Laundry", icon: WashingMachine },
     { id: "payments", label: "Payments", icon: Banknote },
     { id: "news", label: "News", icon: Megaphone },
-    { id: "achievements", label: "Trophy", icon: Trophy }
+    { id: "achievements", label: "Trophy", icon: Trophy },
+    { id: "leaderboards", label: "Ranks", icon: ListOrdered }
   ];
 
   const ALL_ADMIN_ITEMS = [
@@ -50,7 +52,8 @@
     { id: "laundry", label: "Laundry", icon: WashingMachine },
     { id: "payments", label: "Payments", icon: Banknote },
     { id: "news", label: "News", icon: Megaphone },
-    { id: "achievements", label: "Trophy", icon: Trophy }
+    { id: "achievements", label: "Trophy", icon: Trophy },
+    { id: "leaderboards", label: "Ranks", icon: ListOrdered }
   ];
 
   function toggleItem(list: string[], id: string) {

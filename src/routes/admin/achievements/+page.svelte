@@ -14,21 +14,26 @@
     awardAchievement
   } from "$lib/admin-logic";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/resident-logic";
-  import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
-  import * as Card from "$lib/components/ui/card";
+  import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Textarea } from "$lib/components/ui/textarea";
   import { toast } from "svelte-sonner";
   import { Combobox } from "$lib/components/ui/combobox";
+  import { Checkbox } from "$lib/components/ui/checkbox";
   import { translatePeriod } from "$lib/receipt-utils";
+  import TermFilter from "$lib/components/TermFilter.svelte";
+  import { uiSettings } from "$lib/settings.svelte";
+  import { calculateAchievementPercentage, getEligibleCount } from "$lib/shared-records-logic";
+  import AchievementCard from "$lib/components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
   let residents = $state<any[]>([]);
   let currentTerm = $state("");
   let currentUserId = $state("");
+  let totalUsersCount = $state(0);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
@@ -39,13 +44,22 @@
     name: "",
     description: "",
     icon: "🏆",
-    extraUrl: ""
+    extraUrl: "",
+    points: 10,
+    term: "",
+    isIndefinite: false
   });
 
   let awardData = $state({
     achievementId: "",
     residentId: ""
   });
+
+  let filteredAchievements = $derived(
+    achievements.filter((a) => {
+      return !a.term || a.term === uiSettings.currentTerm;
+    })
+  );
 
   async function loadData() {
     isLoading = true;
@@ -60,9 +74,20 @@
       ]);
       achievements = a;
       logs = l;
-      residents = r.filter((res) => res.period === t);
       currentTerm = t;
-      const me = allU.find((u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase());
+      totalUsersCount = allU.length;
+      if (!uiSettings.currentTerm) {
+        uiSettings.currentTerm = t;
+      }
+      residents = r.filter((res) => {
+        return res.period === (uiSettings.currentTerm || t);
+      });
+      if (!newAchievement.term) {
+        newAchievement.term = uiSettings.currentTerm || t;
+      }
+      const me = allU.find((u) => {
+        return u.email.toLowerCase() === (auth.user?.email || "").toLowerCase();
+      });
       currentUserId = me?.id || "";
     } catch (e: any) {
       error = e.message;
@@ -76,10 +101,24 @@
       await addAchievement({
         id: crypto.randomUUID(),
         creatorId: currentUserId,
-        ...newAchievement
+        name: newAchievement.name,
+        description: newAchievement.description,
+        icon: newAchievement.icon,
+        extraUrl: newAchievement.extraUrl,
+        points: Number(newAchievement.points) || 0,
+        term: newAchievement.isIndefinite ? "" : newAchievement.term || currentTerm
       });
       toast.success("Achievement created");
       isCreatorOpen = false;
+      newAchievement = {
+        name: "",
+        description: "",
+        icon: "🏆",
+        extraUrl: "",
+        points: 10,
+        term: currentTerm,
+        isIndefinite: false
+      };
       loadData();
     } catch (e: any) {
       toast.error(e.message);
@@ -91,16 +130,28 @@
       toast.error("Please select both achievement and resident");
       return;
     }
+
+    // Local validation to block duplicate awards
+    const hasAlready = logs.some((l) => {
+      return l.accountId === awardData.residentId && l.achievementId === awardData.achievementId;
+    });
+    if (hasAlready) {
+      toast.error("This resident has already been awarded this achievement.");
+      return;
+    }
+
     try {
       await awardAchievement({
         id: crypto.randomUUID(),
         recorderId: currentUserId,
         accountId: awardData.residentId,
         achievementId: awardData.achievementId,
+        term: currentTerm,
         date: new Date().toISOString().split("T")[0]
       });
       toast.success("Achievement awarded");
       isAwarderOpen = false;
+      awardData = { achievementId: "", residentId: "" };
       loadData();
     } catch (e: any) {
       toast.error(e.message);
@@ -109,8 +160,16 @@
 
   onMount(loadData);
 
-  let achievementOptions = $derived(achievements.map((a) => ({ value: a.id, label: a.name })));
-  let residentOptions = $derived(residents.map((r) => ({ value: r.residentId, label: r.name })));
+  let achievementOptions = $derived(
+    achievements.map((a) => {
+      return { value: a.id, label: a.name };
+    })
+  );
+  let residentOptions = $derived(
+    residents.map((r) => {
+      return { value: r.residentId, label: r.name };
+    })
+  );
 </script>
 
 <div class="space-y-6">
@@ -139,31 +198,39 @@
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
+    <div class="grid gap-2 lg:grid-cols-12 mb-4">
+      <div class="lg:col-span-3">
+        <TermFilter
+          onSelect={() => {
+            loadData();
+          }}
+        />
+      </div>
+    </div>
+
     <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {#each achievements as a}
-        <Card.Root>
-          <Card.Header>
-            <div class="flex items-center justify-between">
-              <div class="text-4xl">{a.icon || "🏆"}</div>
-              <div
-                class="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand uppercase"
-              >
-                {logs.filter((l) => l.achievementId === a.id).length} Earned
-              </div>
-            </div>
-            <Card.Title class="mt-4">{a.name}</Card.Title>
-            <Card.Description class="line-clamp-2">{a.description}</Card.Description>
-          </Card.Header>
-          {#if a.extraUrl}
-            <Card.Footer>
-              <a
-                href={a.extraUrl}
-                target="_blank"
-                class="truncate text-xs text-blue-500 hover:underline">Learn More</a
-              >
-            </Card.Footer>
-          {/if}
-        </Card.Root>
+      {#each filteredAchievements as a}
+        <div class="h-full">
+          <AchievementCard
+            achievement={a}
+            percentage={calculateAchievementPercentage(
+              logs.filter((l) => {
+                return l.achievementId === a.id;
+              }).length,
+              getEligibleCount(
+                a.term,
+                residents.filter((r) => {
+                  return r.period === a.term;
+                }).length,
+                totalUsersCount
+              )
+            )}
+            earnersCount={logs.filter((l) => {
+              return l.achievementId === a.id;
+            }).length}
+            href="/admin/achievements/{a.id}"
+          />
+        </div>
       {:else}
         <EmptyView
           title="No achievements defined."
@@ -203,14 +270,35 @@
         <Label for="url">Extra URL (optional)</Label>
         <Input id="url" bind:value={newAchievement.extraUrl} placeholder="https://..." />
       </div>
+      <div class="space-y-2">
+        <Label for="points">XP</Label>
+        <Input id="points" type="number" min="0" bind:value={newAchievement.points} />
+      </div>
+      <div class="flex items-center space-x-2 py-2">
+        <Checkbox id="is-indefinite" bind:checked={newAchievement.isIndefinite} />
+        <Label for="is-indefinite" class="text-sm font-medium leading-none cursor-pointer"
+          >Indefinite unlocking period</Label
+        >
+      </div>
+      {#if !newAchievement.isIndefinite}
+        <div class="space-y-2 animate-in fade-in-50 duration-200">
+          <TermFilter bind:value={newAchievement.term} />
+        </div>
+      {/if}
     </div>
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (isCreatorOpen = false)}>Cancel</Button>
+      <Button
+        variant="outline"
+        onclick={() => {
+          isCreatorOpen = false;
+        }}>Cancel</Button
+      >
       <Button onclick={handleCreate} {isLoading} icon={Plus}>Create</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
 
+<!-- Award Dialog -->
 <Dialog.Root bind:open={isAwarderOpen}>
   <Dialog.Content>
     <Dialog.Header>
@@ -236,7 +324,12 @@
       </div>
     </div>
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (isAwarderOpen = false)}>Cancel</Button>
+      <Button
+        variant="outline"
+        onclick={() => {
+          isAwarderOpen = false;
+        }}>Cancel</Button
+      >
       <Button onclick={handleAward} {isLoading} icon={UserPlus}>Award Achievement</Button>
     </Dialog.Footer>
   </Dialog.Content>

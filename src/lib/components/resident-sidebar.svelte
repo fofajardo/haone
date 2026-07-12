@@ -12,6 +12,7 @@
     Banknote,
     Megaphone,
     Trophy,
+    ListOrdered,
     BookUser,
     CirclePlus,
     Network
@@ -72,6 +73,11 @@
       title: "Achievements",
       url: "/resident/achievements",
       icon: Trophy
+    },
+    {
+      title: "Leaderboards",
+      url: "/resident/leaderboards",
+      icon: ListOrdered
     },
     {
       title: "Officers",

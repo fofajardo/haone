@@ -1,0 +1,132 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { Button } from "$lib/components/ui/button";
+  import { RefreshCcw } from "@lucide/svelte";
+  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import LoadingView from "$lib/components/LoadingView.svelte";
+  import ErrorView from "$lib/components/ErrorView.svelte";
+  import TermFilter from "$lib/components/TermFilter.svelte";
+  import * as Tabs from "$lib/components/ui/tabs";
+  import AchievementLeaderboard from "$lib/components/achievements/AchievementLeaderboard.svelte";
+  import { fetchAchievements, fetchAchievementLogs, fetchUserSettings } from "$lib/admin-logic";
+  import { fetchTermCurr, fetchUsers } from "$lib/resident-logic";
+  import { uiSettings } from "$lib/settings.svelte";
+  import { pageState } from "$lib/page-info.svelte";
+  import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
+
+  let achievements = $state<AchievementRecord[]>([]);
+  let logs = $state<AchievementLogRecord[]>([]);
+  let currentTerm = $state("");
+  let scope = $state("global");
+  let isLoading = $state(true);
+  let error = $state<string | null>(null);
+
+  let isGlobal = $derived(scope === "global");
+
+  async function loadData() {
+    isLoading = true;
+    error = null;
+
+    try {
+      const [achievementRows, logRows, users, settings, term] = await Promise.all([
+        fetchAchievements(true),
+        fetchAchievementLogs(true),
+        fetchUsers(true),
+        fetchUserSettings(true),
+        fetchTermCurr(true)
+      ]);
+
+      const userMap = new Map(
+        users.map((user) => {
+          return [user.id, user.displayName || "Resident"];
+        })
+      );
+      const publicMap = new Map(
+        settings.map((setting) => {
+          return [setting.residentId, setting.isPublicAchievementList];
+        })
+      );
+
+      achievements = achievementRows;
+      logs = logRows.map((log) => {
+        const isPublic = publicMap.get(log.accountId) !== false;
+        return {
+          ...log,
+          displayName: isPublic ? userMap.get(log.accountId) || "Resident" : "Private Player",
+          isPublic
+        };
+      });
+      currentTerm = term;
+
+      if (!uiSettings.currentTerm) {
+        uiSettings.currentTerm = term;
+      }
+    } catch (e: any) {
+      error = e.message;
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  onMount(() => {
+    pageState.title = "Leaderboards";
+    loadData();
+  });
+</script>
+
+<div class="space-y-6">
+  <SubpageHeader title="Leaderboards" isTopLevel={true}>
+    {#snippet actions()}
+      <div class="flex flex-wrap items-center gap-2">
+        <Tabs.Root bind:value={scope}>
+          <Tabs.List>
+            <Tabs.Trigger value="term">Term</Tabs.Trigger>
+            <Tabs.Trigger value="global">Global</Tabs.Trigger>
+          </Tabs.List>
+        </Tabs.Root>
+        <Button
+          variant="outline"
+          size="sm"
+          onclick={() => {
+            loadData();
+          }}
+          {isLoading}
+          icon={RefreshCcw}
+        />
+      </div>
+    {/snippet}
+  </SubpageHeader>
+
+  {#if isLoading}
+    <LoadingView />
+  {:else if error}
+    <ErrorView {error}>
+      <Button
+        onclick={() => {
+          loadData();
+        }}
+        class="mt-4"
+        {isLoading}
+        icon={RefreshCcw}>Retry</Button
+      >
+    </ErrorView>
+  {:else}
+    <div class="grid gap-2 lg:grid-cols-12">
+      {#if !isGlobal}
+        <div class="lg:col-span-3">
+          <TermFilter
+            onSelect={() => {
+              loadData();
+            }}
+          />
+        </div>
+      {/if}
+    </div>
+    <AchievementLeaderboard
+      {achievements}
+      {logs}
+      term={uiSettings.currentTerm || currentTerm}
+      {isGlobal}
+    />
+  {/if}
+</div>
