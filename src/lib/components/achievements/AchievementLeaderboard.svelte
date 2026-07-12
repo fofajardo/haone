@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
-  import { Crown, Medal, ShieldQuestion, ShieldQuestionMark, Trophy, Zap } from "@lucide/svelte";
+  import { Crown, Medal, Trophy, Zap } from "@lucide/svelte";
 
   let {
     achievements,
