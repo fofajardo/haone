@@ -66,16 +66,15 @@ export function createEmail(to: string, subject: string, body: string, replyTo?:
  */
 export async function sendEmail(accessToken: string, rawMessage: string) {
   const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        raw: rawMessage
-      })
-    }
-  );
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      raw: rawMessage
+    })
+  });
 
   if (!response.ok) {
     const error = await response.json();
