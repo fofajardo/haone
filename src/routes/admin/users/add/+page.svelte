@@ -29,11 +29,6 @@
       formData.program = academicItems.map((i) => i.program).join(":");
       formData.tags = userTypes.join(":");
 
-      // Final validation
-      if (userTypes.includes(UserTag.STUDENT) && userTypes.includes(UserTag.ALUMNUS)) {
-        throw new Error("User cannot be both STUDENT and ALUMNUS at the same time.");
-      }
-
       if (!formData.email) throw new Error("Email is required.");
       if (!formData.lastName) throw new Error("Last name is required.");
       if (!formData.firstName) throw new Error("First name is required.");

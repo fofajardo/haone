@@ -70,11 +70,6 @@
       formData.program = academicItems.map((i) => i.program).join(":");
       formData.tags = userTypes.join(":");
 
-      // Final validation
-      if (userTypes.includes(UserTag.STUDENT) && userTypes.includes(UserTag.ALUMNUS)) {
-        throw new Error("User cannot be both STUDENT and ALUMNUS at the same time.");
-      }
-
       await updateUser(userId, formData);
       goto(`/admin/users/${userId}`);
     } catch (e: any) {
