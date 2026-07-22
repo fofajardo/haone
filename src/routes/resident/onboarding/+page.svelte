@@ -26,7 +26,9 @@
 
 <div class="mx-auto max-w-2xl">
   <div class="px-4 py-8 sm:px-0">
-    <OnboardingForm status={residentState.status} onSuccess={handleSuccess} />
+    {#if residentState.status}
+      <OnboardingForm status={residentState.status} onSuccess={handleSuccess} />
+    {/if}
   </div>
 
   <div class="mt-8 text-center">

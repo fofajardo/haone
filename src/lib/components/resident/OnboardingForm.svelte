@@ -32,14 +32,14 @@
   let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();
 
   let isSubmitting = $state(false);
-  let step = $state(untrack(() => (status?.waitingForConfirmation ? 4 : 1)));
+  let step = $state(untrack(() => (status.waitingForConfirmation ? 4 : 1)));
   let isOutdated = $state(false);
-  const emailVal = $derived(status?.profile?.email || auth.user?.email || "");
+  const emailVal = $derived(status.profile?.email || auth.user?.email || "");
   const isUpMail = $derived(emailVal.endsWith("@up.edu.ph"));
-  const blockStudentNoChange = $derived(!!status?.profile?.studentNo);
+  const blockStudentNoChange = $derived(!!status.profile?.studentNo);
 
   $effect(() => {
-    if (status?.waitingForConfirmation) {
+    if (status.waitingForConfirmation) {
       step = 4;
     }
   });
@@ -104,7 +104,7 @@
       formData.college = "";
       formData.program = "";
 
-      if (status?.isRegistered) {
+      if (status.isRegistered) {
         isSubmitting = true;
         step = 4; // Go directly to the evaluation step to avoid spamming
         try {
@@ -702,11 +702,11 @@
         <div class="space-y-6">
           <div class="space-y-4">
             <p class="leading-relaxed">
-              {#if status?.currEntry?.accountType === AccountType.ALUMNUS}
+              {#if status.currEntry?.accountType === AccountType.ALUMNUS}
                 We've received your registration for an <strong>alumni account</strong>.
               {:else}
                 We've received your registration for <strong
-                  >{translatePeriod(status?.activeTerm) || "the current term"}</strong
+                  >{translatePeriod(status.activeTerm) || "the current term"}</strong
                 >.
               {/if}
             </p>
