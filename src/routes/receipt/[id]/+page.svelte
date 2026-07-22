@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { decryptJSON } from "$lib/crypto";
+  import { decryptJSON } from "$lib/utils/crypto";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
-  import branding from "$lib/branding.json";
+  import branding from "$lib/data/branding.json";
 
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import ReceiptExportTemplate from "$lib/components/receipt/ReceiptExportTemplate.svelte";
@@ -13,7 +13,7 @@
 
   import { LS_KEYS } from "$lib/constants";
 
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
   import type { ReceiptData } from "$lib/types";
   import type { PageData, ActionData } from "./$types";
   import { enhance } from "$app/forms";
@@ -111,7 +111,7 @@
     });
   }
 
-  import { exportReceiptPDF } from "$lib/receipt-pdf";
+  import { exportReceiptPDF } from "$lib/reports/receipt-pdf";
 
   async function downloadPDF() {
     if (!receiptData) {

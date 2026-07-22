@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
@@ -24,12 +24,13 @@
   import AnnouncementsSection from "$lib/components/residents/AnnouncementsSection.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { formatCurrency, translatePeriod, translateType, formatDate } from "$lib/receipt-utils";
-  import { pageState } from "$lib/page-info.svelte";
+  import { formatCurrency, formatDate } from "$lib/utils/formatters";
+  import { translatePeriod, translateType } from "$lib/utils/translators";
+  import { pageState } from "$lib/state/page-info.svelte";
   import StatusBadge from "$lib/components/residents/StatusBadge.svelte";
   import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
-  import { fetchServer } from "$lib/utils";
-  import type { ResidentStatus } from "$lib/resident-state.svelte";
+  import { fetchServer } from "$lib/utils/api-client";
+  import type { ResidentStatus } from "$lib/state/resident-state.svelte";
   import { AccountType } from "$lib/schemas";
   import StatisticCard from "$lib/components/StatisticCard.svelte";
 

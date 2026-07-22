@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge";
   import { ANNOUNCEMENT_STATUS_COLORS } from "$lib/schemas";
-  import { getAnnouncementStatus } from "$lib/admin-logic";
+  import { getAnnouncementStatus } from "$lib/logic/admin-logic";
   import type { AnnouncementRecord } from "$lib/schemas";
 
   let { row } = $props<{ row: any }>();

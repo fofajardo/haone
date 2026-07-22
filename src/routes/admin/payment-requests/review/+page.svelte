@@ -14,19 +14,24 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import TransactionForm from "$lib/components/TransactionForm.svelte";
-  import { fetchPaymentRequests, declinePaymentRequest } from "$lib/admin-logic";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/resident-logic";
+  import { fetchPaymentRequests, declinePaymentRequest } from "$lib/logic/admin-logic";
+  import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/logic/resident-logic";
   import { PaymentRequestStatus } from "$lib/schemas";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { toast } from "svelte-sonner";
-  import { formatAmount, translateMop } from "$lib/receipt-utils";
+  import { formatAmount } from "$lib/utils/formatters";
+  import { translateMop } from "$lib/utils/translators";
   import { Textarea } from "$lib/components/ui/textarea";
   import { goto } from "$app/navigation";
   import { Badge } from "$lib/components/ui/badge";
   import * as Card from "$lib/components/ui/card";
-  import { appendSheetRow, updateSheetValue, fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { auth } from "$lib/auth.svelte";
-  import { deleteUploadedImage } from "$lib/utils";
+  import {
+    appendSheetRow,
+    updateSheetValue,
+    fetchSheetRowsRaw
+  } from "$lib/services/google-sheets-service";
+  import { auth } from "$lib/state/auth.svelte";
+  import { deleteUploadedImage } from "$lib/utils/image-utils";
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);

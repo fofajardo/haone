@@ -1,5 +1,5 @@
 import { wrapEmailHtml } from "./base";
-import { formatDate } from "$lib/receipt-utils";
+import { formatDate } from "$lib/utils/formatters";
 import type { BrandingProfile, EmailTemplate } from "./types";
 
 export interface AcknowledgmentData {

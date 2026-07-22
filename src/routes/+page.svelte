@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { onMount, onDestroy } from "svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { ArrowRight, LoaderIcon } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
   import HeroVisual from "$lib/components/HeroVisual.svelte";

@@ -13,8 +13,12 @@
   import { Checkbox } from "$lib/components/ui/checkbox";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import { toast } from "svelte-sonner";
-  import { fetchAchievements, fetchAchievementLogs, updateAchievement } from "$lib/admin-logic";
-  import { fetchUsers, fetchResidents } from "$lib/resident-logic";
+  import {
+    fetchAchievements,
+    fetchAchievementLogs,
+    updateAchievement
+  } from "$lib/logic/admin-logic";
+  import { fetchUsers, fetchResidents } from "$lib/logic/resident-logic";
   import type { AchievementRecord } from "$lib/schemas";
   import AchievementDetailsView from "$lib/components/achievements/AchievementDetailsView.svelte";
   import AchievementStoryShareButton from "$lib/components/achievements/AchievementStoryShareButton.svelte";

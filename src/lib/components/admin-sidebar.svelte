@@ -25,7 +25,7 @@
     Network
   } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { page } from "$app/state";
   import ProfileHeader from "$lib/components/ProfileHeader.svelte";
   import MobileProfileCard from "$lib/components/MobileProfileCard.svelte";

@@ -17,7 +17,7 @@
   import { FlexRender, createSvelteTable } from "$lib/components/ui/data-table/index.js";
   import { cn } from "$lib/utils";
   import * as NativeSelect from "$lib/components/ui/native-select/index.js";
-  import { pluralize } from "$lib/receipt-utils";
+  import { pluralize } from "$lib/utils/formatters";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];

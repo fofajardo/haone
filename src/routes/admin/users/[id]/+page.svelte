@@ -2,7 +2,8 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { translateCollege, translateProgram, pluralize } from "$lib/receipt-utils";
+  import { translateCollege, translateProgram } from "$lib/utils/translators";
+  import { pluralize } from "$lib/utils/formatters";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
@@ -28,8 +29,8 @@
     type ResidentRecord as Account,
     UserTag
   } from "$lib/schemas";
-  import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$lib/resident-logic";
-  import { pageState } from "$lib/page-info.svelte";
+  import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$lib/logic/resident-logic";
+  import { pageState } from "$lib/state/page-info.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";

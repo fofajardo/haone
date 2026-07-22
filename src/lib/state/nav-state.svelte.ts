@@ -1,4 +1,4 @@
-import { fetchUserSettings } from "./shared-records-logic";
+import { fetchUserSettings } from "$lib/logic/shared-records-logic";
 
 class NavState {
   residentNavIds = $state<string[]>(["home", "finance", "laundry"]);

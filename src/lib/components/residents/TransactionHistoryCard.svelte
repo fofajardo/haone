@@ -1,13 +1,8 @@
 <script lang="ts">
   import type { ColumnDef } from "@tanstack/table-core";
   import { renderSnippet, renderComponent } from "$lib/components/ui/data-table/index.js";
-  import {
-    formatDate,
-    formatCurrency,
-    translateMop,
-    translateType,
-    pluralize
-  } from "$lib/receipt-utils";
+  import { formatDate, formatCurrency, pluralize } from "$lib/utils/formatters";
+  import { translateMop, translateType } from "$lib/utils/translators";
   import { type JournalRecord } from "$lib/schemas";
   import { createRawSnippet } from "svelte";
   import * as Card from "$lib/components/ui/card";

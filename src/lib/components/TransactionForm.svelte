@@ -1,19 +1,15 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { page } from "$app/state";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import {
-    translatePeriod,
-    translateMop,
-    parseRef,
-    formatAmount,
-    formatAccounting,
-    sortPeriods
-  } from "$lib/receipt-utils";
+  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
+  import { translatePeriod, translateMop } from "$lib/utils/translators";
+  import { parseRef } from "$lib/utils/parsers";
+  import { formatAmount, formatAccounting } from "$lib/utils/formatters";
+  import { sortPeriods } from "$lib/utils/sort";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -40,7 +36,7 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Badge } from "$lib/components/ui/badge";
-  import { fetchResidents, mapRowToJournal } from "$lib/resident-logic";
+  import { fetchResidents, mapRowToJournal } from "$lib/logic/resident-logic";
   import type { ResidentRecord, JournalRecord } from "$lib/schemas";
   import { JOURNAL_COL as JOR } from "$lib/schemas";
 

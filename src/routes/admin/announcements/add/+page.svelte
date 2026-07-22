@@ -1,6 +1,6 @@
 <script lang="ts">
   import dayjs from "dayjs";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -8,9 +8,9 @@
   import { ChevronLeft, Save } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
-  import { addAnnouncement } from "$lib/admin-logic";
-  import { fetchWithAuth } from "$lib/google-sheets";
-  import { fetchUsers } from "$lib/resident-logic";
+  import { addAnnouncement } from "$lib/logic/admin-logic";
+  import { fetchWithAuth } from "$lib/services/google-sheets-service";
+  import { fetchUsers } from "$lib/logic/resident-logic";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { ANNOUNCEMENT_TAG_LIST } from "$lib/schemas";

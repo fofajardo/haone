@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { type ResidentRecord as Resident } from "$lib/schemas";
   import {
     fetchResidents,
@@ -9,8 +9,8 @@
     stageClearanceEmailBatch,
     matchesStatusFilter,
     stageSoaEmailBatch as stageStatementOfAccountEmailBatch
-  } from "$lib/resident-logic";
-  import { pluralize } from "$lib/receipt-utils";
+  } from "$lib/logic/resident-logic";
+  import { pluralize } from "$lib/utils/formatters";
   import { goto } from "$app/navigation";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { Combobox } from "$lib/components/ui/combobox";

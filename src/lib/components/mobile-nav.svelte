@@ -19,9 +19,9 @@
     BookUser
   } from "@lucide/svelte";
   import { page } from "$app/state";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
 
   const MAP_RESIDENT: Record<string, any> = {
     home: { label: "Home", href: "/resident", icon: LayoutDashboard },

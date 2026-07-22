@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Sidebar from "$lib/components/ui/sidebar";
   import { Button } from "$lib/components/ui/button";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { X } from "@lucide/svelte";
   import BrandingLogo from "$lib/components/BrandingLogo.svelte";
 

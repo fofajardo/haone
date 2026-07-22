@@ -4,9 +4,9 @@
   import { ChevronLeft, Save } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
-  import { addOfficer, fetchOfficers } from "$lib/admin-logic";
-  import { fetchResidents, fetchTermCurr } from "$lib/resident-logic";
-  import { brandingState } from "$lib/branding.svelte";
+  import { addOfficer, fetchOfficers } from "$lib/logic/admin-logic";
+  import { fetchResidents, fetchTermCurr } from "$lib/logic/resident-logic";
+  import { brandingState } from "$lib/state/branding.svelte";
   import type { OfficerRecord, ResidentRecord } from "$lib/schemas";
   import { OfficerStatus } from "$lib/schemas";
   import { toast } from "svelte-sonner";
@@ -14,10 +14,10 @@
   import { Input } from "$lib/components/ui/input";
   import { Combobox } from "$lib/components/ui/combobox";
   import { goto } from "$app/navigation";
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
   import * as Card from "$lib/components/ui/card";
 
-  import { translatePeriod } from "$lib/receipt-utils";
+  import { translatePeriod } from "$lib/utils/translators";
 
   let residents = $state<ResidentRecord[]>([]);
   let officers = $state<OfficerRecord[]>([]);

@@ -1,5 +1,5 @@
 import { browser, dev } from "$app/environment";
-import { LS_KEYS } from "./constants";
+import { LS_KEYS } from "$lib/constants";
 import {
   PUBLIC_GS_AW_ID,
   PUBLIC_GS_RR_ID,
@@ -152,7 +152,7 @@ class UISettings {
 
   async syncFromServer() {
     try {
-      const { fetchUserSettings } = await import("./shared-records-logic");
+      const { fetchUserSettings } = await import("$lib/logic/shared-records-logic");
       const settings = await fetchUserSettings(true);
       const my = settings[0];
       if (my) {
@@ -180,7 +180,7 @@ class UISettings {
   }
 
   async save(residentId: string) {
-    const { updateUserSettings } = await import("./shared-records-logic");
+    const { updateUserSettings } = await import("$lib/logic/shared-records-logic");
     await updateUserSettings(residentId, {
       typography: this.fontFamily,
       density: this.displayDensity,

@@ -5,8 +5,8 @@
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchOfficers } from "$lib/admin-logic";
-  import { fetchTermCurr } from "$lib/resident-logic";
+  import { fetchOfficers } from "$lib/logic/admin-logic";
+  import { fetchTermCurr } from "$lib/logic/resident-logic";
   import type { OfficerRecord } from "$lib/schemas";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { createColumns } from "./columns";
@@ -15,7 +15,7 @@
   import { Input } from "$lib/components/ui/input";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import { goto } from "$app/navigation";
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
 
   let officers = $state<OfficerRecord[]>([]);
   let currentTerm = $state("");

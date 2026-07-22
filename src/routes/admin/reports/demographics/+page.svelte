@@ -11,14 +11,14 @@
     CircleDollarSign
   } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import * as Card from "$lib/components/ui/card";
   import * as Chart from "$lib/components/ui/chart";
   import { PieChart } from "layerchart";
-  import { translateCollege, translateProgram } from "$lib/receipt-utils";
+  import { translateCollege, translateProgram } from "$lib/utils/translators";
 
-  import { fetchResidents, getPaymentStatus } from "$lib/resident-logic";
+  import { fetchResidents, getPaymentStatus } from "$lib/logic/resident-logic";
 
   interface DataItem {
     label: string;

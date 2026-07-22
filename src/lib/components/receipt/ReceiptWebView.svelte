@@ -11,17 +11,12 @@
     StickyNote
   } from "@lucide/svelte";
   import { Spinner } from "$lib/components/ui/spinner";
-  import branding from "$lib/branding.json";
+  import branding from "$lib/data/branding.json";
   import type { ReceiptData } from "$lib/types";
-  import {
-    calculateTotal,
-    formatAmount,
-    formatCurrency,
-    formatDate,
-    parseRef,
-    translateMop,
-    translatePeriod
-  } from "$lib/receipt-utils";
+  import { calculateTotal } from "$lib/utils/math";
+  import { formatAmount, formatCurrency, formatDate } from "$lib/utils/formatters";
+  import { parseRef } from "$lib/utils/parsers";
+  import { translateMop, translatePeriod } from "$lib/utils/translators";
   import { Badge } from "../ui/badge";
 
   interface Props {

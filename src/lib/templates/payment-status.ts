@@ -1,4 +1,4 @@
-import { formatAccounting, formatAmount } from "$lib/receipt-utils";
+import { formatAccounting, formatAmount } from "$lib/utils/formatters";
 import { wrapEmailHtml } from "./base";
 import type { BrandingProfile, EmailTemplate } from "./types";
 

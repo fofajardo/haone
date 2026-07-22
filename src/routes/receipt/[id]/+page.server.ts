@@ -4,7 +4,7 @@ import { JOURNAL_COL } from "$lib/schemas";
 import type { PageServerLoad, Actions } from "./$types";
 import type { ReceiptData, ReceiptItem } from "$lib/types";
 import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
-import { parseCSVAmount } from "$lib/receipt-utils";
+import { parseCSVAmount } from "$lib/utils/math";
 
 export const load: PageServerLoad = async ({ params }) => {
   const id = params.id;

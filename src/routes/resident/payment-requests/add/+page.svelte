@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { auth } from "$lib/state/auth.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
 
-  import { addPaymentRequest } from "$lib/shared-records-logic";
-  import { fetchServer, compressImage, deleteUploadedImage } from "$lib/utils";
-  import { formatCurrency, formatAccounting } from "$lib/receipt-utils";
+  import { addPaymentRequest } from "$lib/logic/shared-records-logic";
+  import { fetchServer } from "$lib/utils/api-client";
+  import { compressImage, deleteUploadedImage } from "$lib/utils/image-utils";
+  import { formatCurrency, formatAccounting } from "$lib/utils/formatters";
   import type { ResidentRecord } from "$lib/schemas";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";

@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import { LS_KEYS } from "./constants";
+import { LS_KEYS } from "$lib/constants";
 
 export interface UserInfo {
   name: string;

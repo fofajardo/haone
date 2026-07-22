@@ -2,17 +2,15 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, deleteSheetRow, updateSheetValue } from "$lib/google-sheets";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import {
-    formatCurrency,
-    formatAccounting,
-    formatDate,
-    translateMop,
-    translatePeriod,
-    translateType,
-    parseRef
-  } from "$lib/receipt-utils";
+    fetchSheetRowsRaw,
+    deleteSheetRow,
+    updateSheetValue
+  } from "$lib/services/google-sheets-service";
+  import { formatCurrency, formatAccounting, formatDate } from "$lib/utils/formatters";
+  import { translateMop, translatePeriod, translateType } from "$lib/utils/translators";
+  import { parseRef } from "$lib/utils/parsers";
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Button } from "$lib/components/ui/button";
@@ -39,7 +37,7 @@
   const id = $derived(page.params.id);
 
   import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/schemas";
-  import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
+  import { mapRowToJournal, fetchResidents } from "$lib/logic/resident-logic";
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorStNo = $state<string | null>(null);

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { onMount } from "svelte";
-  import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/crypto";
+  import { generatePKCEVerifier, generatePKCEChallenge } from "$lib/utils/crypto";
   import { Button } from "$lib/components/ui/button";
   import { LoaderIcon } from "@lucide/svelte";
   import { goto, replaceState } from "$app/navigation";
-  import branding from "$lib/branding.json";
+  import branding from "$lib/data/branding.json";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { PUBLIC_GI_CLIENT_ID, PUBLIC_RESIDENT_GI_CLIENT_ID } from "$env/static/public";
 

@@ -8,10 +8,14 @@
   import TermFilter from "$lib/components/TermFilter.svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import AchievementLeaderboard from "$lib/components/achievements/AchievementLeaderboard.svelte";
-  import { fetchAchievements, fetchAchievementLogs, fetchUserSettings } from "$lib/admin-logic";
-  import { fetchTermCurr, fetchUsers } from "$lib/resident-logic";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { pageState } from "$lib/page-info.svelte";
+  import {
+    fetchAchievements,
+    fetchAchievementLogs,
+    fetchUserSettings
+  } from "$lib/logic/admin-logic";
+  import { fetchTermCurr, fetchUsers } from "$lib/logic/resident-logic";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
 
   let achievements = $state<AchievementRecord[]>([]);

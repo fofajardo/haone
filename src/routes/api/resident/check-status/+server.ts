@@ -6,7 +6,7 @@ import {
   serverError,
   fetchSheetsData
 } from "$lib/server/api-helper";
-import { parseCSVAmount } from "$lib/receipt-utils";
+import { parseCSVAmount } from "$lib/utils/math";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ url, request }) => {

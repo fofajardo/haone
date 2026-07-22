@@ -7,10 +7,10 @@
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
   import * as Card from "$lib/components/ui/card";
-  import { fetchServer } from "$lib/utils";
+  import { fetchServer } from "$lib/utils/api-client";
   import { Badge } from "$lib/components/ui/badge";
 
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
 
   let officers = $state<any[]>([]);
   let isLoading = $state(true);

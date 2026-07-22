@@ -17,11 +17,12 @@
     FileSpreadsheet,
     Bed
   } from "@lucide/svelte";
-  import { auth } from "$lib/auth.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { formatCurrency, formatDate, translatePeriod, translateType } from "$lib/receipt-utils";
-  import { mapRowToJournal, fetchResidents } from "$lib/resident-logic";
+  import { auth } from "$lib/state/auth.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
+  import { formatCurrency, formatDate } from "$lib/utils/formatters";
+  import { translatePeriod, translateType } from "$lib/utils/translators";
+  import { mapRowToJournal, fetchResidents } from "$lib/logic/resident-logic";
   import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
   import StatisticCard from "$lib/components/StatisticCard.svelte";
   import { onMount } from "svelte";

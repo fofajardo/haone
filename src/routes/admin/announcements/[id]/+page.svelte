@@ -8,7 +8,7 @@
   import { Checkbox } from "$lib/components/ui/checkbox";
   import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -19,7 +19,7 @@
     expireAnnouncement,
     deleteAnnouncement,
     getAnnouncementStatus
-  } from "$lib/admin-logic";
+  } from "$lib/logic/admin-logic";
   import { AnnouncementStatus, type AnnouncementRecord } from "$lib/schemas";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";

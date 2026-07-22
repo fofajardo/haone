@@ -1,13 +1,17 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { emailDispatcher } from "$lib/dispatcher.svelte";
+  import { emailDispatcher } from "$lib/state/dispatcher.svelte";
   import { AcknowledgmentTemplate } from "$lib/templates/acknowledgment";
   import { goto } from "$app/navigation";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, batchUpdateValues, invalidateCache } from "$lib/google-sheets";
-  import { parseDateWeight } from "$lib/receipt-utils";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import {
+    fetchSheetRowsRaw,
+    batchUpdateValues,
+    invalidateCache
+  } from "$lib/services/google-sheets-service";
+  import { parseDateWeight } from "$lib/utils/parsers";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -22,7 +26,7 @@
   import type { ReceiptData } from "$lib/types";
 
   import { type JournalRecord } from "$lib/schemas";
-  import { mapRowToJournal } from "$lib/resident-logic";
+  import { mapRowToJournal } from "$lib/logic/resident-logic";
 
   let queue = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);

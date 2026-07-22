@@ -1,10 +1,10 @@
-import { emailDispatcher } from "./dispatcher.svelte";
-import { PaymentStatusTemplate, StatementOfAccountTemplate } from "./templates/payment-status";
-import { ClearanceCertificateTemplate } from "./templates/clearance";
-import type { BrandingProfile } from "./templates/types";
+import { emailDispatcher } from "$lib/state/dispatcher.svelte";
+import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$lib/templates/payment-status";
+import { ClearanceCertificateTemplate } from "$lib/templates/clearance";
+import type { BrandingProfile } from "$lib/templates/types";
 import { goto } from "$app/navigation";
-import { auth } from "./auth.svelte";
-import { fetchServer } from "./utils";
+import { auth } from "$lib/state/auth.svelte";
+import { fetchServer } from "$lib/utils/api-client";
 import {
   ACCOUNT_COL,
   JOURNAL_COL,
@@ -13,7 +13,7 @@ import {
   type JournalRecord,
   type UserRecord,
   AccountType
-} from "./schemas";
+} from "$lib/schemas";
 
 /**
  * Robust financial parsing for spreadsheet values.
@@ -103,8 +103,8 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
     return data.accounts;
   }
 
-  const { uiSettings } = await import("./settings.svelte");
-  const { fetchSheetRowsRaw } = await import("./google-sheets");
+  const { uiSettings } = await import("$lib/state/settings.svelte");
+  const { fetchSheetRowsRaw } = await import("$lib/services/google-sheets-service");
 
   if (!uiSettings.accountingWorkbookId || !uiSettings.residentRecordsId) {
     return [];
@@ -187,8 +187,8 @@ export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
     return [];
   }
 
-  const { uiSettings } = await import("./settings.svelte");
-  const { fetchSheetRowsRaw } = await import("./google-sheets");
+  const { uiSettings } = await import("$lib/state/settings.svelte");
+  const { fetchSheetRowsRaw } = await import("$lib/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) {
     return [];
@@ -224,8 +224,8 @@ export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
  * Fetches the current active term from constants.
  */
 export async function fetchTermCurr(forceRefresh = false): Promise<string> {
-  const { uiSettings } = await import("./settings.svelte");
-  const { fetchSheetRowsRaw } = await import("./google-sheets");
+  const { uiSettings } = await import("$lib/state/settings.svelte");
+  const { fetchSheetRowsRaw } = await import("$lib/services/google-sheets-service");
 
   if (!uiSettings.accountingWorkbookId) return "";
 
@@ -298,8 +298,9 @@ export function computeDisplayNames(data: Partial<UserRecord>) {
  * Updates a user record in the ResidentRecords spreadsheet.
  */
 export async function updateUser(userId: string, data: Partial<UserRecord>) {
-  const { uiSettings } = await import("./settings.svelte");
-  const { fetchSheetRowsRaw, updateSheetValue } = await import("./google-sheets");
+  const { uiSettings } = await import("$lib/state/settings.svelte");
+  const { fetchSheetRowsRaw, updateSheetValue } =
+    await import("$lib/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -351,8 +352,8 @@ export async function updateUser(userId: string, data: Partial<UserRecord>) {
  * Adds a new user record to the ResidentRecords spreadsheet.
  */
 export async function addUser(data: Partial<UserRecord>) {
-  const { uiSettings } = await import("./settings.svelte");
-  const { appendSheetRow } = await import("./google-sheets");
+  const { uiSettings } = await import("$lib/state/settings.svelte");
+  const { appendSheetRow } = await import("$lib/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -384,8 +385,8 @@ export async function addUser(data: Partial<UserRecord>) {
  * Adds multiple user records in a single operation.
  */
 export async function addUsersBatch(users: Partial<UserRecord>[]) {
-  const { uiSettings } = await import("./settings.svelte");
-  const { appendSheetRow } = await import("./google-sheets");
+  const { uiSettings } = await import("$lib/state/settings.svelte");
+  const { appendSheetRow } = await import("$lib/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -428,8 +429,8 @@ export async function fetchAccountsByUserId(userId: string): Promise<ResidentRec
  * Deletes a user record only if they have no linked accounts.
  */
 export async function deleteUser(userId: string) {
-  const { uiSettings } = await import("./settings.svelte");
-  const { fetchSheetRowsRaw, deleteSheetRow } = await import("./google-sheets");
+  const { uiSettings } = await import("$lib/state/settings.svelte");
+  const { fetchSheetRowsRaw, deleteSheetRow } = await import("$lib/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -714,7 +715,8 @@ export async function clearResident(
   brandingKey: string,
   issuerId: string
 ) {
-  const { updateSheetValue, fetchSheetRowsRaw } = await import("./google-sheets");
+  const { updateSheetValue, fetchSheetRowsRaw } =
+    await import("$lib/services/google-sheets-service");
 
   const now = new Date();
   const dateString = now.toLocaleDateString("en-PH", {

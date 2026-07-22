@@ -8,7 +8,7 @@ import {
   type VapidKeys
 } from "@block65/webcrypto-web-push";
 import { getFirebaseToken, fetchGoogleAPI } from "$lib/server/api-helper";
-import branding from "$lib/branding.json";
+import branding from "$lib/data/branding.json";
 
 const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
 const PROJECT_ID = keys.project_id;

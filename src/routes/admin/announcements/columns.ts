@@ -2,7 +2,7 @@ import { type ColumnDef } from "@tanstack/table-core";
 import { renderComponent } from "$lib/components/ui/data-table/index.js";
 import type { AnnouncementRecord } from "$lib/schemas";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
-import { formatDate } from "$lib/receipt-utils";
+import { formatDate } from "$lib/utils/formatters";
 
 import AnnouncementStatusCell from "./AnnouncementStatusCell.svelte";
 import AnnouncementTagsCell from "./AnnouncementTagsCell.svelte";

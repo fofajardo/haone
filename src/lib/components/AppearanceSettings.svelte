@@ -4,7 +4,7 @@
   import { Label } from "$lib/components/ui/label";
   import { Switch } from "$lib/components/ui/switch";
   import { Monitor, Sun, Moon } from "@lucide/svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
 
   function updateTheme(mode: string) {

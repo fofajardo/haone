@@ -9,8 +9,9 @@ import {
   fetchSheetsData,
   resolveResidentAccountType
 } from "$lib/server/api-helper";
-import { parseTime, formatTime } from "$lib/receipt-utils";
-import { canAccessLaundry, canSeeLaundryNames } from "$lib/resident-logic";
+import { parseTime } from "$lib/utils/parsers";
+import { formatTime } from "$lib/utils/formatters";
+import { canAccessLaundry, canSeeLaundryNames } from "$lib/logic/resident-logic";
 import type { RequestHandler } from "./$types";
 
 /**

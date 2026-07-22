@@ -5,9 +5,9 @@
   import { Input } from "$lib/components/ui/input";
   import { TriangleAlert, ExternalLink } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button";
-  import branding from "$lib/branding.json";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import branding from "$lib/data/branding.json";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID, PUBLIC_GS_SR_ID } from "$env/static/public";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import AppearanceSettings from "$lib/components/AppearanceSettings.svelte";

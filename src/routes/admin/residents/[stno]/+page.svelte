@@ -2,15 +2,12 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/google-sheets";
-  import {
-    translateCollege,
-    translateProgram,
-    parseDateWeight,
-    pluralize
-  } from "$lib/receipt-utils";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/services/google-sheets-service";
+  import { translateCollege, translateProgram } from "$lib/utils/translators";
+  import { parseDateWeight } from "$lib/utils/parsers";
+  import { pluralize } from "$lib/utils/formatters";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
@@ -41,7 +38,7 @@
     stageClearanceEmail,
     fetchResidents,
     mapRowToJournal
-  } from "$lib/resident-logic";
+  } from "$lib/logic/resident-logic";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";

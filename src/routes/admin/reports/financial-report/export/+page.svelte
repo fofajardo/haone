@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -12,8 +12,13 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { HandCoins, RefreshCcw } from "@lucide/svelte";
-  import { translatePeriod, pluralize, getJournalDateRange } from "$lib/receipt-utils";
-  import { exportFinancialReportPDF, fetchFinancialReportData } from "$lib/financial-report-pdf";
+  import { translatePeriod } from "$lib/utils/translators";
+  import { pluralize } from "$lib/utils/formatters";
+  import { getJournalDateRange } from "$lib/utils/parsers";
+  import {
+    exportFinancialReportPDF,
+    fetchFinancialReportData
+  } from "$lib/reports/financial-report-pdf";
   import type { JournalRecord, ResidentRecord } from "$lib/schemas";
 
   let isLoading = $state(true);

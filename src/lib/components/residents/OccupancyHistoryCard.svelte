@@ -5,7 +5,8 @@
   import { type ResidentRecord as Account } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import { translatePeriod, pluralize } from "$lib/receipt-utils";
+  import { translatePeriod } from "$lib/utils/translators";
+  import { pluralize } from "$lib/utils/formatters";
   import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
   import StatusBadge from "./StatusBadge.svelte";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";

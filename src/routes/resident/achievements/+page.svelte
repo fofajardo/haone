@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { Button } from "$lib/components/ui/button";
   import { RefreshCcw, Trophy } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -9,10 +9,10 @@
   import {
     fetchAchievements,
     calculateAchievementPercentage
-  } from "$lib/shared-records-logic";
-  import { fetchUsers } from "$lib/resident-logic";
+  } from "$lib/logic/shared-records-logic";
+  import { fetchUsers } from "$lib/logic/resident-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
 
   import AchievementCard from "$lib/components/achievements/AchievementCard.svelte";
@@ -27,9 +27,7 @@
     isLoading = true;
     error = null;
     try {
-      const [achResult] = await Promise.all([
-        fetchAchievements(true),
-      ]);
+      const [achResult] = await Promise.all([fetchAchievements(true)]);
 
       if (Array.isArray(achResult)) {
         achievements = achResult;

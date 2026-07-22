@@ -1,5 +1,5 @@
-import { auth } from "./auth.svelte";
-import { fetchServer } from "./utils";
+import { auth } from "$lib/state/auth.svelte";
+import { fetchServer } from "$lib/utils/api-client";
 import {
   type UserRecord,
   type ResidentRecord,

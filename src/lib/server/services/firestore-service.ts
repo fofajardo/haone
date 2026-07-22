@@ -1,5 +1,5 @@
 import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
-import { getFirebaseToken, fetchGoogleAPI } from "./api-helper";
+import { getFirebaseToken, fetchGoogleAPI } from "$lib/server/api-helper";
 
 const FIRESTORE_UPLOADS_COLLECTION = "uploads";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { emailDispatcher } from "$lib/dispatcher.svelte";
-  import { auth } from "$lib/auth.svelte";
-  import { createEmail, sendEmail } from "$lib/gmail";
+  import { emailDispatcher } from "$lib/state/dispatcher.svelte";
+  import { auth } from "$lib/state/auth.svelte";
+  import { createEmail, sendEmail } from "$lib/services/gmail-service";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Progress } from "$lib/components/ui/progress";
@@ -9,7 +9,7 @@
   import EmptyView from "$lib/components/EmptyView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
-  import { formatCurrency, formatAmount } from "$lib/receipt-utils";
+  import { formatCurrency, formatAmount } from "$lib/utils/formatters";
   import {
     Play,
     RefreshCcw,

@@ -3,7 +3,7 @@ import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/in
 import { type UserRecord as User, USER_TAG_COLORS, UserTag } from "$lib/schemas";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
-import { translateCollege, translateProgram } from "$lib/receipt-utils";
+import { translateCollege, translateProgram } from "$lib/utils/translators";
 
 export const columns: ColumnDef<User>[] = [
   {

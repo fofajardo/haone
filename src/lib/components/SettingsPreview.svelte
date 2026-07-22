@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
 </script>
 
 <div class="hidden w-full space-y-4 lg:block lg:w-[400px]">

@@ -2,7 +2,7 @@
   import { onMount, tick } from "svelte";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
-  import branding from "$lib/branding.json";
+  import branding from "$lib/data/branding.json";
 
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import StudentNumberAuthCard from "$lib/components/StudentNumberAuthCard.svelte";
@@ -11,8 +11,8 @@
   import ClearanceExportTemplate from "$lib/components/residents/ClearanceExportTemplate.svelte";
 
   import { LS_KEYS } from "$lib/constants";
-  import { pageState } from "$lib/page-info.svelte";
-  import { exportClearancePDF } from "$lib/clearance-pdf";
+  import { pageState } from "$lib/state/page-info.svelte";
+  import { exportClearancePDF } from "$lib/reports/clearance-pdf";
   import type { PageData, ActionData } from "./$types";
   import { enhance } from "$app/forms";
 

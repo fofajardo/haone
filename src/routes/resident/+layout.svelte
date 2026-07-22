@@ -4,8 +4,8 @@
   import ResidentSidebar from "$lib/components/resident-sidebar.svelte";
   import AdminHeader from "$lib/components/admin-header.svelte";
   import MobileNav from "$lib/components/mobile-nav.svelte";
-  import { auth } from "$lib/auth.svelte";
-  import { residentState } from "$lib/resident-state.svelte";
+  import { auth } from "$lib/state/auth.svelte";
+  import { residentState } from "$lib/state/resident-state.svelte";
   import { onMount } from "svelte";
   import { LoaderIcon } from "@lucide/svelte";
   import { page } from "$app/state";

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { RefreshCcw } from "@lucide/svelte";
@@ -9,8 +9,8 @@
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import OccupancyHistoryCard from "$lib/components/residents/OccupancyHistoryCard.svelte";
   import StudentProfileCard from "$lib/components/residents/StudentProfileCard.svelte";
-  import { pageState } from "$lib/page-info.svelte";
-  import { fetchServer } from "$lib/utils";
+  import { pageState } from "$lib/state/page-info.svelte";
+  import { fetchServer } from "$lib/utils/api-client";
 
   let status = $state<any>(null);
   let occupancyData = $state<any[]>([]);

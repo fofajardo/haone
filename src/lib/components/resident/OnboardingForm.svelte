@@ -23,17 +23,17 @@
     ItemTitle,
     ItemDescription
   } from "$lib/components/ui/item";
-  import colleges from "$lib/colleges.json";
-  import programs from "$lib/programs.json";
+  import colleges from "$lib/data/colleges.json";
+  import programs from "$lib/data/programs.json";
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/schemas";
 
-  import { residentState, type ResidentStatus } from "$lib/resident-state.svelte";
-  import { roomsState } from "$lib/rooms.svelte";
-  import { fetchServer } from "$lib/utils";
-  import { translatePeriod } from "$lib/receipt-utils";
+  import { residentState, type ResidentStatus } from "$lib/state/resident-state.svelte";
+  import { roomsState } from "$lib/state/rooms.svelte";
+  import { fetchServer } from "$lib/utils/api-client";
+  import { translatePeriod } from "$lib/utils/translators";
   import * as Stepper from "$lib/components/ui/stepper";
 
   let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();

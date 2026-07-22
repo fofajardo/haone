@@ -3,7 +3,8 @@ import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/in
 import { type LaundryRecord, LaundryStatus } from "$lib/schemas";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
-import { parseTime, formatDate } from "$lib/receipt-utils";
+import { parseTime } from "$lib/utils/parsers";
+import { formatDate } from "$lib/utils/formatters";
 
 export const columns: ColumnDef<LaundryRecord>[] = [
   {

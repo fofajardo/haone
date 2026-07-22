@@ -7,7 +7,7 @@
   import PrivacySettings from "$lib/components/residents/PrivacySettings.svelte";
   import SettingsActions from "$lib/components/SettingsActions.svelte";
   import { onMount } from "svelte";
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
 
   onMount(() => {
     pageState.title = "Settings";

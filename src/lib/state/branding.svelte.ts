@@ -1,7 +1,7 @@
 import { browser } from "$app/environment";
 import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
-import { LS_KEYS } from "./constants";
-import branding from "./branding.json";
+import { LS_KEYS } from "$lib/constants";
+import branding from "$lib/data/branding.json";
 
 export type BrandingKey = keyof typeof branding;
 

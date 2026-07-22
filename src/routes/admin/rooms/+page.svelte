@@ -1,13 +1,13 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { roomsState } from "$lib/rooms.svelte";
-  import { fetchResidents, fetchUsers } from "$lib/resident-logic";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { getSyncPreview, applySync, type SyncPreviewAction } from "$lib/rooms-logic.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { roomsState } from "$lib/state/rooms.svelte";
+  import { fetchResidents, fetchUsers } from "$lib/logic/resident-logic";
+  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
+  import { getSyncPreview, applySync, type SyncPreviewAction } from "$lib/logic/rooms-logic.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/schemas";
-  import { pluralize } from "$lib/receipt-utils";
+  import { pluralize } from "$lib/utils/formatters";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";

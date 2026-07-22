@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { Button } from "$lib/components/ui/button";
   import { RefreshCcw, Plus, Trophy, UserPlus } from "@lucide/svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -12,8 +12,8 @@
     fetchAchievementLogs,
     addAchievement,
     awardAchievement
-  } from "$lib/admin-logic";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/resident-logic";
+  } from "$lib/logic/admin-logic";
+  import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/logic/resident-logic";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";
@@ -22,10 +22,13 @@
   import { toast } from "svelte-sonner";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Checkbox } from "$lib/components/ui/checkbox";
-  import { translatePeriod } from "$lib/receipt-utils";
+  import { translatePeriod } from "$lib/utils/translators";
   import TermFilter from "$lib/components/TermFilter.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { calculateAchievementPercentage, getEligibleCount } from "$lib/shared-records-logic";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import {
+    calculateAchievementPercentage,
+    getEligibleCount
+  } from "$lib/logic/shared-records-logic";
   import AchievementCard from "$lib/components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);

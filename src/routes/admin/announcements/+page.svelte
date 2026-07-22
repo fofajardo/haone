@@ -6,9 +6,13 @@
   import EmptyView from "$lib/components/EmptyView.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchAnnouncements, expireAnnouncement, deleteAnnouncement } from "$lib/admin-logic";
-  import { fetchWithAuth } from "$lib/google-sheets";
-  import { auth } from "$lib/auth.svelte";
+  import {
+    fetchAnnouncements,
+    expireAnnouncement,
+    deleteAnnouncement
+  } from "$lib/logic/admin-logic";
+  import { fetchWithAuth } from "$lib/services/google-sheets-service";
+  import { auth } from "$lib/state/auth.svelte";
   import type { AnnouncementRecord } from "$lib/schemas";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
@@ -22,7 +26,7 @@
   import { Combobox } from "$lib/components/ui/combobox";
   import { Search, FunnelX } from "@lucide/svelte";
 
-  import { getAnnouncementStatus } from "$lib/admin-logic";
+  import { getAnnouncementStatus } from "$lib/logic/admin-logic";
   import { AnnouncementStatus } from "$lib/schemas";
 
   let announcements = $state<AnnouncementRecord[]>([]);

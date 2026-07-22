@@ -1,5 +1,5 @@
-import branding from "./branding.json";
-import { translatePeriod } from "./receipt-utils";
+import branding from "$lib/data/branding.json";
+import { translatePeriod } from "$lib/utils/translators";
 import type {
   TDocumentDefinitions,
   Content,

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";
@@ -9,15 +9,15 @@
   import * as Card from "$lib/components/ui/card";
   import StatisticCard from "$lib/components/StatisticCard.svelte";
   import { RefreshCcw, FileDown, TrendingUp, TrendingDown, Wallet } from "@lucide/svelte";
-  import {
-    formatAccounting,
-    translateMop,
-    translateType,
-    getJournalDateRange
-  } from "$lib/receipt-utils";
+  import { formatAccounting } from "$lib/utils/formatters";
+  import { translateMop, translateType } from "$lib/utils/translators";
+  import { getJournalDateRange } from "$lib/utils/parsers";
   import type { JournalRecord, ResidentRecord } from "$lib/schemas";
   import * as Table from "$lib/components/ui/table";
-  import { computeFinancialReportData, fetchFinancialReportData } from "$lib/financial-report-pdf";
+  import {
+    computeFinancialReportData,
+    fetchFinancialReportData
+  } from "$lib/reports/financial-report-pdf";
   import * as Chart from "$lib/components/ui/chart";
   import { PieChart } from "layerchart";
 

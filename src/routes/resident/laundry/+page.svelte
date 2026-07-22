@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { RefreshCcw, Plus, Info, Funnel, CircleX, CircleCheck } from "@lucide/svelte";
@@ -13,8 +13,8 @@
     fetchLaundryReservations,
     addLaundryReservation,
     cancelLaundryReservation
-  } from "$lib/shared-records-logic";
-  import { fetchUsers } from "$lib/resident-logic";
+  } from "$lib/logic/shared-records-logic";
+  import { fetchUsers } from "$lib/logic/resident-logic";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/schemas";
   import * as Card from "$lib/components/ui/card";
   import { Label } from "$lib/components/ui/label";
@@ -24,9 +24,10 @@
   import * as TimePicker from "$lib/components/ui/time-picker";
   import LaundryCalendar from "$lib/components/residents/LaundryCalendar.svelte";
   import { toast } from "svelte-sonner";
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
   import { ChevronDown } from "@lucide/svelte";
-  import { parseTime, formatTime, parseDateWeight } from "$lib/receipt-utils";
+  import { parseTime, parseDateWeight } from "$lib/utils/parsers";
+  import { formatTime } from "$lib/utils/formatters";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { columns } from "./columns";
 

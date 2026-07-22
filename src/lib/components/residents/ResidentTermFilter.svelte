@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchServer } from "$lib/utils";
-  import { translatePeriod } from "$lib/receipt-utils";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { fetchServer } from "$lib/utils/api-client";
+  import { translatePeriod } from "$lib/utils/translators";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";

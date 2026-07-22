@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { appendSheetRow } from "$lib/google-sheets";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { appendSheetRow } from "$lib/services/google-sheets-service";
   import TransactionForm from "$lib/components/TransactionForm.svelte";
 
   let isSubmitting = $state(false);

@@ -11,7 +11,7 @@
     MapPin,
     Bed as BedIcon
   } from "@lucide/svelte";
-  import { translateCollege, translateProgram } from "$lib/receipt-utils";
+  import { translateCollege, translateProgram } from "$lib/utils/translators";
   import type { ResidentRecord } from "$lib/schemas";
 
   interface Props {

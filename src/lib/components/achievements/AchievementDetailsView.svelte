@@ -3,7 +3,7 @@
   import { ExternalLink, Lock as LockIcon, Sparkles } from "@lucide/svelte";
   import * as Card from "$lib/components/ui/card";
   import type { AchievementRecord } from "$lib/schemas";
-  import { formatAwardDate, calculateAchievementPercentage } from "$lib/shared-records-logic";
+  import { formatAwardDate, calculateAchievementPercentage } from "$lib/logic/shared-records-logic";
 
   interface Earner {
     residentId: string;

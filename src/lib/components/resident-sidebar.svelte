@@ -18,12 +18,12 @@
     Network
   } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { auth } from "$lib/auth.svelte";
-  import { residentState } from "$lib/resident-state.svelte";
+  import { auth } from "$lib/state/auth.svelte";
+  import { residentState } from "$lib/state/resident-state.svelte";
   import { page } from "$app/state";
-  import { canAccessLaundry, canAccessAchievements } from "$lib/resident-logic";
+  import { canAccessLaundry, canAccessAchievements } from "$lib/logic/resident-logic";
   import { AccountType } from "$lib/schemas";
-  import { isStaticIpEnabled } from "$lib/rooms-utils";
+  import { isStaticIpEnabled } from "$lib/utils/rooms-utils";
   import ProfileHeader from "$lib/components/ProfileHeader.svelte";
   import MobileProfileCard from "$lib/components/MobileProfileCard.svelte";
 

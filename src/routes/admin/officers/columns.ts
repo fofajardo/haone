@@ -4,7 +4,7 @@ import type { OfficerRecord } from "$lib/schemas";
 import OfficerNameCell from "./OfficerNameCell.svelte";
 import OfficerStatusCell from "./OfficerStatusCell.svelte";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
-import { brandingState } from "$lib/branding.svelte";
+import { brandingState } from "$lib/state/branding.svelte";
 
 export const createColumns = (onSuccess: () => void): ColumnDef<OfficerRecord>[] => [
   {

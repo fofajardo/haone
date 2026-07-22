@@ -8,8 +8,8 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { fetchPaymentRequests } from "$lib/admin-logic";
-  import { fetchResidents, fetchTermCurr } from "$lib/resident-logic";
+  import { fetchPaymentRequests } from "$lib/logic/admin-logic";
+  import { fetchResidents, fetchTermCurr } from "$lib/logic/resident-logic";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { goto } from "$app/navigation";

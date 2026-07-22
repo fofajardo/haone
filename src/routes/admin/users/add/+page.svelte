@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { type UserRecord, UserTag } from "$lib/schemas";
-  import { addUser } from "$lib/resident-logic";
+  import { addUser } from "$lib/logic/resident-logic";
   import UserForm from "$lib/components/admin/UserForm.svelte";
 
   let isSaving = $state(false);

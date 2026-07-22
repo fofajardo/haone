@@ -1,6 +1,6 @@
 import { browser } from "$app/environment";
 import { toast } from "svelte-sonner";
-import { savePushSubscription, deletePushSubscription } from "./shared-records-logic";
+import { savePushSubscription, deletePushSubscription } from "$lib/logic/shared-records-logic";
 
 class NotificationManager {
   #subscription = $state<PushSubscription | null>(null);

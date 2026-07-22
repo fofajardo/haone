@@ -23,7 +23,7 @@
     ChevronDown,
     X
   } from "@lucide/svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { page } from "$app/state";
 
   const isAdminView = $derived(page.url.pathname.startsWith("/admin"));

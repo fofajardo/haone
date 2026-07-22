@@ -1,11 +1,11 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
-  import { auth } from "$lib/auth.svelte";
-  import { fetchAchievements, awardAchievementBatch } from "$lib/admin-logic";
-  import { fetchUsers } from "$lib/resident-logic";
+  import { auth } from "$lib/state/auth.svelte";
+  import { fetchAchievements, awardAchievementBatch } from "$lib/logic/admin-logic";
+  import { fetchUsers } from "$lib/logic/resident-logic";
   import type { ResidentRecord, AchievementRecord } from "$lib/schemas";
-  import { pluralize } from "$lib/receipt-utils";
+  import { pluralize } from "$lib/utils/formatters";
   import { X, Trophy } from "@lucide/svelte";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Label } from "$lib/components/ui/label";

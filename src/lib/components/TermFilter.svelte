@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { translatePeriod, sortPeriods } from "$lib/receipt-utils";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
+  import { translatePeriod } from "$lib/utils/translators";
+  import { sortPeriods } from "$lib/utils/sort";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";

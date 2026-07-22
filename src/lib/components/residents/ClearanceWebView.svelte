@@ -10,8 +10,8 @@
     StickyNote
   } from "@lucide/svelte";
   import { Spinner } from "$lib/components/ui/spinner";
-  import branding from "$lib/branding.json";
-  import { translatePeriod } from "$lib/receipt-utils";
+  import branding from "$lib/data/branding.json";
+  import { translatePeriod } from "$lib/utils/translators";
 
   interface Props {
     clearanceData: {

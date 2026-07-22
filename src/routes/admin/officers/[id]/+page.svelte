@@ -10,7 +10,7 @@
     updateOfficer,
     deleteOfficer,
     transitionOfficerPosition
-  } from "$lib/admin-logic";
+  } from "$lib/logic/admin-logic";
   import type { OfficerRecord } from "$lib/schemas";
   import { OfficerStatus } from "$lib/schemas";
   import { toast } from "svelte-sonner";
@@ -21,9 +21,9 @@
   import * as Card from "$lib/components/ui/card";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import * as Dialog from "$lib/components/ui/dialog";
-  import { pageState } from "$lib/page-info.svelte";
-  import { brandingState } from "$lib/branding.svelte";
-  import { translatePeriod } from "$lib/receipt-utils";
+  import { pageState } from "$lib/state/page-info.svelte";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { translatePeriod } from "$lib/utils/translators";
 
   const { id } = page.params;
   let officer = $state<OfficerRecord | null>(null);

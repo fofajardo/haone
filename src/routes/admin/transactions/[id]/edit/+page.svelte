@@ -2,10 +2,10 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/google-sheets";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/services/google-sheets-service";
   import { JOURNAL_COL as JOR } from "$lib/schemas";
-  import { mapRowToJournal } from "$lib/resident-logic";
+  import { mapRowToJournal } from "$lib/logic/resident-logic";
   import type { JournalRecord } from "$lib/schemas";
   import TransactionForm from "$lib/components/TransactionForm.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";

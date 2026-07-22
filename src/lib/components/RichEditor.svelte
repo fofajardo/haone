@@ -26,8 +26,9 @@
   import * as Popover from "$lib/components/ui/popover";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import { transformGoogleDriveLink, compressImage, fetchServer } from "$lib/utils";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { transformGoogleDriveLink, compressImage } from "$lib/utils/image-utils";
+  import { fetchServer } from "$lib/utils/api-client";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { toast } from "svelte-sonner";
   import {
     Bold,

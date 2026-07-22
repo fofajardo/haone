@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { RefreshCcw, Plus, CircleX, Funnel } from "@lucide/svelte";
@@ -11,10 +11,10 @@
     fetchLaundryReservations,
     cancelLaundryReservation,
     addLaundryReservation
-  } from "$lib/admin-logic";
-  import { computeDisplayNames } from "$lib/resident-logic";
-  import { fetchSheetRowsRaw } from "$lib/google-sheets";
-  import { uiSettings } from "$lib/settings.svelte";
+  } from "$lib/logic/admin-logic";
+  import { computeDisplayNames } from "$lib/logic/resident-logic";
+  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/schemas";
   import type { LaundryRecord } from "$lib/schemas";
   import * as Dialog from "$lib/components/ui/dialog";
@@ -29,8 +29,10 @@
   import { Combobox } from "$lib/components/ui/combobox";
   import { toast } from "svelte-sonner";
   import { FileUp } from "@lucide/svelte";
-  import { pageState } from "$lib/page-info.svelte";
-  import { parseTime, formatTime, parseDateWeight, sortPeriods } from "$lib/receipt-utils";
+  import { pageState } from "$lib/state/page-info.svelte";
+  import { parseTime, parseDateWeight } from "$lib/utils/parsers";
+  import { formatTime } from "$lib/utils/formatters";
+  import { sortPeriods } from "$lib/utils/sort";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<any[]>([]);

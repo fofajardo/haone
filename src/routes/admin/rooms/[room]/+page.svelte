@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { roomsState } from "$lib/rooms.svelte";
-  import { fetchResidents, fetchUsers, fetchTermCurr } from "$lib/resident-logic";
+  import { roomsState } from "$lib/state/rooms.svelte";
+  import { fetchResidents, fetchUsers, fetchTermCurr } from "$lib/logic/resident-logic";
   import type { ResidentRecord, UserRecord } from "$lib/schemas";
   import AssignmentDialog from "$lib/components/admin/AssignmentDialog.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

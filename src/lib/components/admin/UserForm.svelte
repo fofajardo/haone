@@ -16,9 +16,9 @@
     AwardIcon
   } from "@lucide/svelte";
   import { type UserRecord, UserTag } from "$lib/schemas";
-  import { translateCollege, translateProgram } from "$lib/receipt-utils";
-  import collegesJson from "$lib/colleges.json";
-  import programsJson from "$lib/programs.json";
+  import { translateCollege, translateProgram } from "$lib/utils/translators";
+  import collegesJson from "$lib/data/colleges.json";
+  import programsJson from "$lib/data/programs.json";
   import { TagsInput } from "$lib/components/ui/tags-input";
   import { Combobox } from "$lib/components/ui/combobox";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

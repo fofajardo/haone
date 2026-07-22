@@ -2,9 +2,10 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { fetchSheetRowsRaw, batchUpdateValues } from "$lib/google-sheets";
-  import { translateMop, parseDateWeight } from "$lib/receipt-utils";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { fetchSheetRowsRaw, batchUpdateValues } from "$lib/services/google-sheets-service";
+  import { translateMop } from "$lib/utils/translators";
+  import { parseDateWeight } from "$lib/utils/parsers";
   import { Combobox } from "$lib/components/ui/combobox";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -34,7 +35,7 @@
   });
 
   import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/schemas";
-  import { mapRowToJournal } from "$lib/resident-logic";
+  import { mapRowToJournal } from "$lib/logic/resident-logic";
 
   async function loadData(forceRefresh = false) {
     if (!uiSettings.accountingWorkbookId) {

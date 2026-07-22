@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$lib/components/ui/button";
   import { Search, RefreshCcw, Plus, ReceiptText, Wallet } from "@lucide/svelte";
@@ -7,11 +7,11 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
-  import { fetchPaymentRequests, cancelPaymentRequest } from "$lib/shared-records-logic";
-  import { fetchUsers } from "$lib/resident-logic";
+  import { fetchPaymentRequests, cancelPaymentRequest } from "$lib/logic/shared-records-logic";
+  import { fetchUsers } from "$lib/logic/resident-logic";
   import { type PaymentRequestRecord, PaymentRequestStatus } from "$lib/schemas";
   import { toast } from "svelte-sonner";
-  import { pageState } from "$lib/page-info.svelte";
+  import { pageState } from "$lib/state/page-info.svelte";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";

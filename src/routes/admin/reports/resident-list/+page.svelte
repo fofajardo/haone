@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { brandingState } from "$lib/branding.svelte";
-  import { uiSettings } from "$lib/settings.svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { brandingState } from "$lib/state/branding.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
   import TermFilter from "$lib/components/TermFilter.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
@@ -33,14 +33,14 @@
     createNewSpreadsheet,
     ensureSheetExists,
     formatReportSheet
-  } from "$lib/google-sheets";
-  import { loadGapiScript } from "$lib/gmail";
-  import { matchesStatusFilter, fetchResidents } from "$lib/resident-logic";
+  } from "$lib/services/google-sheets-service";
+  import { loadGapiScript } from "$lib/services/gmail-service";
+  import { matchesStatusFilter, fetchResidents } from "$lib/logic/resident-logic";
   import type { ResidentRecord, OfficerRecord } from "$lib/schemas";
-  import { translatePeriod } from "$lib/receipt-utils";
-  import { exportReportPDF } from "$lib/report-pdf";
+  import { translatePeriod } from "$lib/utils/translators";
+  import { exportReportPDF } from "$lib/reports/report-pdf";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { fetchOfficers } from "$lib/admin-logic";
+  import { fetchOfficers } from "$lib/logic/admin-logic";
   import { OfficerStatus } from "$lib/schemas";
 
   let isLoading = $state(true);

@@ -4,7 +4,7 @@
   import AdminSidebar from "$lib/components/admin-sidebar.svelte";
   import AdminHeader from "$lib/components/admin-header.svelte";
   import MobileNav from "$lib/components/mobile-nav.svelte";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/state/auth.svelte";
   import { onMount } from "svelte";
   import { LoaderIcon } from "@lucide/svelte";
   import { page } from "$app/state";
@@ -28,7 +28,7 @@
     isLoadingAuth = false;
     if (auth.accessToken && auth.user?.email && !auth.adminDisplayName) {
       try {
-        const { fetchUsers } = await import("$lib/resident-logic");
+        const { fetchUsers } = await import("$lib/logic/resident-logic");
         const users = await fetchUsers();
         const found = users.find((u) => {
           return u.email.toLowerCase() === auth.user!.email.toLowerCase();

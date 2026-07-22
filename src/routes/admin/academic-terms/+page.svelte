@@ -1,13 +1,14 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import {
     fetchSheetRowsRaw,
     appendSheetRow,
     batchUpdateValues,
     updateSheetValue
-  } from "$lib/google-sheets";
-  import { translatePeriod, sortPeriods } from "$lib/receipt-utils";
+  } from "$lib/services/google-sheets-service";
+  import { translatePeriod } from "$lib/utils/translators";
+  import { sortPeriods } from "$lib/utils/sort";
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Input } from "$lib/components/ui/input";

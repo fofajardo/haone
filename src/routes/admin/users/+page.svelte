@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$lib/settings.svelte";
+  import { uiSettings } from "$lib/state/settings.svelte";
   import { UserTag, type UserRecord as User } from "$lib/schemas";
-  import { fetchUsers } from "$lib/resident-logic";
+  import { fetchUsers } from "$lib/logic/resident-logic";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
@@ -18,7 +18,7 @@
   import { Plus, UserPlus, FileUp } from "@lucide/svelte";
   import { columns } from "./columns";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
-  import { translateCollege, translateProgram } from "$lib/receipt-utils";
+  import { translateCollege, translateProgram } from "$lib/utils/translators";
 
   let users = $state<User[]>([]);
   let isLoading = $state(false);
