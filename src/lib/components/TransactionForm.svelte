@@ -386,6 +386,7 @@
           assocFee: initialData.assoc.toString(),
           miscFee: initialData.misc.toString(),
           mop: initialData.mop,
+          mopTo: (initialData as any).mopTo || "CASH",
           period: initialData.period,
           type:
             transactionTypes.find((t) => t.val === initialData!.type)?.value || initialData.type,

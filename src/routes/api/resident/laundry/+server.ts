@@ -33,11 +33,11 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundry(accountType)) {
+    if (!canAccessLaundry(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
     }
 
-    const maskNames = !canSeeLaundryNames(accountType);
+    const maskNames = !canSeeLaundryNames(accountType || "");
 
     const currentResidentId = residentId;
 
@@ -111,7 +111,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundry(accountType)) {
+    if (!canAccessLaundry(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
     }
 
@@ -178,7 +178,7 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
 
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundry(accountType)) {
+    if (!canAccessLaundry(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
     }
 
