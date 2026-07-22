@@ -9,7 +9,7 @@
   import { fetchUsers } from "$lib/logic/resident-logic";
   import { uiSettings } from "$lib/state/settings.svelte";
   import { appendSheetRow } from "$lib/services/google-sheets-service";
-  import { LAUNDRY_COL } from "$lib/schemas";
+  import { LAUNDRY_COL } from "$lib/types";
 
   interface Props {
     open: boolean;

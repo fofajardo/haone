@@ -22,7 +22,7 @@
   import { residentState } from "$lib/state/resident-state.svelte";
   import { page } from "$app/state";
   import { canAccessLaundry, canAccessAchievements } from "$lib/logic/resident-logic";
-  import { AccountType } from "$lib/schemas";
+  import { AccountType } from "$lib/types";
   import { isStaticIpEnabled } from "$lib/utils/rooms-utils";
   import ProfileHeader from "$lib/components/ProfileHeader.svelte";
   import MobileProfileCard from "$lib/components/MobileProfileCard.svelte";

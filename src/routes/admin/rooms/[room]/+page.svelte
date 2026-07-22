@@ -1,7 +1,7 @@
 <script lang="ts">
   import { roomsState } from "$lib/state/rooms.svelte";
   import { fetchResidents, fetchUsers, fetchTermCurr } from "$lib/logic/resident-logic";
-  import type { ResidentRecord, UserRecord } from "$lib/schemas";
+  import type { ResidentRecord, UserRecord } from "$lib/types";
   import AssignmentDialog from "$lib/components/admin/AssignmentDialog.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";

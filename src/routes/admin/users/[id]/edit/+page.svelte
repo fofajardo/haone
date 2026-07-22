@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { type UserRecord, UserTag } from "$lib/schemas";
+  import { type UserRecord, UserTag } from "$lib/types";
   import { fetchUserById, updateUser } from "$lib/logic/resident-logic";
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";

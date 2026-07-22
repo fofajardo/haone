@@ -4,7 +4,7 @@ import { translateMop } from "$lib/utils/translators";
 import { parseDateWeight } from "$lib/utils/parsers";
 import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
 import { fetchResidents, mapRowToJournal } from "$lib/logic/resident-logic";
-import type { JournalRecord, ResidentRecord } from "$lib/schemas";
+import type { JournalRecord, ResidentRecord } from "$lib/types";
 import type {
   TDocumentDefinitions,
   Content,

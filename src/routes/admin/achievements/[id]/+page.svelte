@@ -19,7 +19,7 @@
     updateAchievement
   } from "$lib/logic/admin-logic";
   import { fetchUsers, fetchResidents } from "$lib/logic/resident-logic";
-  import type { AchievementRecord } from "$lib/schemas";
+  import type { AchievementRecord } from "$lib/types";
   import AchievementDetailsView from "$lib/components/achievements/AchievementDetailsView.svelte";
   import AchievementStoryShareButton from "$lib/components/achievements/AchievementStoryShareButton.svelte";
 

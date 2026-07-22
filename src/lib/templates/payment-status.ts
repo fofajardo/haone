@@ -1,6 +1,6 @@
 import { formatAccounting, formatAmount } from "$lib/utils/formatters";
 import { wrapEmailHtml } from "./base";
-import type { BrandingProfile, EmailTemplate } from "./types";
+import type { BrandingProfile, EmailTemplate } from "$lib/types";
 
 export interface PaymentStatusData {
   accountName: string;

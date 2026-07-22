@@ -9,7 +9,7 @@
   import EmptyView from "$lib/components/EmptyView.svelte";
   import { fetchPaymentRequests, cancelPaymentRequest } from "$lib/logic/shared-records-logic";
   import { fetchUsers } from "$lib/logic/resident-logic";
-  import { type PaymentRequestRecord, PaymentRequestStatus } from "$lib/schemas";
+  import { type PaymentRequestRecord, PaymentRequestStatus } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { pageState } from "$lib/state/page-info.svelte";
   import { goto } from "$app/navigation";

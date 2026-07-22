@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { PUBLIC_GS_RR_ID, PUBLIC_GS_AW_ID } from "$env/static/public";
-import { AccountType, CURR_COL, USER_COL } from "$lib/schemas";
+import { AccountType, CURR_COL, USER_COL } from "$lib/types";
 import {
   authenticateResident,
   getSheetsClient,

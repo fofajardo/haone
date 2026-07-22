@@ -1,5 +1,5 @@
 import { json } from "@sveltejs/kit";
-import { JOURNAL_COL, ACCOUNT_COL, USER_COL, CURR_COL, AccountType } from "$lib/schemas";
+import { JOURNAL_COL, ACCOUNT_COL, USER_COL, CURR_COL, AccountType } from "$lib/types";
 import {
   authenticateResident,
   getSheetsClient,

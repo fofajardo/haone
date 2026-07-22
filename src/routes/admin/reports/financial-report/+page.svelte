@@ -12,7 +12,7 @@
   import { formatAccounting } from "$lib/utils/formatters";
   import { translateMop, translateType } from "$lib/utils/translators";
   import { getJournalDateRange } from "$lib/utils/parsers";
-  import type { JournalRecord, ResidentRecord } from "$lib/schemas";
+  import type { JournalRecord, ResidentRecord } from "$lib/types";
   import * as Table from "$lib/components/ui/table";
   import {
     computeFinancialReportData,

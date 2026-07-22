@@ -1,6 +1,6 @@
 import { error, fail } from "@sveltejs/kit";
 import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { ACCOUNT_COL, USER_COL, OFFICER_COL } from "$lib/schemas";
+import { ACCOUNT_COL, USER_COL, OFFICER_COL } from "$lib/types";
 import type { PageServerLoad, Actions } from "./$types";
 import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
 

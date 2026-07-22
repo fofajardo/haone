@@ -31,7 +31,7 @@
     type JournalRecord,
     AccountType,
     ACCOUNT_TYPE_LABELS
-  } from "$lib/schemas";
+  } from "$lib/types";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import {
     stageStatusEmail,

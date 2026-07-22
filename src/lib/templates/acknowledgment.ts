@@ -1,6 +1,6 @@
 import { wrapEmailHtml } from "./base";
 import { formatDate } from "$lib/utils/formatters";
-import type { BrandingProfile, EmailTemplate } from "./types";
+import type { BrandingProfile, EmailTemplate } from "$lib/types";
 
 export interface AcknowledgmentData {
   accountFullName: string;

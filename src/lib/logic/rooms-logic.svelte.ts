@@ -14,7 +14,7 @@ import {
   AccountType,
   UserTag,
   type UserRecord
-} from "$lib/schemas";
+} from "$lib/types";
 import { fetchUsers, addUser, updateUser, fetchResidents } from "$lib/logic/resident-logic";
 import { roomsState } from "$lib/state/rooms.svelte";
 import { auth } from "$lib/state/auth.svelte";

@@ -5,7 +5,7 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import RichEditor from "$lib/components/RichEditor.svelte";
-  import { ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
+  import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { Badge } from "$lib/components/ui/badge";
 
   let { data } = $props();

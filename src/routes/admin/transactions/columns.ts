@@ -4,7 +4,7 @@ import { formatDate, formatAccounting } from "$lib/utils/formatters";
 import { translateMop, translateType } from "$lib/utils/translators";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
 import DataTableCheckbox from "$lib/components/ui/data-table/data-table-checkbox.svelte";
-import { type JournalRecord } from "$lib/schemas";
+import { type JournalRecord } from "$lib/types";
 import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<JournalRecord>[] = [

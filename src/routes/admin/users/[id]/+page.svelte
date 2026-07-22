@@ -28,7 +28,7 @@
     USER_TAG_COLORS,
     type ResidentRecord as Account,
     UserTag
-  } from "$lib/schemas";
+  } from "$lib/types";
   import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$lib/logic/resident-logic";
   import { pageState } from "$lib/state/page-info.svelte";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";

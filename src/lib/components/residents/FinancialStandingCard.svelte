@@ -3,7 +3,7 @@
   import { Label } from "$lib/components/ui/label";
   import { formatCurrency, formatAmount } from "$lib/utils/formatters";
   import { CreditCard, Droplets, Users, Wallet } from "@lucide/svelte";
-  import type { ResidentRecord } from "$lib/schemas";
+  import type { ResidentRecord } from "$lib/types";
 
   interface Props {
     account: ResidentRecord;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge";
-  import type { AnnouncementRecord } from "$lib/schemas";
+  import type { AnnouncementRecord } from "$lib/types";
 
   let { row } = $props<{ row: any }>();
   let announcement = $derived(row.original as AnnouncementRecord);

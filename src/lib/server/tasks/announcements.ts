@@ -1,9 +1,9 @@
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { ANNOUNCEMENT_COL } from "$lib/schemas";
+import { ANNOUNCEMENT_COL } from "$lib/types";
 import { getSheetsClient, getSheetValues, updateSheetValue } from "$lib/server/api-helper";
 import { notifyAllResidents } from "$lib/server/notifications";
 import dayjs from "dayjs";
-import { AnnouncementStatus } from "$lib/schemas";
+import { AnnouncementStatus } from "$lib/types";
 
 /**
  * Task to check for newly active announcements and notify residents.

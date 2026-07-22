@@ -7,8 +7,8 @@
   import { addOfficer, fetchOfficers } from "$lib/logic/admin-logic";
   import { fetchResidents, fetchTermCurr } from "$lib/logic/resident-logic";
   import { brandingState } from "$lib/state/branding.svelte";
-  import type { OfficerRecord, ResidentRecord } from "$lib/schemas";
-  import { OfficerStatus } from "$lib/schemas";
+  import type { OfficerRecord, ResidentRecord } from "$lib/types";
+  import { OfficerStatus } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { Label } from "$lib/components/ui/label";
   import { Input } from "$lib/components/ui/input";

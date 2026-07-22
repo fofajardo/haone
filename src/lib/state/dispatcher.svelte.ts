@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import type { EmailTemplate, BrandingProfile } from "$lib/templates/types";
+import type { EmailTemplate, BrandingProfile } from "$lib/types";
 
 export interface StagedEmail<T = any> {
   id: string;

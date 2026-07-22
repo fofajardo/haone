@@ -37,8 +37,8 @@
   import * as Tooltip from "$lib/components/ui/tooltip";
   import { Badge } from "$lib/components/ui/badge";
   import { fetchResidents, mapRowToJournal } from "$lib/logic/resident-logic";
-  import type { ResidentRecord, JournalRecord } from "$lib/schemas";
-  import { JOURNAL_COL as JOR } from "$lib/schemas";
+  import type { ResidentRecord, JournalRecord } from "$lib/types";
+  import { JOURNAL_COL as JOR } from "$lib/types";
 
   interface Props {
     mode: "add" | "edit";

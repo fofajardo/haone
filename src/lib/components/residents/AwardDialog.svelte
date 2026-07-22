@@ -4,7 +4,7 @@
   import { auth } from "$lib/state/auth.svelte";
   import { fetchAchievements, awardAchievementBatch } from "$lib/logic/admin-logic";
   import { fetchUsers } from "$lib/logic/resident-logic";
-  import type { ResidentRecord, AchievementRecord } from "$lib/schemas";
+  import type { ResidentRecord, AchievementRecord } from "$lib/types";
   import { pluralize } from "$lib/utils/formatters";
   import { X, Trophy } from "@lucide/svelte";
   import { Combobox } from "$lib/components/ui/combobox";

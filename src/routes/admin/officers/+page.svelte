@@ -7,7 +7,7 @@
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { fetchOfficers } from "$lib/logic/admin-logic";
   import { fetchTermCurr } from "$lib/logic/resident-logic";
-  import type { OfficerRecord } from "$lib/schemas";
+  import type { OfficerRecord } from "$lib/types";
   import DataTable from "$lib/components/ui/data-table/data-table.svelte";
   import { createColumns } from "./columns";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";

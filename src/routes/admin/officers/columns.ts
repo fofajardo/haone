@@ -1,6 +1,6 @@
 import { renderComponent } from "$lib/components/ui/data-table";
 import type { ColumnDef } from "@tanstack/table-core";
-import type { OfficerRecord } from "$lib/schemas";
+import type { OfficerRecord } from "$lib/types";
 import OfficerNameCell from "./OfficerNameCell.svelte";
 import OfficerStatusCell from "./OfficerStatusCell.svelte";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";

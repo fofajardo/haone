@@ -2,7 +2,7 @@
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { Check, Clock, TriangleAlert, CircleAlert, ShieldCheck } from "@lucide/svelte";
-  import { type ResidentRecord as Resident } from "$lib/schemas";
+  import { type ResidentRecord as Resident } from "$lib/types";
 
   let { resident }: { resident: Resident } = $props();
 </script>

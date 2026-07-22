@@ -13,7 +13,7 @@
   } from "$lib/logic/admin-logic";
   import { fetchWithAuth } from "$lib/services/google-sheets-service";
   import { auth } from "$lib/state/auth.svelte";
-  import type { AnnouncementRecord } from "$lib/schemas";
+  import type { AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
@@ -27,7 +27,7 @@
   import { Search, FunnelX } from "@lucide/svelte";
 
   import { getAnnouncementStatus } from "$lib/logic/admin-logic";
-  import { AnnouncementStatus } from "$lib/schemas";
+  import { AnnouncementStatus } from "$lib/types";
 
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);

@@ -1,5 +1,5 @@
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { LAUNDRY_COL } from "$lib/schemas";
+import { LAUNDRY_COL } from "$lib/types";
 import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
 import { notifyResident } from "$lib/server/notifications";
 

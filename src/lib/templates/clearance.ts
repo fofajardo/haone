@@ -1,5 +1,5 @@
 import { wrapEmailHtml } from "./base";
-import type { BrandingProfile, EmailTemplate } from "./types";
+import type { BrandingProfile, EmailTemplate } from "$lib/types";
 
 export interface ClearanceEmailData {
   accountName: string;

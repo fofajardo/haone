@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { uiSettings } from "$lib/state/settings.svelte";
-  import { UserTag, type UserRecord as User } from "$lib/schemas";
+  import { UserTag, type UserRecord as User } from "$lib/types";
   import { fetchUsers } from "$lib/logic/resident-logic";
   import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
   import { Button } from "$lib/components/ui/button";

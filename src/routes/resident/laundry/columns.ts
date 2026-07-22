@@ -1,6 +1,6 @@
 import { type ColumnDef } from "@tanstack/table-core";
 import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
-import { type LaundryRecord, LaundryStatus } from "$lib/schemas";
+import { type LaundryRecord, LaundryStatus } from "$lib/types";
 import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
 import { parseTime } from "$lib/utils/parsers";

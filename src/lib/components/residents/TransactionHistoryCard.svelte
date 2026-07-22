@@ -3,7 +3,7 @@
   import { renderSnippet, renderComponent } from "$lib/components/ui/data-table/index.js";
   import { formatDate, formatCurrency, pluralize } from "$lib/utils/formatters";
   import { translateMop, translateType } from "$lib/utils/translators";
-  import { type JournalRecord } from "$lib/schemas";
+  import { type JournalRecord } from "$lib/types";
   import { createRawSnippet } from "svelte";
   import * as Card from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";

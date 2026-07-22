@@ -19,7 +19,7 @@
     exportFinancialReportPDF,
     fetchFinancialReportData
   } from "$lib/reports/financial-report-pdf";
-  import type { JournalRecord, ResidentRecord } from "$lib/schemas";
+  import type { JournalRecord, ResidentRecord } from "$lib/types";
 
   let isLoading = $state(true);
   let isProcessing = $state(false);

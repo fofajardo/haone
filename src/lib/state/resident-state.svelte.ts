@@ -1,11 +1,6 @@
 import { auth } from "$lib/state/auth.svelte";
 import { fetchServer } from "$lib/utils/api-client";
-import {
-  type UserRecord,
-  type ResidentRecord,
-  type JournalRecord,
-  AccountType
-} from "$lib/schemas";
+import { type UserRecord, type ResidentRecord, type JournalRecord, AccountType } from "$lib/types";
 
 export type ResidentProfile = Pick<
   UserRecord,

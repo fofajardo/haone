@@ -7,7 +7,7 @@ import type {
   AchievementRecord,
   AchievementLogRecord,
   UserSettingsRecord
-} from "$lib/schemas";
+} from "$lib/types";
 
 /**
  * Laundry Reservations

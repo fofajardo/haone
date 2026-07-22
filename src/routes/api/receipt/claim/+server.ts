@@ -1,5 +1,5 @@
 import { json } from "@sveltejs/kit";
-import { JOURNAL_COL } from "$lib/schemas";
+import { JOURNAL_COL } from "$lib/types";
 import type { RequestHandler } from "./$types";
 
 import { getSheetsClient, fetchSheetsData } from "$lib/server/api-helper";

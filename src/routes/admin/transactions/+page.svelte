@@ -34,7 +34,7 @@
     searchKey: "search"
   });
 
-  import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/schemas";
+  import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
   import { mapRowToJournal } from "$lib/logic/resident-logic";
 
   async function loadData(forceRefresh = false) {

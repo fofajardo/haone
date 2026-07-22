@@ -7,7 +7,7 @@
   import { fetchServer } from "$lib/utils/api-client";
   import { compressImage, deleteUploadedImage } from "$lib/utils/image-utils";
   import { formatCurrency, formatAccounting } from "$lib/utils/formatters";
-  import type { ResidentRecord } from "$lib/schemas";
+  import type { ResidentRecord } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";

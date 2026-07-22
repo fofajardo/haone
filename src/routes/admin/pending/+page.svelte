@@ -25,7 +25,7 @@
   import { columns } from "./columns";
   import type { ReceiptData } from "$lib/types";
 
-  import { type JournalRecord } from "$lib/schemas";
+  import { type JournalRecord } from "$lib/types";
   import { mapRowToJournal } from "$lib/logic/resident-logic";
 
   let queue = $state<JournalRecord[]>([]);

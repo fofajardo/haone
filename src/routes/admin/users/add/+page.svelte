@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { type UserRecord, UserTag } from "$lib/schemas";
+  import { type UserRecord, UserTag } from "$lib/types";
   import { addUser } from "$lib/logic/resident-logic";
   import UserForm from "$lib/components/admin/UserForm.svelte";
 

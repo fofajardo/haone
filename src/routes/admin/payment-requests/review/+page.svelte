@@ -16,7 +16,7 @@
   import TransactionForm from "$lib/components/TransactionForm.svelte";
   import { fetchPaymentRequests, declinePaymentRequest } from "$lib/logic/admin-logic";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/logic/resident-logic";
-  import { PaymentRequestStatus } from "$lib/schemas";
+  import { PaymentRequestStatus } from "$lib/types";
   import { uiSettings } from "$lib/state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { formatAmount } from "$lib/utils/formatters";

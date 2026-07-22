@@ -13,7 +13,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { goto } from "$app/navigation";
-  import { PaymentRequestStatus } from "$lib/schemas";
+  import { PaymentRequestStatus } from "$lib/types";
   import { Combobox } from "$lib/components/ui/combobox";
 
   let payments = $state<any[]>([]);

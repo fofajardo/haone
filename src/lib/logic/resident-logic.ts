@@ -1,7 +1,7 @@
 import { emailDispatcher } from "$lib/state/dispatcher.svelte";
 import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$lib/templates/payment-status";
 import { ClearanceCertificateTemplate } from "$lib/templates/clearance";
-import type { BrandingProfile } from "$lib/templates/types";
+import type { BrandingProfile } from "$lib/types";
 import { goto } from "$app/navigation";
 import { auth } from "$lib/state/auth.svelte";
 import { fetchServer } from "$lib/utils/api-client";
@@ -13,7 +13,7 @@ import {
   type JournalRecord,
   type UserRecord,
   AccountType
-} from "$lib/schemas";
+} from "$lib/types";
 
 /**
  * Robust financial parsing for spreadsheet values.

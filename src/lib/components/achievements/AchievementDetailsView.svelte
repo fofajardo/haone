@@ -2,7 +2,7 @@
   import { Button } from "$lib/components/ui/button";
   import { ExternalLink, Lock as LockIcon, Sparkles } from "@lucide/svelte";
   import * as Card from "$lib/components/ui/card";
-  import type { AchievementRecord } from "$lib/schemas";
+  import type { AchievementRecord } from "$lib/types";
   import { formatAwardDate, calculateAchievementPercentage } from "$lib/logic/shared-records-logic";
 
   interface Earner {

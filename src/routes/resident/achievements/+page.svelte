@@ -11,7 +11,7 @@
     calculateAchievementPercentage
   } from "$lib/logic/shared-records-logic";
   import { fetchUsers } from "$lib/logic/resident-logic";
-  import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
+  import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
   import { pageState } from "$lib/state/page-info.svelte";
   import EmptyView from "$lib/components/EmptyView.svelte";
 

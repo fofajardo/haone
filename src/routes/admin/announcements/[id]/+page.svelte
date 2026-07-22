@@ -20,10 +20,10 @@
     deleteAnnouncement,
     getAnnouncementStatus
   } from "$lib/logic/admin-logic";
-  import { AnnouncementStatus, type AnnouncementRecord } from "$lib/schemas";
+  import { AnnouncementStatus, type AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-  import { ANNOUNCEMENT_TAG_LIST } from "$lib/schemas";
+  import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";
   import { TagsInput } from "$lib/components/ui/tags-input";
 
   let isLoading = $state(true);

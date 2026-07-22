@@ -6,7 +6,7 @@
   import { fetchResidents, fetchUsers } from "$lib/logic/resident-logic";
   import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
   import { getSyncPreview, applySync, type SyncPreviewAction } from "$lib/logic/rooms-logic.svelte";
-  import type { ResidentRecord, UserRecord } from "$lib/schemas";
+  import type { ResidentRecord, UserRecord } from "$lib/types";
   import { pluralize } from "$lib/utils/formatters";
   import SubpageHeader from "$lib/components/SubpageHeader.svelte";
   import LoadingView from "$lib/components/LoadingView.svelte";

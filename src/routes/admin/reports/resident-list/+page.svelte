@@ -36,12 +36,12 @@
   } from "$lib/services/google-sheets-service";
   import { loadGapiScript } from "$lib/services/gmail-service";
   import { matchesStatusFilter, fetchResidents } from "$lib/logic/resident-logic";
-  import type { ResidentRecord, OfficerRecord } from "$lib/schemas";
+  import type { ResidentRecord, OfficerRecord } from "$lib/types";
   import { translatePeriod } from "$lib/utils/translators";
   import { exportReportPDF } from "$lib/reports/report-pdf";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { fetchOfficers } from "$lib/logic/admin-logic";
-  import { OfficerStatus } from "$lib/schemas";
+  import { OfficerStatus } from "$lib/types";
 
   let isLoading = $state(true);
   let isProcessing = $state(false);

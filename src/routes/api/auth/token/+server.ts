@@ -50,7 +50,7 @@ export const POST: RequestHandler = async ({ request }) => {
     // Enforce domain check here too
     if (!isInstanceAdmin && !email.endsWith("@up.edu.ph")) {
       try {
-        const { USER_COL, UserTag } = await import("$lib/schemas");
+        const { USER_COL, UserTag } = await import("$lib/types");
         const { getSheetsClient, fetchSheetsData } = await import("$lib/server/api-helper");
         const saClient = await getSheetsClient();
         const [userRows] = await fetchSheetsData(saClient, ["users!A:P"]);

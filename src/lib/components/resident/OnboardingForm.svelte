@@ -28,7 +28,7 @@
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { auth } from "$lib/state/auth.svelte";
-  import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/schemas";
+  import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/types";
 
   import { residentState, type ResidentStatus } from "$lib/state/resident-state.svelte";
   import { roomsState } from "$lib/state/rooms.svelte";

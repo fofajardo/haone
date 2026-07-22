@@ -15,7 +15,7 @@
     Trash2,
     AwardIcon
   } from "@lucide/svelte";
-  import { type UserRecord, UserTag } from "$lib/schemas";
+  import { type UserRecord, UserTag } from "$lib/types";
   import { translateCollege, translateProgram } from "$lib/utils/translators";
   import collegesJson from "$lib/data/colleges.json";
   import programsJson from "$lib/data/programs.json";

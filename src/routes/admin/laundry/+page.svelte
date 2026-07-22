@@ -15,8 +15,8 @@
   import { computeDisplayNames } from "$lib/logic/resident-logic";
   import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
   import { uiSettings } from "$lib/state/settings.svelte";
-  import { ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/schemas";
-  import type { LaundryRecord } from "$lib/schemas";
+  import { ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/types";
+  import type { LaundryRecord } from "$lib/types";
   import * as Dialog from "$lib/components/ui/dialog";
   import * as DatePicker from "$lib/components/ui/date-picker";
   import * as TimePicker from "$lib/components/ui/time-picker";

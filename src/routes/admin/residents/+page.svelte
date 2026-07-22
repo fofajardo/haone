@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { brandingState } from "$lib/state/branding.svelte";
   import { uiSettings } from "$lib/state/settings.svelte";
-  import { type ResidentRecord as Resident } from "$lib/schemas";
+  import { type ResidentRecord as Resident } from "$lib/types";
   import {
     fetchResidents,
     stageStatusEmailBatch,

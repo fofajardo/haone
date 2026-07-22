@@ -13,7 +13,7 @@
   import { fetchUsers } from "$lib/logic/resident-logic";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-  import { ANNOUNCEMENT_TAG_LIST } from "$lib/schemas";
+  import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";
   import { TagsInput } from "$lib/components/ui/tags-input";
   import slugify from "slug";
 

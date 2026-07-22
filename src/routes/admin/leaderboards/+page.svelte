@@ -16,7 +16,7 @@
   import { fetchTermCurr, fetchUsers } from "$lib/logic/resident-logic";
   import { uiSettings } from "$lib/state/settings.svelte";
   import { pageState } from "$lib/state/page-info.svelte";
-  import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
+  import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);

@@ -7,7 +7,7 @@
   import LoadingView from "$lib/components/LoadingView.svelte";
   import ErrorView from "$lib/components/ErrorView.svelte";
   import { fetchAchievements } from "$lib/logic/shared-records-logic";
-  import type { AchievementRecord, AchievementLogRecord } from "$lib/schemas";
+  import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
 
   import AchievementDetailsView from "$lib/components/achievements/AchievementDetailsView.svelte";
   import AchievementStoryShareButton from "$lib/components/achievements/AchievementStoryShareButton.svelte";

@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
-  import type { AchievementLogRecord, AchievementRecord } from "$lib/schemas";
+  import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import { Crown, Medal, Trophy, Zap } from "@lucide/svelte";
 
   let {

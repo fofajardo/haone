@@ -12,7 +12,7 @@
     Bed as BedIcon
   } from "@lucide/svelte";
   import { translateCollege, translateProgram } from "$lib/utils/translators";
-  import type { ResidentRecord } from "$lib/schemas";
+  import type { ResidentRecord } from "$lib/types";
 
   interface Props {
     account: ResidentRecord;

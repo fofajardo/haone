@@ -7,7 +7,7 @@ import {
   AccountType,
   CURR_COL,
   ACCOUNT_COL
-} from "$lib/schemas";
+} from "$lib/types";
 import {
   authenticateResident,
   getSheetsClient,

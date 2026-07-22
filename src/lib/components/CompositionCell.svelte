@@ -1,7 +1,7 @@
 <script lang="ts">
   import { formatAccounting } from "$lib/utils/formatters";
   import { translateType } from "$lib/utils/translators";
-  import type { JournalRecord } from "$lib/schemas";
+  import type { JournalRecord } from "$lib/types";
 
   let {
     record,

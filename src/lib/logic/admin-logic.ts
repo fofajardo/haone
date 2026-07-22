@@ -26,7 +26,7 @@ import {
   PaymentRequestStatus,
   AnnouncementStatus,
   OfficerStatus
-} from "$lib/schemas";
+} from "$lib/types";
 import { parseAmount } from "$lib/logic/resident-logic";
 import { parseTime } from "$lib/utils/parsers";
 

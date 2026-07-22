@@ -5,7 +5,7 @@
   import { brandingState } from "$lib/state/branding.svelte";
   import { uiSettings } from "$lib/state/settings.svelte";
   import { clearResident } from "$lib/logic/resident-logic";
-  import type { ResidentRecord } from "$lib/schemas";
+  import type { ResidentRecord } from "$lib/types";
   import { pluralize } from "$lib/utils/formatters";
   import { X, ShieldCheck } from "@lucide/svelte";
 

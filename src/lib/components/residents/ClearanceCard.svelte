@@ -4,7 +4,7 @@
   import { Label } from "$lib/components/ui/label";
   import { Button } from "$lib/components/ui/button";
   import { ShieldCheck, ClipboardCheck, Calendar, Hash, ArrowUpRight } from "@lucide/svelte";
-  import type { ResidentRecord } from "$lib/schemas";
+  import type { ResidentRecord } from "$lib/types";
 
   interface Props {
     account: ResidentRecord;

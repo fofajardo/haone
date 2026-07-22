@@ -1,6 +1,6 @@
 import branding from "$lib/data/branding.json";
 import { formatAccounting } from "$lib/utils/formatters";
-import type { ResidentRecord } from "$lib/schemas";
+import type { ResidentRecord } from "$lib/types";
 import type {
   TDocumentDefinitions,
   Content,

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { OfficerRecord } from "$lib/schemas";
+  import type { OfficerRecord } from "$lib/types";
 
   let { officer } = $props<{ officer: OfficerRecord }>();
 </script>

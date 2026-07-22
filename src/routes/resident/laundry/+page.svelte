@@ -15,7 +15,7 @@
     cancelLaundryReservation
   } from "$lib/logic/shared-records-logic";
   import { fetchUsers } from "$lib/logic/resident-logic";
-  import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/schemas";
+  import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
   import * as Card from "$lib/components/ui/card";
   import { Label } from "$lib/components/ui/label";
   import * as Dialog from "$lib/components/ui/dialog";

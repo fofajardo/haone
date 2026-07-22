@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { PAYMENT_REQUEST_COL, PaymentRequestStatus } from "$lib/schemas";
+import { PAYMENT_REQUEST_COL, PaymentRequestStatus } from "$lib/types";
 import {
   authenticateResident,
   getSheetsClient,

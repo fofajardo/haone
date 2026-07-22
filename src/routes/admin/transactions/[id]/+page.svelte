@@ -36,7 +36,7 @@
 
   const id = $derived(page.params.id);
 
-  import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/schemas";
+  import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/types";
   import { mapRowToJournal, fetchResidents } from "$lib/logic/resident-logic";
 
   let transaction = $state<JournalRecord | null>(null);
@@ -198,7 +198,7 @@
                   >
                   {#if isSpecialType}
                     <div
-                      class="flex animate-in items-start gap-2 rounded-lg border border-border bg-muted/50 p-3 text-xs text-foreground duration-200 fade-in slide-in-from-top-1 mt-2"
+                      class="mt-2 flex animate-in items-start gap-2 rounded-lg border border-border bg-muted/50 p-3 text-xs text-foreground duration-200 fade-in slide-in-from-top-1"
                     >
                       <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
                       <div>

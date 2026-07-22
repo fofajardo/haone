@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LaundryRecord, UserRecord } from "$lib/schemas";
+  import type { LaundryRecord, UserRecord } from "$lib/types";
   import { auth } from "$lib/state/auth.svelte";
   import { cn } from "$lib/utils";
   import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "@lucide/svelte";

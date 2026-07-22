@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Badge } from "$lib/components/ui/badge";
-  import { ANNOUNCEMENT_TAG_COLORS } from "$lib/schemas";
-  import type { AnnouncementRecord } from "$lib/schemas";
+  import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
+  import type { AnnouncementRecord } from "$lib/types";
 
   let { row } = $props<{ row: any }>();
   let announcement = $derived(row.original as AnnouncementRecord);

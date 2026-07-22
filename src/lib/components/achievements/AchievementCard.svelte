@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import type { AchievementRecord } from "$lib/schemas";
+  import type { AchievementRecord } from "$lib/types";
   import { Zap } from "@lucide/svelte";
 
   let {

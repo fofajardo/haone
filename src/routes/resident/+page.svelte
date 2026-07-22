@@ -31,7 +31,7 @@
   import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
   import { fetchServer } from "$lib/utils/api-client";
   import type { ResidentStatus } from "$lib/state/resident-state.svelte";
-  import { AccountType } from "$lib/schemas";
+  import { AccountType } from "$lib/types";
   import StatisticCard from "$lib/components/StatisticCard.svelte";
 
   let status = $state<ResidentStatus | null>(null);

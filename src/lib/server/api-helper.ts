@@ -251,7 +251,7 @@ export async function authenticateResident(request: Request) {
     let isStudent = true;
     if (email && !isInstanceAdmin) {
       try {
-        const { USER_COL, UserTag } = await import("$lib/schemas");
+        const { USER_COL, UserTag } = await import("$lib/types");
         const saToken = await getSheetsClient();
         const [users] = await fetchSheetsData(saToken, ["users!A:P"]);
         const user = users.find((r: any) => {
@@ -305,7 +305,7 @@ export async function authenticateAdmin(request: Request) {
   if (auth.error) return auth;
 
   try {
-    const { OFFICER_COL } = await import("$lib/schemas");
+    const { OFFICER_COL } = await import("$lib/types");
     const token = await getSheetsClient();
     const [directory] = await fetchSheetsData(token, ["directory!A:H"]);
 
