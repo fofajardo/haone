@@ -278,6 +278,13 @@
                   <span class="">{translateMop(currentPayment.mop)}</span>
                 </div>
 
+                {#if currentPayment.notes}
+                  <div class="flex flex-col space-y-1">
+                    <span class="font-medium">Resident Notes:</span>
+                    <p>{currentPayment.notes}</p>
+                  </div>
+                {/if}
+
                 <div class="mt-1 flex justify-between border-t pt-2 text-sm">
                   <span class="font-medium">Water Fee:</span>
                   <span>{formatAmount(currentPayment.waterFee)}</span>
@@ -309,13 +316,6 @@
                     >
                       <ExternalLink class="h-3 w-3" /> View Proof of Payment
                     </Button>
-                  </div>
-                {/if}
-
-                {#if currentPayment.notes}
-                  <div class="border-t pt-2">
-                    <span class="">Resident Notes:</span>
-                    <p class="mt-1">{currentPayment.notes}</p>
                   </div>
                 {/if}
 
