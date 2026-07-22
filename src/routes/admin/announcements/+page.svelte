@@ -7,7 +7,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import {
-    fetchAnnouncements,
+    fetchAdminAnnouncements,
     expireAnnouncement,
     deleteAnnouncement
   } from "$api/controllers/announcement-controller";
@@ -85,7 +85,7 @@
     isLoading = true;
     error = null;
     try {
-      announcements = await fetchAnnouncements(true);
+      announcements = await fetchAdminAnnouncements(true);
     } catch (e: any) {
       error = e.message;
     } finally {
