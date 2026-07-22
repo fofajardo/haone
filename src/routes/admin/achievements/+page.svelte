@@ -7,13 +7,8 @@
   import LoadingView from "$components/LoadingView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import {
-    fetchAchievements,
-    fetchAchievementLogs,
-    addAchievement,
-    awardAchievement
-  } from "$logic/admin-logic";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$logic/resident-logic";
+  import { fetchAdminAchievements, fetchAchievementLogs, addAchievement, awardAchievement } from "$api/controllers/achievement-controller";
+  import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import * as Dialog from "$ui/dialog";
   import { Input } from "$ui/input";
@@ -25,7 +20,7 @@
   import { translatePeriod } from "$utils/translators";
   import TermFilter from "$components/TermFilter.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { calculateAchievementPercentage, getEligibleCount } from "$logic/shared-records-logic";
+  import { calculateAchievementPercentage, getEligibleCount } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
@@ -66,7 +61,7 @@
     error = null;
     try {
       const [a, l, r, t, allU] = await Promise.all([
-        fetchAchievements(true),
+        fetchAdminAchievements(true),
         fetchAchievementLogs(true),
         fetchResidents(true),
         fetchTermCurr(true),

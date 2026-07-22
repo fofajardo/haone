@@ -19,10 +19,10 @@
   } from "@lucide/svelte";
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
   import { formatCurrency, formatDate } from "$utils/formatters";
   import { translatePeriod, translateType } from "$utils/translators";
-  import { mapRowToJournal, fetchResidents } from "$logic/resident-logic";
+  import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
   import DashboardActionCard from "$components/DashboardActionCard.svelte";
   import StatisticCard from "$components/StatisticCard.svelte";
   import { onMount } from "svelte";

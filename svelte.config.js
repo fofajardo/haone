@@ -14,7 +14,8 @@ const config = {
       $templates: "src/lib/templates",
       $logic: "src/lib/logic",
       $data: "src/lib/data",
-      $services: "src/lib/services"
+      $services: "src/lib/services",
+      $api: "src/lib/api"
     }
   },
   preprocess: [mdsvex()],

@@ -6,7 +6,7 @@
     appendSheetRow,
     batchUpdateValues,
     updateSheetValue
-  } from "$services/google-sheets-service";
+  } from "$api/services/google-sheets-service";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
   import { Button } from "$ui/button";

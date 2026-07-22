@@ -13,13 +13,7 @@
   import RichEditor from "$components/RichEditor.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import {
-    fetchAnnouncements,
-    updateAnnouncement,
-    expireAnnouncement,
-    deleteAnnouncement,
-    getAnnouncementStatus
-  } from "$logic/admin-logic";
+  import { fetchAnnouncements, updateAnnouncement, expireAnnouncement, deleteAnnouncement, getAnnouncementStatus } from "$api/controllers/announcement-controller";
   import { AnnouncementStatus, type AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";

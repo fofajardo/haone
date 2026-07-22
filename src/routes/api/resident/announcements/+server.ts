@@ -6,7 +6,7 @@ import {
   serverError,
   fetchSheetsData
 } from "$lib/server/api-helper";
-import { isAnnouncementActive } from "$logic/admin-logic";
+import { isAnnouncementActive } from "$api/controllers/announcement-controller";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {

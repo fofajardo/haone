@@ -3,7 +3,7 @@
   import { Trash2, Ellipsis, FilePen } from "@lucide/svelte";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import type { OfficerRecord } from "$lib/types";
-  import { deleteOfficer } from "$logic/admin-logic";
+  import { deleteOfficer } from "$api/controllers/officer-controller";
   import { toast } from "svelte-sonner";
   import * as AlertDialog from "$ui/alert-dialog";
   import { goto } from "$app/navigation";

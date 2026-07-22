@@ -8,8 +8,9 @@
   import TermFilter from "$components/TermFilter.svelte";
   import * as Tabs from "$ui/tabs";
   import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
-  import { fetchAchievements, fetchAchievementLogs, fetchUserSettings } from "$logic/admin-logic";
-  import { fetchTermCurr, fetchUsers } from "$logic/resident-logic";
+  import { fetchAdminAchievements, fetchAchievementLogs } from "$api/controllers/achievement-controller";
+import { fetchUserSettings } from "$api/controllers/settings-controller";
+  import { fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
   import { pageState } from "$state/page-info.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
@@ -29,7 +30,7 @@
 
     try {
       const [achievementRows, logRows, users, settings, term] = await Promise.all([
-        fetchAchievements(true),
+        fetchAdminAchievements(true),
         fetchAchievementLogs(true),
         fetchUsers(true),
         fetchUserSettings(true),

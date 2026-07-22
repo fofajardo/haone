@@ -18,7 +18,7 @@
   import { PieChart } from "layerchart";
   import { translateCollege, translateProgram } from "$utils/translators";
 
-  import { fetchResidents, getPaymentStatus } from "$logic/resident-logic";
+  import { fetchResidents, getPaymentStatus } from "$api/controllers/resident-controller";
 
   interface DataItem {
     label: string;

@@ -3,9 +3,9 @@
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue } from "$services/google-sheets-service";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$api/services/google-sheets-service";
   import { JOURNAL_COL as JOR } from "$lib/types";
-  import { mapRowToJournal } from "$logic/resident-logic";
+  import { mapRowToJournal } from "$api/controllers/resident-controller";
   import type { JournalRecord } from "$lib/types";
   import TransactionForm from "$components/TransactionForm.svelte";
   import LoadingView from "$components/LoadingView.svelte";

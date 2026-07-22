@@ -8,7 +8,7 @@
   import TermFilter from "$components/TermFilter.svelte";
   import * as Tabs from "$ui/tabs";
   import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
-  import { fetchAchievements } from "$logic/shared-records-logic";
+  import { fetchAchievements } from "$api/controllers/achievement-controller";
   import { uiSettings } from "$state/settings.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import { pageState } from "$state/page-info.svelte";

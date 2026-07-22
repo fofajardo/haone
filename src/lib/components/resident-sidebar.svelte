@@ -21,7 +21,7 @@
   import { auth } from "$state/auth.svelte";
   import { residentState } from "$state/resident-state.svelte";
   import { page } from "$app/state";
-  import { canAccessLaundry, canAccessAchievements } from "$logic/resident-logic";
+  import { canAccessLaundry, canAccessAchievements } from "$api/controllers/resident-controller";
   import { AccountType } from "$lib/types";
   import { isStaticIpEnabled } from "$utils/rooms-utils";
   import ProfileHeader from "$components/ProfileHeader.svelte";

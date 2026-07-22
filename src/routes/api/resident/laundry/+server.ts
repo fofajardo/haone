@@ -11,7 +11,7 @@ import {
 } from "$lib/server/api-helper";
 import { parseTime } from "$utils/parsers";
 import { formatTime } from "$utils/formatters";
-import { canAccessLaundry, canSeeLaundryNames } from "$logic/resident-logic";
+import { canAccessLaundry, canSeeLaundryNames } from "$api/controllers/resident-controller";
 import type { RequestHandler } from "./$types";
 
 /**

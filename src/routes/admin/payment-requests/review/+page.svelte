@@ -14,8 +14,8 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TransactionForm from "$components/TransactionForm.svelte";
-  import { fetchPaymentRequests, declinePaymentRequest } from "$logic/admin-logic";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$logic/resident-logic";
+  import { fetchAdminPaymentRequests, declinePaymentRequest } from "$api/controllers/payment-request-controller";
+  import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
   import { PaymentRequestStatus } from "$lib/types";
   import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
@@ -29,7 +29,7 @@
     appendSheetRow,
     updateSheetValue,
     fetchSheetRowsRaw
-  } from "$services/google-sheets-service";
+  } from "$api/services/google-sheets-service";
   import { auth } from "$state/auth.svelte";
   import { deleteUploadedImage } from "$utils/image-utils";
 
@@ -51,7 +51,7 @@
     error = null;
     try {
       const [p, r, t, u] = await Promise.all([
-        fetchPaymentRequests(true),
+        fetchAdminPaymentRequests(true),
         fetchResidents(true),
         fetchTermCurr(true),
         fetchUsers(true)

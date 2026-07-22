@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
   import { UserTag, type UserRecord as User } from "$lib/types";
-  import { fetchUsers } from "$logic/resident-logic";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";

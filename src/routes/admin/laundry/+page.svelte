@@ -7,13 +7,9 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
-  import {
-    fetchLaundryReservations,
-    cancelLaundryReservation,
-    addLaundryReservation
-  } from "$logic/admin-logic";
-  import { computeDisplayNames } from "$logic/resident-logic";
-  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { fetchAdminLaundryReservations, cancelLaundryReservation, addLaundryReservation } from "$api/controllers/laundry-controller";
+  import { computeDisplayNames } from "$api/controllers/resident-controller";
+  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
   import { uiSettings } from "$state/settings.svelte";
   import { ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/types";
   import type { LaundryRecord } from "$lib/types";
@@ -62,7 +58,7 @@
     error = null;
     try {
       const [resResult, userRowsRaw, accRows] = await Promise.all([
-        fetchLaundryReservations(true),
+        fetchAdminLaundryReservations(true),
         fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:Z", true),
         fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:E", true)
       ]);

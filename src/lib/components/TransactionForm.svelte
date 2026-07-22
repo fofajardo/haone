@@ -5,7 +5,7 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
-  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
   import { translatePeriod, translateMop } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
   import { formatAmount, formatAccounting } from "$utils/formatters";
@@ -36,7 +36,7 @@
   import * as Dialog from "$ui/dialog";
   import * as Tooltip from "$ui/tooltip";
   import { Badge } from "$ui/badge";
-  import { fetchResidents, mapRowToJournal } from "$logic/resident-logic";
+  import { fetchResidents, mapRowToJournal } from "$api/controllers/resident-controller";
   import type { ResidentRecord, JournalRecord } from "$lib/types";
   import { JOURNAL_COL as JOR } from "$lib/types";
 

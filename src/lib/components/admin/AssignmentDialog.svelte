@@ -3,7 +3,7 @@
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
-  import { manualAssignBed, manualDelistResident } from "$logic/rooms-logic.svelte";
+  import { manualAssignBed, manualDelistResident } from "$api/controllers/rooms-controller.svelte";
   import { toast } from "svelte-sonner";
   import { Info, TriangleAlert } from "@lucide/svelte";
 

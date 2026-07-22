@@ -1,7 +1,7 @@
 <script lang="ts">
   import { emailDispatcher } from "$state/dispatcher.svelte";
   import { auth } from "$state/auth.svelte";
-  import { createEmail, sendEmail } from "$services/gmail-service";
+  import { createEmail, sendEmail } from "$api/services/gmail-service";
   import * as Card from "$ui/card";
   import { Button } from "$ui/button";
   import { Progress } from "$ui/progress";

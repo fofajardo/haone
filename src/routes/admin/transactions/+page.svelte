@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw, batchUpdateValues } from "$services/google-sheets-service";
+  import { fetchSheetRowsRaw, batchUpdateValues } from "$api/services/google-sheets-service";
   import { translateMop } from "$utils/translators";
   import { parseDateWeight } from "$utils/parsers";
   import { Combobox } from "$ui/combobox";
@@ -35,7 +35,7 @@
   });
 
   import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
-  import { mapRowToJournal } from "$logic/resident-logic";
+  import { mapRowToJournal } from "$api/controllers/resident-controller";
 
   async function loadData(forceRefresh = false) {
     if (!uiSettings.accountingWorkbookId) {

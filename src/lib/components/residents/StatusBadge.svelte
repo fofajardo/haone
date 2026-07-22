@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Badge } from "$ui/badge";
-  import { getPaymentStatus } from "$logic/resident-logic";
+  import { getPaymentStatus } from "$api/controllers/resident-controller";
   import type { ResidentRecord as Account } from "$lib/types";
 
   let { account, textOnly = false }: { account: Account; textOnly?: boolean } = $props();

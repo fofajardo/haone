@@ -8,8 +8,8 @@
   import ErrorView from "$components/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { fetchPaymentRequests } from "$logic/admin-logic";
-  import { fetchResidents, fetchTermCurr } from "$logic/resident-logic";
+  import { fetchAdminPaymentRequests } from "$api/controllers/payment-request-controller";
+  import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { goto } from "$app/navigation";
@@ -38,7 +38,7 @@
     error = null;
     try {
       const [p, r, t] = await Promise.all([
-        fetchPaymentRequests(forceRefresh),
+        fetchAdminPaymentRequests(forceRefresh),
         fetchResidents(forceRefresh),
         fetchTermCurr(forceRefresh)
       ]);

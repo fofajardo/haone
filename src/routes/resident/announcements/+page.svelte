@@ -7,7 +7,7 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import RichEditor from "$components/RichEditor.svelte";
-  import { fetchAnnouncements } from "$logic/shared-records-logic";
+  import { fetchAnnouncements } from "$api/controllers/announcement-controller";
   import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import * as Card from "$ui/card";
   import { Badge } from "$ui/badge";

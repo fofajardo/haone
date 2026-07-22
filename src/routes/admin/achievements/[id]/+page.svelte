@@ -13,8 +13,8 @@
   import { Checkbox } from "$ui/checkbox";
   import TermFilter from "$components/TermFilter.svelte";
   import { toast } from "svelte-sonner";
-  import { fetchAchievements, fetchAchievementLogs, updateAchievement } from "$logic/admin-logic";
-  import { fetchUsers, fetchResidents } from "$logic/resident-logic";
+  import { fetchAdminAchievements, fetchAchievementLogs, updateAchievement } from "$api/controllers/achievement-controller";
+  import { fetchUsers, fetchResidents } from "$api/controllers/resident-controller";
   import type { AchievementRecord } from "$lib/types";
   import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";
   import AchievementStoryShareButton from "$components/achievements/AchievementStoryShareButton.svelte";
@@ -74,8 +74,7 @@
   async function handleUpdate() {
     isSaving = true;
     try {
-      await updateAchievement({
-        id: editData.id,
+      await updateAchievement(editData.id, {
         creatorId: editData.creatorId,
         name: editData.name,
         description: editData.description,
@@ -99,7 +98,7 @@
     error = null;
     try {
       const [allA, allL, allU, allR] = await Promise.all([
-        fetchAchievements(true),
+        fetchAdminAchievements(true),
         fetchAchievementLogs(true),
         fetchUsers(true),
         fetchResidents(true)

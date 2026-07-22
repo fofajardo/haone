@@ -4,7 +4,7 @@
   import { page } from "$app/state";
   import * as AlertDialog from "$ui/alert-dialog";
   import { type UserRecord, UserTag } from "$lib/types";
-  import { fetchUserById, updateUser } from "$logic/resident-logic";
+  import { fetchUserById, updateUser } from "$api/controllers/resident-controller";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import UserForm from "$components/admin/UserForm.svelte";

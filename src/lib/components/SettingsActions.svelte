@@ -3,7 +3,7 @@
   import { Save } from "@lucide/svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
-  import { fetchUsers } from "$logic/resident-logic";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
 

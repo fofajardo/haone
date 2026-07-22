@@ -15,7 +15,7 @@ import {
   fetchSheetsData,
   resolveResidentAccountType
 } from "$lib/server/api-helper";
-import { canAccessAchievements } from "$logic/resident-logic";
+import { canAccessAchievements } from "$api/controllers/resident-controller";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {

@@ -9,7 +9,7 @@
     stageClearanceEmailBatch,
     matchesStatusFilter,
     stageSoaEmailBatch as stageStatementOfAccountEmailBatch
-  } from "$logic/resident-logic";
+  } from "$api/controllers/resident-controller";
   import { pluralize } from "$utils/formatters";
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";

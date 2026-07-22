@@ -33,14 +33,14 @@
     createNewSpreadsheet,
     ensureSheetExists,
     formatReportSheet
-  } from "$services/google-sheets-service";
-  import { loadGapiScript } from "$services/gmail-service";
-  import { matchesStatusFilter, fetchResidents } from "$logic/resident-logic";
+  } from "$api/services/google-sheets-service";
+  import { loadGapiScript } from "$api/services/gmail-service";
+  import { matchesStatusFilter, fetchResidents } from "$api/controllers/resident-controller";
   import type { ResidentRecord, OfficerRecord } from "$lib/types";
   import { translatePeriod } from "$utils/translators";
   import { exportReportPDF } from "$reports/report-pdf";
   import * as AlertDialog from "$ui/alert-dialog";
-  import { fetchOfficers } from "$logic/admin-logic";
+  import { fetchOfficers } from "$api/controllers/officer-controller";
   import { OfficerStatus } from "$lib/types";
 
   let isLoading = $state(true);

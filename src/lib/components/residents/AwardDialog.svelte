@@ -2,8 +2,8 @@
   import * as Dialog from "$ui/dialog";
   import { Button } from "$ui/button";
   import { auth } from "$state/auth.svelte";
-  import { fetchAchievements, awardAchievementBatch } from "$logic/admin-logic";
-  import { fetchUsers } from "$logic/resident-logic";
+  import { fetchAdminAchievements, awardAchievementBatch } from "$api/controllers/achievement-controller";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import type { ResidentRecord, AchievementRecord } from "$lib/types";
   import { pluralize } from "$utils/formatters";
   import { X, Trophy } from "@lucide/svelte";
@@ -30,7 +30,7 @@
   async function loadData() {
     isLoading = true;
     try {
-      const [achList, userList] = await Promise.all([fetchAchievements(true), fetchUsers()]);
+      const [achList, userList] = await Promise.all([fetchAdminAchievements(true), fetchUsers()]);
       achievements = achList;
       const me = userList.find((u) => {
         return u.email.toLowerCase() === (auth.user?.email || "").toLowerCase();

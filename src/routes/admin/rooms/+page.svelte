@@ -3,9 +3,9 @@
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { roomsState } from "$state/rooms.svelte";
-  import { fetchResidents, fetchUsers } from "$logic/resident-logic";
-  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
-  import { getSyncPreview, applySync, type SyncPreviewAction } from "$logic/rooms-logic.svelte";
+  import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
+  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
+  import { getSyncPreview, applySync, type SyncPreviewAction } from "$api/controllers/rooms-controller.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/types";
   import { pluralize } from "$utils/formatters";
   import SubpageHeader from "$components/SubpageHeader.svelte";

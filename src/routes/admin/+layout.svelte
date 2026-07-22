@@ -28,7 +28,7 @@
     isLoadingAuth = false;
     if (auth.accessToken && auth.user?.email && !auth.adminDisplayName) {
       try {
-        const { fetchUsers } = await import("$logic/resident-logic");
+        const { fetchUsers } = await import("$api/controllers/resident-controller");
         const users = await fetchUsers();
         const found = users.find((u) => {
           return u.email.toLowerCase() === auth.user!.email.toLowerCase();

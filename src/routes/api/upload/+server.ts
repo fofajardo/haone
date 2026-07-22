@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { authenticateResident, serverError } from "$lib/server/api-helper";
-import { saveImageToFirestore } from "$lib/server/services/firestore-service";
+import { saveImageToFirestore } from "$api/services/firestore-service";
 
 export async function POST({ request, url: reqUrl }) {
   const auth = await authenticateResident(request);

@@ -9,12 +9,8 @@
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
-  import {
-    fetchLaundryReservations,
-    addLaundryReservation,
-    cancelLaundryReservation
-  } from "$logic/shared-records-logic";
-  import { fetchUsers } from "$logic/resident-logic";
+  import { fetchLaundryReservations, addLaundryReservation, cancelLaundryReservation } from "$api/controllers/laundry-controller";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
   import * as Card from "$ui/card";
   import { Label } from "$ui/label";

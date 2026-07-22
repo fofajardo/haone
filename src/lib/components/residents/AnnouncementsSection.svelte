@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { fetchAnnouncements } from "$logic/shared-records-logic";
+  import { fetchAnnouncements } from "$api/controllers/announcement-controller";
   import type { AnnouncementRecord } from "$lib/types";
   import * as Card from "$ui/card";
   import { ChevronRight, ChevronLeft } from "@lucide/svelte";

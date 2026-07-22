@@ -6,7 +6,7 @@
   import * as AlertDialog from "$ui/alert-dialog";
   import { Save, FileUp, Info, CircleAlert } from "@lucide/svelte";
   import { type UserRecord } from "$lib/types";
-  import { addUsersBatch } from "$logic/resident-logic";
+  import { addUsersBatch } from "$api/controllers/resident-controller";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import Papa from "papaparse";
 

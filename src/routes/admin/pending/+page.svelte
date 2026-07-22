@@ -10,7 +10,7 @@
     fetchSheetRowsRaw,
     batchUpdateValues,
     invalidateCache
-  } from "$services/google-sheets-service";
+  } from "$api/services/google-sheets-service";
   import { parseDateWeight } from "$utils/parsers";
   import { Input } from "$ui/input/index.js";
   import { Label } from "$ui/label/index.js";
@@ -26,7 +26,7 @@
   import type { ReceiptData } from "$lib/types";
 
   import { type JournalRecord } from "$lib/types";
-  import { mapRowToJournal } from "$logic/resident-logic";
+  import { mapRowToJournal } from "$api/controllers/resident-controller";
 
   let queue = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);

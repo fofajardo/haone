@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
   import { Combobox } from "$ui/combobox";

@@ -6,9 +6,9 @@
   import { FileDown, ClipboardPaste, LoaderIcon } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
   import Papa from "papaparse";
-  import { fetchUsers } from "$logic/resident-logic";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
-  import { appendSheetRow } from "$services/google-sheets-service";
+  import { appendSheetRow } from "$api/services/google-sheets-service";
   import { LAUNDRY_COL } from "$lib/types";
 
   interface Props {

@@ -4,7 +4,7 @@
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue } from "$services/google-sheets-service";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$api/services/google-sheets-service";
   import { translateCollege, translateProgram } from "$utils/translators";
   import { parseDateWeight } from "$utils/parsers";
   import { pluralize } from "$utils/formatters";
@@ -38,7 +38,7 @@
     stageClearanceEmail,
     fetchResidents,
     mapRowToJournal
-  } from "$logic/resident-logic";
+  } from "$api/controllers/resident-controller";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";

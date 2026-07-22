@@ -4,8 +4,8 @@
   import { ChevronLeft, Save } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
-  import { addOfficer, fetchOfficers } from "$logic/admin-logic";
-  import { fetchResidents, fetchTermCurr } from "$logic/resident-logic";
+  import { addOfficer, fetchOfficers } from "$api/controllers/officer-controller";
+  import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
   import { brandingState } from "$state/branding.svelte";
   import type { OfficerRecord, ResidentRecord } from "$lib/types";
   import { OfficerStatus } from "$lib/types";

@@ -152,7 +152,7 @@ class UISettings {
 
   async syncFromServer() {
     try {
-      const { fetchUserSettings } = await import("$logic/shared-records-logic");
+      const { fetchUserSettings } = await import("$api/controllers/settings-controller");
       const settings = await fetchUserSettings(true);
       const my = settings[0];
       if (my) {
@@ -180,7 +180,7 @@ class UISettings {
   }
 
   async save(residentId: string) {
-    const { updateUserSettings } = await import("$logic/shared-records-logic");
+    const { updateUserSettings } = await import("$api/controllers/settings-controller");
     await updateUserSettings(residentId, {
       typography: this.fontFamily,
       density: this.displayDensity,

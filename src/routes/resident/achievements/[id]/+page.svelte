@@ -6,7 +6,7 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import { fetchAchievements } from "$logic/shared-records-logic";
+  import { fetchAchievements } from "$api/controllers/achievement-controller";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
 
   import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";

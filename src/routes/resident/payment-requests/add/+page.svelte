@@ -3,7 +3,7 @@
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
 
-  import { addPaymentRequest } from "$logic/shared-records-logic";
+  import { addPaymentRequest } from "$api/controllers/payment-request-controller";
   import { fetchServer } from "$utils/api-client";
   import { compressImage, deleteUploadedImage } from "$utils/image-utils";
   import { formatCurrency, formatAccounting } from "$utils/formatters";

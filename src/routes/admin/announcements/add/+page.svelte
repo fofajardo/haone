@@ -8,9 +8,9 @@
   import { ChevronLeft, Save } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import RichEditor from "$components/RichEditor.svelte";
-  import { addAnnouncement } from "$logic/admin-logic";
-  import { fetchWithAuth } from "$services/google-sheets-service";
-  import { fetchUsers } from "$logic/resident-logic";
+  import { addAnnouncement } from "$api/controllers/announcement-controller";
+  import { fetchWithAuth } from "$api/services/google-sheets-service";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";

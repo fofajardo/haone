@@ -7,7 +7,7 @@
     fetchSheetRowsRaw,
     deleteSheetRow,
     updateSheetValue
-  } from "$services/google-sheets-service";
+  } from "$api/services/google-sheets-service";
   import { formatCurrency, formatAccounting, formatDate } from "$utils/formatters";
   import { translateMop, translatePeriod, translateType } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
@@ -37,7 +37,7 @@
   const id = $derived(page.params.id);
 
   import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/types";
-  import { mapRowToJournal, fetchResidents } from "$logic/resident-logic";
+  import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorStNo = $state<string | null>(null);

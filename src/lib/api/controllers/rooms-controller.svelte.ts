@@ -5,7 +5,7 @@ import {
   batchUpdateValues,
   appendSheetRow,
   deleteSheetRow
-} from "$services/google-sheets-service";
+} from "$api/services/google-sheets-service";
 import {
   ACCOUNT_COL,
   CURR_COL,
@@ -15,7 +15,7 @@ import {
   UserTag,
   type UserRecord
 } from "$lib/types";
-import { fetchUsers, addUser, updateUser, fetchResidents } from "$logic/resident-logic";
+import { fetchUsers, addUser, updateUser, fetchResidents } from "$api/controllers/resident-controller";
 import { roomsState } from "$state/rooms.svelte";
 import { auth } from "$state/auth.svelte";
 

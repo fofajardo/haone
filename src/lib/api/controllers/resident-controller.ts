@@ -104,7 +104,7 @@ export async function fetchResidents(forceRefresh = false): Promise<ResidentReco
   }
 
   const { uiSettings } = await import("$state/settings.svelte");
-  const { fetchSheetRowsRaw } = await import("$services/google-sheets-service");
+  const { fetchSheetRowsRaw } = await import("$api/services/google-sheets-service");
 
   if (!uiSettings.accountingWorkbookId || !uiSettings.residentRecordsId) {
     return [];
@@ -188,7 +188,7 @@ export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
   }
 
   const { uiSettings } = await import("$state/settings.svelte");
-  const { fetchSheetRowsRaw } = await import("$services/google-sheets-service");
+  const { fetchSheetRowsRaw } = await import("$api/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) {
     return [];
@@ -225,7 +225,7 @@ export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
  */
 export async function fetchTermCurr(forceRefresh = false): Promise<string> {
   const { uiSettings } = await import("$state/settings.svelte");
-  const { fetchSheetRowsRaw } = await import("$services/google-sheets-service");
+  const { fetchSheetRowsRaw } = await import("$api/services/google-sheets-service");
 
   if (!uiSettings.accountingWorkbookId) return "";
 
@@ -299,7 +299,7 @@ export function computeDisplayNames(data: Partial<UserRecord>) {
  */
 export async function updateUser(userId: string, data: Partial<UserRecord>) {
   const { uiSettings } = await import("$state/settings.svelte");
-  const { fetchSheetRowsRaw, updateSheetValue } = await import("$services/google-sheets-service");
+  const { fetchSheetRowsRaw, updateSheetValue } = await import("$api/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -352,7 +352,7 @@ export async function updateUser(userId: string, data: Partial<UserRecord>) {
  */
 export async function addUser(data: Partial<UserRecord>) {
   const { uiSettings } = await import("$state/settings.svelte");
-  const { appendSheetRow } = await import("$services/google-sheets-service");
+  const { appendSheetRow } = await import("$api/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -385,7 +385,7 @@ export async function addUser(data: Partial<UserRecord>) {
  */
 export async function addUsersBatch(users: Partial<UserRecord>[]) {
   const { uiSettings } = await import("$state/settings.svelte");
-  const { appendSheetRow } = await import("$services/google-sheets-service");
+  const { appendSheetRow } = await import("$api/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -429,7 +429,7 @@ export async function fetchAccountsByUserId(userId: string): Promise<ResidentRec
  */
 export async function deleteUser(userId: string) {
   const { uiSettings } = await import("$state/settings.svelte");
-  const { fetchSheetRowsRaw, deleteSheetRow } = await import("$services/google-sheets-service");
+  const { fetchSheetRowsRaw, deleteSheetRow } = await import("$api/services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -714,7 +714,7 @@ export async function clearResident(
   brandingKey: string,
   issuerId: string
 ) {
-  const { updateSheetValue, fetchSheetRowsRaw } = await import("$services/google-sheets-service");
+  const { updateSheetValue, fetchSheetRowsRaw } = await import("$api/services/google-sheets-service");
 
   const now = new Date();
   const dateString = now.toLocaleDateString("en-PH", {

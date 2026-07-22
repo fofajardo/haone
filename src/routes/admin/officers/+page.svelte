@@ -5,8 +5,8 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import { fetchOfficers } from "$logic/admin-logic";
-  import { fetchTermCurr } from "$logic/resident-logic";
+  import { fetchOfficers } from "$api/controllers/officer-controller";
+  import { fetchTermCurr } from "$api/controllers/resident-controller";
   import type { OfficerRecord } from "$lib/types";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { createColumns } from "./columns";
