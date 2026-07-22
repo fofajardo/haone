@@ -1,25 +1,25 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { roomsState } from "$lib/state/rooms.svelte";
-  import { fetchResidents, fetchUsers } from "$lib/logic/resident-logic";
-  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
-  import { getSyncPreview, applySync, type SyncPreviewAction } from "$lib/logic/rooms-logic.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { roomsState } from "$state/rooms.svelte";
+  import { fetchResidents, fetchUsers } from "$logic/resident-logic";
+  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { getSyncPreview, applySync, type SyncPreviewAction } from "$logic/rooms-logic.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import { pluralize } from "$lib/utils/formatters";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Label } from "$lib/components/ui/label";
-  import { Checkbox } from "$lib/components/ui/checkbox";
-  import * as Card from "$lib/components/ui/card";
-  import * as Tooltip from "$lib/components/ui/tooltip";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import AssignmentDialog from "$lib/components/admin/AssignmentDialog.svelte";
+  import { pluralize } from "$utils/formatters";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import { Button } from "$ui/button";
+  import { Badge } from "$ui/badge";
+  import { Combobox } from "$ui/combobox";
+  import { Label } from "$ui/label";
+  import { Checkbox } from "$ui/checkbox";
+  import * as Card from "$ui/card";
+  import * as Tooltip from "$ui/tooltip";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
   import {
     RefreshCcw,
     User,

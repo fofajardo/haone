@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import ResidentTermFilter from "$lib/components/residents/ResidentTermFilter.svelte";
-  import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
-  import ClearanceCard from "$lib/components/residents/ClearanceCard.svelte";
-  import TransactionHistoryCard from "$lib/components/residents/TransactionHistoryCard.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ResidentTermFilter from "$components/residents/ResidentTermFilter.svelte";
+  import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
+  import ClearanceCard from "$components/residents/ClearanceCard.svelte";
+  import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
 
   import { replaceState } from "$app/navigation";
   import { page } from "$app/state";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import { fetchServer } from "$lib/utils/api-client";
+  import { pageState } from "$state/page-info.svelte";
+  import { fetchServer } from "$utils/api-client";
 
   let status = $state<any>(null);
   let isLoading = $state(true);

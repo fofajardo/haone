@@ -1,18 +1,18 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import ResidentSidebar from "$lib/components/resident-sidebar.svelte";
-  import AdminHeader from "$lib/components/admin-header.svelte";
-  import MobileNav from "$lib/components/mobile-nav.svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { residentState } from "$lib/state/resident-state.svelte";
+  import * as Sidebar from "$ui/sidebar";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import ResidentSidebar from "$components/resident-sidebar.svelte";
+  import AdminHeader from "$components/admin-header.svelte";
+  import MobileNav from "$components/mobile-nav.svelte";
+  import { auth } from "$state/auth.svelte";
+  import { residentState } from "$state/resident-state.svelte";
   import { onMount } from "svelte";
   import { LoaderIcon } from "@lucide/svelte";
   import { page } from "$app/state";
   import { fly } from "svelte/transition";
   import { goto } from "$app/navigation";
 
-  import { createHeaderScrollState } from "$lib/utils/scroll.svelte";
+  import { createHeaderScrollState } from "$utils/scroll.svelte";
 
   let { children } = $props();
   let isLoadingAuth = $state(true);

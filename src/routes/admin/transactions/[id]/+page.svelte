@@ -2,20 +2,20 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import {
     fetchSheetRowsRaw,
     deleteSheetRow,
     updateSheetValue
-  } from "$lib/services/google-sheets-service";
-  import { formatCurrency, formatAccounting, formatDate } from "$lib/utils/formatters";
-  import { translateMop, translatePeriod, translateType } from "$lib/utils/translators";
-  import { parseRef } from "$lib/utils/parsers";
-  import * as Card from "$lib/components/ui/card";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Label } from "$lib/components/ui/label";
+  } from "$services/google-sheets-service";
+  import { formatCurrency, formatAccounting, formatDate } from "$utils/formatters";
+  import { translateMop, translatePeriod, translateType } from "$utils/translators";
+  import { parseRef } from "$utils/parsers";
+  import * as Card from "$ui/card";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import { Button } from "$ui/button";
+  import { Badge } from "$ui/badge";
+  import { Label } from "$ui/label";
   import {
     User,
     ShieldCheck,
@@ -30,14 +30,14 @@
     Lock,
     TriangleAlert
   } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
 
   const id = $derived(page.params.id);
 
   import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/types";
-  import { mapRowToJournal, fetchResidents } from "$lib/logic/resident-logic";
+  import { mapRowToJournal, fetchResidents } from "$logic/resident-logic";
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorStNo = $state<string | null>(null);

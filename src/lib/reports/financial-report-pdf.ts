@@ -1,9 +1,9 @@
-import branding from "$lib/data/branding.json";
-import { formatAccounting } from "$lib/utils/formatters";
-import { translateMop } from "$lib/utils/translators";
-import { parseDateWeight } from "$lib/utils/parsers";
-import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
-import { fetchResidents, mapRowToJournal } from "$lib/logic/resident-logic";
+import branding from "$data/branding.json";
+import { formatAccounting } from "$utils/formatters";
+import { translateMop } from "$utils/translators";
+import { parseDateWeight } from "$utils/parsers";
+import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+import { fetchResidents, mapRowToJournal } from "$logic/resident-logic";
 import type { JournalRecord, ResidentRecord } from "$lib/types";
 import type {
   TDocumentDefinitions,

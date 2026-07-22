@@ -1,24 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { UserTag, type UserRecord as User } from "$lib/types";
-  import { fetchUsers } from "$lib/logic/resident-logic";
-  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Label } from "$lib/components/ui/label";
+  import { fetchUsers } from "$logic/resident-logic";
+  import { TableSync } from "$ui/data-table/table-sync.svelte";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Combobox } from "$ui/combobox";
+  import { Label } from "$ui/label";
   import { RefreshCcw, Users, Search, FunnelX } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import * as DropdownMenu from "$ui/dropdown-menu";
   import { Plus, UserPlus, FileUp } from "@lucide/svelte";
   import { columns } from "./columns";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
-  import { translateCollege, translateProgram } from "$lib/utils/translators";
+  import DataTable from "$ui/data-table/data-table.svelte";
+  import { translateCollege, translateProgram } from "$utils/translators";
 
   let users = $state<User[]>([]);
   let isLoading = $state(false);

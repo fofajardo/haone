@@ -1,24 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import TermFilter from "$lib/components/TermFilter.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import * as Card from "$lib/components/ui/card";
-  import StatisticCard from "$lib/components/StatisticCard.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import TermFilter from "$components/TermFilter.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import { Button } from "$ui/button";
+  import * as Card from "$ui/card";
+  import StatisticCard from "$components/StatisticCard.svelte";
   import { RefreshCcw, FileDown, TrendingUp, TrendingDown, Wallet } from "@lucide/svelte";
-  import { formatAccounting } from "$lib/utils/formatters";
-  import { translateMop, translateType } from "$lib/utils/translators";
-  import { getJournalDateRange } from "$lib/utils/parsers";
+  import { formatAccounting } from "$utils/formatters";
+  import { translateMop, translateType } from "$utils/translators";
+  import { getJournalDateRange } from "$utils/parsers";
   import type { JournalRecord, ResidentRecord } from "$lib/types";
-  import * as Table from "$lib/components/ui/table";
+  import * as Table from "$ui/table";
   import {
     computeFinancialReportData,
     fetchFinancialReportData
-  } from "$lib/reports/financial-report-pdf";
-  import * as Chart from "$lib/components/ui/chart";
+  } from "$reports/financial-report-pdf";
+  import * as Chart from "$ui/chart";
   import { PieChart } from "layerchart";
 
   let isLoading = $state(true);

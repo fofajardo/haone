@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
   import {
     Mail,
     ArrowRight,
@@ -17,14 +17,14 @@
     FileSpreadsheet,
     Bed
   } from "@lucide/svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
-  import { formatCurrency, formatDate } from "$lib/utils/formatters";
-  import { translatePeriod, translateType } from "$lib/utils/translators";
-  import { mapRowToJournal, fetchResidents } from "$lib/logic/resident-logic";
-  import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
-  import StatisticCard from "$lib/components/StatisticCard.svelte";
+  import { auth } from "$state/auth.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { formatCurrency, formatDate } from "$utils/formatters";
+  import { translatePeriod, translateType } from "$utils/translators";
+  import { mapRowToJournal, fetchResidents } from "$logic/resident-logic";
+  import DashboardActionCard from "$components/DashboardActionCard.svelte";
+  import StatisticCard from "$components/StatisticCard.svelte";
   import { onMount } from "svelte";
 
   let stats = $state({

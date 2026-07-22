@@ -1,4 +1,4 @@
-import roomsData from "$lib/data/rooms.json";
+import roomsData from "$data/rooms.json";
 
 export interface RoomNetworkConfig {
   subnet: string;

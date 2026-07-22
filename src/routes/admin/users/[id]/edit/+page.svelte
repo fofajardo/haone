@@ -2,13 +2,13 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import * as AlertDialog from "$ui/alert-dialog";
   import { type UserRecord, UserTag } from "$lib/types";
-  import { fetchUserById, updateUser } from "$lib/logic/resident-logic";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import UserForm from "$lib/components/admin/UserForm.svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { fetchUserById, updateUser } from "$logic/resident-logic";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import UserForm from "$components/admin/UserForm.svelte";
+  import { Button } from "$ui/button";
 
   const userId = $derived(page.params.id);
 

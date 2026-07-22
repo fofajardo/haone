@@ -1,20 +1,20 @@
 <script lang="ts">
   import dayjs from "dayjs";
-  import { auth } from "$lib/state/auth.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Checkbox } from "$lib/components/ui/checkbox";
+  import { auth } from "$state/auth.svelte";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Checkbox } from "$ui/checkbox";
   import { ChevronLeft, Save } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import RichEditor from "$lib/components/RichEditor.svelte";
-  import { addAnnouncement } from "$lib/logic/admin-logic";
-  import { fetchWithAuth } from "$lib/services/google-sheets-service";
-  import { fetchUsers } from "$lib/logic/resident-logic";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import RichEditor from "$components/RichEditor.svelte";
+  import { addAnnouncement } from "$logic/admin-logic";
+  import { fetchWithAuth } from "$services/google-sheets-service";
+  import { fetchUsers } from "$logic/resident-logic";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";
-  import { TagsInput } from "$lib/components/ui/tags-input";
+  import { TagsInput } from "$ui/tags-input";
   import slugify from "slug";
 
   let isSubmitting = $state(false);

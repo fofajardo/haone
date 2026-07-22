@@ -1,12 +1,12 @@
 <script lang="ts">
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { Button } from "$lib/components/ui/button";
-  import { auth } from "$lib/state/auth.svelte";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { clearResident } from "$lib/logic/resident-logic";
+  import * as Dialog from "$ui/dialog";
+  import { Button } from "$ui/button";
+  import { auth } from "$state/auth.svelte";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { clearResident } from "$logic/resident-logic";
   import type { ResidentRecord } from "$lib/types";
-  import { pluralize } from "$lib/utils/formatters";
+  import { pluralize } from "$utils/formatters";
   import { X, ShieldCheck } from "@lucide/svelte";
 
   let {

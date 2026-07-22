@@ -1,15 +1,15 @@
 <script lang="ts">
   import type { ColumnDef } from "@tanstack/table-core";
-  import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
+  import { renderComponent, renderSnippet } from "$ui/data-table/index.js";
   import { createRawSnippet } from "svelte";
   import { type ResidentRecord as Account } from "$lib/types";
-  import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
-  import { translatePeriod } from "$lib/utils/translators";
-  import { pluralize } from "$lib/utils/formatters";
-  import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
+  import * as Card from "$ui/card";
+  import { Badge } from "$ui/badge";
+  import { translatePeriod } from "$utils/translators";
+  import { pluralize } from "$utils/formatters";
+  import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
   import StatusBadge from "./StatusBadge.svelte";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import DataTable from "$ui/data-table/data-table.svelte";
   import { Clock, History } from "@lucide/svelte";
 
   interface Props {

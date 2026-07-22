@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { Save } from "@lucide/svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { fetchUsers } from "$lib/logic/resident-logic";
+  import { uiSettings } from "$state/settings.svelte";
+  import { auth } from "$state/auth.svelte";
+  import { fetchUsers } from "$logic/resident-logic";
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
 

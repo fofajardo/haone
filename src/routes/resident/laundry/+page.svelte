@@ -1,34 +1,34 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Info, Funnel, CircleX, CircleCheck } from "@lucide/svelte";
-  import * as NativeSelect from "$lib/components/ui/native-select";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import * as NativeSelect from "$ui/native-select";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
   import {
     fetchLaundryReservations,
     addLaundryReservation,
     cancelLaundryReservation
-  } from "$lib/logic/shared-records-logic";
-  import { fetchUsers } from "$lib/logic/resident-logic";
+  } from "$logic/shared-records-logic";
+  import { fetchUsers } from "$logic/resident-logic";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
-  import * as Card from "$lib/components/ui/card";
-  import { Label } from "$lib/components/ui/label";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import * as Collapsible from "$lib/components/ui/collapsible";
-  import * as DatePicker from "$lib/components/ui/date-picker";
-  import * as TimePicker from "$lib/components/ui/time-picker";
-  import LaundryCalendar from "$lib/components/residents/LaundryCalendar.svelte";
+  import * as Card from "$ui/card";
+  import { Label } from "$ui/label";
+  import * as Dialog from "$ui/dialog";
+  import * as Collapsible from "$ui/collapsible";
+  import * as DatePicker from "$ui/date-picker";
+  import * as TimePicker from "$ui/time-picker";
+  import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
   import { toast } from "svelte-sonner";
-  import { pageState } from "$lib/state/page-info.svelte";
+  import { pageState } from "$state/page-info.svelte";
   import { ChevronDown } from "@lucide/svelte";
-  import { parseTime, parseDateWeight } from "$lib/utils/parsers";
-  import { formatTime } from "$lib/utils/formatters";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import { parseTime, parseDateWeight } from "$utils/parsers";
+  import { formatTime } from "$utils/formatters";
+  import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
 
   let reservations = $state<LaundryRecord[]>([]);

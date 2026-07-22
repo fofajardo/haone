@@ -1,10 +1,10 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Label } from "$lib/components/ui/label";
-  import { Switch } from "$lib/components/ui/switch";
+  import * as Card from "$ui/card";
+  import { Label } from "$ui/label";
+  import { Switch } from "$ui/switch";
   import { Bell, BellOff, Info, Trophy } from "@lucide/svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { notifications } from "$lib/state/notifications.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { notifications } from "$state/notifications.svelte";
   import { PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";
   import { toast } from "svelte-sonner";
 

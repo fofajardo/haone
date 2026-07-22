@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { fetchServer } from "$lib/utils/api-client";
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { fetchServer } from "$utils/api-client";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
   import { onMount } from "svelte";
 
   interface Props {

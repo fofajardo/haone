@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import * as AlertDialog from "$ui/alert-dialog";
   import { type UserRecord, UserTag } from "$lib/types";
-  import { addUser } from "$lib/logic/resident-logic";
-  import UserForm from "$lib/components/admin/UserForm.svelte";
+  import { addUser } from "$logic/resident-logic";
+  import UserForm from "$components/admin/UserForm.svelte";
 
   let isSaving = $state(false);
   let formData = $state<Partial<UserRecord>>({

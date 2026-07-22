@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import { Checkbox } from "$ui/checkbox/index.js";
   import type { Table } from "@tanstack/table-core";
 
   let { table }: { table: Table<any> } = $props();

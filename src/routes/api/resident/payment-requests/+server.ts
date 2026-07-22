@@ -8,7 +8,7 @@ import {
   serverError,
   fetchSheetsData
 } from "$lib/server/api-helper";
-import { parseCSVAmount } from "$lib/utils/math";
+import { parseCSVAmount } from "$utils/math";
 import type { RequestHandler } from "./$types";
 
 /**

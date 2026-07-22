@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import * as Table from "$lib/components/ui/table";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import * as Table from "$ui/table";
   import {
     Image as ImageIcon,
     Download,
@@ -10,13 +10,13 @@
     Share2,
     StickyNote
   } from "@lucide/svelte";
-  import { Spinner } from "$lib/components/ui/spinner";
-  import branding from "$lib/data/branding.json";
+  import { Spinner } from "$ui/spinner";
+  import branding from "$data/branding.json";
   import type { ReceiptData } from "$lib/types";
-  import { calculateTotal } from "$lib/utils/math";
-  import { formatAmount, formatCurrency, formatDate } from "$lib/utils/formatters";
-  import { parseRef } from "$lib/utils/parsers";
-  import { translateMop, translatePeriod } from "$lib/utils/translators";
+  import { calculateTotal } from "$utils/math";
+  import { formatAmount, formatCurrency, formatDate } from "$utils/formatters";
+  import { parseRef } from "$utils/parsers";
+  import { translateMop, translatePeriod } from "$utils/translators";
   import { Badge } from "../ui/badge";
 
   interface Props {

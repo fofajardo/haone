@@ -1,12 +1,12 @@
 import dayjs from "dayjs";
-import { uiSettings } from "$lib/state/settings.svelte";
+import { uiSettings } from "$state/settings.svelte";
 import {
   fetchSheetRowsRaw,
   updateSheetValue,
   appendSheetRow,
   deleteSheetRow
-} from "$lib/services/google-sheets-service";
-import { extractImageIds } from "$lib/utils/image-utils";
+} from "$services/google-sheets-service";
+import { extractImageIds } from "$utils/image-utils";
 import {
   LAUNDRY_COL,
   PAYMENT_REQUEST_COL,
@@ -27,8 +27,8 @@ import {
   AnnouncementStatus,
   OfficerStatus
 } from "$lib/types";
-import { parseAmount } from "$lib/logic/resident-logic";
-import { parseTime } from "$lib/utils/parsers";
+import { parseAmount } from "$logic/resident-logic";
+import { parseTime } from "$utils/parsers";
 
 /**
  * Laundry Reservations

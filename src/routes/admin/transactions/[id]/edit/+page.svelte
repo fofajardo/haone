@@ -2,14 +2,14 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/services/google-sheets-service";
+  import { uiSettings } from "$state/settings.svelte";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$services/google-sheets-service";
   import { JOURNAL_COL as JOR } from "$lib/types";
-  import { mapRowToJournal } from "$lib/logic/resident-logic";
+  import { mapRowToJournal } from "$logic/resident-logic";
   import type { JournalRecord } from "$lib/types";
-  import TransactionForm from "$lib/components/TransactionForm.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import TransactionForm from "$components/TransactionForm.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
 
   const id = $derived(page.params.id);
 

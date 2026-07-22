@@ -1,23 +1,23 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { fetchSheetRowsRaw, batchUpdateValues } from "$lib/services/google-sheets-service";
-  import { translateMop } from "$lib/utils/translators";
-  import { parseDateWeight } from "$lib/utils/parsers";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import TermFilter from "$lib/components/TermFilter.svelte";
+  import { TableSync } from "$ui/data-table/table-sync.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { fetchSheetRowsRaw, batchUpdateValues } from "$services/google-sheets-service";
+  import { translateMop } from "$utils/translators";
+  import { parseDateWeight } from "$utils/parsers";
+  import { Combobox } from "$ui/combobox";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import TermFilter from "$components/TermFilter.svelte";
   import { RefreshCcw, ListFilter, Plus, Search, FunnelX, ShieldCheck } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import { columns } from "./columns";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import DataTable from "$ui/data-table/data-table.svelte";
 
   let journal = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
@@ -35,7 +35,7 @@
   });
 
   import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
-  import { mapRowToJournal } from "$lib/logic/resident-logic";
+  import { mapRowToJournal } from "$logic/resident-logic";
 
   async function loadData(forceRefresh = false) {
     if (!uiSettings.accountingWorkbookId) {

@@ -1,32 +1,32 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { emailDispatcher } from "$lib/state/dispatcher.svelte";
-  import { AcknowledgmentTemplate } from "$lib/templates/acknowledgment";
+  import { emailDispatcher } from "$state/dispatcher.svelte";
+  import { AcknowledgmentTemplate } from "$templates/acknowledgment";
   import { goto } from "$app/navigation";
-  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { TableSync } from "$ui/data-table/table-sync.svelte";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import {
     fetchSheetRowsRaw,
     batchUpdateValues,
     invalidateCache
-  } from "$lib/services/google-sheets-service";
-  import { parseDateWeight } from "$lib/utils/parsers";
-  import { Input } from "$lib/components/ui/input/index.js";
-  import { Label } from "$lib/components/ui/label/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import TermFilter from "$lib/components/TermFilter.svelte";
+  } from "$services/google-sheets-service";
+  import { parseDateWeight } from "$utils/parsers";
+  import { Input } from "$ui/input/index.js";
+  import { Label } from "$ui/label/index.js";
+  import { Button } from "$ui/button/index.js";
+  import TermFilter from "$components/TermFilter.svelte";
   import { Search, RefreshCcw, FileCheck, CircleCheckBig } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import type { ReceiptData } from "$lib/types";
 
   import { type JournalRecord } from "$lib/types";
-  import { mapRowToJournal } from "$lib/logic/resident-logic";
+  import { mapRowToJournal } from "$logic/resident-logic";
 
   let queue = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);

@@ -1,13 +1,13 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Button } from "$lib/components/ui/button";
-  import { Textarea } from "$lib/components/ui/textarea";
-  import * as Card from "$lib/components/ui/card";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import { Button } from "$ui/button";
+  import { Textarea } from "$ui/textarea";
+  import * as Card from "$ui/card";
+  import * as AlertDialog from "$ui/alert-dialog";
   import { Save, FileUp, Info, CircleAlert } from "@lucide/svelte";
   import { type UserRecord } from "$lib/types";
-  import { addUsersBatch } from "$lib/logic/resident-logic";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import { addUsersBatch } from "$logic/resident-logic";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
   import Papa from "papaparse";
 
   let csvData = $state("");

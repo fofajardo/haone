@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { Trash2, Ellipsis, FilePen } from "@lucide/svelte";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+  import * as DropdownMenu from "$ui/dropdown-menu";
   import type { OfficerRecord } from "$lib/types";
-  import { deleteOfficer } from "$lib/logic/admin-logic";
+  import { deleteOfficer } from "$logic/admin-logic";
   import { toast } from "svelte-sonner";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import * as AlertDialog from "$ui/alert-dialog";
   import { goto } from "$app/navigation";
 
   let { officer, onSuccess }: { officer: OfficerRecord; onSuccess?: () => void } = $props();

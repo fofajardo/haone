@@ -1,14 +1,14 @@
 <script lang="ts">
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { Button } from "$lib/components/ui/button";
-  import { Textarea } from "$lib/components/ui/textarea";
-  import { Label } from "$lib/components/ui/label";
+  import * as Dialog from "$ui/dialog";
+  import { Button } from "$ui/button";
+  import { Textarea } from "$ui/textarea";
+  import { Label } from "$ui/label";
   import { FileDown, ClipboardPaste, LoaderIcon } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
   import Papa from "papaparse";
-  import { fetchUsers } from "$lib/logic/resident-logic";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { appendSheetRow } from "$lib/services/google-sheets-service";
+  import { fetchUsers } from "$logic/resident-logic";
+  import { uiSettings } from "$state/settings.svelte";
+  import { appendSheetRow } from "$services/google-sheets-service";
   import { LAUNDRY_COL } from "$lib/types";
 
   interface Props {

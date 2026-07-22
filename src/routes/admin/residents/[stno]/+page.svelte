@@ -2,17 +2,17 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue } from "$lib/services/google-sheets-service";
-  import { translateCollege, translateProgram } from "$lib/utils/translators";
-  import { parseDateWeight } from "$lib/utils/parsers";
-  import { pluralize } from "$lib/utils/formatters";
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Label } from "$lib/components/ui/label";
-  import TermFilter from "$lib/components/TermFilter.svelte";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { fetchSheetRowsRaw, updateSheetValue } from "$services/google-sheets-service";
+  import { translateCollege, translateProgram } from "$utils/translators";
+  import { parseDateWeight } from "$utils/parsers";
+  import { pluralize } from "$utils/formatters";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import { Badge } from "$ui/badge";
+  import { Label } from "$ui/label";
+  import TermFilter from "$components/TermFilter.svelte";
   import {
     RefreshCcw,
     ShieldCheck,
@@ -32,22 +32,22 @@
     AccountType,
     ACCOUNT_TYPE_LABELS
   } from "$lib/types";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import * as AlertDialog from "$ui/alert-dialog";
   import {
     stageStatusEmail,
     stageClearanceEmail,
     fetchResidents,
     mapRowToJournal
-  } from "$lib/logic/resident-logic";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
-  import StudentProfileCard from "$lib/components/residents/StudentProfileCard.svelte";
-  import ClearanceCard from "$lib/components/residents/ClearanceCard.svelte";
-  import ClearanceDialog from "$lib/components/residents/ClearanceDialog.svelte";
-  import TransactionHistoryCard from "$lib/components/residents/TransactionHistoryCard.svelte";
+  } from "$logic/resident-logic";
+  import * as DropdownMenu from "$ui/dropdown-menu";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
+  import StudentProfileCard from "$components/residents/StudentProfileCard.svelte";
+  import ClearanceCard from "$components/residents/ClearanceCard.svelte";
+  import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
+  import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
 
   const stno = $derived(page.params.stno);
 

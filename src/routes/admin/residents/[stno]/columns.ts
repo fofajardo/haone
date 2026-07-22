@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/table-core";
-import { renderSnippet } from "$lib/components/ui/data-table/index.js";
-import { formatDate, formatCurrency } from "$lib/utils/formatters";
-import { translateMop, translateType } from "$lib/utils/translators";
+import { renderSnippet } from "$ui/data-table/index.js";
+import { formatDate, formatCurrency } from "$utils/formatters";
+import { translateMop, translateType } from "$utils/translators";
 import { type JournalRecord } from "$lib/types";
 import { createRawSnippet } from "svelte";
 

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import { Button } from "$lib/components/ui/button";
-  import { auth } from "$lib/state/auth.svelte";
+  import * as Sidebar from "$ui/sidebar";
+  import { Button } from "$ui/button";
+  import { auth } from "$state/auth.svelte";
   import { X } from "@lucide/svelte";
-  import BrandingLogo from "$lib/components/BrandingLogo.svelte";
+  import BrandingLogo from "$components/BrandingLogo.svelte";
 
   const sidebar = Sidebar.useSidebar();
 </script>

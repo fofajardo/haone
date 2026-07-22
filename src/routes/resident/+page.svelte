@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
-  import * as Card from "$lib/components/ui/card";
+  import { Button } from "$ui/button";
+  import * as Card from "$ui/card";
   import {
     RefreshCcw,
     Wallet,
@@ -21,18 +21,18 @@
     BookUser,
     Network
   } from "@lucide/svelte";
-  import AnnouncementsSection from "$lib/components/residents/AnnouncementsSection.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import { formatCurrency, formatDate } from "$lib/utils/formatters";
-  import { translatePeriod, translateType } from "$lib/utils/translators";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import StatusBadge from "$lib/components/residents/StatusBadge.svelte";
-  import DashboardActionCard from "$lib/components/DashboardActionCard.svelte";
-  import { fetchServer } from "$lib/utils/api-client";
-  import type { ResidentStatus } from "$lib/state/resident-state.svelte";
+  import AnnouncementsSection from "$components/residents/AnnouncementsSection.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import { formatCurrency, formatDate } from "$utils/formatters";
+  import { translatePeriod, translateType } from "$utils/translators";
+  import { pageState } from "$state/page-info.svelte";
+  import StatusBadge from "$components/residents/StatusBadge.svelte";
+  import DashboardActionCard from "$components/DashboardActionCard.svelte";
+  import { fetchServer } from "$utils/api-client";
+  import type { ResidentStatus } from "$state/resident-state.svelte";
   import { AccountType } from "$lib/types";
-  import StatisticCard from "$lib/components/StatisticCard.svelte";
+  import StatisticCard from "$components/StatisticCard.svelte";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);

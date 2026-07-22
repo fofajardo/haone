@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { ExternalLink, Lock as LockIcon, Sparkles } from "@lucide/svelte";
-  import * as Card from "$lib/components/ui/card";
+  import * as Card from "$ui/card";
   import type { AchievementRecord } from "$lib/types";
-  import { formatAwardDate, calculateAchievementPercentage } from "$lib/logic/shared-records-logic";
+  import { formatAwardDate, calculateAchievementPercentage } from "$logic/shared-records-logic";
 
   interface Earner {
     residentId: string;

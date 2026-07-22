@@ -1,32 +1,32 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Megaphone } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import {
     fetchAnnouncements,
     expireAnnouncement,
     deleteAnnouncement
-  } from "$lib/logic/admin-logic";
-  import { fetchWithAuth } from "$lib/services/google-sheets-service";
-  import { auth } from "$lib/state/auth.svelte";
+  } from "$logic/admin-logic";
+  import { fetchWithAuth } from "$services/google-sheets-service";
+  import { auth } from "$state/auth.svelte";
   import type { AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import * as AlertDialog from "$ui/alert-dialog";
 
-  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import { TableSync } from "$ui/data-table/table-sync.svelte";
+  import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
   import { Search, FunnelX } from "@lucide/svelte";
 
-  import { getAnnouncementStatus } from "$lib/logic/admin-logic";
+  import { getAnnouncementStatus } from "$logic/admin-logic";
   import { AnnouncementStatus } from "$lib/types";
 
   let announcements = $state<AnnouncementRecord[]>([]);

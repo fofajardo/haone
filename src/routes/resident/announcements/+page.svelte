@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Megaphone, ArrowRight } from "@lucide/svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import RichEditor from "$lib/components/RichEditor.svelte";
-  import { fetchAnnouncements } from "$lib/logic/shared-records-logic";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import RichEditor from "$components/RichEditor.svelte";
+  import { fetchAnnouncements } from "$logic/shared-records-logic";
   import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
-  import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
+  import * as Card from "$ui/card";
+  import { Badge } from "$ui/badge";
   import { goto } from "$app/navigation";
 
   let announcements = $state<AnnouncementRecord[]>([]);

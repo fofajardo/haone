@@ -1,9 +1,9 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import { auth } from "$lib/state/auth.svelte";
-  import { Button } from "$lib/components/ui/button";
+  import * as Sidebar from "$ui/sidebar";
+  import { auth } from "$state/auth.svelte";
+  import { Button } from "$ui/button";
   import { LogOut, CircleUser } from "@lucide/svelte";
-  import BrandingLogo from "$lib/components/BrandingLogo.svelte";
+  import BrandingLogo from "$components/BrandingLogo.svelte";
 
   interface Props {
     hideToggle?: boolean;

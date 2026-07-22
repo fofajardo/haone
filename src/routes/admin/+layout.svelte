@@ -1,16 +1,16 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import AdminSidebar from "$lib/components/admin-sidebar.svelte";
-  import AdminHeader from "$lib/components/admin-header.svelte";
-  import MobileNav from "$lib/components/mobile-nav.svelte";
-  import { auth } from "$lib/state/auth.svelte";
+  import * as Sidebar from "$ui/sidebar";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import AdminSidebar from "$components/admin-sidebar.svelte";
+  import AdminHeader from "$components/admin-header.svelte";
+  import MobileNav from "$components/mobile-nav.svelte";
+  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
   import { LoaderIcon } from "@lucide/svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { fly } from "svelte/transition";
-  import { createHeaderScrollState } from "$lib/utils/scroll.svelte";
+  import { createHeaderScrollState } from "$utils/scroll.svelte";
 
   let { children } = $props();
   let isLoadingAuth = $state(true);
@@ -28,7 +28,7 @@
     isLoadingAuth = false;
     if (auth.accessToken && auth.user?.email && !auth.adminDisplayName) {
       try {
-        const { fetchUsers } = await import("$lib/logic/resident-logic");
+        const { fetchUsers } = await import("$logic/resident-logic");
         const users = await fetchUsers();
         const found = users.find((u) => {
           return u.email.toLowerCase() === auth.user!.email.toLowerCase();

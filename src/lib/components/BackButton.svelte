@@ -1,8 +1,8 @@
 <script lang="ts">
   import { ChevronLeft } from "@lucide/svelte";
   import { goto } from "$app/navigation";
-  import { Button } from "$lib/components/ui/button";
-  import { useSidebar } from "$lib/components/ui/sidebar/context.svelte.js";
+  import { Button } from "$ui/button";
+  import { useSidebar } from "$ui/sidebar/context.svelte.js";
 
   let {
     href = "",

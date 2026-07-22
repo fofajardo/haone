@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { fetchServer } from "$lib/utils/api-client";
-  import { translatePeriod } from "$lib/utils/translators";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
+  import { uiSettings } from "$state/settings.svelte";
+  import { fetchServer } from "$utils/api-client";
+  import { translatePeriod } from "$utils/translators";
+  import { Combobox } from "$ui/combobox";
+  import { Label } from "$ui/label";
+  import { Input } from "$ui/input";
 
   let {
     value = $bindable(),

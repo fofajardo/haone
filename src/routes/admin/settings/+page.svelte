@@ -1,21 +1,21 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Input } from "$lib/components/ui/input";
+  import * as Card from "$ui/card";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
+  import { Input } from "$ui/input";
   import { TriangleAlert, ExternalLink } from "@lucide/svelte";
-  import { Button } from "$lib/components/ui/button";
-  import branding from "$lib/data/branding.json";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { Button } from "$ui/button";
+  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID, PUBLIC_GS_SR_ID } from "$env/static/public";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import AppearanceSettings from "$lib/components/AppearanceSettings.svelte";
-  import VersionCard from "$lib/components/VersionCard.svelte";
-  import SettingsPreview from "$lib/components/SettingsPreview.svelte";
-  import NavSettings from "$lib/components/residents/NavSettings.svelte";
-  import PrivacySettings from "$lib/components/residents/PrivacySettings.svelte";
-  import SettingsActions from "$lib/components/SettingsActions.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import AppearanceSettings from "$components/AppearanceSettings.svelte";
+  import VersionCard from "$components/VersionCard.svelte";
+  import SettingsPreview from "$components/SettingsPreview.svelte";
+  import NavSettings from "$components/residents/NavSettings.svelte";
+  import PrivacySettings from "$components/residents/PrivacySettings.svelte";
+  import SettingsActions from "$components/SettingsActions.svelte";
 
   const brandingProfiles = Object.keys(branding);
 </script>

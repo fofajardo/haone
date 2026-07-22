@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { ChevronLeft } from "@lucide/svelte";
   import { goto } from "$app/navigation";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import RichEditor from "$lib/components/RichEditor.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import RichEditor from "$components/RichEditor.svelte";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
-  import { Badge } from "$lib/components/ui/badge";
+  import { Badge } from "$ui/badge";
 
   let { data } = $props();
 

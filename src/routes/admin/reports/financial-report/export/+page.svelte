@@ -1,24 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
-  import TermFilter from "$lib/components/TermFilter.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { auth } from "$state/auth.svelte";
+  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
+  import TermFilter from "$components/TermFilter.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
   import { HandCoins, RefreshCcw } from "@lucide/svelte";
-  import { translatePeriod } from "$lib/utils/translators";
-  import { pluralize } from "$lib/utils/formatters";
-  import { getJournalDateRange } from "$lib/utils/parsers";
+  import { translatePeriod } from "$utils/translators";
+  import { pluralize } from "$utils/formatters";
+  import { getJournalDateRange } from "$utils/parsers";
   import {
     exportFinancialReportPDF,
     fetchFinancialReportData
-  } from "$lib/reports/financial-report-pdf";
+  } from "$reports/financial-report-pdf";
   import type { JournalRecord, ResidentRecord } from "$lib/types";
 
   let isLoading = $state(true);

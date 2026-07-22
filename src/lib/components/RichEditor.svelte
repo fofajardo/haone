@@ -21,14 +21,14 @@
   import { Superscript } from "@tiptap/extension-superscript";
   import { TaskList } from "@tiptap/extension-task-list";
   import { TaskItem } from "@tiptap/extension-task-item";
-  import { Button } from "$lib/components/ui/button";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import * as Popover from "$lib/components/ui/popover";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { transformGoogleDriveLink, compressImage } from "$lib/utils/image-utils";
-  import { fetchServer } from "$lib/utils/api-client";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { Button } from "$ui/button";
+  import * as Dialog from "$ui/dialog";
+  import * as Popover from "$ui/popover";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { transformGoogleDriveLink, compressImage } from "$utils/image-utils";
+  import { fetchServer } from "$utils/api-client";
+  import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import {
     Bold,

@@ -1,9 +1,9 @@
 import type { ColumnDef } from "@tanstack/table-core";
-import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
+import { renderComponent, renderSnippet } from "$ui/data-table/index.js";
 import { type ResidentRecord as Resident } from "$lib/types";
-import { formatAccounting } from "$lib/utils/formatters";
-import DataTableCheckbox from "$lib/components/ui/data-table/data-table-checkbox.svelte";
-import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
+import { formatAccounting } from "$utils/formatters";
+import DataTableCheckbox from "$ui/data-table/data-table-checkbox.svelte";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<Resident>[] = [

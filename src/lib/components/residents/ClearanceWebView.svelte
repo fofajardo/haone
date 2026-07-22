@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
   import {
     Image as ImageIcon,
     Download,
@@ -9,9 +9,9 @@
     Share2,
     StickyNote
   } from "@lucide/svelte";
-  import { Spinner } from "$lib/components/ui/spinner";
-  import branding from "$lib/data/branding.json";
-  import { translatePeriod } from "$lib/utils/translators";
+  import { Spinner } from "$ui/spinner";
+  import branding from "$data/branding.json";
+  import { translatePeriod } from "$utils/translators";
 
   interface Props {
     clearanceData: {

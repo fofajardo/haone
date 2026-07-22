@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { brandingState } from "$lib/state/branding.svelte";
+  import { Button } from "$ui/button";
+  import { brandingState } from "$state/branding.svelte";
   import type { AchievementRecord } from "$lib/types";
   import { Share2 } from "@lucide/svelte";
   import { toast } from "svelte-sonner";

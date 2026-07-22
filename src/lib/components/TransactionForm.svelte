@@ -1,21 +1,21 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { page } from "$app/state";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
-  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
-  import { translatePeriod, translateMop } from "$lib/utils/translators";
-  import { parseRef } from "$lib/utils/parsers";
-  import { formatAmount, formatAccounting } from "$lib/utils/formatters";
-  import { sortPeriods } from "$lib/utils/sort";
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Textarea } from "$lib/components/ui/textarea";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { translatePeriod, translateMop } from "$utils/translators";
+  import { parseRef } from "$utils/parsers";
+  import { formatAmount, formatAccounting } from "$utils/formatters";
+  import { sortPeriods } from "$utils/sort";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Textarea } from "$ui/textarea";
+  import { Combobox } from "$ui/combobox";
   import {
     LoaderCircle,
     Calendar,
@@ -27,16 +27,16 @@
     ArrowLeftToLine,
     TriangleAlert
   } from "@lucide/svelte";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Checkbox } from "$lib/components/ui/checkbox";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
-  import FinancialStandingCard from "$lib/components/residents/FinancialStandingCard.svelte";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import * as Tooltip from "$lib/components/ui/tooltip";
-  import { Badge } from "$lib/components/ui/badge";
-  import { fetchResidents, mapRowToJournal } from "$lib/logic/resident-logic";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import { Checkbox } from "$ui/checkbox";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
+  import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
+  import * as Dialog from "$ui/dialog";
+  import * as Tooltip from "$ui/tooltip";
+  import { Badge } from "$ui/badge";
+  import { fetchResidents, mapRowToJournal } from "$logic/resident-logic";
   import type { ResidentRecord, JournalRecord } from "$lib/types";
   import { JOURNAL_COL as JOR } from "$lib/types";
 

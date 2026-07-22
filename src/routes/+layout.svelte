@@ -1,16 +1,16 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import { Toaster } from "$lib/components/ui/sonner";
+  import { pageState } from "$state/page-info.svelte";
+  import { Toaster } from "$ui/sonner";
   import { ModeWatcher } from "mode-watcher";
   import "./layout.css";
   import favicon from "$lib/assets/favicon.svg";
 
   import { onMount } from "svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { auth } from "$state/auth.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
-  import UIProvider from "$lib/components/UIProvider.svelte";
+  import UIProvider from "$components/UIProvider.svelte";
 
   let { children } = $props();
 

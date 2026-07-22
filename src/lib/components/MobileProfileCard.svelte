@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
-  import { auth } from "$lib/state/auth.svelte";
+  import * as Sidebar from "$ui/sidebar";
+  import { auth } from "$state/auth.svelte";
   import { CircleUser, LogOut } from "@lucide/svelte";
 
   const sidebar = Sidebar.useSidebar();

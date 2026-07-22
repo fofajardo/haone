@@ -1,4 +1,4 @@
-import { formatDate } from "$lib/utils/formatters";
+import { formatDate } from "$utils/formatters";
 
 /**
  * A simple mail merge engine for the Receipt Manager.

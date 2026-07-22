@@ -1,24 +1,24 @@
 <script lang="ts">
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { Search, RefreshCcw, Plus, ReceiptText, Wallet } from "@lucide/svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import { fetchPaymentRequests, cancelPaymentRequest } from "$lib/logic/shared-records-logic";
-  import { fetchUsers } from "$lib/logic/resident-logic";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import { fetchPaymentRequests, cancelPaymentRequest } from "$logic/shared-records-logic";
+  import { fetchUsers } from "$logic/resident-logic";
   import { type PaymentRequestRecord, PaymentRequestStatus } from "$lib/types";
   import { toast } from "svelte-sonner";
-  import { pageState } from "$lib/state/page-info.svelte";
+  import { pageState } from "$state/page-info.svelte";
   import { goto } from "$app/navigation";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
 
   let payments = $state<PaymentRequestRecord[]>([]);
   let isLoading = $state(true);

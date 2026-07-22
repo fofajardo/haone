@@ -1,16 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw, BookUser, Mail } from "@lucide/svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import { fetchServer } from "$lib/utils/api-client";
-  import { Badge } from "$lib/components/ui/badge";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import * as Card from "$ui/card";
+  import { fetchServer } from "$utils/api-client";
+  import { Badge } from "$ui/badge";
 
-  import { pageState } from "$lib/state/page-info.svelte";
+  import { pageState } from "$state/page-info.svelte";
 
   let officers = $state<any[]>([]);
   let isLoading = $state(true);

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Label } from "$lib/components/ui/label";
-  import { formatCurrency, formatAmount } from "$lib/utils/formatters";
+  import * as Card from "$ui/card";
+  import { Label } from "$ui/label";
+  import { formatCurrency, formatAmount } from "$utils/formatters";
   import { CreditCard, Droplets, Users, Wallet } from "@lucide/svelte";
   import type { ResidentRecord } from "$lib/types";
 

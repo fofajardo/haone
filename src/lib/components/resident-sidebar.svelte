@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
+  import * as Sidebar from "$ui/sidebar";
   import {
     LayoutDashboard,
     Settings,
@@ -17,15 +17,15 @@
     CirclePlus,
     Network
   } from "@lucide/svelte";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { auth } from "$lib/state/auth.svelte";
-  import { residentState } from "$lib/state/resident-state.svelte";
+  import { Button } from "$ui/button/index.js";
+  import { auth } from "$state/auth.svelte";
+  import { residentState } from "$state/resident-state.svelte";
   import { page } from "$app/state";
-  import { canAccessLaundry, canAccessAchievements } from "$lib/logic/resident-logic";
+  import { canAccessLaundry, canAccessAchievements } from "$logic/resident-logic";
   import { AccountType } from "$lib/types";
-  import { isStaticIpEnabled } from "$lib/utils/rooms-utils";
-  import ProfileHeader from "$lib/components/ProfileHeader.svelte";
-  import MobileProfileCard from "$lib/components/MobileProfileCard.svelte";
+  import { isStaticIpEnabled } from "$utils/rooms-utils";
+  import ProfileHeader from "$components/ProfileHeader.svelte";
+  import MobileProfileCard from "$components/MobileProfileCard.svelte";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);

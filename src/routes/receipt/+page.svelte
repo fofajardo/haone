@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { decryptJSON } from "$lib/utils/crypto";
+  import { decryptJSON } from "$utils/crypto";
   import { goto } from "$app/navigation";
-  import StudentNumberAuthCard from "$lib/components/StudentNumberAuthCard.svelte";
-  import ReceiptErrorCard from "$lib/components/receipt/ReceiptErrorCard.svelte";
+  import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
+  import ReceiptErrorCard from "$components/receipt/ReceiptErrorCard.svelte";
   import { LS_KEYS } from "$lib/constants";
-  import { pageState } from "$lib/state/page-info.svelte";
+  import { pageState } from "$state/page-info.svelte";
 
   let studentNo = $state("");
   let rememberMe = $state(false);

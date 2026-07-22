@@ -1,8 +1,8 @@
-import branding from "$lib/data/branding.json";
-import { calculateTotal } from "$lib/utils/math";
-import { formatAmount, formatCurrency, formatDate } from "$lib/utils/formatters";
-import { parseRef } from "$lib/utils/parsers";
-import { translateMop, translatePeriod } from "$lib/utils/translators";
+import branding from "$data/branding.json";
+import { calculateTotal } from "$utils/math";
+import { formatAmount, formatCurrency, formatDate } from "$utils/formatters";
+import { parseRef } from "$utils/parsers";
+import { translateMop, translatePeriod } from "$utils/translators";
 import type { ReceiptData } from "$lib/types";
 import type {
   TDocumentDefinitions,

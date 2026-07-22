@@ -1,18 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import TermFilter from "$lib/components/TermFilter.svelte";
-  import * as Tabs from "$lib/components/ui/tabs";
-  import AchievementLeaderboard from "$lib/components/achievements/AchievementLeaderboard.svelte";
-  import { fetchAchievements } from "$lib/logic/shared-records-logic";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import TermFilter from "$components/TermFilter.svelte";
+  import * as Tabs from "$ui/tabs";
+  import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
+  import { fetchAchievements } from "$logic/shared-records-logic";
+  import { uiSettings } from "$state/settings.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import { fetchServer } from "$lib/utils/api-client";
+  import { pageState } from "$state/page-info.svelte";
+  import { fetchServer } from "$utils/api-client";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);

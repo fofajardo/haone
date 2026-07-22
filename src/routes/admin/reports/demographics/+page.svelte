@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import {
     RefreshCcw,
     GraduationCap,
@@ -10,15 +10,15 @@
     CalendarDays,
     CircleDollarSign
   } from "@lucide/svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import TermFilter from "$lib/components/TermFilter.svelte";
-  import * as Card from "$lib/components/ui/card";
-  import * as Chart from "$lib/components/ui/chart";
+  import { Button } from "$ui/button";
+  import { uiSettings } from "$state/settings.svelte";
+  import TermFilter from "$components/TermFilter.svelte";
+  import * as Card from "$ui/card";
+  import * as Chart from "$ui/chart";
   import { PieChart } from "layerchart";
-  import { translateCollege, translateProgram } from "$lib/utils/translators";
+  import { translateCollege, translateProgram } from "$utils/translators";
 
-  import { fetchResidents, getPaymentStatus } from "$lib/logic/resident-logic";
+  import { fetchResidents, getPaymentStatus } from "$logic/resident-logic";
 
   interface DataItem {
     label: string;

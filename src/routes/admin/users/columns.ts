@@ -1,9 +1,9 @@
 import type { ColumnDef } from "@tanstack/table-core";
-import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
+import { renderComponent, renderSnippet } from "$ui/data-table/index.js";
 import { type UserRecord as User, USER_TAG_COLORS, UserTag } from "$lib/types";
-import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
-import { translateCollege, translateProgram } from "$lib/utils/translators";
+import { translateCollege, translateProgram } from "$utils/translators";
 
 export const columns: ColumnDef<User>[] = [
   {

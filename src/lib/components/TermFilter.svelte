@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
-  import { translatePeriod } from "$lib/utils/translators";
-  import { sortPeriods } from "$lib/utils/sort";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { translatePeriod } from "$utils/translators";
+  import { sortPeriods } from "$utils/sort";
+  import { Combobox } from "$ui/combobox";
+  import { Label } from "$ui/label";
+  import { Input } from "$ui/input";
 
   let { value = $bindable(), onSelect } = $props<{
     value?: string;

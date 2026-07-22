@@ -1,6 +1,6 @@
 <script lang="ts">
-  import branding from "$lib/data/branding.json";
-  import { translatePeriod } from "$lib/utils/translators";
+  import branding from "$data/branding.json";
+  import { translatePeriod } from "$utils/translators";
 
   interface Props {
     clearanceData: {

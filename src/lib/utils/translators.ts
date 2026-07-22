@@ -1,5 +1,5 @@
-import collegeMapping from "$lib/data/colleges.json";
-import programMapping from "$lib/data/programs.json";
+import collegeMapping from "$data/colleges.json";
+import programMapping from "$data/programs.json";
 
 export function translateMop(mop: string) {
   const val = mop?.trim().toUpperCase() || "";

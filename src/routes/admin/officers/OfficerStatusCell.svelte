@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Badge } from "$lib/components/ui/badge";
+  import { Badge } from "$ui/badge";
   import { OfficerStatus } from "$lib/types";
 
   let { status } = $props<{ status: string }>();

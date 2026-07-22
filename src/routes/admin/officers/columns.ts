@@ -1,10 +1,10 @@
-import { renderComponent } from "$lib/components/ui/data-table";
+import { renderComponent } from "$ui/data-table";
 import type { ColumnDef } from "@tanstack/table-core";
 import type { OfficerRecord } from "$lib/types";
 import OfficerNameCell from "./OfficerNameCell.svelte";
 import OfficerStatusCell from "./OfficerStatusCell.svelte";
-import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
-import { brandingState } from "$lib/state/branding.svelte";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
+import { brandingState } from "$state/branding.svelte";
 
 export const createColumns = (onSuccess: () => void): ColumnDef<OfficerRecord>[] => [
   {

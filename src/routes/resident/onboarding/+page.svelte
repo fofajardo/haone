@@ -1,9 +1,9 @@
 <script lang="ts">
-  import OnboardingForm from "$lib/components/resident/OnboardingForm.svelte";
-  import { residentState } from "$lib/state/resident-state.svelte";
-  import { pageState } from "$lib/state/page-info.svelte";
+  import OnboardingForm from "$components/resident/OnboardingForm.svelte";
+  import { residentState } from "$state/resident-state.svelte";
+  import { pageState } from "$state/page-info.svelte";
 
-  import { brandingState } from "$lib/state/branding.svelte";
+  import { brandingState } from "$state/branding.svelte";
 
   import { goto } from "$app/navigation";
 

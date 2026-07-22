@@ -1,16 +1,16 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import { fetchAchievements } from "$lib/logic/shared-records-logic";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import { fetchAchievements } from "$logic/shared-records-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
 
-  import AchievementDetailsView from "$lib/components/achievements/AchievementDetailsView.svelte";
-  import AchievementStoryShareButton from "$lib/components/achievements/AchievementStoryShareButton.svelte";
+  import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";
+  import AchievementStoryShareButton from "$components/achievements/AchievementStoryShareButton.svelte";
 
   const id = page.params.id;
 

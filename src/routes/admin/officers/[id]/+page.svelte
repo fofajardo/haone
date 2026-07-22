@@ -1,29 +1,29 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { Save, Trash2 } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
   import {
     fetchOfficers,
     updateOfficer,
     deleteOfficer,
     transitionOfficerPosition
-  } from "$lib/logic/admin-logic";
+  } from "$logic/admin-logic";
   import type { OfficerRecord } from "$lib/types";
   import { OfficerStatus } from "$lib/types";
   import { toast } from "svelte-sonner";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
-  import * as Select from "$lib/components/ui/select";
+  import { Label } from "$ui/label";
+  import { Input } from "$ui/input";
+  import * as Select from "$ui/select";
   import { goto } from "$app/navigation";
-  import * as Card from "$lib/components/ui/card";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { translatePeriod } from "$lib/utils/translators";
+  import * as Card from "$ui/card";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import * as Dialog from "$ui/dialog";
+  import { pageState } from "$state/page-info.svelte";
+  import { brandingState } from "$state/branding.svelte";
+  import { translatePeriod } from "$utils/translators";
 
   const { id } = page.params;
   let officer = $state<OfficerRecord | null>(null);

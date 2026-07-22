@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as Sidebar from "$lib/components/ui/sidebar";
+  import * as Sidebar from "$ui/sidebar";
   import {
     LayoutDashboard,
     Settings,
@@ -24,11 +24,11 @@
     BookUser,
     Network
   } from "@lucide/svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { auth } from "$lib/state/auth.svelte";
+  import { Button } from "$ui/button";
+  import { auth } from "$state/auth.svelte";
   import { page } from "$app/state";
-  import ProfileHeader from "$lib/components/ProfileHeader.svelte";
-  import MobileProfileCard from "$lib/components/MobileProfileCard.svelte";
+  import ProfileHeader from "$components/ProfileHeader.svelte";
+  import MobileProfileCard from "$components/MobileProfileCard.svelte";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);

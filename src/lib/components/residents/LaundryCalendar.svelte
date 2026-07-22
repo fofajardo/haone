@@ -1,15 +1,15 @@
 <script lang="ts">
   import type { LaundryRecord, UserRecord } from "$lib/types";
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { cn } from "$lib/utils";
   import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "@lucide/svelte";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import { Button } from "$lib/components/ui/button";
-  import { parseTime } from "$lib/utils/parsers";
-  import * as Sheet from "$lib/components/ui/sheet";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import * as DropdownMenu from "$ui/dropdown-menu";
+  import { Button } from "$ui/button";
+  import { parseTime } from "$utils/parsers";
+  import * as Sheet from "$ui/sheet";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import {
     Info,
     User as UserIcon,

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Label } from "$lib/components/ui/label";
-  import { Button } from "$lib/components/ui/button";
+  import * as Card from "$ui/card";
+  import { Badge } from "$ui/badge";
+  import { Label } from "$ui/label";
+  import { Button } from "$ui/button";
   import { ShieldCheck, ClipboardCheck, Calendar, Hash, ArrowUpRight } from "@lucide/svelte";
   import type { ResidentRecord } from "$lib/types";
 

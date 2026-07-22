@@ -1,9 +1,9 @@
 <script lang="ts">
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Checkbox } from "$lib/components/ui/checkbox";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { manualAssignBed, manualDelistResident } from "$lib/logic/rooms-logic.svelte";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import { Checkbox } from "$ui/checkbox";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
+  import { manualAssignBed, manualDelistResident } from "$logic/rooms-logic.svelte";
   import { toast } from "svelte-sonner";
   import { Info, TriangleAlert } from "@lucide/svelte";
 

@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import {
     fetchSheetRowsRaw,
     appendSheetRow,
     batchUpdateValues,
     updateSheetValue
-  } from "$lib/services/google-sheets-service";
-  import { translatePeriod } from "$lib/utils/translators";
-  import { sortPeriods } from "$lib/utils/sort";
-  import { Button } from "$lib/components/ui/button";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
+  } from "$services/google-sheets-service";
+  import { translatePeriod } from "$utils/translators";
+  import { sortPeriods } from "$utils/sort";
+  import { Button } from "$ui/button";
+  import * as Dialog from "$ui/dialog";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
   import {
     Plus,
     GraduationCap,
@@ -23,11 +23,11 @@
     Calculator,
     CircleCheck
   } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { Badge } from "$lib/components/ui/badge";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import { Badge } from "$ui/badge";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
 
   let terms = $state<{ value: string; description: string }[]>([]);
   let allConstants = $state<{ key: string; value: string; rowIndex: number }[]>([]);

@@ -1,23 +1,23 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { ChevronLeft, Save } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import { addOfficer, fetchOfficers } from "$lib/logic/admin-logic";
-  import { fetchResidents, fetchTermCurr } from "$lib/logic/resident-logic";
-  import { brandingState } from "$lib/state/branding.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import { addOfficer, fetchOfficers } from "$logic/admin-logic";
+  import { fetchResidents, fetchTermCurr } from "$logic/resident-logic";
+  import { brandingState } from "$state/branding.svelte";
   import type { OfficerRecord, ResidentRecord } from "$lib/types";
   import { OfficerStatus } from "$lib/types";
   import { toast } from "svelte-sonner";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { Label } from "$ui/label";
+  import { Input } from "$ui/input";
+  import { Combobox } from "$ui/combobox";
   import { goto } from "$app/navigation";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import * as Card from "$lib/components/ui/card";
+  import { pageState } from "$state/page-info.svelte";
+  import * as Card from "$ui/card";
 
-  import { translatePeriod } from "$lib/utils/translators";
+  import { translatePeriod } from "$utils/translators";
 
   let residents = $state<ResidentRecord[]>([]);
   let officers = $state<OfficerRecord[]>([]);

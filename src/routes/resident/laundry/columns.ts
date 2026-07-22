@@ -1,10 +1,10 @@
 import { type ColumnDef } from "@tanstack/table-core";
-import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
+import { renderComponent, renderSnippet } from "$ui/data-table/index.js";
 import { type LaundryRecord, LaundryStatus } from "$lib/types";
-import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
-import { parseTime } from "$lib/utils/parsers";
-import { formatDate } from "$lib/utils/formatters";
+import { parseTime } from "$utils/parsers";
+import { formatDate } from "$utils/formatters";
 
 export const columns: ColumnDef<LaundryRecord>[] = [
   {

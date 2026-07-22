@@ -1,6 +1,6 @@
-import { brandingState } from "$lib/state/branding.svelte";
-import roomsData from "$lib/data/rooms.json";
-import { getAllRooms } from "$lib/utils/rooms-utils";
+import { brandingState } from "$state/branding.svelte";
+import roomsData from "$data/rooms.json";
+import { getAllRooms } from "$utils/rooms-utils";
 
 export interface RoomSlot {
   room_number: string;

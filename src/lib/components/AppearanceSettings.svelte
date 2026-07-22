@@ -1,10 +1,10 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Label } from "$lib/components/ui/label";
-  import { Switch } from "$lib/components/ui/switch";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import { Label } from "$ui/label";
+  import { Switch } from "$ui/switch";
   import { Monitor, Sun, Moon } from "@lucide/svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
 
   function updateTheme(mode: string) {

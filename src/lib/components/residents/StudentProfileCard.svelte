@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Label } from "$lib/components/ui/label";
+  import * as Card from "$ui/card";
+  import { Label } from "$ui/label";
   import {
     Mail,
     Send,
@@ -11,7 +11,7 @@
     MapPin,
     Bed as BedIcon
   } from "@lucide/svelte";
-  import { translateCollege, translateProgram } from "$lib/utils/translators";
+  import { translateCollege, translateProgram } from "$utils/translators";
   import type { ResidentRecord } from "$lib/types";
 
   interface Props {

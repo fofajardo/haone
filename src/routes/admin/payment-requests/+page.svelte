@@ -1,20 +1,20 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Search, Wallet, ListChecks } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { fetchPaymentRequests } from "$lib/logic/admin-logic";
-  import { fetchResidents, fetchTermCurr } from "$lib/logic/resident-logic";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+  import { fetchPaymentRequests } from "$logic/admin-logic";
+  import { fetchResidents, fetchTermCurr } from "$logic/resident-logic";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
   import { goto } from "$app/navigation";
   import { PaymentRequestStatus } from "$lib/types";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { Combobox } from "$ui/combobox";
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);

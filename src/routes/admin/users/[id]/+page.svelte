@@ -2,13 +2,13 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import { translateCollege, translateProgram } from "$lib/utils/translators";
-  import { pluralize } from "$lib/utils/formatters";
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
-  import { Label } from "$lib/components/ui/label";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import { translateCollege, translateProgram } from "$utils/translators";
+  import { pluralize } from "$utils/formatters";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import { Badge } from "$ui/badge";
+  import { Label } from "$ui/label";
+  import * as AlertDialog from "$ui/alert-dialog";
   import {
     RefreshCcw,
     User as UserIcon,
@@ -29,12 +29,12 @@
     type ResidentRecord as Account,
     UserTag
   } from "$lib/types";
-  import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$lib/logic/resident-logic";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import OccupancyHistoryCard from "$lib/components/residents/OccupancyHistoryCard.svelte";
+  import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$logic/resident-logic";
+  import { pageState } from "$state/page-info.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
 
   const userId = $derived(page.params.id);
 

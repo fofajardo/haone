@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { type ResidentRecord as Resident } from "$lib/types";
   import {
     fetchResidents,
@@ -9,16 +9,16 @@
     stageClearanceEmailBatch,
     matchesStatusFilter,
     stageSoaEmailBatch as stageStatementOfAccountEmailBatch
-  } from "$lib/logic/resident-logic";
-  import { pluralize } from "$lib/utils/formatters";
+  } from "$logic/resident-logic";
+  import { pluralize } from "$utils/formatters";
   import { goto } from "$app/navigation";
-  import { TableSync } from "$lib/components/ui/data-table/table-sync.svelte";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { TableSync } from "$ui/data-table/table-sync.svelte";
+  import { Combobox } from "$ui/combobox";
 
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import TermFilter from "$lib/components/TermFilter.svelte";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import TermFilter from "$components/TermFilter.svelte";
   import {
     RefreshCcw,
     Users,
@@ -30,17 +30,17 @@
     ShieldCheck,
     Trophy
   } from "@lucide/svelte";
-  import * as Tooltip from "$lib/components/ui/tooltip";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import * as Tooltip from "$ui/tooltip";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import * as DropdownMenu from "$ui/dropdown-menu";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import { columns } from "./columns";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
-  import ClearanceDialog from "$lib/components/residents/ClearanceDialog.svelte";
-  import AwardDialog from "$lib/components/residents/AwardDialog.svelte";
+  import DataTable from "$ui/data-table/data-table.svelte";
+  import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
+  import AwardDialog from "$components/residents/AwardDialog.svelte";
 
   let residents = $state<Resident[]>([]);
   let isLoading = $state(false);

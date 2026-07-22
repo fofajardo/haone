@@ -1,13 +1,13 @@
 import { type ColumnDef } from "@tanstack/table-core";
-import { renderComponent, renderSnippet } from "$lib/components/ui/data-table/index.js";
-import { formatDate, formatAccounting } from "$lib/utils/formatters";
-import { translateMop } from "$lib/utils/translators";
+import { renderComponent, renderSnippet } from "$ui/data-table/index.js";
+import { formatDate, formatAccounting } from "$utils/formatters";
+import { translateMop } from "$utils/translators";
 import type { PaymentRequestRecord } from "$lib/types";
 import { PaymentRequestStatus, PAYMENT_REQUEST_STATUS_COLORS } from "$lib/types";
-import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
-import { Button } from "$lib/components/ui/button";
-import CompositionCell from "$lib/components/CompositionCell.svelte";
+import { Button } from "$ui/button";
+import CompositionCell from "$components/CompositionCell.svelte";
 import { Trash2 } from "@lucide/svelte";
 
 export const columns: ColumnDef<PaymentRequestRecord>[] = [

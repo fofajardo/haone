@@ -1,35 +1,35 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { auth } from "$state/auth.svelte";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Trophy, UserPlus } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import {
     fetchAchievements,
     fetchAchievementLogs,
     addAchievement,
     awardAchievement
-  } from "$lib/logic/admin-logic";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/logic/resident-logic";
+  } from "$logic/admin-logic";
+  import { fetchResidents, fetchTermCurr, fetchUsers } from "$logic/resident-logic";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Textarea } from "$lib/components/ui/textarea";
+  import * as Dialog from "$ui/dialog";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Textarea } from "$ui/textarea";
   import { toast } from "svelte-sonner";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Checkbox } from "$lib/components/ui/checkbox";
-  import { translatePeriod } from "$lib/utils/translators";
-  import TermFilter from "$lib/components/TermFilter.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { Combobox } from "$ui/combobox";
+  import { Checkbox } from "$ui/checkbox";
+  import { translatePeriod } from "$utils/translators";
+  import TermFilter from "$components/TermFilter.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import {
     calculateAchievementPercentage,
     getEligibleCount
-  } from "$lib/logic/shared-records-logic";
-  import AchievementCard from "$lib/components/achievements/AchievementCard.svelte";
+  } from "$logic/shared-records-logic";
+  import AchievementCard from "$components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);

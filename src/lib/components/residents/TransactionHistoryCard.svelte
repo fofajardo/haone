@@ -1,15 +1,15 @@
 <script lang="ts">
   import type { ColumnDef } from "@tanstack/table-core";
-  import { renderSnippet, renderComponent } from "$lib/components/ui/data-table/index.js";
-  import { formatDate, formatCurrency, pluralize } from "$lib/utils/formatters";
-  import { translateMop, translateType } from "$lib/utils/translators";
+  import { renderSnippet, renderComponent } from "$ui/data-table/index.js";
+  import { formatDate, formatCurrency, pluralize } from "$utils/formatters";
+  import { translateMop, translateType } from "$utils/translators";
   import { type JournalRecord } from "$lib/types";
   import { createRawSnippet } from "svelte";
-  import * as Card from "$lib/components/ui/card";
-  import { Badge } from "$lib/components/ui/badge";
+  import * as Card from "$ui/card";
+  import { Badge } from "$ui/badge";
   import { History, Clock } from "@lucide/svelte";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
+  import DataTable from "$ui/data-table/data-table.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
 
   interface Props {
     history: JournalRecord[];

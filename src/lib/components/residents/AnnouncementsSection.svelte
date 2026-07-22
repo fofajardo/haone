@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { fetchAnnouncements } from "$lib/logic/shared-records-logic";
+  import { fetchAnnouncements } from "$logic/shared-records-logic";
   import type { AnnouncementRecord } from "$lib/types";
-  import * as Card from "$lib/components/ui/card";
+  import * as Card from "$ui/card";
   import { ChevronRight, ChevronLeft } from "@lucide/svelte";
-  import { Button } from "$lib/components/ui/button";
-  import RichEditor from "$lib/components/RichEditor.svelte";
+  import { Button } from "$ui/button";
+  import RichEditor from "$components/RichEditor.svelte";
 
-  import { Badge } from "$lib/components/ui/badge";
+  import { Badge } from "$ui/badge";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { goto } from "$app/navigation";
 

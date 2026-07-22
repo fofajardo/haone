@@ -1,5 +1,5 @@
-import { auth } from "$lib/state/auth.svelte";
-import { fetchServer } from "$lib/utils/api-client";
+import { auth } from "$state/auth.svelte";
+import { fetchServer } from "$utils/api-client";
 import type {
   LaundryRecord,
   PaymentRequestRecord,

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Badge } from "$lib/components/ui/badge";
+  import { Badge } from "$ui/badge";
   import type { AnnouncementRecord } from "$lib/types";
 
   let { row } = $props<{ row: any }>();

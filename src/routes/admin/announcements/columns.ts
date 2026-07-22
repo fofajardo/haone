@@ -1,8 +1,8 @@
 import { type ColumnDef } from "@tanstack/table-core";
-import { renderComponent } from "$lib/components/ui/data-table/index.js";
+import { renderComponent } from "$ui/data-table/index.js";
 import type { AnnouncementRecord } from "$lib/types";
-import DataTableColumnHeader from "$lib/components/ui/data-table/data-table-column-header.svelte";
-import { formatDate } from "$lib/utils/formatters";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
+import { formatDate } from "$utils/formatters";
 
 import AnnouncementStatusCell from "./AnnouncementStatusCell.svelte";
 import AnnouncementTagsCell from "./AnnouncementTagsCell.svelte";

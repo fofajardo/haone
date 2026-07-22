@@ -1,5 +1,5 @@
-import { auth } from "$lib/state/auth.svelte";
-import { brandingState } from "$lib/state/branding.svelte";
+import { auth } from "$state/auth.svelte";
+import { brandingState } from "$state/branding.svelte";
 
 let sheetsCache: Record<string, string[][]> = {};
 

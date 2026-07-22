@@ -1,38 +1,38 @@
 <script lang="ts">
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Plus, CircleX, Funnel } from "@lucide/svelte";
-  import * as NativeSelect from "$lib/components/ui/native-select";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import * as NativeSelect from "$ui/native-select";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
   import {
     fetchLaundryReservations,
     cancelLaundryReservation,
     addLaundryReservation
-  } from "$lib/logic/admin-logic";
-  import { computeDisplayNames } from "$lib/logic/resident-logic";
-  import { fetchSheetRowsRaw } from "$lib/services/google-sheets-service";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  } from "$logic/admin-logic";
+  import { computeDisplayNames } from "$logic/resident-logic";
+  import { fetchSheetRowsRaw } from "$services/google-sheets-service";
+  import { uiSettings } from "$state/settings.svelte";
   import { ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/types";
   import type { LaundryRecord } from "$lib/types";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import * as DatePicker from "$lib/components/ui/date-picker";
-  import * as TimePicker from "$lib/components/ui/time-picker";
-  import DataTable from "$lib/components/ui/data-table/data-table.svelte";
+  import * as Dialog from "$ui/dialog";
+  import * as DatePicker from "$ui/date-picker";
+  import * as TimePicker from "$ui/time-picker";
+  import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import LaundryCalendar from "$lib/components/residents/LaundryCalendar.svelte";
-  import LaundryImportDialog from "$lib/components/admin/LaundryImportDialog.svelte";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
+  import LaundryImportDialog from "$components/admin/LaundryImportDialog.svelte";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
   import { toast } from "svelte-sonner";
   import { FileUp } from "@lucide/svelte";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import { parseTime, parseDateWeight } from "$lib/utils/parsers";
-  import { formatTime } from "$lib/utils/formatters";
-  import { sortPeriods } from "$lib/utils/sort";
+  import { pageState } from "$state/page-info.svelte";
+  import { parseTime, parseDateWeight } from "$utils/parsers";
+  import { formatTime } from "$utils/formatters";
+  import { sortPeriods } from "$utils/sort";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<any[]>([]);

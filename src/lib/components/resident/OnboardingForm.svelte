@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import { Checkbox } from "$lib/components/ui/checkbox";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Combobox } from "$ui/combobox";
+  import { Checkbox } from "$ui/checkbox";
   import {
     ChevronLeft,
     ChevronRight,
@@ -22,19 +22,19 @@
     ItemContent,
     ItemTitle,
     ItemDescription
-  } from "$lib/components/ui/item";
-  import colleges from "$lib/data/colleges.json";
-  import programs from "$lib/data/programs.json";
+  } from "$ui/item";
+  import colleges from "$data/colleges.json";
+  import programs from "$data/programs.json";
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/types";
 
-  import { residentState, type ResidentStatus } from "$lib/state/resident-state.svelte";
-  import { roomsState } from "$lib/state/rooms.svelte";
-  import { fetchServer } from "$lib/utils/api-client";
-  import { translatePeriod } from "$lib/utils/translators";
-  import * as Stepper from "$lib/components/ui/stepper";
+  import { residentState, type ResidentStatus } from "$state/resident-state.svelte";
+  import { roomsState } from "$state/rooms.svelte";
+  import { fetchServer } from "$utils/api-client";
+  import { translatePeriod } from "$utils/translators";
+  import * as Stepper from "$ui/stepper";
 
   let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();
 

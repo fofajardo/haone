@@ -1,7 +1,7 @@
 <script lang="ts">
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Badge } from "$lib/components/ui/badge";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import { Badge } from "$ui/badge";
   import {
     LayoutDashboard,
     Wallet,
@@ -23,7 +23,7 @@
     ChevronDown,
     X
   } from "@lucide/svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { page } from "$app/state";
 
   const isAdminView = $derived(page.url.pathname.startsWith("/admin"));

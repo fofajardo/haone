@@ -1,8 +1,8 @@
 <script lang="ts">
   import { type ResidentRecord } from "$lib/types";
   import { Search } from "@lucide/svelte";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
 
   let {
     label,

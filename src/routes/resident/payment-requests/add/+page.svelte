@@ -1,18 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { auth } from "$state/auth.svelte";
+  import { uiSettings } from "$state/settings.svelte";
 
-  import { addPaymentRequest } from "$lib/logic/shared-records-logic";
-  import { fetchServer } from "$lib/utils/api-client";
-  import { compressImage, deleteUploadedImage } from "$lib/utils/image-utils";
-  import { formatCurrency, formatAccounting } from "$lib/utils/formatters";
+  import { addPaymentRequest } from "$logic/shared-records-logic";
+  import { fetchServer } from "$utils/api-client";
+  import { compressImage, deleteUploadedImage } from "$utils/image-utils";
+  import { formatCurrency, formatAccounting } from "$utils/formatters";
   import type { ResidentRecord } from "$lib/types";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import * as Card from "$lib/components/ui/card";
-  import { Combobox } from "$lib/components/ui/combobox";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import * as Card from "$ui/card";
+  import { Combobox } from "$ui/combobox";
   import {
     Calendar,
     Wallet,
@@ -26,10 +26,10 @@
   } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-  import * as Tooltip from "$lib/components/ui/tooltip";
-  import { Badge } from "$lib/components/ui/badge";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
+  import * as Tooltip from "$ui/tooltip";
+  import { Badge } from "$ui/badge";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);

@@ -1,21 +1,21 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { auth } from "$state/auth.svelte";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Trophy } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import {
     fetchAchievements,
     calculateAchievementPercentage
-  } from "$lib/logic/shared-records-logic";
-  import { fetchUsers } from "$lib/logic/resident-logic";
+  } from "$logic/shared-records-logic";
+  import { fetchUsers } from "$logic/resident-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
+  import { pageState } from "$state/page-info.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
 
-  import AchievementCard from "$lib/components/achievements/AchievementCard.svelte";
+  import AchievementCard from "$components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);

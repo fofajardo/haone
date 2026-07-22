@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Textarea } from "$lib/components/ui/textarea";
-  import * as Card from "$lib/components/ui/card";
-  import * as Dialog from "$lib/components/ui/dialog";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Textarea } from "$ui/textarea";
+  import * as Card from "$ui/card";
+  import * as Dialog from "$ui/dialog";
   import {
     Save,
     User as UserIcon,
@@ -16,12 +16,12 @@
     AwardIcon
   } from "@lucide/svelte";
   import { type UserRecord, UserTag } from "$lib/types";
-  import { translateCollege, translateProgram } from "$lib/utils/translators";
-  import collegesJson from "$lib/data/colleges.json";
-  import programsJson from "$lib/data/programs.json";
-  import { TagsInput } from "$lib/components/ui/tags-input";
-  import { Combobox } from "$lib/components/ui/combobox";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
+  import { translateCollege, translateProgram } from "$utils/translators";
+  import collegesJson from "$data/colleges.json";
+  import programsJson from "$data/programs.json";
+  import { TagsInput } from "$ui/tags-input";
+  import { Combobox } from "$ui/combobox";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
 
   let {
     formData = $bindable({}),

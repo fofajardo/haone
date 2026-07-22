@@ -2,29 +2,29 @@
   import dayjs from "dayjs";
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Checkbox } from "$lib/components/ui/checkbox";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Checkbox } from "$ui/checkbox";
   import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { auth } from "$lib/state/auth.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import RichEditor from "$lib/components/RichEditor.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import { auth } from "$state/auth.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import RichEditor from "$components/RichEditor.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import {
     fetchAnnouncements,
     updateAnnouncement,
     expireAnnouncement,
     deleteAnnouncement,
     getAnnouncementStatus
-  } from "$lib/logic/admin-logic";
+  } from "$logic/admin-logic";
   import { AnnouncementStatus, type AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";
-  import { TagsInput } from "$lib/components/ui/tags-input";
+  import { TagsInput } from "$ui/tags-input";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);

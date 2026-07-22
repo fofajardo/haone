@@ -11,13 +11,13 @@
     getPaginationRowModel,
     getSortedRowModel
   } from "@tanstack/table-core";
-  import * as Table from "$lib/components/ui/table/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
-  import { FlexRender, createSvelteTable } from "$lib/components/ui/data-table/index.js";
+  import * as Table from "$ui/table/index.js";
+  import { Button } from "$ui/button/index.js";
+  import { Input } from "$ui/input/index.js";
+  import { FlexRender, createSvelteTable } from "$ui/data-table/index.js";
   import { cn } from "$lib/utils";
-  import * as NativeSelect from "$lib/components/ui/native-select/index.js";
-  import { pluralize } from "$lib/utils/formatters";
+  import * as NativeSelect from "$ui/native-select/index.js";
+  import { pluralize } from "$utils/formatters";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];

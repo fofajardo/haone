@@ -1,4 +1,4 @@
-import { auth } from "$lib/state/auth.svelte";
+import { auth } from "$state/auth.svelte";
 
 let serverCache: Record<string, any> = {};
 

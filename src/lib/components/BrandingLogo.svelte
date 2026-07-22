@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { brandingState } from "$lib/state/branding.svelte";
+  import { brandingState } from "$state/branding.svelte";
 
   interface Props {
     class?: string;

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { buttonVariants } from "$lib/components/ui/button/index.js";
-  import * as Command from "$lib/components/ui/command/index.js";
-  import * as Drawer from "$lib/components/ui/drawer/index.js";
-  import * as Popover from "$lib/components/ui/popover/index.js";
+  import { buttonVariants } from "$ui/button/index.js";
+  import * as Command from "$ui/command/index.js";
+  import * as Drawer from "$ui/drawer/index.js";
+  import * as Popover from "$ui/popover/index.js";
   import { onMount, tick } from "svelte";
   import { Check, ChevronsUpDown } from "@lucide/svelte";
   import { cn } from "$lib/utils.js";

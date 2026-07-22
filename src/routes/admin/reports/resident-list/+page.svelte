@@ -1,17 +1,17 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { brandingState } from "$lib/state/branding.svelte";
-  import { uiSettings } from "$lib/state/settings.svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import AccountAutocomplete from "$lib/components/AccountAutocomplete.svelte";
-  import TermFilter from "$lib/components/TermFilter.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Checkbox } from "$lib/components/ui/checkbox";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
+  import { auth } from "$state/auth.svelte";
+  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
+  import TermFilter from "$components/TermFilter.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import { Button } from "$ui/button";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Checkbox } from "$ui/checkbox";
   import {
     FileText,
     FileSpreadsheet,
@@ -33,14 +33,14 @@
     createNewSpreadsheet,
     ensureSheetExists,
     formatReportSheet
-  } from "$lib/services/google-sheets-service";
-  import { loadGapiScript } from "$lib/services/gmail-service";
-  import { matchesStatusFilter, fetchResidents } from "$lib/logic/resident-logic";
+  } from "$services/google-sheets-service";
+  import { loadGapiScript } from "$services/gmail-service";
+  import { matchesStatusFilter, fetchResidents } from "$logic/resident-logic";
   import type { ResidentRecord, OfficerRecord } from "$lib/types";
-  import { translatePeriod } from "$lib/utils/translators";
-  import { exportReportPDF } from "$lib/reports/report-pdf";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { fetchOfficers } from "$lib/logic/admin-logic";
+  import { translatePeriod } from "$utils/translators";
+  import { exportReportPDF } from "$reports/report-pdf";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import { fetchOfficers } from "$logic/admin-logic";
   import { OfficerStatus } from "$lib/types";
 
   let isLoading = $state(true);

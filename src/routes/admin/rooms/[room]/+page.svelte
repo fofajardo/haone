@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { roomsState } from "$lib/state/rooms.svelte";
-  import { fetchResidents, fetchUsers, fetchTermCurr } from "$lib/logic/resident-logic";
+  import { roomsState } from "$state/rooms.svelte";
+  import { fetchResidents, fetchUsers, fetchTermCurr } from "$logic/resident-logic";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import AssignmentDialog from "$lib/components/admin/AssignmentDialog.svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import * as Card from "$lib/components/ui/card";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
+  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import { Button } from "$ui/button";
+  import * as Card from "$ui/card";
+  import * as AlertDialog from "$ui/alert-dialog";
   import { RefreshCcw, Users, Bed, Info } from "@lucide/svelte";
 
   let { data } = $props();

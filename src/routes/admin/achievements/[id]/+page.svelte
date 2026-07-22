@@ -1,27 +1,27 @@
 <script lang="ts">
   import { page } from "$app/state";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw, Pencil } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import * as Dialog from "$lib/components/ui/dialog";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import { Textarea } from "$lib/components/ui/textarea";
-  import { Checkbox } from "$lib/components/ui/checkbox";
-  import TermFilter from "$lib/components/TermFilter.svelte";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import * as Dialog from "$ui/dialog";
+  import { Input } from "$ui/input";
+  import { Label } from "$ui/label";
+  import { Textarea } from "$ui/textarea";
+  import { Checkbox } from "$ui/checkbox";
+  import TermFilter from "$components/TermFilter.svelte";
   import { toast } from "svelte-sonner";
   import {
     fetchAchievements,
     fetchAchievementLogs,
     updateAchievement
-  } from "$lib/logic/admin-logic";
-  import { fetchUsers, fetchResidents } from "$lib/logic/resident-logic";
+  } from "$logic/admin-logic";
+  import { fetchUsers, fetchResidents } from "$logic/resident-logic";
   import type { AchievementRecord } from "$lib/types";
-  import AchievementDetailsView from "$lib/components/achievements/AchievementDetailsView.svelte";
-  import AchievementStoryShareButton from "$lib/components/achievements/AchievementStoryShareButton.svelte";
+  import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";
+  import AchievementStoryShareButton from "$components/achievements/AchievementStoryShareButton.svelte";
 
   const id = page.params.id;
 

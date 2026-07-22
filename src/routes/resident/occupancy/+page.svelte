@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { auth } from "$lib/state/auth.svelte";
+  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
   import { goto } from "$app/navigation";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import OccupancyHistoryCard from "$lib/components/residents/OccupancyHistoryCard.svelte";
-  import StudentProfileCard from "$lib/components/residents/StudentProfileCard.svelte";
-  import { pageState } from "$lib/state/page-info.svelte";
-  import { fetchServer } from "$lib/utils/api-client";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
+  import StudentProfileCard from "$components/residents/StudentProfileCard.svelte";
+  import { pageState } from "$state/page-info.svelte";
+  import { fetchServer } from "$utils/api-client";
 
   let status = $state<any>(null);
   let occupancyData = $state<any[]>([]);

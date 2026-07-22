@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { decryptJSON } from "$lib/utils/crypto";
+  import { decryptJSON } from "$utils/crypto";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
-  import branding from "$lib/data/branding.json";
+  import branding from "$data/branding.json";
 
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import ReceiptExportTemplate from "$lib/components/receipt/ReceiptExportTemplate.svelte";
-  import ReceiptWebView from "$lib/components/receipt/ReceiptWebView.svelte";
-  import StudentNumberAuthCard from "$lib/components/StudentNumberAuthCard.svelte";
-  import ReceiptErrorCard from "$lib/components/receipt/ReceiptErrorCard.svelte";
+  import * as AlertDialog from "$ui/alert-dialog";
+  import ReceiptExportTemplate from "$components/receipt/ReceiptExportTemplate.svelte";
+  import ReceiptWebView from "$components/receipt/ReceiptWebView.svelte";
+  import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
+  import ReceiptErrorCard from "$components/receipt/ReceiptErrorCard.svelte";
 
   import { LS_KEYS } from "$lib/constants";
 
-  import { pageState } from "$lib/state/page-info.svelte";
+  import { pageState } from "$state/page-info.svelte";
   import type { ReceiptData } from "$lib/types";
   import type { PageData, ActionData } from "./$types";
   import { enhance } from "$app/forms";
@@ -111,7 +111,7 @@
     });
   }
 
-  import { exportReceiptPDF } from "$lib/reports/receipt-pdf";
+  import { exportReceiptPDF } from "$reports/receipt-pdf";
 
   async function downloadPDF() {
     if (!receiptData) {

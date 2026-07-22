@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { Button } from "$lib/components/ui/button";
+  import { Button } from "$ui/button";
   import {
     ArrowLeft,
     CircleX,
@@ -10,28 +10,28 @@
     ChevronRight,
     TriangleAlert
   } from "@lucide/svelte";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import LoadingView from "$lib/components/LoadingView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import TransactionForm from "$lib/components/TransactionForm.svelte";
-  import { fetchPaymentRequests, declinePaymentRequest } from "$lib/logic/admin-logic";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$lib/logic/resident-logic";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import TransactionForm from "$components/TransactionForm.svelte";
+  import { fetchPaymentRequests, declinePaymentRequest } from "$logic/admin-logic";
+  import { fetchResidents, fetchTermCurr, fetchUsers } from "$logic/resident-logic";
   import { PaymentRequestStatus } from "$lib/types";
-  import { uiSettings } from "$lib/state/settings.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
-  import { formatAmount } from "$lib/utils/formatters";
-  import { translateMop } from "$lib/utils/translators";
-  import { Textarea } from "$lib/components/ui/textarea";
+  import { formatAmount } from "$utils/formatters";
+  import { translateMop } from "$utils/translators";
+  import { Textarea } from "$ui/textarea";
   import { goto } from "$app/navigation";
-  import { Badge } from "$lib/components/ui/badge";
-  import * as Card from "$lib/components/ui/card";
+  import { Badge } from "$ui/badge";
+  import * as Card from "$ui/card";
   import {
     appendSheetRow,
     updateSheetValue,
     fetchSheetRowsRaw
-  } from "$lib/services/google-sheets-service";
-  import { auth } from "$lib/state/auth.svelte";
-  import { deleteUploadedImage } from "$lib/utils/image-utils";
+  } from "$services/google-sheets-service";
+  import { auth } from "$state/auth.svelte";
+  import { deleteUploadedImage } from "$utils/image-utils";
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);

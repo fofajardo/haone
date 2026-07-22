@@ -1,11 +1,11 @@
-import { uiSettings } from "$lib/state/settings.svelte";
+import { uiSettings } from "$state/settings.svelte";
 import {
   fetchSheetRowsRaw,
   updateSheetValue,
   batchUpdateValues,
   appendSheetRow,
   deleteSheetRow
-} from "$lib/services/google-sheets-service";
+} from "$services/google-sheets-service";
 import {
   ACCOUNT_COL,
   CURR_COL,
@@ -15,9 +15,9 @@ import {
   UserTag,
   type UserRecord
 } from "$lib/types";
-import { fetchUsers, addUser, updateUser, fetchResidents } from "$lib/logic/resident-logic";
-import { roomsState } from "$lib/state/rooms.svelte";
-import { auth } from "$lib/state/auth.svelte";
+import { fetchUsers, addUser, updateUser, fetchResidents } from "$logic/resident-logic";
+import { roomsState } from "$state/rooms.svelte";
+import { auth } from "$state/auth.svelte";
 
 export interface CurrRecord {
   timestamp: string;

@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { emailDispatcher } from "$lib/state/dispatcher.svelte";
-  import { auth } from "$lib/state/auth.svelte";
-  import { createEmail, sendEmail } from "$lib/services/gmail-service";
-  import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
-  import { Progress } from "$lib/components/ui/progress";
-  import SubpageHeader from "$lib/components/SubpageHeader.svelte";
-  import EmptyView from "$lib/components/EmptyView.svelte";
-  import ErrorView from "$lib/components/ErrorView.svelte";
-  import RichEditor from "$lib/components/RichEditor.svelte";
-  import { formatCurrency, formatAmount } from "$lib/utils/formatters";
+  import { emailDispatcher } from "$state/dispatcher.svelte";
+  import { auth } from "$state/auth.svelte";
+  import { createEmail, sendEmail } from "$services/gmail-service";
+  import * as Card from "$ui/card";
+  import { Button } from "$ui/button";
+  import { Progress } from "$ui/progress";
+  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
+  import RichEditor from "$components/RichEditor.svelte";
+  import { formatCurrency, formatAmount } from "$utils/formatters";
   import {
     Play,
     RefreshCcw,
@@ -24,8 +24,8 @@
     Calculator,
     Users
   } from "@lucide/svelte";
-  import { Checkbox } from "$lib/components/ui/checkbox";
-  import { Label } from "$lib/components/ui/label";
+  import { Checkbox } from "$ui/checkbox";
+  import { Label } from "$ui/label";
 
   let isSending = $state(false);
   let isSuccess = $state(false);

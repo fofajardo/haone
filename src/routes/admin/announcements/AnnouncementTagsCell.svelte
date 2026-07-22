@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Badge } from "$lib/components/ui/badge";
+  import { Badge } from "$ui/badge";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import type { AnnouncementRecord } from "$lib/types";
 
