@@ -299,8 +299,7 @@ export function computeDisplayNames(data: Partial<UserRecord>) {
  */
 export async function updateUser(userId: string, data: Partial<UserRecord>) {
   const { uiSettings } = await import("$state/settings.svelte");
-  const { fetchSheetRowsRaw, updateSheetValue } =
-    await import("$services/google-sheets-service");
+  const { fetchSheetRowsRaw, updateSheetValue } = await import("$services/google-sheets-service");
 
   if (!uiSettings.residentRecordsId) throw new Error("Resident Records ID not configured");
 
@@ -715,8 +714,7 @@ export async function clearResident(
   brandingKey: string,
   issuerId: string
 ) {
-  const { updateSheetValue, fetchSheetRowsRaw } =
-    await import("$services/google-sheets-service");
+  const { updateSheetValue, fetchSheetRowsRaw } = await import("$services/google-sheets-service");
 
   const now = new Date();
   const dateString = now.toLocaleDateString("en-PH", {

@@ -15,14 +15,7 @@
     History,
     ArrowRight
   } from "@lucide/svelte";
-  import {
-    Item,
-    ItemGroup,
-    ItemMedia,
-    ItemContent,
-    ItemTitle,
-    ItemDescription
-  } from "$ui/item";
+  import { Item, ItemGroup, ItemMedia, ItemContent, ItemTitle, ItemDescription } from "$ui/item";
   import colleges from "$data/colleges.json";
   import programs from "$data/programs.json";
   import { untrack } from "svelte";

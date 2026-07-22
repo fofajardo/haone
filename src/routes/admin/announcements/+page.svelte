@@ -6,11 +6,7 @@
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import {
-    fetchAnnouncements,
-    expireAnnouncement,
-    deleteAnnouncement
-  } from "$logic/admin-logic";
+  import { fetchAnnouncements, expireAnnouncement, deleteAnnouncement } from "$logic/admin-logic";
   import { fetchWithAuth } from "$services/google-sheets-service";
   import { auth } from "$state/auth.svelte";
   import type { AnnouncementRecord } from "$lib/types";

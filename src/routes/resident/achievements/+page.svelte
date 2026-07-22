@@ -6,10 +6,7 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import {
-    fetchAchievements,
-    calculateAchievementPercentage
-  } from "$logic/shared-records-logic";
+  import { fetchAchievements, calculateAchievementPercentage } from "$logic/shared-records-logic";
   import { fetchUsers } from "$logic/resident-logic";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
   import { pageState } from "$state/page-info.svelte";

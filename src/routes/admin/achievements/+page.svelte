@@ -25,10 +25,7 @@
   import { translatePeriod } from "$utils/translators";
   import TermFilter from "$components/TermFilter.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import {
-    calculateAchievementPercentage,
-    getEligibleCount
-  } from "$logic/shared-records-logic";
+  import { calculateAchievementPercentage, getEligibleCount } from "$logic/shared-records-logic";
   import AchievementCard from "$components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
