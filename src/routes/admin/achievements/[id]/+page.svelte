@@ -224,12 +224,12 @@
       </div>
       <div class="flex items-center space-x-2 py-2">
         <Checkbox id="edit-is-indefinite" bind:checked={editData.isIndefinite} />
-        <Label for="edit-is-indefinite" class="text-sm font-medium leading-none cursor-pointer"
+        <Label for="edit-is-indefinite" class="cursor-pointer text-sm leading-none font-medium"
           >Indefinite unlocking period</Label
         >
       </div>
       {#if !editData.isIndefinite}
-        <div class="space-y-2 animate-in fade-in-50 duration-200">
+        <div class="animate-in space-y-2 duration-200 fade-in-50">
           <TermFilter bind:value={editData.term} />
         </div>
       {/if}

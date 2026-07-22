@@ -10,7 +10,7 @@
 
 {#if sidebar.isMobile}
   {#if auth.user}
-    <div class="flex items-center justify-between px-4 py-3 shrink-0">
+    <div class="flex shrink-0 items-center justify-between px-4 py-3">
       <BrandingLogo class="h-8 w-auto object-contain" />
       <Button
         variant="ghost"
@@ -23,10 +23,10 @@
   {/if}
 {:else}
   <div
-    class="flex items-center justify-center px-2 py-4 h-16 transition-all duration-300 ease-in-out group-data-[collapsible=icon]:h-0 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0 overflow-hidden shrink-0"
+    class="flex h-16 shrink-0 items-center justify-center overflow-hidden px-2 py-4 transition-all duration-300 ease-in-out group-data-[collapsible=icon]:h-0 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0"
   >
     <BrandingLogo
-      class="h-8 w-auto mx-auto object-contain transition-transform duration-300 group-data-[collapsible=icon]:scale-0"
+      class="mx-auto h-8 w-auto object-contain transition-transform duration-300 group-data-[collapsible=icon]:scale-0"
     />
   </div>
 {/if}

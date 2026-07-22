@@ -30,7 +30,7 @@
 {#if isClickable}
   <a {href} class="group block h-full">
     <Card.Root
-      class="flex flex-col h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+      class="flex h-full flex-col transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
     >
       <Card.Header>
         <div class="flex items-center justify-between">
@@ -54,7 +54,7 @@
   </a>
 {:else}
   <div class="h-full cursor-default select-none">
-    <Card.Root class="flex flex-col h-full bg-black text-white border-neutral-800">
+    <Card.Root class="flex h-full flex-col border-neutral-800 bg-black text-white">
       <Card.Header>
         <div class="flex items-center justify-between">
           <div class="text-5xl">👻</div>

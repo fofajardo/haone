@@ -751,7 +751,7 @@
                 class="w-full"
               />
               {#if isTypeDisabled && !isSubmitting}
-                <p class="text-xs text-muted-foreground mt-1">
+                <p class="mt-1 text-xs text-muted-foreground">
                   This is a special transaction type and cannot be changed.
                 </p>
               {/if}

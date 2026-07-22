@@ -28,7 +28,7 @@
     {#if !hideToggle}
       <button
         onclick={() => sidebar.setOpenMobile(true)}
-        class="md:hidden flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-opacity hover:opacity-80"
+        class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-opacity hover:opacity-80 md:hidden"
         aria-label="Open menu"
       >
         {#if auth.user?.picture}

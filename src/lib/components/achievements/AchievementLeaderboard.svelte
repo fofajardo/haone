@@ -149,7 +149,7 @@
       <span>✧</span>
     </div>
     <div
-      class="absolute -left-8 top-12 h-24 w-24 rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
+      class="absolute top-12 -left-8 h-24 w-24 rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
     ></div>
     <div
       class="absolute -right-8 bottom-12 h-24 w-24 -rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
@@ -195,7 +195,7 @@
               <div
                 class={`${podiumHeight(index)} grid place-items-center rounded-b-md border-2 border-brand/30 bg-brand text-brand-foreground shadow-lg shadow-brand/20`}
               >
-                <div class="text-6xl font-bold leading-none">{row.rank}</div>
+                <div class="text-6xl leading-none font-bold">{row.rank}</div>
               </div>
             </div>
           {/each}

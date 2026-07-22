@@ -57,19 +57,19 @@
         <span>✧</span>
       </div>
       <div
-        class="absolute -left-8 top-12 h-24 w-24 rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
+        class="absolute top-12 -left-8 h-24 w-24 rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
       ></div>
       <div
-        class="absolute -right-8 top-20 h-20 w-20 -rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
+        class="absolute top-20 -right-8 h-20 w-20 -rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
       ></div>
       <div class="absolute bottom-8 left-8 h-10 w-10 rotate-45 rounded-sm bg-brand/20"></div>
       <div
-        class="absolute bottom-12 right-12 h-14 w-14 -rotate-12 rounded-sm border border-brand/30"
+        class="absolute right-12 bottom-12 h-14 w-14 -rotate-12 rounded-sm border border-brand/30"
       ></div>
 
-      <div class="relative px-5 pb-8 pt-10 sm:px-8 sm:pb-10">
+      <div class="relative px-5 pt-10 pb-8 sm:px-8 sm:pb-10">
         <div
-          class="mx-auto mb-5 flex w-fit items-center gap-2 rounded-md border-2 border-brand/40 bg-background px-4 py-1.5 text-xs font-black uppercase text-brand shadow-lg shadow-brand/10"
+          class="mx-auto mb-5 flex w-fit items-center gap-2 rounded-md border-2 border-brand/40 bg-background px-4 py-1.5 text-xs font-black text-brand uppercase shadow-lg shadow-brand/10"
         >
           <Sparkles class="h-3.5 w-3.5 animate-pulse" />
           Achievement Unlocked
@@ -84,7 +84,7 @@
             class="absolute inset-3 -rotate-6 rounded-3xl border-2 border-dashed border-brand/50 transition-transform duration-300 group-hover:-rotate-12"
           ></div>
           <div
-            class="absolute -right-2 -top-2 rounded-md border-2 border-brand/40 bg-background px-2 py-1 text-xs font-black text-brand shadow-md"
+            class="absolute -top-2 -right-2 rounded-md border-2 border-brand/40 bg-background px-2 py-1 text-xs font-black text-brand shadow-md"
           >
             +{achievement.points || 0} XP
           </div>
@@ -102,7 +102,7 @@
 
         <div class="relative space-y-4">
           <h2 class="text-3xl font-black tracking-tight sm:text-5xl">{achievement.name}</h2>
-          <p class="mx-auto max-w-2xl text-base font-medium leading-relaxed text-muted-foreground">
+          <p class="mx-auto max-w-2xl text-base leading-relaxed font-medium text-muted-foreground">
             {achievement.description}
           </p>
 
@@ -147,10 +147,10 @@
         {/each}
 
         {#if privateCount > 0}
-          <Card.Root class="bg-black text-white border-0">
+          <Card.Root class="border-0 bg-black text-white">
             <Card.Content>
               <div class="text-sm font-bold">I want privacy!</div>
-              <div class="text-sm text-neutral-300 space-y-0.5">
+              <div class="space-y-0.5 text-sm text-neutral-300">
                 {privateCount} resident{privateCount === 1 ? "" : "s"} have chosen to hide their identity.
               </div>
             </Card.Content>

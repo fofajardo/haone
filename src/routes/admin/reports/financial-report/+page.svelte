@@ -222,11 +222,11 @@
 
       <!-- ACCOUNT SUMMARY (Summary of Funds) -->
       <div class="space-y-3">
-        <h3 class="text-base font-bold uppercase text-foreground">Account Summary</h3>
+        <h3 class="text-base font-bold text-foreground uppercase">Account Summary</h3>
 
         <div class="space-y-6">
           <!-- Table 1: BY MODE OF PAYMENT -->
-          <div class="rounded-xl border overflow-hidden">
+          <div class="overflow-hidden rounded-xl border">
             <Table.Root>
               <Table.Header>
                 <Table.Row>
@@ -250,7 +250,7 @@
                     >
                   </Table.Row>
                 {/each}
-                <Table.Row class="font-bold bg-muted/30">
+                <Table.Row class="bg-muted/30 font-bold">
                   <Table.Cell>ENDING BALANCE</Table.Cell>
                   <Table.Cell class="text-right"></Table.Cell>
                   <Table.Cell class="text-right"></Table.Cell>
@@ -261,7 +261,7 @@
           </div>
 
           <!-- Table 2: BY FEE TYPE -->
-          <div class="rounded-xl border overflow-hidden">
+          <div class="overflow-hidden rounded-xl border">
             <Table.Root>
               <Table.Header>
                 <Table.Row>
@@ -360,7 +360,7 @@
                 {/each}
 
                 <!-- ENDING BALANCE final row -->
-                <Table.Row class="font-bold bg-muted/30">
+                <Table.Row class="bg-muted/30 font-bold">
                   <Table.Cell>ENDING BALANCE</Table.Cell>
                   <Table.Cell class="text-right"></Table.Cell>
                   <Table.Cell class="text-right"></Table.Cell>
@@ -374,8 +374,8 @@
 
       <!-- COLLECTION SUMMARY -->
       <div class="space-y-3">
-        <h3 class="text-base font-bold uppercase text-foreground">Collection Summary</h3>
-        <div class="rounded-xl border overflow-hidden">
+        <h3 class="text-base font-bold text-foreground uppercase">Collection Summary</h3>
+        <div class="overflow-hidden rounded-xl border">
           <Table.Root>
             <Table.Header>
               <Table.Row>
@@ -389,7 +389,7 @@
               <Table.Row>
                 <Table.Cell
                   rowspan={waterColl.aquaAltria > 0 ? 10 : 9}
-                  class="font-bold align-middle border-r">WATER FEE</Table.Cell
+                  class="border-r align-middle font-bold">WATER FEE</Table.Cell
                 >
                 <Table.Cell class="text-foreground">TARGET</Table.Cell>
                 <Table.Cell class="text-right">{formatAccounting(waterColl.target)}</Table.Cell>
@@ -447,7 +447,7 @@
               <!-- ASSOCIATION FEE Group -->
               {#if assocColl.target > 0}
                 <Table.Row class="border-t">
-                  <Table.Cell rowspan={5} class="font-bold align-middle border-r"
+                  <Table.Cell rowspan={5} class="border-r align-middle font-bold"
                     >ASSOCIATION FEE</Table.Cell
                   >
                   <Table.Cell class="text-foreground">TARGET</Table.Cell>
@@ -527,7 +527,7 @@
       {/if}
 
       <!-- FOOTNOTES -->
-      <div class="space-y-1.5 pt-6 text-xs text-foreground/80 leading-relaxed border-t mt-6">
+      <div class="mt-6 space-y-1.5 border-t pt-6 text-xs leading-relaxed text-foreground/80">
         <p>
           ¹ Amounts may appear inflated due to internal transfers between accounts (e.g., Cash to
           GCash).

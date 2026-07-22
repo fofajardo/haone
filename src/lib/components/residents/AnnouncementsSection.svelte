@@ -67,7 +67,7 @@
     </div>
 
     <div
-      class="relative w-full max-w-full mx-auto overflow-hidden rounded-xl border bg-card cursor-pointer transition-colors hover:bg-muted/30"
+      class="relative mx-auto w-full max-w-full cursor-pointer overflow-hidden rounded-xl border bg-card transition-colors hover:bg-muted/30"
       onclick={() => goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
       onkeydown={(e) =>
         e.key === "Enter" && goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
@@ -83,15 +83,15 @@
             <Card.Content class="space-y-4 p-6 pb-2">
               <div class="space-y-2">
                 <div class="flex items-start justify-between gap-2">
-                  <h3 class="text-xl font-bold text-foreground flex-1 line-clamp-1">{a.title}</h3>
-                  <div class="flex flex-wrap gap-1 shrink-0">
+                  <h3 class="line-clamp-1 flex-1 text-xl font-bold text-foreground">{a.title}</h3>
+                  <div class="flex shrink-0 flex-wrap gap-1">
                     {#each (a.tags || "")
                       .split(",")
                       .map((t) => t.trim())
                       .filter(Boolean) as tag}
                       <Badge
                         variant="secondary"
-                        class="text-xs py-0.5 px-2 {ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
+                        class="px-2 py-0.5 text-xs {ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
                           ANNOUNCEMENT_TAG_COLORS.DEFAULT}"
                       >
                         {tag}
@@ -110,7 +110,7 @@
       </div>
 
       <!-- Fixed Footer Block -->
-      <div class="flex items-center justify-between border-t border-border p-6 bg-card shrink-0">
+      <div class="flex shrink-0 items-center justify-between border-t border-border bg-card p-6">
         <div class="flex flex-col">
           <span class="text-sm font-medium text-foreground"
             >{announcements[activeIndex].creatorName || "Officer"}</span
@@ -129,7 +129,7 @@
         </div>
 
         {#if announcements.length > 1}
-          <div class="flex gap-1 items-center">
+          <div class="flex items-center gap-1">
             {#each announcements as _, idx}
               <button
                 onclick={(e) => {

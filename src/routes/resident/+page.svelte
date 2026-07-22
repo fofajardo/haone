@@ -207,14 +207,14 @@
       {/if}
     </div>
 
-    <div class="grid gap-8 lg:grid-cols-3 min-w-0">
+    <div class="grid min-w-0 gap-8 lg:grid-cols-3">
       <!-- Announcements Section (2 cols) -->
-      <div class="lg:col-span-2 min-w-0">
+      <div class="min-w-0 lg:col-span-2">
         <AnnouncementsSection />
       </div>
 
       <!-- Recent Transactions (1 col) -->
-      <div class="space-y-4 min-w-0">
+      <div class="min-w-0 space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold text-foreground">Recent Activity</h2>
           <Button variant="ghost" size="sm" href="/resident/finance" title="View All">
@@ -228,7 +228,7 @@
                 .filter((t: any) => t.period === status?.activeTerm)
                 .slice(0, 5) as tx}
                 <div
-                  class="group flex items-start gap-3 py-3.5 px-0 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4"
+                  class="group flex items-start gap-3 px-0 py-3.5 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4"
                 >
                   <div
                     class="shrink-0 rounded-full p-2.5 transition-colors group-hover:bg-card group-hover:shadow-sm {tx.amount >

@@ -438,7 +438,7 @@
           class="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-700 dark:text-amber-500"
         >
           <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
-          <p class="font-medium text-sm">
+          <p class="text-sm font-medium">
             Once submitted, this request cannot be modified. If you make a mistake, please create a
             new request and cancel the previous one.
           </p>

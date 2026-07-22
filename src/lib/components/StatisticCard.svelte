@@ -22,7 +22,7 @@
     <Card.Title class="text-sm font-semibold">{title}</Card.Title>
     {#if IconSnippet}
       <div
-        class="bg-brand/10 text-brand flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-4.5 [&>svg]:w-4.5"
+        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-brand/10 text-brand [&>svg]:h-4.5 [&>svg]:w-4.5"
       >
         {@render IconSnippet()}
       </div>

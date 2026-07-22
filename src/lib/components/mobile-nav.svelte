@@ -83,7 +83,7 @@
 </script>
 
 <div
-  class="relative w-full shrink-0 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-lg supports-[backdrop-filter]:bg-background/80 md:hidden z-10"
+  class="relative z-10 w-full shrink-0 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-lg supports-[backdrop-filter]:bg-background/80 md:hidden"
 >
   <nav class="flex h-20 items-center justify-around px-2">
     {#each navItems as item}

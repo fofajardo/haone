@@ -201,7 +201,7 @@
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
-    <div class="grid gap-2 lg:grid-cols-12 mb-4">
+    <div class="mb-4 grid gap-2 lg:grid-cols-12">
       <div class="lg:col-span-3">
         <TermFilter
           onSelect={() => {
@@ -279,12 +279,12 @@
       </div>
       <div class="flex items-center space-x-2 py-2">
         <Checkbox id="is-indefinite" bind:checked={newAchievement.isIndefinite} />
-        <Label for="is-indefinite" class="text-sm font-medium leading-none cursor-pointer"
+        <Label for="is-indefinite" class="cursor-pointer text-sm leading-none font-medium"
           >Indefinite unlocking period</Label
         >
       </div>
       {#if !newAchievement.isIndefinite}
-        <div class="space-y-2 animate-in fade-in-50 duration-200">
+        <div class="animate-in space-y-2 duration-200 fade-in-50">
           <TermFilter bind:value={newAchievement.term} />
         </div>
       {/if}

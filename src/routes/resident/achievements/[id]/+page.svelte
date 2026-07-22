@@ -100,7 +100,7 @@
     <AchievementDetailsView {achievement} {earners} isAdmin={false} {currentResidentId} />
   {:else if achievement}
     <div class="flex flex-col items-center justify-center gap-6 py-24 text-center">
-      <div class="text-9xl animate-pulse">🔒</div>
+      <div class="animate-pulse text-9xl">🔒</div>
       <h2 class="text-3xl font-bold tracking-tight">Locked Achievement</h2>
       <p class="max-w-sm text-muted-foreground">
         This achievement is still waiting for you… keep going and you might just unlock it.

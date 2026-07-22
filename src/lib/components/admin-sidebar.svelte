@@ -150,7 +150,7 @@
 </script>
 
 <Sidebar.Root collapsible="icon" class="data-[mobile=true]:w-full!">
-  <Sidebar.Header class="p-0 shrink-0">
+  <Sidebar.Header class="shrink-0 p-0">
     <ProfileHeader />
   </Sidebar.Header>
 
