@@ -52,7 +52,9 @@ export async function cancelPaymentRequest(paymentId: string) {
 /**
  * Admin Direct Methods (Direct Google Sheets API)
  */
-export async function fetchAdminPaymentRequests(forceRefresh = false): Promise<PaymentRequestRecord[]> {
+export async function fetchAdminPaymentRequests(
+  forceRefresh = false
+): Promise<PaymentRequestRecord[]> {
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) {
     return [];

@@ -2,7 +2,10 @@
   import * as Dialog from "$ui/dialog";
   import { Button } from "$ui/button";
   import { auth } from "$state/auth.svelte";
-  import { fetchAdminAchievements, awardAchievementBatch } from "$api/controllers/achievement-controller";
+  import {
+    fetchAdminAchievements,
+    awardAchievementBatch
+  } from "$api/controllers/achievement-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import type { ResidentRecord, AchievementRecord } from "$lib/types";
   import { pluralize } from "$utils/formatters";

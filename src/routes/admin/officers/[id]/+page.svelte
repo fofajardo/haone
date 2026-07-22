@@ -5,7 +5,12 @@
   import { Save, Trash2 } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
-  import { fetchOfficers, updateOfficer, deleteOfficer, transitionOfficerPosition } from "$api/controllers/officer-controller";
+  import {
+    fetchOfficers,
+    updateOfficer,
+    deleteOfficer,
+    transitionOfficerPosition
+  } from "$api/controllers/officer-controller";
   import type { OfficerRecord } from "$lib/types";
   import { OfficerStatus } from "$lib/types";
   import { toast } from "svelte-sonner";

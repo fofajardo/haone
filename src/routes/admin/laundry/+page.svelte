@@ -7,7 +7,11 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
-  import { fetchAdminLaundryReservations, cancelLaundryReservation, addLaundryReservation } from "$api/controllers/laundry-controller";
+  import {
+    fetchAdminLaundryReservations,
+    cancelLaundryReservation,
+    addLaundryReservation
+  } from "$api/controllers/laundry-controller";
   import { computeDisplayNames } from "$api/controllers/resident-controller";
   import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
   import { uiSettings } from "$state/settings.svelte";

@@ -29,7 +29,11 @@
     type ResidentRecord as Account,
     UserTag
   } from "$lib/types";
-  import { fetchUserById, fetchAccountsByUserId, deleteUser } from "$api/controllers/resident-controller";
+  import {
+    fetchUserById,
+    fetchAccountsByUserId,
+    deleteUser
+  } from "$api/controllers/resident-controller";
   import { pageState } from "$state/page-info.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";

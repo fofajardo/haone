@@ -14,7 +14,10 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TransactionForm from "$components/TransactionForm.svelte";
-  import { fetchAdminPaymentRequests, declinePaymentRequest } from "$api/controllers/payment-request-controller";
+  import {
+    fetchAdminPaymentRequests,
+    declinePaymentRequest
+  } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
   import { PaymentRequestStatus } from "$lib/types";
   import { uiSettings } from "$state/settings.svelte";

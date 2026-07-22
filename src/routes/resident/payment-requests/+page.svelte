@@ -7,7 +7,10 @@
   import ErrorView from "$components/ErrorView.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
-  import { fetchPaymentRequests, cancelPaymentRequest } from "$api/controllers/payment-request-controller";
+  import {
+    fetchPaymentRequests,
+    cancelPaymentRequest
+  } from "$api/controllers/payment-request-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type PaymentRequestRecord, PaymentRequestStatus } from "$lib/types";
   import { toast } from "svelte-sonner";

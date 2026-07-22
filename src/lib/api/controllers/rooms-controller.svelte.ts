@@ -15,7 +15,12 @@ import {
   UserTag,
   type UserRecord
 } from "$lib/types";
-import { fetchUsers, addUser, updateUser, fetchResidents } from "$api/controllers/resident-controller";
+import {
+  fetchUsers,
+  addUser,
+  updateUser,
+  fetchResidents
+} from "$api/controllers/resident-controller";
 import { roomsState } from "$state/rooms.svelte";
 import { auth } from "$state/auth.svelte";
 

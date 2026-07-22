@@ -41,7 +41,9 @@ export async function cancelLaundryReservation(
 /**
  * Admin Direct Methods (Direct Google Sheets API)
  */
-export async function fetchAdminLaundryReservations(forceRefresh = false): Promise<LaundryRecord[]> {
+export async function fetchAdminLaundryReservations(
+  forceRefresh = false
+): Promise<LaundryRecord[]> {
   const spreadsheetId = uiSettings.sharedRecordsId;
   if (!spreadsheetId) {
     return [];

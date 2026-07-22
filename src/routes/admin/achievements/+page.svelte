@@ -7,7 +7,12 @@
   import LoadingView from "$components/LoadingView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import { fetchAdminAchievements, fetchAchievementLogs, addAchievement, awardAchievement } from "$api/controllers/achievement-controller";
+  import {
+    fetchAdminAchievements,
+    fetchAchievementLogs,
+    addAchievement,
+    awardAchievement
+  } from "$api/controllers/achievement-controller";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import * as Dialog from "$ui/dialog";
@@ -20,7 +25,10 @@
   import { translatePeriod } from "$utils/translators";
   import TermFilter from "$components/TermFilter.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { calculateAchievementPercentage, getEligibleCount } from "$api/controllers/achievement-controller";
+  import {
+    calculateAchievementPercentage,
+    getEligibleCount
+  } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/achievements/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
