@@ -22,11 +22,10 @@
   import { PaymentRequestStatus } from "$lib/types";
   import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
-  import { formatAmount } from "$utils/formatters";
+  import { formatAmount, formatDate } from "$utils/formatters";
   import { translateMop } from "$utils/translators";
   import { Textarea } from "$ui/textarea";
   import { goto } from "$app/navigation";
-  import { Badge } from "$ui/badge";
   import * as Card from "$ui/card";
   import {
     appendSheetRow,
@@ -260,58 +259,51 @@
       <!-- Left: Request Details -->
       <div class="space-y-4 lg:col-span-1">
         <Card.Root>
-          <Card.Header class="pb-2">
-            <Card.Title class="text-lg">Original Request</Card.Title>
-            <Card.Description>Submitted details from resident</Card.Description>
+          <Card.Header>
+            <Card.Title>Original Request</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
-            <div class="space-y-3 rounded-xl border bg-muted/30 p-4">
+            <div class="space-y-3">
               <div class="space-y-2">
-                <div class="flex justify-between text-sm">
-                  <span class="text-muted-foreground">Resident:</span>
-                  <span class="font-medium"
-                    >{currentResident?.name || currentPayment.residentId}</span
-                  >
+                <div class="flex flex-col space-y-1">
+                  <span class="font-medium">Resident</span>
+                  <span class="">{currentResident?.name || currentPayment.residentId}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-muted-foreground">Date:</span>
-                  <span class="font-medium">{currentPayment.date}</span>
+                <div class="flex flex-col space-y-1">
+                  <span class="font-medium">Date</span>
+                  <span class="">{formatDate(currentPayment.date)}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-muted-foreground">MOP:</span>
-                  <Badge variant="outline" class="uppercase"
-                    >{translateMop(currentPayment.mop)}</Badge
-                  >
+                <div class="flex flex-col space-y-1">
+                  <span class="font-medium">Mode of Payment</span>
+                  <span class="">{translateMop(currentPayment.mop)}</span>
                 </div>
 
-                <div class="mt-2 border-t pt-2">
-                  <div class="flex justify-between text-sm">
-                    <span class="text-xs text-muted-foreground uppercase">Water:</span>
-                    <span>{formatAmount(currentPayment.waterFee)}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span class="text-xs text-muted-foreground uppercase">Assoc:</span>
-                    <span>{formatAmount(currentPayment.assocFee)}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span class="text-xs text-muted-foreground uppercase">Misc:</span>
-                    <span>{formatAmount(currentPayment.misc)}</span>
-                  </div>
-                  <div class="mt-1 flex justify-between border-t pt-1 text-sm font-bold">
-                    <span>Total:</span>
-                    <span class="text-primary">
-                      {formatAmount(
-                        currentPayment.waterFee + currentPayment.assocFee + currentPayment.misc
-                      )}
-                    </span>
-                  </div>
+                <div class="mt-1 flex justify-between border-t pt-2 text-sm">
+                  <span class="font-medium">Water Fee:</span>
+                  <span>{formatAmount(currentPayment.waterFee)}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="font-medium">Association Fee:</span>
+                  <span>{formatAmount(currentPayment.assocFee)}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="font-medium">Miscellaneous:</span>
+                  <span>{formatAmount(currentPayment.misc)}</span>
+                </div>
+                <div class="mt-1 flex justify-between border-t pt-2 text-sm font-bold">
+                  <span>Total:</span>
+                  <span class="text-primary">
+                    {formatAmount(
+                      currentPayment.waterFee + currentPayment.assocFee + currentPayment.misc
+                    )}
+                  </span>
                 </div>
 
                 {#if currentPayment.proofLink}
                   <div class="pt-2">
                     <Button
-                      variant="link"
-                      class="flex h-auto gap-1 p-0 text-xs"
+                      variant="secondary"
+                      class="flex"
                       href={currentPayment.proofLink}
                       target="_blank"
                     >
@@ -321,50 +313,51 @@
                 {/if}
 
                 {#if currentPayment.notes}
-                  <div class="border-t pt-2 text-xs">
-                    <span class="font-bold text-muted-foreground uppercase">Resident Notes:</span>
-                    <p class="mt-1 italic">{currentPayment.notes}</p>
+                  <div class="border-t pt-2">
+                    <span class="">Resident Notes:</span>
+                    <p class="mt-1">{currentPayment.notes}</p>
                   </div>
                 {/if}
 
                 {#if currentPayment.proofLink?.includes("/api/image/")}
                   <div
-                    class="mt-2 flex items-start gap-3 rounded-lg border border-brand/20 bg-brand/5 p-3"
+                    class="mt-2 flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-3"
                   >
-                    <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-                    <div class="space-y-1">
-                      <p class="text-[10px] leading-relaxed text-muted-foreground">
-                        This receipt was uploaded through this instance's storage provider.
-                        Approving or declining this request will permanently delete the image copy.
-                      </p>
-                    </div>
+                    <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                    <p class="text-xs">
+                      This receipt was uploaded through this instance's storage provider. Approving
+                      or declining this request will <strong
+                        >permanently delete the image copy</strong
+                      >.
+                    </p>
                   </div>
                 {/if}
               </div>
             </div>
-
-            <!-- Decline Action -->
-            <div class="space-y-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
-              <h4 class="text-xs font-bold tracking-wider text-destructive uppercase">
-                Decline Request
-              </h4>
-              <Textarea
-                placeholder="Reason for declining..."
-                bind:value={declineReason}
-                class="bg-background text-xs"
-              />
-              <Button
-                variant="destructive"
-                size="sm"
-                class="w-full"
-                onclick={handleDecline}
-                isLoading={isProcessing}
-                disabled={!declineReason.trim()}
-                icon={CircleX}
-              >
-                Decline Request
-              </Button>
-            </div>
+          </Card.Content>
+        </Card.Root>
+        <!-- Decline Action -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Decline Request</Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-4">
+            <Textarea
+              placeholder="Reason for declining..."
+              bind:value={declineReason}
+              class="bg-background text-xs"
+            />
+            <Button
+              variant="destructive"
+              size="sm"
+              class="w-full"
+              onclick={handleDecline}
+              isLoading={isProcessing}
+              disabled={!declineReason.trim()}
+              icon={CircleX}
+            >
+              Decline
+            </Button>
           </Card.Content>
         </Card.Root>
       </div>
