@@ -22,7 +22,8 @@
     Info,
     Settings2,
     Calculator,
-    Users
+    Users,
+    TriangleAlert
   } from "@lucide/svelte";
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
@@ -186,6 +187,20 @@
             </Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
+            {#if !auth.isInstanceAdmin}
+              <div
+                class="mt-2 flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-3"
+              >
+                <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <p class="text-xs">
+                  These emails will be sent using your personal account and <strong
+                    >not the hall association's</strong
+                  >
+                  account. Click <strong>Run Batch</strong> only if you are sure you want to send these
+                  emails.
+                </p>
+              </div>
+            {/if}
             <div class="rounded-lg border bg-muted/20 p-4">
               <p class="text-xs font-medium tracking-widest text-muted-foreground uppercase">
                 Emails in Queue
