@@ -27,16 +27,10 @@
     isLoading = true;
     error = null;
     try {
-      const [achResult] = await Promise.all([fetchAchievements(true)]);
-
-      if (Array.isArray(achResult)) {
-        achievements = achResult;
-      } else {
-        achievements = achResult.achievements;
-        currentResidentId = achResult.currentResidentId;
-      }
-
-      logs = achResult.logs;
+      const achResult = await fetchAchievements(true);
+      achievements = achResult.achievements || [];
+      logs = achResult.logs || [];
+      currentResidentId = achResult.currentResidentId || "";
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -56,11 +50,12 @@
           if (!currentResidentId && !auth.user?.email) {
             return false;
           }
-          return l.accountId === currentResidentId || l.accountId === auth.user?.email;
+          return (
+            (currentResidentId && l.accountId === currentResidentId) ||
+            (auth.user?.email && l.accountId === auth.user?.email)
+          );
         })
-        .map((l) => {
-          return l.achievementId;
-        })
+        .map((l) => l.achievementId)
     )
   );
 

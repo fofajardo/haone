@@ -1,80 +1,92 @@
-import { uiSettings } from "$state/settings.svelte";
-import {
-  fetchSheetRowsRaw,
-  updateSheetValue,
-  appendSheetRow
-} from "$api/services/google-sheets-service";
-import { fetchServer } from "$utils/api-client";
-import { LAUNDRY_COL, type LaundryRecord } from "$lib/types";
+import type { LaundryRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
 import { parseTime } from "$utils/parsers";
+import { laundryService } from "$api/services/laundry-service";
+import { getCurrentResidentId } from "./resident-controller";
 
-/**
- * Resident API Methods (Proxy via server API)
- */
 export async function fetchLaundryReservations(
-  forceRefresh = false
-): Promise<LaundryRecord[] | { reservations: LaundryRecord[]; currentResidentId: string }> {
-  const data = await fetchServer("/api/resident/laundry", {}, forceRefresh);
+  _forceRefresh = false
+): Promise<{ reservations: LaundryRecord[]; currentResidentId: string }> {
+  const currentResidentId = await getCurrentResidentId();
+  const res = await laundryService.fetchReservations(currentResidentId);
+  const list = Array.isArray(res) ? res : res.items;
   return {
-    reservations: data.reservations,
-    currentResidentId: data.currentResidentId
+    reservations: list,
+    currentResidentId
   };
 }
 
 export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
-  return await fetchServer("/api/resident/laundry", {
-    method: "POST",
-    body: JSON.stringify(data)
+  const { canAccessLaundry } = await import("./resident-controller");
+  const accountType = "STUDENT";
+  if (!canAccessLaundry(accountType)) {
+    throw new Error("Access Denied: Account type cannot book laundry");
+  }
+
+  const { date, timeStart, timeEnd } = data;
+  if (!date || !timeStart || !timeEnd) {
+    throw new Error("Date, Start Time, and End Time are required");
+  }
+
+  const startMinutes = parseTime(timeStart);
+  const endMinutes = parseTime(timeEnd);
+  if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
+    throw new Error("Invalid time window specified");
+  }
+  if (endMinutes - startMinutes > 180) {
+    throw new Error("Reservations cannot exceed 3 hours");
+  }
+
+  const currentResidentId = data.residentId || (await getCurrentResidentId());
+  const res = await laundryService.fetchReservations();
+  const list = Array.isArray(res) ? res : res.items;
+  const active = list.filter(
+    (r) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER"
+  );
+
+  const userActiveCount = active.filter((r) => r.residentId === currentResidentId).length;
+  if (userActiveCount >= 2) {
+    throw new Error("You already have 2 active laundry reservations");
+  }
+
+  const sameSlotUser = active.find(
+    (r) =>
+      r.date === date &&
+      r.timeStart === timeStart &&
+      r.timeEnd === timeEnd &&
+      r.residentId === currentResidentId
+  );
+  if (sameSlotUser) {
+    throw new Error("You have already booked this exact slot");
+  }
+
+  return laundryService.addReservation({
+    ...data,
+    residentId: currentResidentId,
+    status: "ACTIVE"
   });
 }
 
 export async function cancelLaundryReservation(
   reservationId: string,
-  _reason: string,
+  reason: string,
   _status: any = null
 ) {
-  return await fetchServer(`/api/resident/laundry?id=${reservationId}`, {
-    method: "DELETE"
-  });
+  return await laundryService.cancelReservation(reservationId, reason || "Cancelled by resident");
 }
 
-/**
- * Admin Direct Methods (Direct Google Sheets API)
- */
 export async function fetchAdminLaundryReservations(
-  forceRefresh = false
-): Promise<LaundryRecord[]> {
-  const spreadsheetId = uiSettings.sharedRecordsId;
-  if (!spreadsheetId) {
-    return [];
-  }
-
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "laundry!A:I", forceRefresh);
-  return rows.slice(1).map((row) => ({
-    id: (row[LAUNDRY_COL.ID] || "").trim(),
-    residentId: (row[LAUNDRY_COL.RESIDENT_ID] || "").trim(),
-    date: (row[LAUNDRY_COL.DATE] || "").trim(),
-    timeStart: (row[LAUNDRY_COL.TIME_START] || "").trim(),
-    timeEnd: (row[LAUNDRY_COL.TIME_END] || "").trim(),
-    status: (row[LAUNDRY_COL.STATUS] || "").trim(),
-    cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
-    creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
-    cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim(),
-    raw: row
-  }));
+  _forceRefresh = false,
+  options?: PaginationOptions
+): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
+  return laundryService.fetchReservations(undefined, options);
 }
 
 export async function addAdminLaundryReservation(data: Omit<LaundryRecord, "raw">) {
-  const spreadsheetId = uiSettings.sharedRecordsId;
-  if (!spreadsheetId) {
-    throw new Error("Shared Records ID not configured");
-  }
-
   const startH = parseTime(data.timeStart);
   const endH = parseTime(data.timeEnd);
   const [y, m, d] = data.date.split("-").map(Number);
-  const start = new Date(y, m - 1, d, startH);
-  const end = new Date(y, m - 1, d, endH);
+  const start = new Date(y, m - 1, d, startH || 0);
+  const end = new Date(y, m - 1, d, endH || 0);
 
   if (start >= end) {
     throw new Error("Start time must be before end time.");
@@ -95,55 +107,45 @@ export async function addAdminLaundryReservation(data: Omit<LaundryRecord, "raw"
     throw new Error("Maximum of two (2) hours for any reservation.");
   }
 
-  // Overlap Check
-  const existing = await fetchAdminLaundryReservations(true);
+  const existingResult = await fetchAdminLaundryReservations(true);
+  const existing = Array.isArray(existingResult) ? existingResult : existingResult.items;
+
   const isOverlapping = existing.some((r) => {
-    if (r.status !== "ACTIVE" || r.date !== data.date) {
+    if (r.date !== data.date) {
       return false;
     }
-    const rStart = new Date(`${r.date}T${r.timeStart}`);
-    const rEnd = new Date(`${r.date}T${r.timeEnd}`);
+    if (
+      r.status === "CANCELLED" ||
+      r.status === "CANCELLED_BY_ADMIN" ||
+      r.status === "CANCELLED_BY_USER"
+    ) {
+      return false;
+    }
+    const rStartH = parseTime(r.timeStart);
+    const rEndH = parseTime(r.timeEnd);
+    const rStart = new Date(y, m - 1, d, rStartH || 0);
+    const rEnd = new Date(y, m - 1, d, rEndH || 0);
     return start < rEnd && end > rStart;
   });
 
   if (isOverlapping) {
-    throw new Error("This slot overlaps with an existing reservation.");
+    throw new Error("Selected time slot overlaps with an existing active reservation.");
   }
 
-  const row = new Array(9).fill("");
-  row[LAUNDRY_COL.ID] = data.id || crypto.randomUUID();
-  row[LAUNDRY_COL.RESIDENT_ID] = data.residentId;
-  row[LAUNDRY_COL.DATE] = data.date;
-  row[LAUNDRY_COL.TIME_START] = data.timeStart;
-  row[LAUNDRY_COL.TIME_END] = data.timeEnd;
-  row[LAUNDRY_COL.STATUS] = data.status || "ACTIVE";
-  row[LAUNDRY_COL.CANCEL_REASON] = data.cancelReason || "";
-  row[LAUNDRY_COL.CREATION_TIMESTAMP] = new Date().toISOString();
-  row[LAUNDRY_COL.CANCEL_TIMESTAMP] = "";
-
-  await appendSheetRow(spreadsheetId, "laundry!A:I", [row]);
+  await laundryService.addReservation({
+    ...data,
+    status: "ACTIVE"
+  });
 }
 
 export async function cancelAdminLaundryReservation(
   reservationId: string,
   reason: string,
-  status: "CANCELLED_BY_USER" | "CANCELLED_BY_ADMIN" = "CANCELLED_BY_ADMIN"
+  _status: any = null
 ) {
-  const spreadsheetId = uiSettings.sharedRecordsId;
-  if (!spreadsheetId) {
-    throw new Error("Shared Records ID not configured");
-  }
+  await laundryService.cancelReservation(reservationId, reason || "Cancelled by admin");
+}
 
-  const rows = await fetchSheetRowsRaw(spreadsheetId, "laundry!A:I");
-  const rowIndex = rows.findIndex((r) => (r[LAUNDRY_COL.ID] || "").trim() === reservationId);
-  if (rowIndex === -1) {
-    throw new Error("Reservation not found");
-  }
-
-  const actualRow = rowIndex + 1;
-  await Promise.all([
-    updateSheetValue(spreadsheetId, `laundry!F${actualRow}`, [[status]]),
-    updateSheetValue(spreadsheetId, `laundry!G${actualRow}`, [[reason]]),
-    updateSheetValue(spreadsheetId, `laundry!I${actualRow}`, [[new Date().toISOString()]])
-  ]);
+export async function addLaundryReservationsBatch(entries: Partial<LaundryRecord>[]) {
+  await laundryService.addReservationsBatch(entries);
 }

@@ -12,10 +12,13 @@
     cancelLaundryReservation,
     addLaundryReservation
   } from "$api/controllers/laundry-controller";
-  import { computeDisplayNames } from "$api/controllers/resident-controller";
-  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
+  import {
+    computeDisplayNames,
+    fetchResidents,
+    fetchUsers
+  } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
-  import { ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/types";
+  import { LaundryStatus } from "$lib/types";
   import type { LaundryRecord } from "$lib/types";
   import * as Dialog from "$ui/dialog";
   import * as DatePicker from "$ui/date-picker";
@@ -61,63 +64,37 @@
     isLoading = true;
     error = null;
     try {
-      const [resResult, userRowsRaw, accRows] = await Promise.all([
+      const [resResult, allUsers, allResidents] = await Promise.all([
         fetchAdminLaundryReservations(true),
-        fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:Z", true),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:E", true)
+        fetchUsers(true),
+        fetchResidents(true)
       ]);
 
       const newRoomMap = new Map<string, string>();
       const newAccToResMap = new Map<string, string>();
       const newActiveResIds = new Set<string>();
 
-      // Get current term for filtering active residents
-      const periods = Array.from(
-        new Set(
-          accRows
-            .slice(1)
-            .map((r) => (r[ACCOUNT_COL.PERIOD] || "").trim())
-            .filter(Boolean)
-        )
-      );
-      const latestTerm = sortPeriods(periods)[0] || "";
-      const currentTerm = uiSettings.currentTerm || latestTerm;
+      const currentTerm = uiSettings.currentTerm;
 
-      // Iterate through all accounts; later entries (newer terms) will overwrite earlier ones
-      accRows.slice(1).forEach((row) => {
-        const aid = (row[ACCOUNT_COL.ID] || "").trim();
-        const rid = (row[ACCOUNT_COL.RESIDENT_ID] || "").trim();
-        const period = (row[ACCOUNT_COL.PERIOD] || "").trim();
-        const room = (row[ACCOUNT_COL.ROOM] || "").trim();
-
-        if (rid && period === currentTerm) {
-          newActiveResIds.add(rid);
+      allResidents.forEach((res) => {
+        if (res.residentId && res.period === currentTerm) {
+          newActiveResIds.add(res.residentId);
         }
 
-        if (aid && rid) {
-          newAccToResMap.set(aid, rid);
+        if (res.ledgerId && res.residentId) {
+          newAccToResMap.set(res.ledgerId, res.residentId);
         }
 
-        if (rid && room) {
-          newRoomMap.set(rid, room);
-          newRoomMap.set(rid.toLowerCase(), room);
-          if (aid) {
-            newRoomMap.set(aid, room);
+        if (res.residentId && res.room) {
+          newRoomMap.set(res.residentId, res.room);
+          newRoomMap.set(res.residentId.toLowerCase(), res.room);
+          if (res.ledgerId) {
+            newRoomMap.set(res.ledgerId, res.room);
           }
         }
       });
 
-      // Process raw user rows
-      const processedUsers = userRowsRaw.slice(1).map((row) => {
-        const u = {
-          email: (row[USER_COL.EMAIL] || "").trim(),
-          id: (row[USER_COL.ID] || "").trim(),
-          studentNo: (row[USER_COL.STUDENT_NO] || "").trim(),
-          firstName: (row[USER_COL.FIRST_NAME] || "").trim(),
-          lastName: (row[USER_COL.LAST_NAME] || "").trim(),
-          displayName: (row[USER_COL.DISPLAY_NAME] || "").trim(),
-          raw: row
-        };
+      const processedUsers = allUsers.map((u) => {
         if (!u.displayName) {
           const computed = computeDisplayNames(u as any);
           u.displayName = computed.displayName;
@@ -128,7 +105,7 @@
         };
       });
 
-      reservations = resResult;
+      reservations = Array.isArray(resResult) ? resResult : resResult.items;
       users = processedUsers;
       roomMap = newRoomMap;
       accountToResidentMap = newAccToResMap;

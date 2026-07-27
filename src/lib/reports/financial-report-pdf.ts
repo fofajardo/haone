@@ -2,8 +2,9 @@ import branding from "$data/branding.json";
 import { formatAccounting } from "$utils/formatters";
 import { translateMop } from "$utils/translators";
 import { parseDateWeight } from "$utils/parsers";
-import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
 import { fetchResidents, mapRowToJournal } from "$api/controllers/resident-controller";
+import { fetchJournalEntries } from "$api/controllers/journal-controller";
+import { fetchTransactionTypes, fetchMopTypes } from "$api/controllers/constants-controller";
 import type { JournalRecord, ResidentRecord } from "$lib/types";
 import type {
   TDocumentDefinitions,
@@ -45,48 +46,26 @@ export interface FinancialReportOptions {
 }
 
 export async function fetchFinancialReportData(workbookId: string, forceRefresh = false) {
-  const [journalRows, mappedAccounts, constRows] = await Promise.all([
-    fetchSheetRowsRaw(workbookId, "journal_general!A:T", forceRefresh),
+  const [entries, mappedAccounts, types, mops] = await Promise.all([
+    fetchJournalEntries(undefined, undefined),
     fetchResidents(forceRefresh),
-    fetchSheetRowsRaw(workbookId, "constants!A:C", forceRefresh)
+    fetchTransactionTypes(forceRefresh),
+    fetchMopTypes(forceRefresh)
   ]);
 
+  const list = Array.isArray(entries) ? entries : entries.items;
+
   // Fetch Journal
-  const allJournal = journalRows.slice(1).map((row, idx) => {
-    const res = mapRowToJournal(row, idx);
-    return {
-      ...res,
-      dateWeight: parseDateWeight(res.date)
-    };
-  });
+  const allJournal = list.map((res: JournalRecord) => ({
+    ...res,
+    dateWeight: parseDateWeight(res.date)
+  }));
+
+  const transactionTypes = types;
+  const availableMops = mops;
 
   // Fetch Accounts
   const allAccounts = mappedAccounts;
-
-  // Fetch Constants (Transaction Types & MOPs)
-  const transactionTypes = constRows
-    .slice(1)
-    .filter((r) => {
-      return (r[0] || "").startsWith("PMT_");
-    })
-    .map((r) => {
-      return {
-        value: r[1] || r[0],
-        label: r[2] || r[1] || r[0]
-      };
-    });
-
-  const availableMops = constRows
-    .slice(1)
-    .filter((r) => {
-      return (r[0] || "").startsWith("MOP_");
-    })
-    .map((r) => {
-      return {
-        value: r[1] || r[0],
-        label: r[2] || r[1] || r[0]
-      };
-    });
 
   return {
     allJournal,

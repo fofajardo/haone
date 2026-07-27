@@ -77,3 +77,34 @@ export function getJournalDateRange(journal: { date: string }[]): { start: strin
   }
   return { start: "", end: "" };
 }
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isUuid(val: string | null | undefined): boolean {
+  if (!val) {
+    return false;
+  }
+  return UUID_REGEX.test(val);
+}
+
+export function parseDbDate(val: any): string | null {
+  if (!val) {
+    return null;
+  }
+  const str = String(val).trim();
+  if (!str) {
+    return null;
+  }
+  return str;
+}
+
+export function parseDbUuid(val: any): string | null {
+  if (!val) {
+    return null;
+  }
+  const str = String(val).trim();
+  if (!str || !isUuid(str)) {
+    return null;
+  }
+  return str;
+}

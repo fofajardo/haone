@@ -19,10 +19,11 @@
   } from "@lucide/svelte";
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
+  import { fetchJournalEntries, mapRowToJournal } from "$api/controllers/journal-controller";
+  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
+  import { fetchResidents } from "$api/controllers/resident-controller";
   import { formatCurrency, formatDate } from "$utils/formatters";
   import { translatePeriod, translateType } from "$utils/translators";
-  import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
   import DashboardActionCard from "$components/DashboardActionCard.svelte";
   import StatisticCard from "$components/StatisticCard.svelte";
   import { onMount } from "svelte";
@@ -127,19 +128,14 @@
     isLoading = true;
 
     try {
-      const [journalRows, allResidents, constRows] = await Promise.all([
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T"),
+      const [journalEntries, allResidents, types] = await Promise.all([
+        fetchJournalEntries(),
         fetchResidents(),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C")
+        fetchTransactionTypes()
       ]);
 
-      transactionTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("PMT_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: r[2] || r[1] || r[0]
-        }));
+      transactionTypes = types;
+      const journals = Array.isArray(journalEntries) ? journalEntries : journalEntries.items;
 
       // Stats from Accounts
       const currentSem = uiSettings.currentTerm.trim();
@@ -159,7 +155,7 @@
         stats.activeResidents > 0 ? (fullyPaidCount / stats.activeResidents) * 100 : 0;
 
       // Stats from Journal
-      const journalData = journalRows.slice(1).map((r, idx) => mapRowToJournal(r, idx));
+      const journalData = journals;
       const pending = journalData.filter((r) => {
         return (
           r.period === currentSem &&
@@ -168,6 +164,7 @@
           r.prRefNo !== "#N/A"
         );
       });
+
       stats.pendingSettlements = pending.length;
 
       // Total Collected in Semester

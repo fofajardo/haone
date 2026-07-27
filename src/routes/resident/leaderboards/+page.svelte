@@ -23,6 +23,8 @@
 
   let isGlobal = $derived(scope === "global");
 
+  import { fetchResidentStatus } from "$api/controllers/resident-controller";
+
   async function loadData() {
     isLoading = true;
     error = null;
@@ -30,7 +32,7 @@
     try {
       const [achResult, statusJson] = await Promise.all([
         fetchAchievements(true),
-        fetchServer("/api/resident/check-status")
+        fetchResidentStatus()
       ]);
 
       achievements = Array.isArray(achResult) ? achResult : achResult.achievements;

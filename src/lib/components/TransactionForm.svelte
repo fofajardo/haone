@@ -5,7 +5,8 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
-  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
+  import { fetchJournalEntries } from "$api/controllers/journal-controller";
+  import { fetchConstants } from "$api/controllers/constants-controller";
   import { translatePeriod, translateMop } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
   import { formatAmount, formatAccounting } from "$utils/formatters";
@@ -144,13 +145,10 @@
   });
 
   $effect(() => {
-    if (isEos && formData.mop && uiSettings.accountingWorkbookId) {
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T").then((rows) => {
-        // Compute balances for this MOP exactly copying the financial report code
+    if (isEos && formData.mop) {
+      fetchJournalEntries().then((entries) => {
         const currentSem = formData.period || uiSettings.currentTerm;
-        const journal = rows.slice(1).map((r, idx) => {
-          return mapRowToJournal(r, idx + 2);
-        });
+        const journal = Array.isArray(entries) ? entries : entries.items;
 
         // 1. Filter out j.type === "EOS" to match financial report page filtering
         const semJournal = journal.filter((j) => {
@@ -290,13 +288,9 @@
   let accountSearch = $state("");
 
   async function loadData() {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
-      const [allResidents, constRows] = await Promise.all([
-        fetchResidents(),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C")
-      ]);
+      const [allResidents, constants] = await Promise.all([fetchResidents(), fetchConstants()]);
 
       const rawAccounts = allResidents;
 
@@ -330,7 +324,7 @@
         residentId: SYSTEM_IDS.FUNDS,
         ledgerId: SYSTEM_IDS.FUNDS,
         checkInDate: "",
-        type: "",
+        type: "FUNDS" as any,
         raw: []
       };
 
@@ -338,23 +332,20 @@
         new Map([...rawAccounts, fundsAccount].map((a) => [a.email, a])).values()
       );
 
-      transactionTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("PMT_") && r[0] !== "PMT_TYPE_RESERVED")
+      transactionTypes = constants
+        .filter((r) => r.key.startsWith("PMT_") && r.key !== "PMT_TYPE_RESERVED")
         .map((r) => ({
-          value: r[0],
-          val: r[1] || r[0],
-          label: r[2] || r[1] || r[0]
+          value: r.key,
+          val: r.value || r.key,
+          label: r.description || r.value || r.key
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
 
-      const termValues = constRows
-        .slice(1)
+      const termValues = constants
         .filter(
-          (r) =>
-            (r[0] || "").startsWith("TERM_") && r[0] !== "TERM_CURR" && r[0] !== "TERM_RESERVED"
+          (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
         )
-        .map((r) => r[1] || r[0]);
+        .map((r) => r.value || r.key);
 
       academicTerms = sortPeriods(termValues).map((val) => ({
         value: val,
@@ -363,12 +354,11 @@
 
       mopTypes = [
         { value: "", label: "N/A" },
-        ...constRows
-          .slice(1)
-          .filter((r) => (r[0] || "").startsWith("MOP_"))
+        ...constants
+          .filter((r) => r.key.startsWith("MOP_"))
           .map((r) => ({
-            value: r[1] || r[0],
-            label: translateMop(r[1] || r[0])
+            value: r.value || r.key,
+            label: translateMop(r.value || r.key)
           }))
       ];
 

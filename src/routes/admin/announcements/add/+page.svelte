@@ -9,7 +9,6 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import RichEditor from "$components/RichEditor.svelte";
   import { addAnnouncement } from "$api/controllers/announcement-controller";
-  import { fetchWithAuth } from "$api/services/google-sheets-service";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";

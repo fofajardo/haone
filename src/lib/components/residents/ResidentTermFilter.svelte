@@ -31,11 +31,13 @@
     }));
   });
 
+  import { fetchResidentStatus } from "$api/controllers/resident-controller";
+
   async function loadTerms() {
     if (options && options.length > 0) return;
     isLoading = true;
     try {
-      const statusData = await fetchServer("/api/resident/check-status", {}, true);
+      const statusData = await fetchResidentStatus(undefined, true);
       if (statusData.allTerms) {
         internalTerms = statusData.allTerms;
 

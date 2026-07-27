@@ -10,7 +10,9 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
   const { error } = await authenticateResident(request);
-  if (error) return error;
+  if (error) {
+    return error;
+  }
 
   try {
     const client = await getSheetsClient();
@@ -24,7 +26,9 @@ export const GET: RequestHandler = async ({ request }) => {
     const emailToUser = new Map();
     userRows.slice(1).forEach((r: any) => {
       const email = (r[USER_COL.EMAIL] || "").toLowerCase().trim();
-      if (email) emailToUser.set(email, r);
+      if (email) {
+        emailToUser.set(email, r);
+      }
     });
 
     const resLookupToRoom = new Map();
@@ -51,13 +55,17 @@ export const GET: RequestHandler = async ({ request }) => {
         let room = null;
         if (user) {
           room = resLookupToRoom.get(String(user[USER_COL.ID]).trim());
-          if (!room) room = resLookupToRoom.get(email);
+          if (!room) {
+            room = resLookupToRoom.get(email);
+          }
         } else {
           room = resLookupToRoom.get(email);
         }
 
         let committee = (row[OFFICER_COL.COMMITTEE] || "").trim();
-        if (committee.toUpperCase() === "N/A" || committee === "None") committee = "";
+        if (committee.toUpperCase() === "N/A" || committee === "None") {
+          committee = "";
+        }
 
         return {
           position: (row[OFFICER_COL.POSITION] || "").trim(),

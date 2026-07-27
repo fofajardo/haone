@@ -19,7 +19,9 @@ import type { RequestHandler } from "./$types";
  */
 export const GET: RequestHandler = async ({ request }) => {
   const { residentId, error } = await authenticateResident(request);
-  if (error) return error;
+  if (error) {
+    return error;
+  }
 
   try {
     const client = await getSheetsClient();
@@ -42,118 +44,154 @@ export const GET: RequestHandler = async ({ request }) => {
     const currentResidentId = residentId;
 
     // Build user map
-    const userMap = new Map<string, any>();
-    userRows.slice(1).forEach((u: any) => {
-      const id = (u[USER_COL.ID] || "").trim();
-      if (id) {
-        userMap.set(id, {
-          displayName: (u[USER_COL.DISPLAY_NAME] || "").trim()
-        });
+    const userMap = new Map();
+    userRows.slice(1).forEach((r: any) => {
+      userMap.set((r[USER_COL.ID] || "").trim(), r);
+    });
+
+    // Build room map
+    const resIdToRoomMap = new Map();
+    accRows.slice(1).forEach((r: any) => {
+      const resId = (r[ACCOUNT_COL.RESIDENT_ID] || "").trim();
+      const term = (r[ACCOUNT_COL.PERIOD] || "").trim();
+      if (resId && (term === activeTerm || !term)) {
+        const room = (r[ACCOUNT_COL.ROOM] || "").trim();
+        const bed = (r[ACCOUNT_COL.BED] || "").trim();
+        if (room) {
+          resIdToRoomMap.set(resId, bed ? `${room}-${bed}` : room);
+        }
       }
     });
 
-    // Resolve room map
-    const roomMap = new Map<string, string>();
-    accRows.slice(1).forEach((row: any) => {
-      const rid = (row[ACCOUNT_COL.RESIDENT_ID] || "").trim();
-      const room = (row[ACCOUNT_COL.ROOM] || "").trim();
-      if (rid && room) {
-        roomMap.set(rid, room);
-      }
-    });
+    const reservations = resRows
+      .slice(1)
+      .map((row: any) => {
+        const resId = (row[LAUNDRY_COL.RESIDENT_ID] || "").trim();
+        const user = userMap.get(resId);
+        let name = "Resident";
+        if (user) {
+          name =
+            (user[USER_COL.DISPLAY_NAME] || "").trim() ||
+            `${user[USER_COL.FIRST_NAME] || ""} ${user[USER_COL.LAST_NAME] || ""}`.trim();
+        }
 
-    const reservations = resRows.slice(1).map((row: any) => {
-      const resId = (row[LAUNDRY_COL.RESIDENT_ID] || "").trim();
-      const isMine = resId === currentResidentId;
-      const user = userMap.get(resId);
-      const rawName = user?.displayName || "Resident";
-      const rawRoom = roomMap.get(resId) || "";
+        const isSelf = resId === currentResidentId;
+        const displayName = isSelf ? name : maskNames ? "Resident" : name;
 
-      return {
-        id: (row[LAUNDRY_COL.ID] || "").trim(),
-        residentId: resId,
-        date: (row[LAUNDRY_COL.DATE] || "").trim(),
-        timeStart: (row[LAUNDRY_COL.TIME_START] || "").trim(),
-        timeEnd: (row[LAUNDRY_COL.TIME_END] || "").trim(),
-        status: (row[LAUNDRY_COL.STATUS] || "").trim(),
-        cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
-        creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
-        cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim(),
-        displayName: maskNames && !isMine ? "Reserved" : rawName,
-        room: maskNames && !isMine ? "" : rawRoom
-      };
-    });
+        return {
+          id: (row[LAUNDRY_COL.ID] || "").trim(),
+          residentId: resId,
+          date: (row[LAUNDRY_COL.DATE] || "").trim(),
+          timeStart: (row[LAUNDRY_COL.TIME_START] || "").trim(),
+          timeEnd: (row[LAUNDRY_COL.TIME_END] || "").trim(),
+          status: (row[LAUNDRY_COL.STATUS] || "ACTIVE").trim(),
+          cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
+          creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
+          cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim(),
+          displayName,
+          room: resIdToRoomMap.get(resId) || ""
+        };
+      })
+      .filter((r: any) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER");
 
     return json({ reservations, currentResidentId });
   } catch (e: any) {
-    return serverError(e, "Laundry fetch");
+    return serverError(e, "Laundry GET");
   }
 };
 
 /**
- * POST: Add a new reservation
+ * POST: Create a new reservation
  */
 export const POST: RequestHandler = async ({ request }) => {
-  const { residentId, error: authError } = await authenticateResident(request);
-  if (authError) return authError;
+  const { residentId, error } = await authenticateResident(request);
+  if (error) {
+    return error;
+  }
 
   try {
-    const data = await request.json();
-    const { date, timeStart, timeEnd } = data;
-
     const client = await getSheetsClient();
-
-    const [accRows, activeTerm, resRows] = await fetchSheetsData(client, [
-      "accounts!A:L",
-      "TERM_CURR",
-      "laundry!A:I"
-    ]);
+    const [accRows, activeTerm] = await fetchSheetsData(client, ["accounts!A:L", "TERM_CURR"]);
 
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
     if (!canAccessLaundry(accountType || "")) {
-      return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
+      return json({ error: "Access Denied: Account type cannot book laundry" }, { status: 403 });
     }
 
-    // Basic Validation
-    const startH = parseTime(timeStart);
-    const endH = parseTime(timeEnd);
-    if (isNaN(startH) || isNaN(endH) || startH >= endH) {
-      return json({ error: "Invalid time range" }, { status: 400 });
+    const data = await request.json();
+    const { date, timeStart, timeEnd } = data;
+
+    if (!date || !timeStart || !timeEnd) {
+      return json({ error: "Date, Start Time, and End Time are required" }, { status: 400 });
     }
 
-    // Overlap Check
-    const isOverlapping = resRows.slice(1).some((r: any) => {
-      if (
-        (r[LAUNDRY_COL.STATUS] || "").trim() !== "ACTIVE" ||
-        (r[LAUNDRY_COL.DATE] || "").trim() !== date
-      )
-        return false;
-      const rStart = parseTime(r[LAUNDRY_COL.TIME_START]);
-      const rEnd = parseTime(r[LAUNDRY_COL.TIME_END]);
-      return startH < rEnd && endH > rStart;
-    });
+    const startMinutes = parseTime(timeStart);
+    const endMinutes = parseTime(timeEnd);
 
-    if (isOverlapping) {
-      return json({ error: "This slot is already booked" }, { status: 409 });
+    if (startMinutes === null || endMinutes === null) {
+      return json({ error: "Invalid time format" }, { status: 400 });
     }
 
-    const row = new Array(9).fill("");
-    row[LAUNDRY_COL.ID] = crypto.randomUUID();
-    row[LAUNDRY_COL.RESIDENT_ID] = residentId;
-    row[LAUNDRY_COL.DATE] = date;
-    row[LAUNDRY_COL.TIME_START] = formatTime(startH);
-    row[LAUNDRY_COL.TIME_END] = formatTime(endH);
-    row[LAUNDRY_COL.STATUS] = "ACTIVE";
-    row[LAUNDRY_COL.CANCEL_REASON] = "";
-    row[LAUNDRY_COL.CREATION_TIMESTAMP] = new Date().toISOString();
-    row[LAUNDRY_COL.CANCEL_TIMESTAMP] = "";
+    if (endMinutes <= startMinutes) {
+      return json({ error: "End time must be after start time" }, { status: 400 });
+    }
+
+    const duration = endMinutes - startMinutes;
+    if (duration > 180) {
+      return json({ error: "Reservations cannot exceed 3 hours" }, { status: 400 });
+    }
+
+    const [resRows] = await fetchSheetsData(client, ["laundry!A:I"]);
+    const existing = resRows.slice(1).map((r: any) => ({
+      id: r[LAUNDRY_COL.ID],
+      residentId: r[LAUNDRY_COL.RESIDENT_ID],
+      date: r[LAUNDRY_COL.DATE],
+      timeStart: r[LAUNDRY_COL.TIME_START],
+      timeEnd: r[LAUNDRY_COL.TIME_END],
+      status: r[LAUNDRY_COL.STATUS] || "ACTIVE"
+    }));
+
+    const activeReservations = existing.filter(
+      (r: any) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER"
+    );
+
+    const activeUserCount = activeReservations.filter(
+      (r: any) => r.residentId === residentId
+    ).length;
+    if (activeUserCount >= 2) {
+      return json(
+        { error: "Limit Exceeded: You can only have 2 active reservations at a time" },
+        { status: 400 }
+      );
+    }
+
+    const dateClashes = activeReservations.filter((r: any) => r.date === date);
+    for (const res of dateClashes) {
+      const exStart = parseTime(res.timeStart);
+      const exEnd = parseTime(res.timeEnd);
+      if (exStart !== null && exEnd !== null) {
+        if (startMinutes < exEnd && endMinutes > exStart) {
+          return json(
+            {
+              error: `Slot Unavailable: Clashes with reservation from ${formatTime(res.timeStart)} to ${formatTime(res.timeEnd)}`
+            },
+            { status: 409 }
+          );
+        }
+      }
+    }
+
+    const id = crypto.randomUUID();
+    const nowStr = new Date().toISOString();
+
+    const row = [id, residentId, date, timeStart, timeEnd, "ACTIVE", "", nowStr, ""];
 
     await appendSheetValue(client, PUBLIC_GS_SR_ID, "laundry!A:I", [row]);
 
-    return json({ success: true, id: row[LAUNDRY_COL.ID] });
+    return json({ success: true, id });
   } catch (e: any) {
-    return serverError(e, "Laundry booking");
+    return serverError(e, "Laundry POST");
   }
 };
 
@@ -161,42 +199,38 @@ export const POST: RequestHandler = async ({ request }) => {
  * DELETE: Cancel a reservation
  */
 export const DELETE: RequestHandler = async ({ url, request }) => {
-  const { residentId, error: authError } = await authenticateResident(request);
-  if (authError) return authError;
+  const { residentId, error } = await authenticateResident(request);
+  if (error) {
+    return error;
+  }
 
-  const reservationId = url.searchParams.get("id");
-  if (!reservationId) return json({ error: "Missing reservation ID" }, { status: 400 });
+  const id = url.searchParams.get("id");
+  if (!id) {
+    return json({ error: "Reservation ID is required" }, { status: 400 });
+  }
 
   try {
     const client = await getSheetsClient();
+    const [resRows] = await fetchSheetsData(client, ["laundry!A:I"]);
 
-    const [accRows, activeTerm, resRows] = await fetchSheetsData(client, [
-      "accounts!A:L",
-      "TERM_CURR",
-      "laundry!A:I"
-    ]);
+    const rowIndex = resRows
+      .slice(1)
+      .findIndex(
+        (r: any) =>
+          (r[LAUNDRY_COL.ID] || "").trim() === id &&
+          (r[LAUNDRY_COL.RESIDENT_ID] || "").trim() === residentId
+      );
 
-    const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
-
-    if (!canAccessLaundry(accountType || "")) {
-      return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
+    if (rowIndex === -1) {
+      return json({ error: "Reservation not found or unauthorized" }, { status: 404 });
     }
 
-    const rowIndex = resRows.findIndex(
-      (r: any) => (r[LAUNDRY_COL.ID] || "").trim() === reservationId
-    );
-    if (rowIndex === -1) return json({ error: "Reservation not found" }, { status: 404 });
+    const actualRow = rowIndex + 2;
+    const nowStr = new Date().toISOString();
 
-    const targetRow = resRows[rowIndex];
-    if (targetRow[LAUNDRY_COL.RESIDENT_ID] !== residentId) {
-      return json({ error: "Unauthorized: You do not own this reservation" }, { status: 403 });
-    }
+    const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/laundry!F${actualRow}:I${actualRow}?valueInputOption=USER_ENTERED`;
 
-    // Update row (F: Status, G: Cancel Reason, I: Cancel Timestamp)
-    const actualRow = rowIndex + 1;
-    const urlBase = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/laundry!F${actualRow}:I${actualRow}?valueInputOption=USER_ENTERED`;
-
-    await fetch(urlBase, {
+    await fetch(updateUrl, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${client}`,
@@ -204,18 +238,13 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
       },
       body: JSON.stringify({
         values: [
-          [
-            "CANCELLED_BY_USER",
-            "Cancelled by user",
-            targetRow[LAUNDRY_COL.CREATION_TIMESTAMP] || "",
-            new Date().toISOString()
-          ]
+          ["CANCELLED_BY_USER", "Cancelled by resident", resRows[rowIndex + 1][7] || "", nowStr]
         ]
       })
     });
 
     return json({ success: true });
   } catch (e: any) {
-    return serverError(e, "Laundry cancellation");
+    return serverError(e, "Laundry DELETE");
   }
 };

@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
+  import { fetchConstants } from "$api/controllers/constants-controller";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
   import { Combobox } from "$ui/combobox";
@@ -34,22 +34,19 @@
   let isLoading = $state(false);
 
   async function loadTerms() {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
-      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
-      if (rows.length <= 1) return;
+      const records = await fetchConstants();
+      if (records.length === 0) return;
 
-      const allTerms = rows
-        .slice(1)
+      const allTerms = records
         .filter(
-          (row) =>
-            row[0]?.startsWith("TERM_") && row[0] !== "TERM_CURR" && row[0] !== "TERM_RESERVED"
+          (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
         )
-        .map((row) => ({
-          value: row[1] || "",
-          label: row[1] || "",
-          description: row[2] || ""
+        .map((r) => ({
+          value: r.value,
+          label: r.value,
+          description: r.description
         }));
 
       const sortedValues = sortPeriods(allTerms.map((t) => t.value));
@@ -62,7 +59,7 @@
         };
       });
 
-      const termCurr = rows.find((r) => r[0] === "TERM_CURR")?.[1] || "";
+      const termCurr = records.find((r) => r.key === "TERM_CURR")?.value || "";
 
       if (!activeTerm && terms.length > 0) {
         const defaultTerm = termCurr || terms[0].value;

@@ -11,7 +11,9 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
   const { email, error } = await authenticateResident(request);
-  if (error) return error;
+  if (error) {
+    return error;
+  }
 
   try {
     const client = await getSheetsClient();
@@ -25,7 +27,9 @@ export const GET: RequestHandler = async ({ request }) => {
     ]);
 
     const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
-    if (!userRow) return json({ accounts: [] });
+    if (!userRow) {
+      return json({ accounts: [] });
+    }
 
     const userId = userRow[USER_COL.ID];
 

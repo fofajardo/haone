@@ -11,7 +11,6 @@
     expireAnnouncement,
     deleteAnnouncement
   } from "$api/controllers/announcement-controller";
-  import { fetchWithAuth } from "$api/services/google-sheets-service";
   import { auth } from "$state/auth.svelte";
   import type { AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
@@ -53,14 +52,14 @@
     showBroadcastDialog = false;
     const ids = Array.from(selectedIds);
     try {
-      const resp = await fetchWithAuth(
-        "/api/admin/announcements/broadcast",
-        "Failed to broadcast",
-        {
-          method: "POST",
-          body: JSON.stringify({ ids })
-        }
-      );
+      const resp = await fetch("/api/admin/announcements/broadcast", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${auth.accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ ids })
+      });
       const data = await resp.json();
       if (data.success) {
         toast.success(data.message || "Notifications sent to all residents");

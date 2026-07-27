@@ -15,12 +15,13 @@ import type { RequestHandler } from "./$types";
  */
 export const GET: RequestHandler = async ({ request }) => {
   const { email: authEmail, error } = await authenticateResident(request);
-  if (error) return error;
+  if (error) {
+    return error;
+  }
 
   try {
     const client = await getSheetsClient();
 
-    // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
 
@@ -84,7 +85,9 @@ export const GET: RequestHandler = async ({ request }) => {
  */
 export const PATCH: RequestHandler = async ({ request }) => {
   const { email: authEmail, error: authError } = await authenticateResident(request);
-  if (authError) return authError;
+  if (authError) {
+    return authError;
+  }
 
   try {
     const data = await request.json();
@@ -101,10 +104,11 @@ export const PATCH: RequestHandler = async ({ request }) => {
 
     const client = await getSheetsClient();
 
-    // Resolve residentId
     const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
     const user = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === authEmail);
-    if (!user) return json({ error: "Resident record not found" }, { status: 404 });
+    if (!user) {
+      return json({ error: "Resident record not found" }, { status: 404 });
+    }
     const residentId = user[USER_COL.ID];
 
     const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:I");
@@ -148,12 +152,10 @@ export const PATCH: RequestHandler = async ({ request }) => {
     ];
 
     if (rowIndex === -1) {
-      // Append new row
       await appendSheetValue(client, PUBLIC_GS_SR_ID, "settings!A:I", [
         [residentId, ...finalValues]
       ]);
     } else {
-      // Update existing row
       const actualRow = rowIndex + 1;
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/settings!B${actualRow}:I${actualRow}?valueInputOption=USER_ENTERED`;
 

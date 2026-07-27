@@ -15,6 +15,7 @@
   import { page } from "$app/state";
   import { pageState } from "$state/page-info.svelte";
   import { fetchServer } from "$utils/api-client";
+  import { fetchResidentStatus } from "$api/controllers/resident-controller";
 
   let status = $state<any>(null);
   let isLoading = $state(true);
@@ -23,9 +24,12 @@
 
   async function loadData(term?: string) {
     if (!auth.accessToken) return;
-    const targetTerm = term || localTerm;
+    await loadStatus(term || localTerm);
+  }
 
-    // Sync URL without reload
+  async function loadStatus(targetTerm: string) {
+    if (!auth.user?.email) return;
+
     const url = new URL(window.location.href);
     if (targetTerm) {
       url.searchParams.set("term", targetTerm);
@@ -35,11 +39,11 @@
     isLoading = true;
     error = null;
     try {
-      status = await fetchServer(`/api/resident/check-status?term=${targetTerm}`);
+      status = await fetchResidentStatus(targetTerm);
       if (status.activeTerm && !targetTerm) {
         // First load with no term — reload with resolved active term so transactions are filtered
         localTerm = status.activeTerm;
-        status = await fetchServer(`/api/resident/check-status?term=${localTerm}`);
+        status = await fetchResidentStatus(localTerm);
         const u = new URL(window.location.href);
         u.searchParams.set("term", localTerm);
         replaceState(u.toString(), {});

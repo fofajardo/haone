@@ -4,7 +4,7 @@
   import { uiSettings } from "$state/settings.svelte";
   import { roomsState } from "$state/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
-  import { fetchSheetRowsRaw } from "$api/services/google-sheets-service";
+  import { fetchTermCurr } from "$api/controllers/constants-controller";
   import {
     getSyncPreview,
     applySync,
@@ -82,12 +82,12 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData, constRows] = await Promise.all([
+      const [resData, userData, currentTerm] = await Promise.all([
         fetchResidents(forceRefresh),
         fetchUsers(forceRefresh),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
+        fetchTermCurr(forceRefresh)
       ]);
-      activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
+      activeTerm = currentTerm;
       if (!activeTerm) {
         throw new Error("Active academic term (TERM_CURR) not found in constants.");
       }

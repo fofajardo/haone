@@ -3,7 +3,12 @@
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw, batchUpdateValues } from "$api/services/google-sheets-service";
+  import {
+    fetchJournalEntries,
+    batchAuditEntries,
+    mapRowToJournal
+  } from "$api/controllers/journal-controller";
+  import { fetchTransactionTypes, fetchMopTypes } from "$api/controllers/constants-controller";
   import { translateMop } from "$utils/translators";
   import { parseDateWeight } from "$utils/parsers";
   import { Combobox } from "$ui/combobox";
@@ -35,61 +40,29 @@
   });
 
   import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
-  import { mapRowToJournal } from "$api/controllers/resident-controller";
 
   async function loadData(forceRefresh = false) {
-    if (!uiSettings.accountingWorkbookId) {
-      return;
-    }
     isLoading = true;
     error = null;
     selectedIds = new Set();
 
     try {
-      const rows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "journal_general!A:T",
-        forceRefresh
-      );
-      if (rows.length === 0) {
-        journal = [];
-        return;
-      }
+      const [entries, types, mops] = await Promise.all([
+        fetchJournalEntries(undefined, undefined),
+        fetchTransactionTypes(forceRefresh),
+        fetchMopTypes(forceRefresh)
+      ]);
 
-      const constRows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "constants!A:C",
-        forceRefresh
-      );
+      transactionTypes = types;
+      mopTypes = [{ value: "", label: "N/A" }, ...mops];
 
-      transactionTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("PMT_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: r[2] || r[1] || r[0]
-        }));
+      const journals = Array.isArray(entries) ? entries : entries.items;
 
-      mopTypes = [
-        { value: "", label: "N/A" },
-        ...constRows
-          .slice(1)
-          .filter((r) => (r[0] || "").startsWith("MOP_"))
-          .map((r) => ({
-            value: r[1] || r[0],
-            label: translateMop(r[1] || r[0])
-          }))
-      ];
-
-      const mappedJournal: JournalRecord[] = rows
-        .slice(1)
-        .map((row, idx) => {
-          const res = mapRowToJournal(row, idx + 2);
-          return {
-            ...res,
-            dateWeight: parseDateWeight(res.date)
-          };
-        })
+      const mappedJournal: JournalRecord[] = journals
+        .map((res) => ({
+          ...res,
+          dateWeight: parseDateWeight(res.date)
+        }))
         .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
         .sort(
           (a, b) =>
@@ -113,30 +86,12 @@
   }
 
   async function handleBatchAudit() {
-    if (selectedIds.size === 0 || !uiSettings.accountingWorkbookId) {
+    if (selectedIds.size === 0) {
       return;
     }
     isAuditing = true;
     try {
-      const rows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "journal_general!A:T",
-        true
-      );
-      const updates = Array.from(selectedIds).map((id) => {
-        const idx = rows.findIndex((row) => {
-          return row[JOR.ID] === id;
-        });
-        if (idx === -1) {
-          throw new Error(`Transaction ${id} not found in the ledger`);
-        }
-        return {
-          range: `journal_general!R${idx + 1}`,
-          values: [["TRUE"]]
-        };
-      });
-
-      await batchUpdateValues(uiSettings.accountingWorkbookId, updates);
+      await batchAuditEntries(Array.from(selectedIds));
       selectedIds = new Set();
       await loadData(true);
     } catch (e: any) {

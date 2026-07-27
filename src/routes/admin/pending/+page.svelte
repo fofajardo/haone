@@ -7,10 +7,11 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import {
-    fetchSheetRowsRaw,
-    batchUpdateValues,
-    invalidateCache
-  } from "$api/services/google-sheets-service";
+    fetchJournalEntries,
+    updateJournalReceiptInfo,
+    mapRowToJournal
+  } from "$api/controllers/journal-controller";
+  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { parseDateWeight } from "$utils/parsers";
   import { Input } from "$ui/input/index.js";
   import { Label } from "$ui/label/index.js";
@@ -26,7 +27,6 @@
   import type { ReceiptData } from "$lib/types";
 
   import { type JournalRecord } from "$lib/types";
-  import { mapRowToJournal } from "$api/controllers/resident-controller";
 
   let queue = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
@@ -53,34 +53,25 @@
   });
 
   async function loadData(forceRefresh = false) {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
     selectedIndices = new Set();
 
     try {
-      const [rows, constRows] = await Promise.all([
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", forceRefresh),
-        fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
+      const [entries, types] = await Promise.all([
+        fetchJournalEntries(undefined, undefined),
+        fetchTransactionTypes(forceRefresh)
       ]);
 
-      transactionTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("PMT_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: r[2] || r[1] || r[0]
-        }));
+      transactionTypes = types;
 
-      queue = rows
-        .slice(1)
-        .map((row, idx) => {
-          const journal = mapRowToJournal(row, idx + 2);
-          return {
-            ...journal,
-            dateWeight: parseDateWeight(journal.date)
-          };
-        })
+      const journals = Array.isArray(entries) ? entries : entries.items;
+
+      queue = journals
+        .map((journal) => ({
+          ...journal,
+          dateWeight: parseDateWeight(journal.date)
+        }))
         .filter((r) => {
           return (
             r.period === uiSettings.currentTerm.trim() &&
@@ -148,15 +139,7 @@
         },
         branding: branding,
         onSuccess: async () => {
-          const updates = [
-            {
-              range: `journal_general!M${record.ledgerIndex}:N${record.ledgerIndex}`,
-              values: [[dateIssued, prRefNo]]
-            },
-            { range: `journal_general!S${record.ledgerIndex}`, values: [[url]] }
-          ];
-          await batchUpdateValues(uiSettings.accountingWorkbookId!, updates);
-          invalidateCache();
+          await updateJournalReceiptInfo(record.id, dateIssued, prRefNo, url);
         }
       });
     }

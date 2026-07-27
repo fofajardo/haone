@@ -1,48 +1,37 @@
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
 import type { UserSettingsRecord } from "$lib/types";
+import { settingsService } from "$api/services/settings-service";
 
-/**
- * User Settings (Proxy via server API)
- */
-export async function fetchUserSettings(forceRefresh = false): Promise<UserSettingsRecord[]> {
-  try {
-    const data = await fetchServer("/api/resident/settings", {}, forceRefresh);
-    return [
-      {
-        residentId: auth.user?.email || "",
-        isPublicAchievementList: data.isPublicAchievementList,
-        residentNav: data.residentNav || "",
-        adminNav: data.adminNav || "",
-        density: data.density || "",
-        typography: data.typography || "",
-        theme: data.theme || "",
-        isReducedMotion: data.isReducedMotion || false,
-        clockFormat: data.clockFormat || "12h",
-        raw: []
-      }
-    ];
-  } catch (e) {
-    console.error("[SettingsController] Failed to fetch settings, returning defaults:", e);
-    return [
-      {
-        residentId: auth.user?.email || "",
-        isPublicAchievementList: true,
-        residentNav: "home,finance,laundry",
-        adminNav: "dashboard,history,residents",
-        density: "default",
-        typography: "default",
-        theme: "system",
-        isReducedMotion: false,
-        clockFormat: "12h",
-        raw: []
-      }
-    ];
+export async function fetchUserSettings(_forceRefresh = false): Promise<UserSettingsRecord[]> {
+  const { auth } = await import("$state/auth.svelte");
+  const { residentState } = await import("$state/resident-state.svelte");
+  const residentId = residentState.status?.profile?.id || "";
+  if (!residentId) return [];
+
+  const settings = await settingsService.fetchUserSettings(residentId);
+  if (settings) {
+    return [settings];
   }
+
+  return [
+    {
+      residentId,
+      isPublicAchievementList: true,
+      residentNav: "home,finance,laundry",
+      adminNav: "dashboard,history,residents",
+      density: "default",
+      typography: "default",
+      theme: "system",
+      isReducedMotion: false,
+      clockFormat: "12h",
+      raw: []
+    }
+  ];
 }
 
 export async function updateUserSettings(
-  _residentId: string,
+  residentId: string,
   data: {
     isPublic?: boolean;
     residentNav?: string;
@@ -53,8 +42,8 @@ export async function updateUserSettings(
     isReducedMotion?: boolean;
     clockFormat?: string;
   }
-) {
-  const payload: any = {};
+): Promise<any> {
+  const payload: Partial<UserSettingsRecord> = {};
   if (data.isPublic !== undefined) {
     payload.isPublicAchievementList = data.isPublic;
   }
@@ -80,10 +69,7 @@ export async function updateUserSettings(
     payload.clockFormat = data.clockFormat;
   }
 
-  return await fetchServer("/api/resident/settings", {
-    method: "PATCH",
-    body: JSON.stringify(payload)
-  });
+  return await settingsService.updateUserSettings(residentId, payload);
 }
 
 /**

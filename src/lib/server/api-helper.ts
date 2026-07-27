@@ -251,27 +251,48 @@ export async function authenticateResident(request: Request) {
     let isStudent = true;
     if (email && !isInstanceAdmin) {
       try {
-        const { USER_COL, UserTag } = await import("$lib/types");
-        const saToken = await getSheetsClient();
-        const [users] = await fetchSheetsData(saToken, ["users!A:P"]);
-        const user = users.find((r: any) => {
-          return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
-        });
-        if (user) {
-          residentId = user[USER_COL.ID];
-          const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
-          const tags = tagsStr.split(":").map((t: string) => {
-            return t.trim();
-          });
-          if (!tags.includes(UserTag.STUDENT)) {
-            isStudent = false;
+        const { PUBLIC_DB_PROVIDER } = await import("$env/static/public");
+        if (PUBLIC_DB_PROVIDER === "supabase") {
+          const { isSupabase, supabase } = await import("$api/services/common");
+          if (isSupabase && supabase) {
+            const { data: dbUser } = await supabase
+              .from("users")
+              .select("id, tags")
+              .eq("email", email)
+              .maybeSingle();
+            if (dbUser) {
+              residentId = dbUser.id;
+              const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
+              const { UserTag } = await import("$lib/types");
+              if (!tags.includes(UserTag.STUDENT)) {
+                isStudent = false;
+              }
+            } else {
+              isStudent = false;
+            }
           }
         } else {
-          // New user signup is allowed to proceed to onboarding
-          isStudent = false;
+          const { USER_COL, UserTag } = await import("$lib/types");
+          const saToken = await getSheetsClient();
+          const [users] = await fetchSheetsData(saToken, ["users!A:P"]);
+          const user = users.find((r: any) => {
+            return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
+          });
+          if (user) {
+            residentId = user[USER_COL.ID];
+            const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
+            const tags = tagsStr.split(":").map((t: string) => {
+              return t.trim();
+            });
+            if (!tags.includes(UserTag.STUDENT)) {
+              isStudent = false;
+            }
+          } else {
+            isStudent = false;
+          }
         }
       } catch (e) {
-        // Silently fail, assume student check fails if sheet read fails
+        // Silently fail
       }
     }
 

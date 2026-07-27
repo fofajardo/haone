@@ -16,7 +16,8 @@
   import TransactionForm from "$components/TransactionForm.svelte";
   import {
     fetchAdminPaymentRequests,
-    declinePaymentRequest
+    declinePaymentRequest,
+    approvePaymentRequest
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
   import { PaymentRequestStatus } from "$lib/types";
@@ -27,11 +28,6 @@
   import { Textarea } from "$ui/textarea";
   import { goto } from "$app/navigation";
   import * as Card from "$ui/card";
-  import {
-    appendSheetRow,
-    updateSheetValue,
-    fetchSheetRowsRaw
-  } from "$api/services/google-sheets-service";
   import { auth } from "$state/auth.svelte";
   import { deleteUploadedImage } from "$utils/image-utils";
 
@@ -145,27 +141,23 @@
     if (!currentPayment) return;
     isProcessing = true;
     try {
-      const awId = uiSettings.accountingWorkbookId;
-      const srId = uiSettings.sharedRecordsId;
-      if (!awId || !srId) throw new Error("Spreadsheet IDs not configured");
-
-      // 1. Add to journal
-      await appendSheetRow(awId, "journal_general!A:T", [row]);
-
-      // 2. Mark as APPROVED in payment_requests sheet
-      const srRows = await fetchSheetRowsRaw(srId, "payment_requests!A:L");
-      const rowIndex = srRows.findIndex(
-        (r) => (r[0]?.toString() || "").trim() === currentPayment.id
-      );
-
-      if (rowIndex === -1) {
-        throw new Error("Payment record not found in sheet for approval update");
-      }
-
-      const actualRow = rowIndex + 1;
-      await updateSheetValue(srId, `payment_requests!J${actualRow}`, [
-        [PaymentRequestStatus.APPROVED]
-      ]);
+      await approvePaymentRequest(currentPayment.id, {
+        date: row[0] || "",
+        creator: row[1] || "",
+        account: row[2] || "",
+        water: parseFloat(row[3] || "0"),
+        assoc: parseFloat(row[4] || "0"),
+        misc: parseFloat(row[5] || "0"),
+        mop: row[6] || "",
+        period: row[7] || "",
+        type: row[8] || "",
+        notes: row[9] || "",
+        mopRefNo: row[11] || "",
+        creatorName: row[14] || "",
+        name: row[15] || "",
+        stno: row[16] || "",
+        receiptUrl: row[18] || ""
+      });
       await deleteUploadedImage(currentPayment.proofLink, auth.accessToken!);
 
       toast.success("Transaction added and payment request approved");

@@ -82,11 +82,13 @@
     return assocLimit - (Number(formData.assocFee) || 0);
   });
 
+  import { fetchResidentStatus } from "$api/controllers/resident-controller";
+
   async function loadData() {
     if (!auth.user?.email) return;
     isLoading = true;
     try {
-      const statusData = await fetchServer("/api/resident/check-status");
+      const statusData = await fetchResidentStatus();
       resident = statusData.account;
       mopTypes = statusData.mopTypes;
     } catch (e: any) {

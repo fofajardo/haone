@@ -4,7 +4,9 @@
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchSheetRowsRaw, updateSheetValue } from "$api/services/google-sheets-service";
+  import { fetchJournalEntries } from "$api/controllers/journal-controller";
+  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
+  import { changeAccountType as changeAccountTypeController } from "$api/controllers/resident-controller";
   import { translateCollege, translateProgram } from "$utils/translators";
   import { parseDateWeight } from "$utils/parsers";
   import { pluralize } from "$utils/formatters";
@@ -36,8 +38,7 @@
   import {
     stageStatusEmail,
     stageClearanceEmail,
-    fetchResidents,
-    mapRowToJournal
+    fetchResidents
   } from "$api/controllers/resident-controller";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import SubpageHeader from "$components/SubpageHeader.svelte";
@@ -83,7 +84,6 @@
   }
 
   async function loadResidentProfile(forceRefresh = false) {
-    if (!uiSettings.accountingWorkbookId || !stno) return;
     isLoading = true;
     error = null;
 
@@ -109,42 +109,28 @@
 
       account = matchedResident;
 
-      // 2. Fetch Transaction History
-      const jorRows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "journal_general!A:T",
-        forceRefresh
-      );
-      history = jorRows
-        .slice(1)
+      // 2. Fetch Transaction History & Types
+      const [entries, types] = await Promise.all([
+        fetchJournalEntries(undefined, undefined),
+        fetchTransactionTypes(forceRefresh)
+      ]);
+
+      const journalList = Array.isArray(entries) ? entries : entries.items;
+
+      history = journalList
         .filter(
           (r) =>
-            r[JOR.ACCOUNT]?.trim().toLowerCase() === account?.email.toLowerCase() &&
-            r[JOR.STNO]?.trim() === stno &&
-            (!localTerm || r[JOR.PERIOD] === localTerm)
+            r.account.trim().toLowerCase() === account?.email.toLowerCase() &&
+            r.stno.trim() === stno &&
+            (!localTerm || r.period === localTerm)
         )
-        .map((r, idx) => {
-          const journal = mapRowToJournal(r, idx);
-          return {
-            ...journal,
-            dateWeight: parseDateWeight(journal.date)
-          };
-        })
+        .map((journal) => ({
+          ...journal,
+          dateWeight: parseDateWeight(journal.date)
+        }))
         .sort((a, b) => b.dateWeight - a.dateWeight || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0));
 
-      // 3. Fetch Transaction Types
-      const constRows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "constants!A:C",
-        forceRefresh
-      );
-      transactionTypes = constRows
-        .slice(1)
-        .filter((r) => (r[0] || "").startsWith("PMT_"))
-        .map((r) => ({
-          value: r[1] || r[0],
-          label: r[2] || r[1] || r[0]
-        }));
+      transactionTypes = types;
     } catch (e: any) {
       error = e.message;
       showAlert("Data Error", e.message, "error");
@@ -198,24 +184,12 @@
   ];
 
   async function changeAccountType(newType: string) {
-    if (!account || !uiSettings.accountingWorkbookId) {
+    if (!account) {
       return;
     }
     isChangingType = true;
     try {
-      const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
-      const rowIndex = accRows.findIndex(
-        (r) =>
-          (r[ACCOUNT_COL.RESIDENT_ID] || "").trim() === account!.residentId &&
-          (r[ACCOUNT_COL.PERIOD] || "").trim() === account!.period
-      );
-      if (rowIndex === -1) {
-        throw new Error("Account row not found in spreadsheet.");
-      }
-      const actualRow = rowIndex + 1;
-      await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!L${actualRow}`, [
-        [newType]
-      ]);
+      await changeAccountTypeController(account.residentId, account.period, newType);
       showAlert("Account Type Updated", `Account type changed to ${newType}.`);
       await loadResidentProfile(true);
     } catch (e: any) {
@@ -226,9 +200,7 @@
   }
 
   onMount(async () => {
-    if (uiSettings.accountingWorkbookId) {
-      allAccounts = await fetchResidents();
-    }
+    allAccounts = await fetchResidents();
   });
 
   async function handleClear() {

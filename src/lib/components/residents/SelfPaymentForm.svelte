@@ -27,9 +27,11 @@
     proofLink: ""
   });
 
+  import { fetchResidentStatus } from "$api/controllers/resident-controller";
+
   async function loadData() {
     try {
-      const statusData = await fetchServer("/api/resident/check-status", {}, true);
+      const statusData = await fetchResidentStatus(undefined, true);
       mopTypes = statusData.mopTypes || [];
     } catch (e) {
       console.error(e);

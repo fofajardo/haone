@@ -90,6 +90,7 @@
     "runed": "^0.37.1",
     "slug": "^12.0.0",
     "svelte-toolbelt": "^0.10.6",
+    "@supabase/supabase-js": "^2.49.1",
     "three": "^0.185.1"
   }
 }

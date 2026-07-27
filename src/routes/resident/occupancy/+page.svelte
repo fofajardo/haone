@@ -17,18 +17,17 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
+  import { fetchResidentStatus, fetchResidents } from "$api/controllers/resident-controller";
+
   async function loadData() {
     if (!auth.accessToken) return;
     isLoading = true;
     error = null;
     try {
-      const [statusJson, occJson] = await Promise.all([
-        fetchServer("/api/resident/check-status"),
-        fetchServer("/api/resident/occupancy")
-      ]);
+      const [statusJson, occJson] = await Promise.all([fetchResidentStatus(), fetchResidents()]);
 
       status = statusJson;
-      occupancyData = occJson.accounts;
+      occupancyData = Array.isArray(occJson) ? occJson : (occJson as any).accounts || [];
     } catch (e: any) {
       error = e.message;
     } finally {

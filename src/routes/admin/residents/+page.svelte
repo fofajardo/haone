@@ -68,15 +68,11 @@
   }
 
   async function loadData(forceRefresh = false) {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
     selectedIndices = new Set();
     try {
-      residents = await fetchResidents(forceRefresh);
-      residents = residents.filter(
-        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
-      );
+      residents = await fetchResidents(forceRefresh, uiSettings.currentTerm);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -173,7 +169,7 @@
   let residentsToAward = $state<Resident[]>([]);
 
   async function handleBatchClear() {
-    if (selectedIndices.size === 0 || !uiSettings.accountingWorkbookId) {
+    if (selectedIndices.size === 0) {
       return;
     }
     const eligible = residents.filter((r) => {

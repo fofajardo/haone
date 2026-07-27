@@ -2,11 +2,11 @@
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
   import {
-    fetchSheetRowsRaw,
-    appendSheetRow,
-    batchUpdateValues,
-    updateSheetValue
-  } from "$api/services/google-sheets-service";
+    fetchConstants,
+    addConstant,
+    updateConstant,
+    batchUpdateConstants
+  } from "$api/controllers/constants-controller";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
   import { Button } from "$ui/button";
@@ -62,22 +62,20 @@
     isLoading = true;
     errorMessage = "";
     try {
-      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
-      allConstants = rows.map((row, idx) => ({
-        key: row[0] || "",
-        value: row[1] || "",
+      const records = await fetchConstants(true);
+      allConstants = records.map((r, idx) => ({
+        key: r.key,
+        value: r.value,
         rowIndex: idx
       }));
 
-      const filtered = rows
-        .slice(1)
+      const filtered = records
         .filter(
-          (row) =>
-            row[0]?.startsWith("TERM_") && row[0] !== "TERM_CURR" && row[0] !== "TERM_RESERVED"
+          (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
         )
-        .map((row) => ({
-          value: row[1] || "",
-          description: row[2] || ""
+        .map((r) => ({
+          value: r.value,
+          description: r.description
         }));
 
       const sortedValues = sortPeriods(filtered.map((t) => t.value));
@@ -119,9 +117,7 @@
 
     isSaving = true;
     try {
-      await appendSheetRow(uiSettings.accountingWorkbookId, "constants!A:C", [
-        [key, value, description]
-      ]);
+      await addConstant(key, value, description);
       showAddDialog = false;
       await loadTerms();
     } catch (e) {
@@ -171,27 +167,14 @@
     ];
 
     try {
-      const batchData: { range: string; values: any[][] }[] = [];
-      const appendData: any[][] = [];
-
       for (const u of updates) {
         const key = `FEES_${p}_${u.suffix}`;
         const existing = allConstants.find((c) => c.key === key);
         if (existing) {
-          batchData.push({
-            range: `constants!B${existing.rowIndex + 1}`,
-            values: [[String(u.val)]]
-          });
+          await updateConstant(key, String(u.val));
         } else {
-          appendData.push([key, String(u.val), `Fee for ${p} (${u.suffix})`]);
+          await addConstant(key, String(u.val), `Fee for ${p} (${u.suffix})`);
         }
-      }
-
-      if (batchData.length > 0) {
-        await batchUpdateValues(uiSettings.accountingWorkbookId, batchData);
-      }
-      if (appendData.length > 0) {
-        await appendSheetRow(uiSettings.accountingWorkbookId, "constants!A:C", appendData);
       }
 
       editingFeesFor = null;
@@ -212,17 +195,10 @@
 
     try {
       if (currConstant) {
-        await updateSheetValue(
-          uiSettings.accountingWorkbookId,
-          `constants!B${currConstant.rowIndex + 1}`,
-          [[value]]
-        );
+        await updateConstant("TERM_CURR", value);
       } else {
-        await appendSheetRow(uiSettings.accountingWorkbookId, "constants!A:C", [
-          ["TERM_CURR", value, "Current Active Term"]
-        ]);
+        await addConstant("TERM_CURR", value, "Current Active Term");
       }
-      // Also update local uiSettings for immediate feedback if they want
       uiSettings.currentTerm = value;
       await loadTerms();
     } catch (e) {

@@ -11,7 +11,9 @@ import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
   const { error } = await authenticateResident(request);
-  if (error) return error;
+  if (error) {
+    return error;
+  }
 
   const url = new URL(request.url);
   const slugParam = url.searchParams.get("slug");
@@ -57,8 +59,12 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const announcements = parsedAnnouncements
       .filter((a: any) => {
-        if (a.isAdminOnly) return false;
-        if (a.isUnlisted) return false;
+        if (a.isAdminOnly) {
+          return false;
+        }
+        if (a.isUnlisted) {
+          return false;
+        }
         return isAnnouncementActive(a);
       })
       .sort((a: any, b: any) => b.dateCreated.localeCompare(a.dateCreated));

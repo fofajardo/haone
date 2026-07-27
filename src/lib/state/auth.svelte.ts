@@ -24,6 +24,19 @@ class AuthState {
     return this.adminDisplayName || this.user?.name || "";
   }
 
+  get isResident(): boolean {
+    if (this.authType === "resident") {
+      return true;
+    }
+    if (browser && window.location.pathname.startsWith("/resident")) {
+      return true;
+    }
+    if (this.authType !== "admin") {
+      return true;
+    }
+    return false;
+  }
+
   constructor() {
     if (browser) {
       const savedToken = localStorage.getItem(LS_KEYS.ACCESS_TOKEN);
@@ -123,6 +136,11 @@ class AuthState {
     this.isRemembered = false;
 
     if (browser) {
+      import("$api/services/common").then(({ supabase }) => {
+        if (supabase) {
+          supabase.auth.signOut();
+        }
+      });
       localStorage.removeItem(LS_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(LS_KEYS.USER);
       localStorage.removeItem(LS_KEYS.REMEMBER);

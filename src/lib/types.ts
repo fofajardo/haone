@@ -249,6 +249,12 @@ export const USER_SETTINGS_COL = {
   CLOCK_FORMAT: 8
 } as const;
 
+export const CONSTANT_COL = {
+  KEY: 0,
+  VALUE: 1,
+  DESCRIPTION: 2
+} as const;
+
 /* ==========================================
  * Data Record Interfaces
  * ========================================== */
@@ -438,6 +444,30 @@ export interface UserSettingsRecord {
   raw: string[];
 }
 
+export interface StaticIpRecord {
+  id: string;
+  recorderId: string;
+  residentId: string;
+  period: string;
+  type: string;
+  ip: string;
+  notes: string;
+  // Enriched fields (joined)
+  name?: string;
+  email?: string;
+  stno?: string;
+  room?: string;
+  bed?: string;
+  raw: string[];
+}
+
+export interface ConstantRecord {
+  key: string;
+  value: string;
+  description: string;
+  raw: string[];
+}
+
 /* ==========================================
  * Enums & Associated Constants
  * ========================================== */
@@ -556,3 +586,20 @@ export const ANNOUNCEMENT_TAG_COLORS: Record<string, string> = {
   [AnnouncementTag.CLEANING]: "bg-slate-100 text-slate-700 border-slate-200",
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };
+
+export interface PaginationOptions {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  filters?: Record<string, any>;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}

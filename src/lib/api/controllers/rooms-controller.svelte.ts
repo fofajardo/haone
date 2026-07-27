@@ -1,11 +1,7 @@
 import { uiSettings } from "$state/settings.svelte";
-import {
-  fetchSheetRowsRaw,
-  updateSheetValue,
-  batchUpdateValues,
-  appendSheetRow,
-  deleteSheetRow
-} from "$api/services/google-sheets-service";
+import { roomsService } from "$api/services/rooms-service";
+import { addJournalEntries } from "$api/controllers/journal-controller";
+import { fetchConstantByKey } from "$api/controllers/constants-controller";
 import {
   ACCOUNT_COL,
   CURR_COL,
@@ -59,41 +55,14 @@ export interface SyncPreviewAction {
 }
 
 export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]> {
-  if (!uiSettings.residentRecordsId) return [];
-
-  const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:O", forceRefresh);
-  if (rows.length <= 1) return [];
-
-  return rows.slice(1).map((row, idx) => ({
-    timestamp: row[CURR_COL.TIMESTAMP] || "",
-    email: (row[CURR_COL.EMAIL] || "").trim().toLowerCase(),
-    room: (row[CURR_COL.ROOM] || "").trim().toUpperCase(),
-    bed: (row[CURR_COL.BED] || "").trim().toUpperCase(),
-    lastName: (row[CURR_COL.LAST_NAME] || "").trim(),
-    firstName: (row[CURR_COL.FIRST_NAME] || "").trim(),
-    college: (row[CURR_COL.COLLEGE] || "").trim(),
-    program: (row[CURR_COL.PROGRAM] || "").trim(),
-    studentNo: (row[CURR_COL.STUDENT_NO] || "").trim(),
-    checkInDate: row[CURR_COL.CHECK_IN_DATE] || "",
-    isEvaluated: (row[CURR_COL.EVALUATED] || "").toUpperCase() === "TRUE",
-    term: row[CURR_COL.TERM] || "",
-    accountType: (row[CURR_COL.ACCOUNT_TYPE] || "").trim().toUpperCase(),
-    suffix: row[CURR_COL.SUFFIX] || "",
-    overrideName: row[CURR_COL.OVERRIDE_NAME] || "",
-    rowIndex: idx + 2, // +1 for header, +1 for 1-indexing
-    raw: row
-  }));
+  return roomsService.fetchCurrRecords(forceRefresh);
 }
 
 export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAction[]> {
-  if (!uiSettings.accountingWorkbookId || !uiSettings.residentRecordsId) {
-    throw new Error("Spreadsheet IDs not configured");
-  }
-
   const [currRecords, users, accRows] = await Promise.all([
     fetchCurrSheet(true),
     fetchUsers(true),
-    fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L", true)
+    roomsService.fetchAccountsRaw(true)
   ]);
 
   const userMapByStNo = new Map<string, UserRecord>();
@@ -406,7 +375,7 @@ export async function applySync(actions: SyncPreviewAction[]) {
         values: [[a.payload.checkInDate]]
       });
     }
-    await batchUpdateValues(uiSettings.accountingWorkbookId, updates);
+    await roomsService.batchUpdateAccounts(updates);
   }
 
   // 4. Create Accounts (Append)
@@ -422,113 +391,19 @@ export async function applySync(actions: SyncPreviewAction[]) {
       row[ACCOUNT_COL.TYPE] = a.payload.accountType || AccountType.STUDENT;
       return row;
     });
-    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", rows);
+    await roomsService.appendAccounts(rows);
 
     // Carry forward any prior term static IP addresses
-    if (uiSettings.sharedRecordsId) {
-      try {
-        const staticIpRows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "static_ip!A:G");
-        const carryForwardRows: any[][] = [];
+    try {
+      const staticIpRows = await roomsService.fetchStaticIpRows();
+      const carryForwardRows: any[][] = [];
 
-        for (const a of accountCreations) {
-          const rid = a.payload.residentId;
-          const targetPeriod = a.payload.period;
+      for (const a of accountCreations) {
+        const rid = a.payload.residentId;
+        const targetPeriod = a.payload.period;
 
-          const priorRows = staticIpRows.slice(1).filter((r) => {
-            return r[STATIC_IP_COL.RESIDENT_ID] === rid && r[STATIC_IP_COL.PERIOD] !== targetPeriod;
-          });
-
-          if (priorRows.length > 0) {
-            const sortedPeriods = [
-              ...new Set(
-                priorRows.map((r) => {
-                  return r[STATIC_IP_COL.PERIOD];
-                })
-              )
-            ].sort((p1, p2) => {
-              return p2.localeCompare(p1);
-            });
-            const latestPeriod = sortedPeriods[0];
-            const latestEntries = priorRows.filter((r) => {
-              return r[STATIC_IP_COL.PERIOD] === latestPeriod;
-            });
-
-            for (const entry of latestEntries) {
-              const newRow = new Array(7).fill("");
-              newRow[STATIC_IP_COL.ID] = crypto.randomUUID();
-              newRow[STATIC_IP_COL.RECORDER_ID] =
-                entry[STATIC_IP_COL.RECORDER_ID] || auth.user?.email || "";
-              newRow[STATIC_IP_COL.RESIDENT_ID] = rid;
-              newRow[STATIC_IP_COL.PERIOD] = targetPeriod;
-              newRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
-              newRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
-              newRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
-              carryForwardRows.push(newRow);
-            }
-          }
-        }
-
-        if (carryForwardRows.length > 0) {
-          await appendSheetRow(uiSettings.sharedRecordsId, "static_ip!A:G", carryForwardRows);
-        }
-      } catch (e) {
-        console.error("Failed to carry forward static IPs in applySync:", e);
-      }
-    }
-  }
-
-  // 5. Mark CURR as Evaluated
-  const currIndices = [...new Set(actions.map((a) => a.currIndex).filter(Boolean))];
-  if (currIndices.length > 0 && uiSettings.residentRecordsId) {
-    // EVALUATED is col index 10 = column K
-    const updates = currIndices.map((idx) => ({
-      range: `CURR!K${idx}`,
-      values: [["TRUE"]]
-    }));
-    await batchUpdateValues(uiSettings.residentRecordsId, updates);
-  }
-
-  return {
-    usersCreated: userCreations.length,
-    usersUpdated: userUpdates.length,
-    accountsCreated: accountCreations.length,
-    accountsUpdated: accountUpdates.length,
-    evaluated: currIndices.length
-  };
-}
-
-export async function manualAssignBed(residentId: string, room: string, bed: string, term: string) {
-  if (!uiSettings.accountingWorkbookId) {
-    throw new Error("Accounting Workbook ID not configured");
-  }
-
-  const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
-  const rowIndex = accRows.findIndex((r) => {
-    return r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term;
-  });
-
-  if (rowIndex !== -1) {
-    const actualRow = rowIndex + 1;
-    await updateSheetValue(
-      uiSettings.accountingWorkbookId,
-      `accounts!D${actualRow}:E${actualRow}`,
-      [[room, bed]]
-    );
-  } else {
-    const newRow = new Array(12).fill("");
-    newRow[ACCOUNT_COL.ID] = crypto.randomUUID();
-    newRow[ACCOUNT_COL.RESIDENT_ID] = residentId;
-    newRow[ACCOUNT_COL.PERIOD] = term;
-    newRow[ACCOUNT_COL.ROOM] = room;
-    newRow[ACCOUNT_COL.BED] = bed;
-    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", [newRow]);
-
-    // Carry forward any prior term static IP addresses
-    if (uiSettings.sharedRecordsId) {
-      try {
-        const staticIpRows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "static_ip!A:G");
         const priorRows = staticIpRows.slice(1).filter((r) => {
-          return r[STATIC_IP_COL.RESIDENT_ID] === residentId && r[STATIC_IP_COL.PERIOD] !== term;
+          return r[STATIC_IP_COL.RESIDENT_ID] === rid && r[STATIC_IP_COL.PERIOD] !== targetPeriod;
         });
 
         if (priorRows.length > 0) {
@@ -546,26 +421,106 @@ export async function manualAssignBed(residentId: string, room: string, bed: str
             return r[STATIC_IP_COL.PERIOD] === latestPeriod;
           });
 
-          const carryForwardRows = latestEntries.map((entry) => {
-            const newIpRow = new Array(7).fill("");
-            newIpRow[STATIC_IP_COL.ID] = crypto.randomUUID();
-            newIpRow[STATIC_IP_COL.RECORDER_ID] =
+          for (const entry of latestEntries) {
+            const newRow = new Array(7).fill("");
+            newRow[STATIC_IP_COL.ID] = crypto.randomUUID();
+            newRow[STATIC_IP_COL.RECORDER_ID] =
               entry[STATIC_IP_COL.RECORDER_ID] || auth.user?.email || "";
-            newIpRow[STATIC_IP_COL.RESIDENT_ID] = residentId;
-            newIpRow[STATIC_IP_COL.PERIOD] = term;
-            newIpRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
-            newIpRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
-            newIpRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
-            return newIpRow;
-          });
-
-          if (carryForwardRows.length > 0) {
-            await appendSheetRow(uiSettings.sharedRecordsId, "static_ip!A:G", carryForwardRows);
+            newRow[STATIC_IP_COL.RESIDENT_ID] = rid;
+            newRow[STATIC_IP_COL.PERIOD] = targetPeriod;
+            newRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
+            newRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
+            newRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
+            carryForwardRows.push(newRow);
           }
         }
-      } catch (e) {
-        console.error("Failed to carry forward static IPs in manualAssignBed:", e);
       }
+
+      if (carryForwardRows.length > 0) {
+        await roomsService.appendStaticIpRows(carryForwardRows);
+      }
+    } catch (e) {
+      console.error("Failed to carry forward static IPs in applySync:", e);
+    }
+  }
+
+  // 5. Mark CURR as Evaluated
+  const currIndices = [...new Set(actions.map((a) => a.currIndex).filter(Boolean))];
+  if (currIndices.length > 0) {
+    const updates = currIndices.map((idx) => ({
+      range: `CURR!K${idx}`,
+      values: [["TRUE"]]
+    }));
+    await roomsService.batchUpdateCurr(updates);
+  }
+
+  return {
+    usersCreated: userCreations.length,
+    usersUpdated: userUpdates.length,
+    accountsCreated: accountCreations.length,
+    accountsUpdated: accountUpdates.length,
+    evaluated: currIndices.length
+  };
+}
+
+export async function manualAssignBed(residentId: string, room: string, bed: string, term: string) {
+  const accRows = await roomsService.fetchAccountsRaw();
+  const rowIndex = accRows.findIndex((r) => {
+    return r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term;
+  });
+
+  if (rowIndex !== -1) {
+    await roomsService.updateAccountRoomBed(residentId, term, room, bed);
+  } else {
+    const newRow = new Array(12).fill("");
+    newRow[ACCOUNT_COL.ID] = crypto.randomUUID();
+    newRow[ACCOUNT_COL.RESIDENT_ID] = residentId;
+    newRow[ACCOUNT_COL.PERIOD] = term;
+    newRow[ACCOUNT_COL.ROOM] = room;
+    newRow[ACCOUNT_COL.BED] = bed;
+    await roomsService.addAccountRow(newRow);
+
+    // Carry forward any prior term static IP addresses
+    try {
+      const staticIpRows = await roomsService.fetchStaticIpRows();
+      const priorRows = staticIpRows.slice(1).filter((r) => {
+        return r[STATIC_IP_COL.RESIDENT_ID] === residentId && r[STATIC_IP_COL.PERIOD] !== term;
+      });
+
+      if (priorRows.length > 0) {
+        const sortedPeriods = [
+          ...new Set(
+            priorRows.map((r) => {
+              return r[STATIC_IP_COL.PERIOD];
+            })
+          )
+        ].sort((p1, p2) => {
+          return p2.localeCompare(p1);
+        });
+        const latestPeriod = sortedPeriods[0];
+        const latestEntries = priorRows.filter((r) => {
+          return r[STATIC_IP_COL.PERIOD] === latestPeriod;
+        });
+
+        const carryForwardRows = latestEntries.map((entry) => {
+          const newIpRow = new Array(7).fill("");
+          newIpRow[STATIC_IP_COL.ID] = crypto.randomUUID();
+          newIpRow[STATIC_IP_COL.RECORDER_ID] =
+            entry[STATIC_IP_COL.RECORDER_ID] || auth.user?.email || "";
+          newIpRow[STATIC_IP_COL.RESIDENT_ID] = residentId;
+          newIpRow[STATIC_IP_COL.PERIOD] = term;
+          newIpRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
+          newIpRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
+          newIpRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
+          return newIpRow;
+        });
+
+        if (carryForwardRows.length > 0) {
+          await roomsService.appendStaticIpRows(carryForwardRows);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to carry forward static IPs in manualAssignBed:", e);
     }
   }
 }
@@ -576,11 +531,7 @@ export async function manualDelistResident(
   reason: "remove" | "early_checkout" | "transferred" | "deceased" | "loa",
   waiveBalance = false
 ) {
-  if (!uiSettings.accountingWorkbookId) {
-    throw new Error("Accounting Workbook ID not configured");
-  }
-
-  const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
+  const accRows = await roomsService.fetchAccountsRaw();
   const rowIndex = accRows.findIndex((r) => {
     return r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term;
   });
@@ -590,11 +541,8 @@ export async function manualDelistResident(
   }
 
   if (reason === "remove") {
-    // 1. Remove account completely (deletes the account row for this user)
-    await deleteSheetRow(uiSettings.accountingWorkbookId, "accounts", rowIndex);
+    await roomsService.deleteAccountRow(residentId, term);
   } else {
-    // 2. Early check-out / 3. Transferred to another residence hall / 4. Deceased / 5. Leave of Absence
-    const actualRow = rowIndex + 1;
     const currentBed = (accRows[rowIndex][ACCOUNT_COL.BED] || "").trim();
 
     let reasonText = "";
@@ -610,9 +558,7 @@ export async function manualDelistResident(
     }
 
     const updatedBed = `${currentBed} (${reasonText})`;
-    await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!E${actualRow}`, [
-      [updatedBed]
-    ]);
+    await roomsService.updateAccountCheckInDate(residentId, term, updatedBed);
 
     if (
       (reason === "early_checkout" ||
@@ -626,15 +572,7 @@ export async function manualDelistResident(
         return r.residentId === residentId && r.period === term;
       });
       if (resRecord && resRecord.bal > 0) {
-        // Retrieve PMT_WAIVED type from constants sheet
-        const constRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
-        const getConst = (key: string) => {
-          const found = constRows.find((r) => {
-            return r[0] === key;
-          });
-          return found ? found[1] : "0";
-        };
-        const pmtWaived = getConst("PMT_WAIVED") || "WAIVED";
+        const pmtWaived = (await fetchConstantByKey("PMT_WAIVED")) || "WAIVED";
 
         let remainingToWaive = resRecord.bal;
         let waterWaiveAmt = 0;
@@ -671,29 +609,30 @@ export async function manualDelistResident(
           noteLabel = `TRANSFERRED TO ANOTHER RESIDENCE HALL (${dateStr})`;
         }
 
-        const jRow = new Array(20).fill("");
-        jRow[JOURNAL_COL.DATE] = new Date().toISOString().split("T")[0];
-        jRow[JOURNAL_COL.CREATOR] = auth.user?.email || "";
-        jRow[JOURNAL_COL.ACCOUNT] = resRecord.email;
-        jRow[JOURNAL_COL.WATER] = waterWaiveAmt > 0 ? waterWaiveAmt.toString() : "";
-        jRow[JOURNAL_COL.ASSOC] = assocWaiveAmt > 0 ? assocWaiveAmt.toString() : "";
-        jRow[JOURNAL_COL.MISC] = miscWaiveAmt > 0 ? miscWaiveAmt.toString() : "";
-        jRow[JOURNAL_COL.MOP] = "";
-        jRow[JOURNAL_COL.PERIOD] = term;
-        jRow[JOURNAL_COL.TYPE] = pmtWaived;
-        jRow[JOURNAL_COL.NOTES] = noteLabel;
-        jRow[JOURNAL_COL.NOTES_PRIVATE] = "";
-        jRow[JOURNAL_COL.MOP_REFNO] = "";
-        jRow[JOURNAL_COL.PR_DATE_ISSUED] = "";
-        jRow[JOURNAL_COL.PR_REFNO] = "";
-        jRow[JOURNAL_COL.CREATOR_NAME] = auth.displayName;
-        jRow[JOURNAL_COL.NAME] = resRecord.name;
-        jRow[JOURNAL_COL.STNO] = resRecord.stno;
-        jRow[JOURNAL_COL.WAS_AUDITED] = "FALSE";
-        jRow[JOURNAL_COL.RECEIPT_URL] = "";
-        jRow[JOURNAL_COL.ID] = crypto.randomUUID();
-
-        await appendSheetRow(uiSettings.accountingWorkbookId, "journal_general!A:T", [jRow]);
+        await addJournalEntries([
+          {
+            date: new Date().toISOString().split("T")[0],
+            creator: auth.user?.email || "",
+            account: resRecord.email,
+            water: waterWaiveAmt,
+            assoc: assocWaiveAmt,
+            misc: miscWaiveAmt,
+            mop: "",
+            period: term,
+            type: pmtWaived,
+            notes: noteLabel,
+            notesPrivate: "",
+            mopRefNo: "",
+            prDateIssued: "",
+            prRefNo: "",
+            creatorName: auth.displayName,
+            name: resRecord.name,
+            stno: resRecord.stno,
+            wasAudited: false,
+            receiptUrl: "",
+            id: crypto.randomUUID()
+          }
+        ]);
       }
     }
   }

@@ -89,6 +89,8 @@ export interface ResidentStatus {
   occupiedBeds: OccupiedBed[];
 }
 
+import { fetchResidentStatus } from "$api/controllers/resident-controller";
+
 class ResidentState {
   status = $state<ResidentStatus | null>(null);
   isLoading = $state(false);
@@ -99,7 +101,7 @@ class ResidentState {
     this.isLoading = true;
     this.error = null;
     try {
-      this.status = await fetchServer("/api/resident/check-status", {}, true);
+      this.status = await fetchResidentStatus(undefined, true);
     } catch (e: any) {
       this.error = e.message;
     } finally {

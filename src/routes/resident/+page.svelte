@@ -33,6 +33,7 @@
   import type { ResidentStatus } from "$state/resident-state.svelte";
   import { AccountType } from "$lib/types";
   import StatisticCard from "$components/StatisticCard.svelte";
+  import { fetchResidentStatus } from "$api/controllers/resident-controller";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
@@ -44,7 +45,7 @@
     error = null;
     try {
       const targetTerm = term || status?.activeTerm || "";
-      status = await fetchServer(`/api/resident/check-status?term=${targetTerm}`);
+      status = await fetchResidentStatus(targetTerm);
     } catch (e: any) {
       error = e.message;
     } finally {

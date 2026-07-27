@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
-  import { appendSheetRow } from "$api/services/google-sheets-service";
+  import { addJournalEntries } from "$api/controllers/journal-controller";
   import TransactionForm from "$components/TransactionForm.svelte";
 
   let isSubmitting = $state(false);
@@ -10,7 +10,28 @@
     isSubmitting = true;
     try {
       const rows = Array.isArray(row[0]) ? (row as any[][]) : [row as any[]];
-      await appendSheetRow(uiSettings.accountingWorkbookId, "journal_general!A:T", rows);
+      const entries = rows.map((r) => ({
+        date: r[0],
+        creator: r[1],
+        account: r[2],
+        water: parseFloat(r[3] || "0"),
+        assoc: parseFloat(r[4] || "0"),
+        misc: parseFloat(r[5] || "0"),
+        mop: r[6],
+        period: r[7],
+        type: r[8],
+        notes: r[9],
+        notesPrivate: r[10],
+        mopRefNo: r[11],
+        prDateIssued: r[12],
+        prRefNo: r[13],
+        creatorName: r[14],
+        name: r[15],
+        stno: r[16],
+        receiptUrl: r[18],
+        id: r[19] || crypto.randomUUID()
+      }));
+      await addJournalEntries(entries);
       goto("/admin/transactions");
     } finally {
       isSubmitting = false;

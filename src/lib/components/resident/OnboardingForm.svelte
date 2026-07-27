@@ -22,6 +22,7 @@
   import { toast } from "svelte-sonner";
   import { auth } from "$state/auth.svelte";
   import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/types";
+  import { registerResident } from "$api/controllers/resident-controller";
 
   import { residentState, type ResidentStatus } from "$state/resident-state.svelte";
   import { roomsState } from "$state/rooms.svelte";
@@ -108,18 +109,14 @@
         isSubmitting = true;
         step = 4; // Go directly to the evaluation step to avoid spamming
         try {
-          await fetchServer("/api/resident/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...formData,
-              firstName: status.profile?.firstName || "",
-              lastName: status.profile?.lastName || "",
-              studentNo: status.profile?.studentNo || "",
-              accountType: AccountType.ALUMNUS,
-              email: status.profile?.email || auth.user?.email,
-              term: status.systemActiveTerm
-            })
+          await registerResident({
+            ...formData,
+            firstName: status.profile?.firstName || "",
+            lastName: status.profile?.lastName || "",
+            studentNo: status.profile?.studentNo || "",
+            accountType: AccountType.ALUMNUS,
+            email: status.profile?.email || auth.user?.email,
+            term: status.systemActiveTerm
           });
           residentState.forceOnboarding = false;
           await onSuccess();
@@ -248,16 +245,12 @@
 
     isSubmitting = true;
     try {
-      await fetchServer("/api/resident/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          studentNo: isStudentNoRequired ? formData.studentNo : "",
-          accountType,
-          email: status.profile?.email || auth.user?.email,
-          term: status.systemActiveTerm
-        })
+      await registerResident({
+        ...formData,
+        studentNo: isStudentNoRequired ? formData.studentNo : "",
+        accountType,
+        email: status.profile?.email || auth.user?.email,
+        term: status.systemActiveTerm
       });
 
       residentState.forceOnboarding = false;

@@ -7,7 +7,12 @@
   import { goto, replaceState } from "$app/navigation";
   import branding from "$data/branding.json";
   import * as AlertDialog from "$ui/alert-dialog";
-  import { PUBLIC_GI_CLIENT_ID, PUBLIC_RESIDENT_GI_CLIENT_ID } from "$env/static/public";
+  import {
+    PUBLIC_GI_CLIENT_ID,
+    PUBLIC_RESIDENT_GI_CLIENT_ID,
+    PUBLIC_DB_PROVIDER
+  } from "$env/static/public";
+  import { supabase } from "$api/services/common";
 
   let isSigningIn = $state(false);
   let isLoadingAuth = $state(true);
@@ -64,9 +69,24 @@
         }
 
         const tokenData = await tokenResp.json();
-        const { access_token: accessToken, user: userInfo, isInstanceAdmin } = tokenData;
+        const {
+          access_token: accessToken,
+          id_token: idToken,
+          user: userInfo,
+          isInstanceAdmin
+        } = tokenData;
 
         auth.setSession(accessToken, userInfo, rememberMe, savedType, isInstanceAdmin);
+
+        if (PUBLIC_DB_PROVIDER === "supabase" && supabase && idToken) {
+          const { error: sbErr } = await supabase.auth.signInWithIdToken({
+            provider: "google",
+            token: idToken
+          });
+          if (sbErr) {
+            console.error("[Supabase Auth] signInWithIdToken failed:", sbErr);
+          }
+        }
 
         sessionStorage.removeItem("pkce_verifier");
         sessionStorage.removeItem("pkce_auth_type");

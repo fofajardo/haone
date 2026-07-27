@@ -19,14 +19,21 @@ import { canAccessAchievements } from "$api/controllers/resident-controller";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
-  const { residentId, error } = await authenticateResident(request);
-  if (error) return error;
+  const {
+    residentId,
+    email: authEmail,
+    isInstanceAdmin,
+    error
+  } = await authenticateResident(request);
+  if (error) {
+    return error;
+  }
 
   try {
-    const client = await getSheetsClient();
+    let isAdmin = !!isInstanceAdmin;
 
-    // 1. Fetch All Data
-    const [achRows, logRows, settingRows, userRows, accRows, activeTerm, currRows] =
+    const client = await getSheetsClient();
+    const [achRows, logRows, settingRows, userRows, accRows, activeTerm, currRows, dirRows] =
       await fetchSheetsData(client, [
         "achievements!A:H",
         "achievement_records!A:F",
@@ -34,22 +41,19 @@ export const GET: RequestHandler = async ({ request }) => {
         "users!A:P",
         "accounts!A:L",
         "TERM_CURR",
-        "CURR!A:O"
+        "CURR!A:O",
+        "directory!A:D"
       ]);
 
-    // Check if requester is an admin
-    let isAdmin = false;
-    try {
-      const { authenticateAdmin } = await import("$lib/server/api-helper");
-      const adminAuth = await authenticateAdmin(request);
-      if (!adminAuth.error) {
+    if (!isAdmin) {
+      const isOfficer = dirRows
+        .slice(1)
+        .some((r: any) => (r[3] || "").trim().toLowerCase() === (authEmail || "").toLowerCase());
+      if (isOfficer) {
         isAdmin = true;
       }
-    } catch (e) {
-      // Ignore
     }
 
-    // 2. Resolve Current Resident
     const currentResidentId = residentId;
     if (!currentResidentId && !isAdmin) {
       return json({ achievements: [], logs: [], currentResidentId: "" });
@@ -73,7 +77,6 @@ export const GET: RequestHandler = async ({ request }) => {
       ? AccountType.ALUMNUS
       : resolveResidentAccountType(accRows, activeTerm, currentResidentId);
 
-    // Bypass check if admin
     if (!accountType && !isAdmin) {
       return json(
         { error: "Access Denied: Resident does not have an account for the current term" },
@@ -88,7 +91,6 @@ export const GET: RequestHandler = async ({ request }) => {
       );
     }
 
-    // Calculate eligible counts
     const accountsCountMap = new Map();
     accRows.slice(1).forEach((r: any) => {
       const term = (r[ACCOUNT_COL.PERIOD] || "").trim();
@@ -98,7 +100,6 @@ export const GET: RequestHandler = async ({ request }) => {
     });
     const totalUsersCount = userRows.slice(1).length;
 
-    // 3. Map Achievements
     const achievements = achRows.slice(1).map((row: any) => {
       const term = (row[ACHIEVEMENT_COL.TERM] || "").trim();
       const eligibleCount = term ? accountsCountMap.get(term) || 0 : totalUsersCount;
@@ -115,8 +116,7 @@ export const GET: RequestHandler = async ({ request }) => {
       };
     });
 
-    // 4. Map Settings & Users for Privacy
-    const settingsMap = new Map();
+    const settingsMap = new Map<string, boolean>();
     settingRows.slice(1).forEach((r: any) => {
       settingsMap.set(
         (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim(),
@@ -124,38 +124,37 @@ export const GET: RequestHandler = async ({ request }) => {
       );
     });
 
-    const userMap = new Map();
+    const userMap = new Map<string, string>();
     userRows.slice(1).forEach((r: any) => {
       userMap.set((r[USER_COL.ID] || "").trim(), (r[USER_COL.DISPLAY_NAME] || "").trim());
     });
 
-    // 5. Map Logs with Privacy
     const logs = logRows.slice(1).map((row: any) => {
       const accountId = (row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] || "").trim();
-      const isPublic = settingsMap.get(accountId) || accountId === currentResidentId;
+      const isPublic = settingsMap.has(accountId) ? settingsMap.get(accountId)! : false;
 
       return {
         id: (row[ACHIEVEMENT_RECORD_COL.ID] || "").trim(),
-        accountId: accountId,
+        accountId,
         achievementId: (row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] || "").trim(),
         date: (row[ACHIEVEMENT_RECORD_COL.DATE] || "").trim(),
         term: (row[ACHIEVEMENT_RECORD_COL.TERM] || "").trim(),
-        // Only provide name if public or it's the current user
-        displayName: isPublic ? userMap.get(accountId) || "Resident" : "Private Resident",
+        displayName:
+          isPublic || accountId === currentResidentId
+            ? userMap.get(accountId) || "Resident"
+            : "Private Resident",
         isPublic
       };
     });
 
     let displayedAchievements = achievements;
     if (accountType === AccountType.ALUMNUS && !isAdmin) {
-      const currentResidentEarnedIds = new Set(
+      const earnedIds = new Set(
         logs
           .filter((log: any) => log.accountId === currentResidentId)
           .map((log: any) => log.achievementId)
       );
-      displayedAchievements = achievements.filter((achievement: any) =>
-        currentResidentEarnedIds.has(achievement.id)
-      );
+      displayedAchievements = achievements.filter((a: any) => earnedIds.has(a.id));
     }
 
     return json({ achievements: displayedAchievements, logs, currentResidentId, isAdmin });

@@ -7,8 +7,7 @@
   import { toast } from "svelte-sonner";
   import Papa from "papaparse";
   import { fetchUsers } from "$api/controllers/resident-controller";
-  import { uiSettings } from "$state/settings.svelte";
-  import { appendSheetRow } from "$api/services/google-sheets-service";
+  import { addLaundryReservationsBatch } from "$api/controllers/laundry-controller";
   import { LAUNDRY_COL } from "$lib/types";
 
   interface Props {
@@ -40,7 +39,7 @@
           const data = results.data as any[];
           progress.total = data.length;
 
-          const rowsToAppend: string[][] = [];
+          const entriesToAppend: any[] = [];
           let skipped = 0;
 
           for (const item of data) {
@@ -54,33 +53,24 @@
               continue;
             }
 
-            const row = new Array(7).fill("");
-            row[LAUNDRY_COL.ID] = crypto.randomUUID();
-            row[LAUNDRY_COL.RESIDENT_ID] = residentId;
-            row[LAUNDRY_COL.DATE] = (item.DATE || "").trim();
-            row[LAUNDRY_COL.TIME_START] = (item.TIME_START || "").trim();
-            row[LAUNDRY_COL.TIME_END] = (item.TIME_END || "").trim();
-            row[LAUNDRY_COL.STATUS] = (item.STATUS || "ACTIVE").trim().toUpperCase();
-            row[LAUNDRY_COL.CANCEL_REASON] = (item.CANCEL_REASON || "").trim();
-
-            rowsToAppend.push(row);
+            entriesToAppend.push({
+              id: crypto.randomUUID(),
+              residentId,
+              date: (item.DATE || "").trim(),
+              timeStart: (item.TIME_START || "").trim(),
+              timeEnd: (item.TIME_END || "").trim(),
+              status: (item.STATUS || "ACTIVE").trim().toUpperCase(),
+              cancelReason: (item.CANCEL_REASON || "").trim()
+            });
             progress.current++;
           }
 
-          if (rowsToAppend.length > 0) {
-            const spreadsheetId = uiSettings.sharedRecordsId;
-            if (!spreadsheetId) throw new Error("Shared Records ID not configured");
-
-            // Batch append in chunks of 50 to avoid request size limits if many
-            const chunkSize = 50;
-            for (let i = 0; i < rowsToAppend.length; i += chunkSize) {
-              const chunk = rowsToAppend.slice(i, i + chunkSize);
-              await appendSheetRow(spreadsheetId, "laundry!A:G", chunk);
-            }
+          if (entriesToAppend.length > 0) {
+            await addLaundryReservationsBatch(entriesToAppend);
           }
 
           toast.success(
-            `Imported ${rowsToAppend.length} records. Skipped ${skipped} due to missing users.`
+            `Imported ${entriesToAppend.length} records. Skipped ${skipped} due to missing users.`
           );
           isImporting = false;
           csvData = "";

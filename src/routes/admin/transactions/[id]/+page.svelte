@@ -4,10 +4,12 @@
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
   import {
-    fetchSheetRowsRaw,
-    deleteSheetRow,
-    updateSheetValue
-  } from "$api/services/google-sheets-service";
+    fetchJournalEntries,
+    deleteJournalEntry,
+    updateJournalEntry,
+    batchAuditEntries
+  } from "$api/controllers/journal-controller";
+  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { formatCurrency, formatAccounting, formatDate } from "$utils/formatters";
   import { translateMop, translatePeriod, translateType } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
@@ -51,14 +53,12 @@
   let isSystemAlertOpen = $state(false);
 
   async function handleMarkAudited() {
-    if (rowIndex === null || !uiSettings.accountingWorkbookId) {
+    if (!transaction?.id) {
       return;
     }
     isAuditing = true;
     try {
-      await updateSheetValue(uiSettings.accountingWorkbookId, `journal_general!R${rowIndex + 1}`, [
-        ["TRUE"]
-      ]);
+      await batchAuditEntries([transaction.id]);
       await loadTransaction();
     } catch (e: any) {
       error = `Audit update failed: ${e.message}`;
@@ -68,25 +68,27 @@
   }
 
   async function loadTransaction() {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
 
     try {
-      const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T");
-      const idx = rows.findIndex((row, i) => row[JOR.ID] === id || (i + 1).toString() === id);
-      const match = rows[idx];
+      const [entries, types] = await Promise.all([
+        fetchJournalEntries(undefined, undefined),
+        fetchTransactionTypes(false)
+      ]);
+      const list = Array.isArray(entries) ? entries : entries.items;
+      const idx = list.findIndex((row, i) => row.id === id || (i + 1).toString() === id);
+      const match = list[idx];
 
       if (!match) {
         error = "Transaction not found in the ledger.";
       } else {
         rowIndex = idx;
-        transaction = mapRowToJournal(match);
+        transaction = match;
 
-        // Fetch accounts to resolve creator details
         try {
           const allResidents = await fetchResidents();
-          const creatorMatch = allResidents.find((r) => r.email === match[JOR.CREATOR]);
+          const creatorMatch = allResidents.find((r) => r.email === match.creator);
           if (creatorMatch) {
             creatorStNo = creatorMatch.stno;
           }
@@ -94,15 +96,7 @@
           console.warn("Could not resolve creator student number:", e);
         }
 
-        // 3. Fetch Transaction Types
-        const constRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
-        transactionTypes = constRows
-          .slice(1)
-          .filter((r) => (r[0] || "").startsWith("PMT_"))
-          .map((r) => ({
-            value: r[1] || r[0],
-            label: r[2] || r[1] || r[0]
-          }));
+        transactionTypes = types;
       }
     } catch (e: any) {
       error = `Failed to retrieve audit data: ${e.message}`;
@@ -112,12 +106,12 @@
   }
 
   async function handleDelete() {
-    if (rowIndex === null || !uiSettings.accountingWorkbookId) return;
+    if (!transaction?.id) return;
 
     isDialogOpen = false;
     isDeleting = true;
     try {
-      await deleteSheetRow(uiSettings.accountingWorkbookId, "journal_general", rowIndex);
+      await deleteJournalEntry(transaction.id);
       goto("/admin/transactions");
     } catch (e: any) {
       error = `Deletion failed: ${e.message}`;

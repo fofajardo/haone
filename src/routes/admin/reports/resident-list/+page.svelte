@@ -28,12 +28,11 @@
     BookUser
   } from "@lucide/svelte";
   import {
-    fetchSheetRowsRaw,
-    updateSheetValue,
+    exportReportToSheet,
     createNewSpreadsheet,
-    ensureSheetExists,
-    formatReportSheet
-  } from "$api/services/google-sheets-service";
+    ensureSheetExists
+  } from "$api/controllers/reports-controller";
+  import { fetchJournalEntries } from "$api/controllers/journal-controller";
   import { loadGapiScript } from "$api/services/gmail-service";
   import { matchesStatusFilter, fetchResidents } from "$api/controllers/resident-controller";
   import type { ResidentRecord, OfficerRecord } from "$lib/types";
@@ -186,20 +185,16 @@
       officers = officerList;
 
       // Auto-Period
-      const journalRows = await fetchSheetRowsRaw(
-        uiSettings.accountingWorkbookId,
-        "journal_general!A:H"
-      );
-      const currentSemJournal = journalRows
-        .slice(1)
-        .filter((row) => row[7] === currentSem)
-        .map((row) => row[0])
+      const entries = await fetchJournalEntries({ term: currentSem });
+      const journalList = Array.isArray(entries) ? entries : entries.items;
+      const dates = journalList
+        .map((j) => j.date)
         .filter(Boolean)
         .sort();
 
-      if (currentSemJournal.length > 0) {
-        periodStart = currentSemJournal[0];
-        periodEnd = currentSemJournal[currentSemJournal.length - 1];
+      if (dates.length > 0) {
+        periodStart = dates[0];
+        periodEnd = dates[dates.length - 1];
       }
 
       if (auth.user) {
@@ -322,8 +317,8 @@
       let targetId = "";
       if (sheetsTarget === "new") {
         if (!newSheetTitle) throw new Error("Please provide a title for the new sheet");
-        const createResp = await createNewSpreadsheet(newSheetTitle, sheetName);
-        targetId = createResp.spreadsheetId;
+        const createResp = await createNewSpreadsheet(newSheetTitle);
+        targetId = createResp;
       } else {
         if (!existingSheetId) throw new Error("Please provide a spreadsheet ID");
         targetId = existingSheetId;
@@ -345,10 +340,7 @@
         return [r.name, r.email, r.room, r.bed, r.totalBase, r.paid, r.waived, r.bal];
       });
 
-      await updateSheetValue(targetId, `${sheetName}!A1`, [headers, ...rows]);
-
-      // Apply professional styling
-      await formatReportSheet(targetId, sheetName, rows.length + 1, headers.length);
+      await exportReportToSheet(targetId, sheetName, headers, rows);
 
       const targetName = sheetsTarget === "new" ? newSheetTitle : selectedSheetName;
 
