@@ -7,9 +7,10 @@ import {
 
 export const isSupabase = PUBLIC_DB_PROVIDER === "supabase";
 
-export const supabase = isSupabase
-  ? createClient(PUBLIC_SUPABASE_URL || "", PUBLIC_SUPABASE_PUBLISHABLE_KEY || "")
-  : null;
+export const supabase =
+  PUBLIC_SUPABASE_URL && PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    ? createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    : null;
 
 // ── GSheets API Client ───────────────────────────────────────────────────────
 

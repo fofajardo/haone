@@ -2,12 +2,8 @@ import type { ResidentServiceInterface } from "../interfaces/resident-service.in
 import type { ResidentRecord, UserRecord } from "$lib/types";
 import { ACCOUNT_COL, USER_COL } from "$lib/types";
 import { fetchSheetRowsRaw, updateSheetValue, appendSheetRow, deleteSheetRow } from "../common";
-import {
-  mapRowToJournal,
-  mapRowToResident,
-  parseAmount,
-  computeDisplayNames
-} from "../../controllers/resident-controller";
+import { parseCSVAmount } from "$utils/math";
+import { mapRowToJournal, mapRowToResident, computeDisplayNames } from "../../utils/row-mappers";
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
 
@@ -85,8 +81,8 @@ export const sheetsResidentService: ResidentServiceInterface = {
 
         const miscPaid = filtered.reduce((sum, j) => sum + j.misc, 0);
 
-        const waterBase = parseAmount(getConst(`FEES_${period}_WATER`));
-        const assocBase = parseAmount(getConst(`FEES_${period}_ASSOC`));
+        const waterBase = parseCSVAmount(getConst(`FEES_${period}_WATER`));
+        const assocBase = parseCSVAmount(getConst(`FEES_${period}_ASSOC`));
 
         const financials = {
           waterBase,

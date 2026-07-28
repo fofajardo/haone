@@ -22,8 +22,10 @@
     Trophy,
     ListOrdered,
     BookUser,
-    Network
+    Network,
+    Database
   } from "@lucide/svelte";
+  import { dev } from "$app/environment";
   import { Button } from "$ui/button";
   import { auth } from "$state/auth.svelte";
   import { page } from "$app/state";
@@ -106,6 +108,12 @@
         title: "Email Dispatcher",
         url: "/admin/email-dispatcher",
         icon: Mail
+      },
+      {
+        title: "Database Sync",
+        url: "/admin/database-sync",
+        icon: Database,
+        hide: !dev
       },
       {
         title: "Settings",

@@ -3,96 +3,12 @@ import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$templates/pa
 import { ClearanceCertificateTemplate } from "$templates/clearance";
 import type { BrandingProfile } from "$lib/types";
 import { goto } from "$app/navigation";
-import { auth } from "$state/auth.svelte";
-import { fetchServer } from "$utils/api-client";
-import {
-  ACCOUNT_COL,
-  JOURNAL_COL,
-  USER_COL,
-  type ResidentRecord,
-  type JournalRecord,
-  type UserRecord,
-  AccountType
-} from "$lib/types";
+import { type ResidentRecord, type UserRecord, AccountType } from "$lib/types";
 
-/**
- * Robust financial parsing for spreadsheet values.
- * Handles currency symbols (₱), separators (,), and nulls.
- */
-export function parseAmount(val: any): number {
-  if (val === undefined || val === null) {
-    return 0;
-  }
-  const str = String(val).trim().replace(/[₱,]/g, "");
-  if (!str) {
-    return 0;
-  }
+import { parseCSVAmount } from "$utils/math";
+import { mapRowToResident, mapRowToJournal, computeDisplayNames } from "../utils/row-mappers";
 
-  // Check for (1,234.56) accounting format
-  const isParenNegative = str.startsWith("(") && str.endsWith(")");
-  const numericStr = isParenNegative ? str.slice(1, -1) : str;
-
-  const parsed = parseFloat(numericStr);
-  if (isNaN(parsed)) {
-    return 0;
-  }
-
-  return isParenNegative ? -parsed : parsed;
-}
-
-/**
- * Maps a raw Google Sheets row to a typed ResidentRecord, optionally joining with user data.
- */
-export function mapRowToResident(
-  row: string[],
-  userRow?: string[],
-  financials?: any
-): ResidentRecord {
-  const waterBase = financials?.waterBase || 0;
-  const waterPaid = financials?.waterPaid || 0;
-  const waterWaived = financials?.waterWaived || 0;
-  const assocBase = financials?.assocBase || 0;
-  const assocPaid = financials?.assocPaid || 0;
-  const assocWaived = financials?.assocWaived || 0;
-  const paid = waterPaid + assocPaid + (financials?.miscPaid || 0);
-  const waived = waterWaived + assocWaived;
-  const totalBase = waterBase + assocBase;
-  const bal = totalBase - paid - waived;
-
-  return {
-    raw: row,
-    email: userRow ? (userRow[USER_COL.EMAIL] || "").trim() : "",
-    period: (row[ACCOUNT_COL.PERIOD] || "").trim(),
-    room: (row[ACCOUNT_COL.ROOM] || "").trim(),
-    bed: (row[ACCOUNT_COL.BED] || "").trim(),
-    name: userRow ? (userRow[USER_COL.DISPLAY_NAME] || "").trim() : "",
-    stno: userRow ? (userRow[USER_COL.STUDENT_NO] || "").trim() : "",
-    waterBase,
-    waterPaid,
-    waterWaived,
-    waterBal: waterBase - waterPaid - waterWaived,
-    assocBase,
-    assocPaid,
-    assocWaived,
-    assocBal: assocBase - assocPaid - assocWaived,
-    totalBase,
-    paid,
-    waived,
-    bal,
-    isFullyPaid: bal <= 0,
-    ceRefNo: (row[ACCOUNT_COL.CE_REFNO] || "").trim(),
-    ceIssued: (row[ACCOUNT_COL.CE_ISSUED] || "").trim(),
-    ceLink: (row[ACCOUNT_COL.CE_LINK] || "").trim(),
-    ceFullName: userRow ? (userRow[USER_COL.DISPLAY_NAME_FL] || "").trim() : "",
-    notes: (row[ACCOUNT_COL.NOTES] || "").trim(),
-    college: userRow ? (userRow[USER_COL.COLLEGE] || "").trim() : "",
-    program: userRow ? (userRow[USER_COL.DEGREE_PROGRAM] || "").trim() : "",
-    residentId: (row[ACCOUNT_COL.RESIDENT_ID] || "").trim(),
-    ledgerId: (row[ACCOUNT_COL.ID] || "").trim(),
-    checkInDate: (row[ACCOUNT_COL.CHECK_IN_DATE] || "").trim(),
-    type: (row[ACCOUNT_COL.TYPE] || "").trim()
-  };
-}
+export { mapRowToResident, mapRowToJournal, parseCSVAmount, computeDisplayNames };
 
 import { residentService } from "$api/services/resident-service";
 import { constantsService } from "$api/services/constants-service";
@@ -154,55 +70,7 @@ export async function fetchUserById(id: string): Promise<UserRecord | null> {
 }
 
 /**
- * Computes standardized display names based on name parts.
- */
-export function computeDisplayNames(data: Partial<UserRecord>) {
-  const first = (data.firstName || "").trim().toUpperCase();
-  const last = (data.lastName || "").trim().toUpperCase();
-  const suffix = (data.suffix || "").trim().toUpperCase();
-  const override = (data.overrideName || "").trim();
-
-  if (override) {
-    return {
-      displayName: override,
-      displayNameFormal: override
-    };
-  }
-
-  // display_name: [LAST NAME, FIRST_NAME SUFFIX]
-  const dnParts = [];
-  if (last) {
-    dnParts.push(`${last},`);
-  }
-  if (first) {
-    dnParts.push(first);
-  }
-  if (suffix) {
-    dnParts.push(suffix);
-  }
-  const displayName = dnParts.join(" ").replace(/, /, ", ").trim();
-
-  // display_name_fl: [FIRST_NAME LAST_NAME SUFFIX]
-  const flParts = [];
-  if (first) {
-    flParts.push(first);
-  }
-  if (last) {
-    flParts.push(last);
-  }
-  if (suffix) {
-    flParts.push(suffix);
-  }
-  const displayNameFormal = flParts.join(" ").trim();
-
-  return {
-    displayName,
-    displayNameFormal
-  };
-}
-
-/**
- * Updates a user record in the ResidentRecords spreadsheet.
+ * Updates a user record in the ResidentRecords spreadsheet/database.
  */
 export async function updateUser(userId: string, data: Partial<UserRecord>) {
   return residentService.updateUser(userId, data);
@@ -231,41 +99,6 @@ export async function deleteUser(userId: string) {
 
 export async function registerResident(data: Record<string, any>): Promise<void> {
   return residentService.registerResident(data);
-}
-
-/**
- * Maps a raw Journal sheet row to a typed JournalRecord.
- */
-export function mapRowToJournal(row: string[], index?: number): JournalRecord {
-  const water = parseAmount(row[JOURNAL_COL.WATER]);
-  const assoc = parseAmount(row[JOURNAL_COL.ASSOC]);
-  const misc = parseAmount(row[JOURNAL_COL.MISC]);
-
-  return {
-    raw: row,
-    date: (row[JOURNAL_COL.DATE] || "").trim(),
-    creator: (row[JOURNAL_COL.CREATOR] || "").trim(),
-    account: (row[JOURNAL_COL.ACCOUNT] || "").trim(),
-    water,
-    assoc,
-    misc,
-    amount: water + assoc + misc,
-    mop: (row[JOURNAL_COL.MOP] || "").trim(),
-    period: (row[JOURNAL_COL.PERIOD] || "").trim(),
-    type: (row[JOURNAL_COL.TYPE] || "").trim(),
-    notes: (row[JOURNAL_COL.NOTES] || "").trim(),
-    notesPrivate: (row[JOURNAL_COL.NOTES_PRIVATE] || "").trim(),
-    mopRefNo: (row[JOURNAL_COL.MOP_REFNO] || "").trim(),
-    prDateIssued: (row[JOURNAL_COL.PR_DATE_ISSUED] || "").trim(),
-    prRefNo: (row[JOURNAL_COL.PR_REFNO] || "").trim(),
-    creatorName: (row[JOURNAL_COL.CREATOR_NAME] || "").trim(),
-    name: (row[JOURNAL_COL.NAME] || "").trim(),
-    stno: (row[JOURNAL_COL.STNO] || "").trim(),
-    wasAudited: (row[JOURNAL_COL.WAS_AUDITED] || "").toString().toUpperCase() === "TRUE",
-    receiptUrl: (row[JOURNAL_COL.RECEIPT_URL] || "").trim(),
-    id: (row[JOURNAL_COL.ID] || "").trim(),
-    ledgerIndex: index
-  };
 }
 
 /**

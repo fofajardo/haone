@@ -92,7 +92,11 @@ export function parseDbDate(val: any): string | null {
     return null;
   }
   const str = String(val).trim();
-  if (!str) {
+  if (!str || str.toUpperCase() === "FIXME" || str.toUpperCase() === "N/A") {
+    return null;
+  }
+  const date = new Date(str);
+  if (isNaN(date.getTime())) {
     return null;
   }
   return str;
