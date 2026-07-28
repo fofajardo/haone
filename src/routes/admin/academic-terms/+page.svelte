@@ -28,6 +28,7 @@
   import { Badge } from "$ui/badge";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
 
   let terms = $state<{ value: string; description: string }[]>([]);
   let allConstants = $state<{ key: string; value: string; rowIndex: number }[]>([]);
@@ -224,10 +225,11 @@
       {:else if errorMessage && terms.length === 0}
         <ErrorView error={errorMessage} />
       {:else if terms.length === 0}
-        <div class="flex flex-col items-center justify-center py-8 text-center">
-          <History class="mb-2 h-8 w-8 text-muted-foreground/20" />
-          <p class="text-sm font-medium text-muted-foreground">No terms defined in constants.</p>
-        </div>
+        <EmptyView title="No terms defined." description="Add an academic term to get started.">
+          {#snippet icon()}
+            <GraduationCap class="h-8 w-8 text-muted-foreground" />
+          {/snippet}
+        </EmptyView>
       {:else}
         <div class="space-y-3">
           {#each terms as term}

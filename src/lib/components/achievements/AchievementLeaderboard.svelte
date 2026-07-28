@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Card from "$ui/card";
+  import EmptyView from "$components/EmptyView.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import { Crown, Medal, Trophy, Zap } from "@lucide/svelte";
 
@@ -228,17 +229,14 @@
       </Card.Root>
     {:else}
       {#if podium.length === 0}
-        <Card.Root class="border-dashed bg-muted/5">
-          <Card.Content class="flex flex-col items-center justify-center gap-3 p-12 text-center">
-            <Trophy class="h-10 w-10 text-muted-foreground" />
-            <div>
-              <div class="font-bold">No scores yet</div>
-              <div class="text-sm text-muted-foreground">
-                Award achievements to start the leaderboards.
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
+        <EmptyView
+          title="No scores yet."
+          description="Award achievements to start the leaderboards."
+        >
+          {#snippet icon()}
+            <Trophy class="h-8 w-8 text-muted-foreground" />
+          {/snippet}
+        </EmptyView>
       {/if}
     {/each}
   </div>
