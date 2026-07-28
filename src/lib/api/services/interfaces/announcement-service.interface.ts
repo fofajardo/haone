@@ -2,7 +2,8 @@ import type { AnnouncementRecord, PaginationOptions, PaginatedResponse } from "$
 
 export interface AnnouncementServiceInterface {
   fetchAnnouncements(
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    activeOnly?: boolean
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>>;
 
   fetchAnnouncementBySlug(slug: string): Promise<AnnouncementRecord | null>;

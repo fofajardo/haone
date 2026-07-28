@@ -25,7 +25,7 @@ export function isAnnouncementActive(a: AnnouncementRecord) {
 }
 
 export async function fetchAnnouncements(_forceRefresh = false): Promise<AnnouncementRecord[]> {
-  const res = await announcementService.fetchAnnouncements();
+  const res = await announcementService.fetchAnnouncements(undefined, true);
   return Array.isArray(res) ? res : res.items;
 }
 

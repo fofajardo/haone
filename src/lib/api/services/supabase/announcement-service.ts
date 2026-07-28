@@ -4,13 +4,25 @@ import { supabase } from "../common";
 
 export const supabaseAnnouncementService: AnnouncementServiceInterface = {
   async fetchAnnouncements(
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    activeOnly = false
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>> {
     if (!supabase) {
       return [];
     }
 
     let query = supabase.from("announcements").select("*", { count: "exact" });
+
+    if (activeOnly) {
+      const now = new Date().toISOString();
+      query = query
+        .eq("is_admin_only", false)
+        .eq("is_unlisted", false)
+        .or(`start_date.is.null,start_date.lte.${now}`)
+        .or(`is_indefinite.eq.true,expiry_date.is.null,expiry_date.gte.${now}`);
+    }
+
+    query = query.order("created_at", { ascending: false });
 
     if (options?.page && options?.pageSize) {
       const start = (options.page - 1) * options.pageSize;
