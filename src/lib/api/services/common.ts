@@ -9,9 +9,49 @@ import { brandingState } from "$state/branding.svelte";
 
 export const isSupabase = PUBLIC_DB_PROVIDER === "supabase";
 
+export function handleSupabaseError(error: any) {
+  if (!error) return;
+  const status = error.status || error.code;
+  const msg = (error.message || "").toLowerCase();
+  if (
+    status === 401 ||
+    status === 403 ||
+    status === "PGRST301" ||
+    msg.includes("jwt expired") ||
+    msg.includes("invalid token") ||
+    msg.includes("not authorized") ||
+    msg.includes("permission denied")
+  ) {
+    auth.lastError = {
+      title: "Session Expired",
+      description: "Your session or authorization is invalid. Please sign in again."
+    };
+    auth.logout();
+    throw new Error("Session expired or unauthorized");
+  }
+  throw error;
+}
+
 export const supabase =
   PUBLIC_SUPABASE_URL && PUBLIC_SUPABASE_PUBLISHABLE_KEY
-    ? createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY)
+    ? createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
+        global: {
+          fetch: async (url, options) => {
+            const response = await fetch(url, options);
+            if (response.status === 401 || response.status === 403) {
+              auth.lastError = {
+                title: response.status === 403 ? "Not Authorized" : "Session Expired",
+                description:
+                  response.status === 403
+                    ? "You do not have permission for this action."
+                    : "Please sign in again."
+              };
+              auth.logout();
+            }
+            return response;
+          }
+        }
+      })
     : null;
 
 // ── GSheets API Client ───────────────────────────────────────────────────────
