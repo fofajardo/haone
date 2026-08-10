@@ -78,13 +78,20 @@
 
         auth.setSession(accessToken, userInfo, rememberMe, savedType, isInstanceAdmin);
 
-        if (PUBLIC_DB_PROVIDER === "supabase" && supabase && idToken) {
+        if (PUBLIC_DB_PROVIDER === "supabase") {
+          if (!supabase || !idToken) {
+            throw new Error(
+              "Supabase sign-in is not configured (missing Supabase client or ID token)."
+            );
+          }
           const { error: sbErr } = await supabase.auth.signInWithIdToken({
             provider: "google",
             token: idToken
           });
           if (sbErr) {
-            console.error("[Supabase Auth] signInWithIdToken failed:", sbErr);
+            // Abort sign-in instead of entering a silently broken app.
+            auth.logout();
+            throw new Error(`Supabase sign-in failed: ${sbErr.message}`);
           }
         }
 
