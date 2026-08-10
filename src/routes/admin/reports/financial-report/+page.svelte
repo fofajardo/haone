@@ -124,9 +124,6 @@
   });
 
   async function loadData() {
-    if (!uiSettings.accountingWorkbookId) {
-      return;
-    }
     isLoading = true;
     error = null;
 

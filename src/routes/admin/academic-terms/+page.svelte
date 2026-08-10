@@ -59,7 +59,6 @@
   ];
 
   async function loadTerms() {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     errorMessage = "";
     try {
@@ -101,8 +100,6 @@
   onMount(loadTerms);
 
   async function handleAdd() {
-    if (!uiSettings.accountingWorkbookId) return;
-
     errorMessage = "";
     const yy = String(newStartYear).slice(-2);
     const zz = String(newStartYear + 1).slice(-2);
@@ -154,7 +151,9 @@
   });
 
   async function saveFees() {
-    if (!uiSettings.accountingWorkbookId || !editingFeesFor) return;
+    if (!editingFeesFor) {
+      return;
+    }
     isSaving = true;
     errorMessage = "";
 
@@ -189,7 +188,6 @@
   }
 
   async function setActive(value: string) {
-    if (!uiSettings.accountingWorkbookId) return;
     const currConstant = allConstants.find((c) => c.key === "TERM_CURR");
     isSaving = true;
     errorMessage = "";

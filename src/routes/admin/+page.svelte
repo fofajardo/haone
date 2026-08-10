@@ -124,7 +124,6 @@
   ];
 
   async function loadDashboardData() {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
 
     try {

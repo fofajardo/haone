@@ -53,7 +53,6 @@
   } as const;
 
   async function loadData(forceRefresh = false) {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     error = null;
 

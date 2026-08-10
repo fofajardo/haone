@@ -174,7 +174,6 @@
   });
 
   async function loadData() {
-    if (!uiSettings.accountingWorkbookId) return;
     isLoading = true;
     try {
       const [mapped, officerList] = await Promise.all([fetchResidents(), fetchOfficers()]);

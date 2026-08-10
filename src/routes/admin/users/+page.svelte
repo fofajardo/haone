@@ -30,7 +30,6 @@
   });
 
   async function loadData(forceRefresh = false) {
-    if (!uiSettings.residentRecordsId) return;
     isLoading = true;
     error = null;
     try {
