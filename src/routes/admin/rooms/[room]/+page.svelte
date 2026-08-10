@@ -140,7 +140,7 @@
         <Card.Content>
           <div class="grid gap-4 sm:grid-cols-2">
             {#each roomConfig.slots as slot}
-              {@const resident = occupancyMap.get(slot)}
+              {@const resident = occupancyMap.get(slot.toUpperCase())}
               {@const isSlotAvailable =
                 roomConfig.available_slots.includes(slot) && !roomConfig.unavailable_reason}
 

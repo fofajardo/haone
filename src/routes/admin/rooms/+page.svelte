@@ -385,7 +385,7 @@
                 <div class="grid grid-cols-2 gap-2">
                   {#each room.slots as slot}
                     {@const key = `${room.room_number}-${slot}`}
-                    {@const resident = occupancyMap.get(key)}
+                    {@const resident = occupancyMap.get(key.toUpperCase())}
                     {@const isSlotAvailable =
                       room.available_slots.includes(slot) && !room.unavailable_reason}
                     <button
