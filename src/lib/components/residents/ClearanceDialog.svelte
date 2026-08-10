@@ -24,7 +24,9 @@
   let isClearing = $state(false);
 
   async function handleConfirm() {
-    if (!uiSettings.accountingWorkbookId || residents.length === 0) return;
+    if (residents.length === 0) {
+      return;
+    }
 
     isClearing = true;
     try {
