@@ -181,7 +181,7 @@
     isSyncing = true;
     showPreview = false;
     try {
-      const result = await applySync(selectedActions);
+      const result = await applySync(selectedActions, activeTerm);
       showAlert(
         "Sync Complete",
         `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`

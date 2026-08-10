@@ -9,10 +9,12 @@ import {
 
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
+import dayjs from "dayjs";
 
 export const sheetsAnnouncementService: AnnouncementServiceInterface = {
   async fetchAnnouncements(
-    _options?: PaginationOptions
+    _options?: PaginationOptions,
+    activeOnly = false
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>> {
     if (auth.isResident) {
       return fetchServer("/api/resident/announcements");
@@ -23,7 +25,7 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
       return [];
     }
     const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "announcements!A:M");
-    return rows.slice(1).map((row) => ({
+    const items = rows.slice(1).map((row) => ({
       id: (row[ANNOUNCEMENT_COL.ID] || "").trim(),
       creatorId: (row[ANNOUNCEMENT_COL.CREATOR_ID] || "").trim(),
       dateCreated: (row[ANNOUNCEMENT_COL.DATE_CREATED] || "").trim(),
@@ -39,6 +41,27 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
       broadcastCount: parseInt(row[ANNOUNCEMENT_COL.BROADCAST_COUNT]) || 0,
       raw: row
     }));
+
+    if (!activeOnly) {
+      return items;
+    }
+
+    // Mirrors the active-window semantics of the announcement controller.
+    return items.filter((a) => {
+      if (a.isAdminOnly || a.isUnlisted) {
+        return false;
+      }
+      const now = dayjs();
+      const start = a.startDate ? dayjs(a.startDate) : null;
+      const expiry = a.expiryDate ? dayjs(a.expiryDate) : null;
+      if (start && start.isAfter(now)) {
+        return false;
+      }
+      if (a.isIndefinite) {
+        return true;
+      }
+      return !expiry || expiry.isAfter(now) || expiry.isSame(now);
+    });
   },
 
   async fetchAnnouncementBySlug(slug: string): Promise<AnnouncementRecord | null> {

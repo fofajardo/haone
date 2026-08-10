@@ -18,7 +18,7 @@ export const sheetsLaundryService: LaundryServiceInterface = {
   ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
     if (auth.isResident) {
       const data = await fetchServer("/api/resident/laundry");
-      return data.reservations || data || [];
+      return Array.isArray(data) ? data : data.reservations || [];
     }
 
     const { uiSettings } = await import("$state/settings.svelte");

@@ -1,8 +1,16 @@
 import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import { supabase } from "../common";
-import { constantsService } from "../constants-service";
+import { AccountType } from "$lib/types";
+import {
+  supabase,
+  handleSupabaseError,
+  assertSupabaseFound,
+  fetchAllSupabaseRows
+} from "../common";
+import { supabaseConstantsService } from "./constants-service";
 import { parseCSVAmount } from "$utils/math";
+import { parseDbDate, parseDbUuid, parseDateWeight } from "$utils/parsers";
+import { auth } from "$state/auth.svelte";
 
 function mapDbUserToUserRecord(u: any): UserRecord {
   if (!u) {
@@ -23,7 +31,8 @@ function mapDbUserToUserRecord(u: any): UserRecord {
     address: u.address || "",
     college: u.college || "",
     program: u.degree_program || "",
-    tags: Array.isArray(u.tags) ? u.tags.join(",") : u.tags || "",
+    // Sheets stores tags ":"-delimited; keep that convention for consumers.
+    tags: Array.isArray(u.tags) ? u.tags.join(":") : u.tags || "",
     notes: u.notes || "",
     raw: u
   };
@@ -32,22 +41,22 @@ function mapDbUserToUserRecord(u: any): UserRecord {
 function mapUserRecordToDb(data: Partial<UserRecord>): Record<string, any> {
   const payload: Record<string, any> = {};
   if (data.email !== undefined) {
-    payload.email = data.email;
+    payload.email = data.email.trim().toLowerCase();
   }
   if (data.lastName !== undefined) {
-    payload.last_name = data.lastName;
+    payload.last_name = data.lastName.trim().toUpperCase();
   }
   if (data.firstName !== undefined) {
-    payload.first_name = data.firstName;
+    payload.first_name = data.firstName.trim().toUpperCase();
   }
   if (data.middleName !== undefined) {
-    payload.middle_name = data.middleName;
+    payload.middle_name = data.middleName.trim().toUpperCase();
   }
   if (data.suffix !== undefined) {
-    payload.suffix = data.suffix;
+    payload.suffix = data.suffix.trim().toUpperCase();
   }
   if (data.overrideName !== undefined) {
-    payload.override_name = data.overrideName;
+    payload.override_name = data.overrideName.trim();
   }
   if (data.studentNo !== undefined) {
     payload.student_no = data.studentNo;
@@ -65,7 +74,12 @@ function mapUserRecordToDb(data: Partial<UserRecord>): Record<string, any> {
     payload.degree_program = data.program;
   }
   if (data.tags !== undefined) {
-    payload.tags = data.tags ? data.tags.split(",") : [];
+    payload.tags = data.tags
+      ? data.tags
+          .split(/[,:]/)
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
   }
   if (data.notes !== undefined) {
     payload.notes = data.notes;
@@ -78,51 +92,56 @@ export const supabaseResidentService: ResidentServiceInterface = {
     if (!supabase) {
       return [];
     }
+    const sb = supabase;
 
-    let accQuery = supabase.from("accounts").select("*");
-    if (term) {
-      accQuery = accQuery.eq("period", term);
-    }
-
-    const [accRes, usersRes, journalRes, consts] = await Promise.all([
-      accQuery,
-      supabase.from("users_view").select("*"),
-      supabase.from("journal").select("*"),
-      constantsService.fetchConstants()
+    const [accData, usersData, journalList, consts] = await Promise.all([
+      fetchAllSupabaseRows(() => {
+        let query = sb.from("accounts").select("*");
+        if (term) {
+          query = query.eq("period", term);
+        }
+        return query.order("created_at", { ascending: true }).order("id", { ascending: true });
+      }),
+      fetchAllSupabaseRows(() =>
+        sb.from("users_view").select("*").order("id", { ascending: true })
+      ),
+      fetchAllSupabaseRows(() =>
+        sb
+          .from("journal")
+          .select("*")
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+      ),
+      supabaseConstantsService.fetchConstants()
     ]);
 
-    if (accRes.error) {
-      throw accRes.error;
-    }
-    if (usersRes.error) {
-      throw usersRes.error;
-    }
-
     const userMap = new Map<string, any>();
-    (usersRes.data || []).forEach((u: any) => {
+    usersData.forEach((u: any) => {
       userMap.set(u.id, u);
     });
 
     const getConst = (k: string) => consts.find((c) => c.key === k)?.value || "0";
-    const pmtWaived = getConst("PMT_WAIVED") || "PMT_WAIVED";
+    const pmtWaived = getConst("PMT_WAIVED");
     const isWaivedEntry = (t: string) =>
       t === pmtWaived || (t && t.toUpperCase().includes("WAIVED"));
 
-    const journalList = journalRes.data || [];
-
-    const result = (accRes.data || [])
+    const result = accData
       .map((row: any) => {
         const u = userMap.get(row.resident_id) || {};
         const period = row.period || "";
         const email = (u.email || "").toLowerCase().trim();
         const stno = (u.student_no || "").toLowerCase().trim();
+        const resId = (row.resident_id || "").toLowerCase();
 
         const filtered = journalList.filter((j: any) => {
           if (j.period !== period) {
             return false;
           }
           const acc = (j.account_email || "").toLowerCase().trim();
-          return (email && acc === email) || (stno && acc === stno);
+          // Sheets also matches on the journal row's own STNO column; Supabase
+          // journal has no STNO column (names come from users_view), so that
+          // fourth condition cannot be replicated here.
+          return (email && acc === email) || (resId && acc === resId) || (stno && acc === stno);
         });
 
         const waterPaid = filtered
@@ -166,7 +185,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
           type: row.type || "STUDENT",
           email: u.email || "",
           name: u.display_name || "",
-          stno: u.student_no || "Missing Student Number",
+          stno: u.student_no || "",
           waterBase,
           waterPaid,
           waterWaived,
@@ -182,98 +201,130 @@ export const supabaseResidentService: ResidentServiceInterface = {
           isFullyPaid: bal <= 0,
           college: u.college || "",
           program: u.degree_program || "",
-          ceFullName: "",
+          ceFullName: u.display_name_fl || "",
           ledgerId: row.id,
           raw: row
         };
       })
-      .filter((r: any) => Boolean(r.residentId || r.id)) as ResidentRecord[];
+      .filter((r: any) => r.residentId && r.residentId !== "") as ResidentRecord[];
 
-    if (term && result.length === 0) {
-      return this.fetchResidents(_forceRefresh, undefined);
-    }
     return result;
   },
 
-  async fetchResidentStatus(email: string, term?: string, _forceRefresh = false): Promise<any> {
+  async fetchResidentStatus(emailArg: string, term?: string, _forceRefresh = false): Promise<any> {
     if (!supabase) {
       return null;
     }
 
+    // Sheets always derives the identity from the auth token; mirror that.
+    const email = ((auth.isResident ? auth.user?.email : emailArg) || "").toLowerCase().trim();
+    const sb = supabase;
+
     const { data: userRow, error: userErr } = await supabase
       .from("users_view")
       .select("*")
-      .eq("email", email)
+      .ilike("email", email)
       .maybeSingle();
-
     if (userErr) {
-      throw userErr;
+      handleSupabaseError(userErr);
     }
 
-    const [accRes, journalRes, currRes, consts] = await Promise.all([
-      userRow
-        ? supabase.from("accounts").select("*").eq("resident_id", userRow.id)
-        : Promise.resolve({ data: [], error: null }),
-      supabase.from("journal").select("*").eq("account_email", email),
-      supabase
-        .from("curr")
-        .select("*")
-        .eq("email", email)
-        .order("timestamp", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      constantsService.fetchConstants()
-    ]);
-
-    const currentUser = userRow
-      ? {
-          ...userRow,
-          accounts: accRes.data || [],
-          journal: journalRes.data || []
-        }
-      : null;
-
-    const currEntryData = currRes.data;
-
+    const consts = await supabaseConstantsService.fetchConstants();
     const getConst = (k: string) => consts.find((c) => c.key === k)?.value || "";
     const activeTerm = getConst("TERM_CURR");
     const targetTerm = term || activeTerm;
 
-    const userAccounts: any[] = currentUser?.accounts || [];
-    const userJournals: any[] = currentUser?.journal || [];
-
-    const termJournals = userJournals.filter((j) => j.period === targetTerm);
-
-    const pmtWaived = getConst("PMT_WAIVED") || "PMT_WAIVED";
-    const waterBase = parseCSVAmount(getConst(`FEES_${targetTerm}_WATER`));
-    const assocBase = parseCSVAmount(getConst(`FEES_${targetTerm}_ASSOC`));
-
-    let waterPaid = 0;
-    let waterWaived = 0;
-    let assocPaid = 0;
-    let assocWaived = 0;
-    let miscPaid = 0;
-
-    for (const j of termJournals) {
-      const isWaived = j.type === pmtWaived || (j.type || "").toUpperCase().includes("WAIVED");
-      if (isWaived) {
-        waterWaived += parseCSVAmount(j.water);
-        assocWaived += parseCSVAmount(j.assoc);
-      } else {
-        waterPaid += parseCSVAmount(j.water);
-        assocPaid += parseCSVAmount(j.assoc);
-      }
-      miscPaid += parseCSVAmount(j.misc);
+    const [accRes, journalList, currRes, termAccRes] = await Promise.all([
+      userRow
+        ? supabase.from("accounts").select("*").eq("resident_id", userRow.id)
+        : Promise.resolve({ data: [], error: null }),
+      fetchAllSupabaseRows(() =>
+        sb
+          .from("journal")
+          .select("*")
+          .ilike("account_email", email)
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+      ),
+      supabase
+        .from("curr")
+        .select("*")
+        .ilike("email", email)
+        .eq("term", activeTerm)
+        .order("timestamp", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("accounts").select("resident_id, room, bed, period").eq("period", targetTerm)
+    ]);
+    if (accRes.error) {
+      handleSupabaseError(accRes.error);
+    }
+    if (currRes.error) {
+      handleSupabaseError(currRes.error);
+    }
+    if (termAccRes.error) {
+      handleSupabaseError(termAccRes.error);
     }
 
+    const currentUser = userRow || null;
+    const userAccounts: any[] = accRes.data || [];
+    const currEntryData = currRes.data;
+
+    // ── Transactions (all terms unless an explicit term was requested) ──
+    const transactions = journalList
+      .filter((j: any) => !term || j.period === term)
+      .map((j: any) => ({
+        id: j.id,
+        date: j.date,
+        type: j.type || "",
+        amount: parseCSVAmount(j.water) + parseCSVAmount(j.assoc) + parseCSVAmount(j.misc),
+        period: j.period || "",
+        mop: j.mop || "",
+        notes: j.notes || "",
+        creator: j.creator_email || "",
+        prRefNo: j.pr_ref_no || "",
+        runningBalance: 0
+      }));
+
+    let globalBalance = 0;
+    const sortedTransactions = [...transactions].sort(
+      (a, b) => parseDateWeight(a.date) - parseDateWeight(b.date)
+    );
+    for (const t of sortedTransactions) {
+      if (!t.type.toUpperCase().includes("WAIVED")) {
+        globalBalance += t.amount;
+      }
+      t.runningBalance = globalBalance;
+    }
+
+    // ── Financials for the target term ──
+    const pmtWaived = getConst("PMT_WAIVED");
+    const termJournals = journalList.filter((j: any) => j.period === targetTerm);
+
+    const waterPaid = termJournals
+      .filter((j: any) => j.type !== pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.water), 0);
+    const waterWaived = termJournals
+      .filter((j: any) => j.type === pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.water), 0);
+    const assocPaid = termJournals
+      .filter((j: any) => j.type !== pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
+    const assocWaived = termJournals
+      .filter((j: any) => j.type === pmtWaived)
+      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
+    const miscPaid = termJournals.reduce((sum: number, j: any) => sum + parseCSVAmount(j.misc), 0);
+
+    const waterBase = parseCSVAmount(getConst(`FEES_${targetTerm}_WATER`));
+    const assocBase = parseCSVAmount(getConst(`FEES_${targetTerm}_ASSOC`));
     const totalBase = waterBase + assocBase;
     const paid = waterPaid + assocPaid + miscPaid;
     const waived = waterWaived + assocWaived;
     const bal = totalBase - paid - waived;
 
-    const targetAccount = userAccounts.find((a) => a.period === targetTerm) || null;
+    const targetAccount = userAccounts.find((a: any) => a.period === targetTerm) || null;
 
-    const allTerms = [...new Set(userJournals.map((j) => j.period).filter(Boolean))];
+    const allTerms = [...new Set(journalList.map((j: any) => j.period).filter(Boolean))];
     if (activeTerm && !allTerms.includes(activeTerm)) {
       allTerms.push(activeTerm);
     }
@@ -286,8 +337,12 @@ export const supabaseResidentService: ResidentServiceInterface = {
       .filter((c) => c.key.startsWith("MOP_"))
       .map((c) => ({ value: c.value || c.key, label: c.description || c.value || c.key }));
 
-    const mappedProfile = currentUser ? mapDbUserToUserRecord(currentUser) : null;
     const isEvaluated = currEntryData?.evaluated ?? false;
+
+    const college = currentUser ? (currentUser.college || "").split(",").pop()?.trim() || "" : "";
+    const program = currentUser
+      ? (currentUser.degree_program || "").split(":").pop()?.trim() || ""
+      : "";
 
     return {
       isRegistered: !!currentUser,
@@ -298,17 +353,49 @@ export const supabaseResidentService: ResidentServiceInterface = {
       allTerms: allTerms.sort().reverse(),
       transactionTypes,
       mopTypes,
-      profile: mappedProfile,
+      profile: currentUser
+        ? {
+            id: currentUser.id,
+            email: currentUser.email,
+            firstName: currentUser.first_name || "",
+            lastName: currentUser.last_name || "",
+            studentNo: currentUser.student_no || "",
+            college,
+            program,
+            tags: Array.isArray(currentUser.tags)
+              ? currentUser.tags.join(",")
+              : currentUser.tags || "",
+            suffix: currentUser.suffix || "",
+            overrideName: currentUser.override_name || ""
+          }
+        : null,
       account: targetAccount
         ? {
+            email: currentUser?.email || "",
+            period: targetAccount.period || "",
             room: targetAccount.room || "",
             bed: targetAccount.bed || "",
-            period: targetAccount.period || "",
+            name: currentUser?.display_name || "",
+            stno: currentUser?.student_no || "",
+            waterBase,
+            waterPaid,
+            waterWaived,
+            waterBal: waterBase - waterPaid - waterWaived,
+            assocBase,
+            assocPaid,
+            assocWaived,
+            assocBal: assocBase - assocPaid - assocWaived,
+            totalBase,
+            paid,
+            waived,
+            bal,
+            isFullyPaid: bal <= 0,
             ceRefNo: targetAccount.ce_ref_no || "",
             ceIssued: targetAccount.ce_issued || "",
             ceLink: targetAccount.ce_link || "",
-            issuerId: targetAccount.issuer_id || "",
-            type: targetAccount.type || "STUDENT"
+            college,
+            program,
+            type: (targetAccount.type || AccountType.STUDENT).toUpperCase()
           }
         : null,
       currEntry: currEntryData
@@ -320,25 +407,18 @@ export const supabaseResidentService: ResidentServiceInterface = {
             college: currEntryData.college || "",
             program: currEntryData.program || "",
             studentNo: currEntryData.student_no || "",
-            accountType: currEntryData.account_type || "STUDENT",
+            accountType: currEntryData.account_type || AccountType.STUDENT,
             suffix: currEntryData.suffix || "",
             overrideName: currEntryData.override_name || "",
             isEvaluated
           }
         : null,
-      transactions: termJournals.map((j) => ({
-        id: j.id,
-        date: j.date,
-        type: j.type,
-        amount: parseCSVAmount(j.water) + parseCSVAmount(j.assoc) + parseCSVAmount(j.misc),
-        period: j.period,
-        mop: j.mop,
-        notes: j.notes,
-        creator: j.creator_email,
-        prRefNo: j.pr_ref_no,
-        runningBalance: 0
-      })),
-      occupiedBeds: []
+      transactions: sortedTransactions.reverse(),
+      // NOTE: under RLS, residents only see their own account rows, so this
+      // list is only complete for officers.
+      occupiedBeds: (termAccRes.data || [])
+        .filter((a: any) => a.room && a.bed && (!currentUser || a.resident_id !== currentUser.id))
+        .map((a: any) => ({ room: (a.room || "").trim(), bed: (a.bed || "").trim() }))
     };
   },
 
@@ -346,25 +426,30 @@ export const supabaseResidentService: ResidentServiceInterface = {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("accounts")
       .update({ type: newType })
       .eq("resident_id", residentId)
-      .eq("period", period);
+      .eq("period", period)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "Account row not found in spreadsheet.");
   },
 
   async fetchUsers(_forceRefresh = false): Promise<UserRecord[]> {
     if (!supabase) {
       return [];
     }
-    const { data, error } = await supabase.from("users_view").select("*");
-    if (error) {
-      throw error;
+    if (auth.isResident) {
+      return [];
     }
-    return (data || []).map(mapDbUserToUserRecord);
+    const sb = supabase;
+    const data = await fetchAllSupabaseRows(() =>
+      sb.from("users_view").select("*").order("id", { ascending: true })
+    );
+    return data.map(mapDbUserToUserRecord);
   },
 
   async updateUser(userId: string, data: Partial<UserRecord>): Promise<void> {
@@ -372,10 +457,15 @@ export const supabaseResidentService: ResidentServiceInterface = {
       return;
     }
     const payload = mapUserRecordToDb(data);
-    const { error } = await supabase.from("users").update(payload).eq("id", userId);
+    const { data: updated, error } = await supabase
+      .from("users")
+      .update(payload)
+      .eq("id", userId)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(updated, "User not found");
   },
 
   async addUser(data: Partial<UserRecord>): Promise<void> {
@@ -383,12 +473,10 @@ export const supabaseResidentService: ResidentServiceInterface = {
       return;
     }
     const payload = mapUserRecordToDb(data);
-    if (data.id) {
-      payload.id = data.id;
-    }
+    payload.id = data.id || crypto.randomUUID();
     const { error } = await supabase.from("users").insert(payload);
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   },
 
@@ -398,14 +486,12 @@ export const supabaseResidentService: ResidentServiceInterface = {
     }
     const rows = users.map((u) => {
       const payload = mapUserRecordToDb(u);
-      if (u.id) {
-        payload.id = u.id;
-      }
+      payload.id = u.id || crypto.randomUUID();
       return payload;
     });
     const { error } = await supabase.from("users").insert(rows);
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   },
 
@@ -413,10 +499,11 @@ export const supabaseResidentService: ResidentServiceInterface = {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase.from("users").delete().eq("id", userId);
+    const { data, error } = await supabase.from("users").delete().eq("id", userId).select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "User not found in spreadsheet");
   },
 
   async updateClearance(
@@ -427,9 +514,8 @@ export const supabaseResidentService: ResidentServiceInterface = {
     if (!supabase) {
       return;
     }
-    const { parseDbDate, parseDbUuid } = await import("$utils/parsers");
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("accounts")
       .update({
         ce_ref_no: data.refNo,
@@ -438,10 +524,12 @@ export const supabaseResidentService: ResidentServiceInterface = {
         issuer_id: parseDbUuid(data.issuerId)
       })
       .eq("resident_id", residentId)
-      .eq("period", period);
+      .eq("period", period)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(updated, "Resident not found in sheet");
   },
 
   async registerResident(data: Record<string, any>): Promise<void> {
@@ -449,8 +537,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
       throw new Error("Supabase client uninitialized");
     }
 
-    const { AccountType } = await import("$lib/types");
-    const { parseDbDate } = await import("$utils/parsers");
     const targetEmail = (data.email || "").toLowerCase();
     if (!targetEmail) {
       throw new Error("Missing email");
@@ -462,14 +548,23 @@ export const supabaseResidentService: ResidentServiceInterface = {
       throw new Error("Only @up.edu.ph email addresses are allowed for student accounts.");
     }
 
-    const { data: constData } = await supabase
+    const { data: constData, error: constErr } = await supabase
       .from("constants")
       .select("value")
       .eq("key", "TERM_CURR")
       .maybeSingle();
+    if (constErr) {
+      handleSupabaseError(constErr);
+    }
     const activeTerm = constData?.value || "";
 
-    const { data: userRows } = await supabase.from("users").select("id").eq("email", targetEmail);
+    const { data: userRows, error: userErr } = await supabase
+      .from("users")
+      .select("id")
+      .ilike("email", targetEmail);
+    if (userErr) {
+      handleSupabaseError(userErr);
+    }
 
     const isAlreadyRegistered = (userRows || []).length > 0;
 
@@ -499,7 +594,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     });
 
     if (currErr) {
-      throw currErr;
+      handleSupabaseError(currErr);
     }
   }
 };

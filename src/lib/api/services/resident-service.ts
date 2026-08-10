@@ -6,3 +6,5 @@ import { isSupabase } from "./common";
 export const residentService: ResidentServiceInterface = isSupabase
   ? supabaseResidentService
   : sheetsResidentService;
+
+export * from "./interfaces/resident-service.interface";

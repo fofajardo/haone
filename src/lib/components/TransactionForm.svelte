@@ -321,6 +321,7 @@
         ceRefNo: "",
         ceLink: "",
         ceFullName: "",
+        id: SYSTEM_IDS.FUNDS,
         residentId: SYSTEM_IDS.FUNDS,
         ledgerId: SYSTEM_IDS.FUNDS,
         checkInDate: "",

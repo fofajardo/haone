@@ -1,6 +1,39 @@
 import type { AnnouncementServiceInterface } from "../interfaces/announcement-service.interface";
 import type { AnnouncementRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
-import { supabase } from "../common";
+import {
+  supabase,
+  handleSupabaseError,
+  assertSupabaseFound,
+  fetchAllSupabaseRows
+} from "../common";
+
+function mapRow(row: any): AnnouncementRecord {
+  return {
+    id: row.id,
+    creatorId: row.creator_id,
+    dateCreated: row.created_at,
+    startDate: row.start_date,
+    expiryDate: row.expiry_date,
+    isIndefinite: row.is_indefinite ?? false,
+    isAdminOnly: row.is_admin_only ?? false,
+    isUnlisted: row.is_unlisted ?? false,
+    tags: row.tags ? row.tags.join(",") : "",
+    title: row.title,
+    content: row.content,
+    slug: row.slug,
+    broadcastCount: row.broadcast_count ?? 0,
+    raw: row
+  };
+}
+
+function applyActiveFilters(query: any) {
+  const now = new Date().toISOString();
+  return query
+    .or("is_admin_only.is.null,is_admin_only.eq.false")
+    .or("is_unlisted.is.null,is_unlisted.eq.false")
+    .or(`start_date.is.null,start_date.lte.${now}`)
+    .or(`is_indefinite.eq.true,expiry_date.is.null,expiry_date.gte.${now}`);
+}
 
 export const supabaseAnnouncementService: AnnouncementServiceInterface = {
   async fetchAnnouncements(
@@ -11,59 +44,41 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
       return [];
     }
 
+    const isPaginated = !!(options?.page && options?.pageSize);
+
+    if (!isPaginated) {
+      const sb = supabase;
+      const data = await fetchAllSupabaseRows(() => {
+        let query = sb.from("announcements").select("*");
+        if (activeOnly) {
+          query = applyActiveFilters(query);
+        }
+        return query.order("created_at", { ascending: false }).order("id", { ascending: true });
+      });
+      return data.map(mapRow);
+    }
+
     let query = supabase.from("announcements").select("*", { count: "exact" });
-
     if (activeOnly) {
-      const now = new Date().toISOString();
-      query = query
-        .eq("is_admin_only", false)
-        .eq("is_unlisted", false)
-        .or(`start_date.is.null,start_date.lte.${now}`)
-        .or(`is_indefinite.eq.true,expiry_date.is.null,expiry_date.gte.${now}`);
+      query = applyActiveFilters(query);
     }
+    query = query.order("created_at", { ascending: false }).order("id", { ascending: true });
 
-    query = query.order("created_at", { ascending: false });
-
-    if (options?.page && options?.pageSize) {
-      const start = (options.page - 1) * options.pageSize;
-      const end = start + options.pageSize - 1;
-      query = query.range(start, end);
-    }
-
-    const { data, count, error } = await query;
+    const start = (options!.page! - 1) * options!.pageSize!;
+    const end = start + options!.pageSize! - 1;
+    const { data, count, error } = await query.range(start, end);
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
 
-    const items: AnnouncementRecord[] = (data || []).map((row: any) => ({
-      id: row.id,
-      creatorId: row.creator_id,
-      dateCreated: row.created_at,
-      startDate: row.start_date,
-      expiryDate: row.expiry_date,
-      isIndefinite: row.is_indefinite,
-      isAdminOnly: row.is_admin_only,
-      isUnlisted: row.is_unlisted,
-      tags: row.tags ? row.tags.join(",") : "",
-      title: row.title,
-      content: row.content,
-      slug: row.slug,
-      broadcastCount: row.broadcast_count,
-      raw: row
-    }));
-
-    if (options?.page && options?.pageSize) {
-      const totalCount = count || 0;
-      return {
-        items,
-        totalCount,
-        page: options.page,
-        pageSize: options.pageSize,
-        totalPages: Math.ceil(totalCount / options.pageSize)
-      };
-    }
-
-    return items;
+    const totalCount = count || 0;
+    return {
+      items: (data || []).map(mapRow),
+      totalCount,
+      page: options!.page!,
+      pageSize: options!.pageSize!,
+      totalPages: Math.ceil(totalCount / options!.pageSize!)
+    };
   },
 
   async fetchAnnouncementBySlug(slug: string): Promise<AnnouncementRecord | null> {
@@ -76,26 +91,17 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
       .eq("slug", slug)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      if (error.code === "PGRST116") {
+        return null;
+      }
+      handleSupabaseError(error);
+    }
+    if (!data) {
       return null;
     }
 
-    return {
-      id: data.id,
-      creatorId: data.creator_id,
-      dateCreated: data.created_at,
-      startDate: data.start_date,
-      expiryDate: data.expiry_date,
-      isIndefinite: data.is_indefinite,
-      isAdminOnly: data.is_admin_only,
-      isUnlisted: data.is_unlisted,
-      tags: data.tags ? data.tags.join(",") : "",
-      title: data.title,
-      content: data.content,
-      slug: data.slug,
-      broadcastCount: data.broadcast_count,
-      raw: data
-    };
+    return mapRow(data);
   },
 
   async addAnnouncement(data: Partial<AnnouncementRecord>): Promise<void> {
@@ -103,19 +109,21 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
       return;
     }
     const { error } = await supabase.from("announcements").insert({
+      id: data.id || crypto.randomUUID(),
       creator_id: data.creatorId,
       start_date: data.startDate,
       expiry_date: data.expiryDate,
-      is_indefinite: data.isIndefinite,
-      is_admin_only: data.isAdminOnly,
-      is_unlisted: data.isUnlisted,
+      is_indefinite: data.isIndefinite ?? false,
+      is_admin_only: data.isAdminOnly ?? false,
+      is_unlisted: data.isUnlisted ?? false,
       tags: data.tags ? data.tags.split(",") : [],
       title: data.title,
       content: data.content,
-      slug: data.slug
+      slug: data.slug,
+      broadcast_count: data.broadcastCount ?? 0
     });
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   },
 
@@ -151,11 +159,19 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
     if (data.slug !== undefined) {
       payload.slug = data.slug;
     }
-
-    const { error } = await supabase.from("announcements").update(payload).eq("id", id);
-    if (error) {
-      throw error;
+    if (data.broadcastCount !== undefined) {
+      payload.broadcast_count = data.broadcastCount;
     }
+
+    const { data: updated, error } = await supabase
+      .from("announcements")
+      .update(payload)
+      .eq("id", id)
+      .select("id");
+    if (error) {
+      handleSupabaseError(error);
+    }
+    assertSupabaseFound(updated, "Announcement not found");
   },
 
   async expireAnnouncement(id: string): Promise<void> {
@@ -163,22 +179,25 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
       return;
     }
     const today = new Date().toISOString().split("T")[0];
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("announcements")
       .update({ expiry_date: today, is_indefinite: false })
-      .eq("id", id);
+      .eq("id", id)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "Announcement not found");
   },
 
   async deleteAnnouncement(id: string): Promise<void> {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase.from("announcements").delete().eq("id", id);
+    const { data, error } = await supabase.from("announcements").delete().eq("id", id).select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "Announcement not found");
   }
 };

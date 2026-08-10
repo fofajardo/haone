@@ -14,7 +14,13 @@ import { supabaseOfficerService } from "./supabase/officer-service";
 import { sheetsOfficerService } from "./sheets/officer-service";
 import { supabaseJournalService } from "./supabase/journal-service";
 import { sheetsJournalService } from "./sheets/journal-service";
-import { supabase, fetchSheetRowsRaw, batchUpdateValues, appendSheetRow } from "./common";
+import {
+  supabase,
+  fetchSheetRowsRaw,
+  batchUpdateValues,
+  appendSheetRow,
+  fetchAllSupabaseRows
+} from "./common";
 import { parseDbDate, isUuid } from "$utils/parsers";
 import {
   USER_COL,
@@ -50,8 +56,14 @@ export interface SyncResult {
   errors: string[];
 }
 
+// Keys excluded from diffing: raw payloads, sheet-only row indices, and
+// provider-specific fields that have no counterpart on the other side
+// (Supabase-only id/issuerId/name), which would otherwise compare unequal
+// forever and re-upsert on every sync.
+const DIFF_EXCLUDED_KEYS = new Set(["raw", "ledgerIndex", "id", "issuerId", "name"]);
+
 function isDifferent(a: any, b: any): boolean {
-  const keys = Object.keys(a).filter((k) => k !== "raw" && k !== "ledgerIndex");
+  const keys = Object.keys(a).filter((k) => !DIFF_EXCLUDED_KEYS.has(k));
   for (const key of keys) {
     if (String(a[key] ?? "") !== String(b[key] ?? "")) {
       return true;
@@ -109,6 +121,35 @@ function extractList<T>(res: T[] | { items?: T[]; total?: number }): T[] {
 }
 
 /**
+ * Fetches ALL journal entries from either provider. PostgREST hard-caps
+ * responses at 1000 rows server-side, so paginated Supabase calls must loop;
+ * the Sheets provider ignores pagination and returns everything at once.
+ */
+async function fetchAllJournalEntries(service: {
+  fetchJournalEntries: (
+    filters?: any,
+    options?: any
+  ) => Promise<JournalRecord[] | { items: JournalRecord[]; totalPages: number }>;
+}): Promise<JournalRecord[]> {
+  const pageSize = 1000;
+  const all: JournalRecord[] = [];
+  let page = 1;
+  for (;;) {
+    const res = await service.fetchJournalEntries(undefined, { page, pageSize });
+    if (Array.isArray(res)) {
+      all.push(...res);
+      break;
+    }
+    all.push(...res.items);
+    if (res.items.length < pageSize || page >= res.totalPages) {
+      break;
+    }
+    page++;
+  }
+  return all;
+}
+
+/**
  * Sync Users
  */
 export async function syncUsers(direction: SyncDirection): Promise<SyncResult> {
@@ -145,7 +186,12 @@ export async function syncUsers(direction: SyncDirection): Promise<SyncResult> {
             address: item.address,
             college: item.college,
             degree_program: item.program,
-            tags: item.tags ? item.tags.split(",") : [],
+            tags: item.tags
+              ? item.tags
+                  .split(/[,:]/)
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+              : [],
             notes: item.notes
           };
         });
@@ -213,8 +259,11 @@ async function getValidUserUuidSet(): Promise<Set<string>> {
   if (!supabase) {
     return new Set();
   }
-  const { data } = await supabase.from("users").select("id");
-  return new Set((data || []).map((u: any) => u.id));
+  const sb = supabase;
+  const data = await fetchAllSupabaseRows(() =>
+    sb.from("users").select("id").order("id", { ascending: true })
+  );
+  return new Set(data.map((u: any) => u.id));
 }
 
 /**
@@ -288,14 +337,14 @@ export async function syncAccounts(direction: SyncDirection): Promise<SyncResult
         if (!spreadsheetId) {
           throw new Error("Accounting workbook ID not configured");
         }
-        const rows = await fetchSheetRowsRaw(spreadsheetId, "accounts!A:K");
+        const rows = await fetchSheetRowsRaw(spreadsheetId, "accounts!A:L");
 
         const updates: { range: string; values: any[][] }[] = [];
         const newRows: string[][] = [];
 
         for (const item of items) {
           const rowIndex = rows.findIndex((r) => r[ACCOUNT_COL.ID] === item.id);
-          const row = new Array(11).fill("");
+          const row = new Array(12).fill("");
           row[ACCOUNT_COL.ID] = item.ledgerId || item.id;
           row[ACCOUNT_COL.RESIDENT_ID] = item.residentId || "";
           row[ACCOUNT_COL.PERIOD] = item.period || "";
@@ -307,9 +356,10 @@ export async function syncAccounts(direction: SyncDirection): Promise<SyncResult
           row[ACCOUNT_COL.NOTES] = item.notes || "";
           row[ACCOUNT_COL.ISSUER_ID] = (item as any).issuerId || "";
           row[ACCOUNT_COL.CHECK_IN_DATE] = item.checkInDate || "";
+          row[ACCOUNT_COL.TYPE] = (item as any).type || "";
 
           if (rowIndex !== -1) {
-            updates.push({ range: `accounts!A${rowIndex + 1}:K${rowIndex + 1}`, values: [row] });
+            updates.push({ range: `accounts!A${rowIndex + 1}:L${rowIndex + 1}`, values: [row] });
           } else {
             newRows.push(row);
           }
@@ -319,7 +369,7 @@ export async function syncAccounts(direction: SyncDirection): Promise<SyncResult
           await batchUpdateValues(spreadsheetId, updates);
         }
         if (newRows.length > 0) {
-          await appendSheetRow(spreadsheetId, "accounts!A:K", newRows);
+          await appendSheetRow(spreadsheetId, "accounts!A:L", newRows);
         }
       }
     );
@@ -333,14 +383,8 @@ export async function syncJournal(direction: SyncDirection): Promise<SyncResult>
   if (direction === "toSupabase") {
     return syncEntity(
       "Journal",
-      async () =>
-        extractList(
-          await sheetsJournalService.fetchJournalEntries(undefined, { page: 1, pageSize: 10000 })
-        ),
-      async () =>
-        extractList(
-          await supabaseJournalService.fetchJournalEntries(undefined, { page: 1, pageSize: 10000 })
-        ),
+      async () => fetchAllJournalEntries(sheetsJournalService),
+      async () => fetchAllJournalEntries(supabaseJournalService),
       async (items) => {
         if (!supabase) {
           throw new Error("Supabase client not initialized");
@@ -373,14 +417,8 @@ export async function syncJournal(direction: SyncDirection): Promise<SyncResult>
   } else {
     return syncEntity(
       "Journal",
-      async () =>
-        extractList(
-          await supabaseJournalService.fetchJournalEntries(undefined, { page: 1, pageSize: 10000 })
-        ),
-      async () =>
-        extractList(
-          await sheetsJournalService.fetchJournalEntries(undefined, { page: 1, pageSize: 10000 })
-        ),
+      async () => fetchAllJournalEntries(supabaseJournalService),
+      async () => fetchAllJournalEntries(sheetsJournalService),
       async (items) => {
         const { uiSettings } = await import("$state/settings.svelte");
         const spreadsheetId = uiSettings.accountingWorkbookId;
@@ -878,24 +916,26 @@ export async function syncAchievements(direction: SyncDirection): Promise<SyncRe
         if (!spreadsheetId) {
           throw new Error("Shared records ID not configured");
         }
-        const rows = await fetchSheetRowsRaw(spreadsheetId, "achievements!A:F");
+        const rows = await fetchSheetRowsRaw(spreadsheetId, "achievements!A:H");
 
         const updates: { range: string; values: any[][] }[] = [];
         const newRows: string[][] = [];
 
         for (const item of items) {
           const rowIndex = rows.findIndex((r) => r[ACHIEVEMENT_COL.ID] === item.id);
-          const row = new Array(6).fill("");
+          const row = new Array(8).fill("");
           row[ACHIEVEMENT_COL.ID] = item.id;
           row[ACHIEVEMENT_COL.CREATOR_ID] = item.creatorId || "";
           row[ACHIEVEMENT_COL.NAME] = item.name || "";
           row[ACHIEVEMENT_COL.DESCRIPTION] = item.description || "";
           row[ACHIEVEMENT_COL.ICON] = item.icon || "";
           row[ACHIEVEMENT_COL.EXTRA_URL] = item.extraUrl || "";
+          row[ACHIEVEMENT_COL.TERM] = item.term || "";
+          row[ACHIEVEMENT_COL.POINTS] = String(item.points ?? 0);
 
           if (rowIndex !== -1) {
             updates.push({
-              range: `achievements!A${rowIndex + 1}:F${rowIndex + 1}`,
+              range: `achievements!A${rowIndex + 1}:H${rowIndex + 1}`,
               values: [row]
             });
           } else {
@@ -907,7 +947,7 @@ export async function syncAchievements(direction: SyncDirection): Promise<SyncRe
           await batchUpdateValues(spreadsheetId, updates);
         }
         if (newRows.length > 0) {
-          await appendSheetRow(spreadsheetId, "achievements!A:F", newRows);
+          await appendSheetRow(spreadsheetId, "achievements!A:H", newRows);
         }
       }
     );
@@ -985,23 +1025,24 @@ export async function syncAwards(direction: SyncDirection): Promise<SyncResult> 
         if (!spreadsheetId) {
           throw new Error("Shared records ID not configured");
         }
-        const rows = await fetchSheetRowsRaw(spreadsheetId, "achievement_records!A:E");
+        const rows = await fetchSheetRowsRaw(spreadsheetId, "achievement_records!A:F");
 
         const updates: { range: string; values: any[][] }[] = [];
         const newRows: string[][] = [];
 
         for (const item of items) {
           const rowIndex = rows.findIndex((r) => r[ACHIEVEMENT_RECORD_COL.ID] === item.id);
-          const row = new Array(5).fill("");
+          const row = new Array(6).fill("");
           row[ACHIEVEMENT_RECORD_COL.ID] = item.id;
           row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] = item.recorderId || "";
           row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] = item.accountId || "";
           row[ACHIEVEMENT_RECORD_COL.DATE] = item.date || "";
           row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = item.achievementId || "";
+          row[ACHIEVEMENT_RECORD_COL.TERM] = item.term || "";
 
           if (rowIndex !== -1) {
             updates.push({
-              range: `achievement_records!A${rowIndex + 1}:E${rowIndex + 1}`,
+              range: `achievement_records!A${rowIndex + 1}:F${rowIndex + 1}`,
               values: [row]
             });
           } else {
@@ -1013,7 +1054,7 @@ export async function syncAwards(direction: SyncDirection): Promise<SyncResult> 
           await batchUpdateValues(spreadsheetId, updates);
         }
         if (newRows.length > 0) {
-          await appendSheetRow(spreadsheetId, "achievement_records!A:E", newRows);
+          await appendSheetRow(spreadsheetId, "achievement_records!A:F", newRows);
         }
       }
     );
@@ -1058,11 +1099,13 @@ export async function syncOfficers(direction: SyncDirection): Promise<SyncResult
       async () => extractList(await sheetsOfficerService.fetchOfficers()),
       async (items) => {
         const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.sharedRecordsId;
+        // The live sheets officer service uses the "directory" sheet in the
+        // RESIDENT RECORDS workbook, not "officers" in shared records.
+        const spreadsheetId = uiSettings.residentRecordsId;
         if (!spreadsheetId) {
-          throw new Error("Shared records ID not configured");
+          throw new Error("Resident records ID not configured");
         }
-        const rows = await fetchSheetRowsRaw(spreadsheetId, "officers!A:J");
+        const rows = await fetchSheetRowsRaw(spreadsheetId, "directory!A:J");
 
         const updates: { range: string; values: any[][] }[] = [];
         const newRows: string[][] = [];
@@ -1082,7 +1125,7 @@ export async function syncOfficers(direction: SyncDirection): Promise<SyncResult
           row[OFFICER_COL.STATUS] = item.status || "ACTIVE";
 
           if (rowIndex !== -1) {
-            updates.push({ range: `officers!A${rowIndex + 1}:J${rowIndex + 1}`, values: [row] });
+            updates.push({ range: `directory!A${rowIndex + 1}:J${rowIndex + 1}`, values: [row] });
           } else {
             newRows.push(row);
           }
@@ -1092,7 +1135,7 @@ export async function syncOfficers(direction: SyncDirection): Promise<SyncResult
           await batchUpdateValues(spreadsheetId, updates);
         }
         if (newRows.length > 0) {
-          await appendSheetRow(spreadsheetId, "officers!A:J", newRows);
+          await appendSheetRow(spreadsheetId, "directory!A:J", newRows);
         }
       }
     );
@@ -1129,8 +1172,8 @@ export async function fetchDatabaseStatus() {
     supabaseResidentService.fetchUsers(),
     sheetsResidentService.fetchResidents(true),
     supabaseResidentService.fetchResidents(),
-    sheetsJournalService.fetchJournalEntries(undefined, { page: 1, pageSize: 10000 }),
-    supabaseJournalService.fetchJournalEntries(undefined, { page: 1, pageSize: 10000 }),
+    fetchAllJournalEntries(sheetsJournalService),
+    fetchAllJournalEntries(supabaseJournalService),
     sheetsAnnouncementService.fetchAnnouncements(),
     supabaseAnnouncementService.fetchAnnouncements(),
     sheetsConstantsService.fetchConstants(true),

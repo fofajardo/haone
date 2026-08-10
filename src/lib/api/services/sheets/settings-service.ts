@@ -1,5 +1,5 @@
 import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
-import { fetchSheetRowsRaw, updateSheetValue, appendSheetRow } from "../common";
+import { fetchSheetRowsRaw, appendSheetRow, batchUpdateValues } from "../common";
 import { USER_SETTINGS_COL, type UserSettingsRecord } from "$lib/types";
 
 import { auth } from "$state/auth.svelte";
@@ -68,7 +68,48 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       (r) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
 
-    const currentRecord = rowIndex !== -1 ? rows[rowIndex] : [];
+    // Existing row: write ONLY the provided fields so concurrent edits to other
+    // settings (another tab/admin) are not clobbered by a full-row rewrite.
+    if (rowIndex !== -1) {
+      const actualRow = rowIndex + 1;
+      const updates: { range: string; values: any[][] }[] = [];
+      if (data.isPublicAchievementList !== undefined) {
+        updates.push({
+          range: `settings!B${actualRow}`,
+          values: [[String(data.isPublicAchievementList).toUpperCase()]]
+        });
+      }
+      if (data.residentNav !== undefined) {
+        updates.push({ range: `settings!C${actualRow}`, values: [[data.residentNav]] });
+      }
+      if (data.adminNav !== undefined) {
+        updates.push({ range: `settings!D${actualRow}`, values: [[data.adminNav]] });
+      }
+      if (data.density !== undefined) {
+        updates.push({ range: `settings!E${actualRow}`, values: [[data.density]] });
+      }
+      if (data.typography !== undefined) {
+        updates.push({ range: `settings!F${actualRow}`, values: [[data.typography]] });
+      }
+      if (data.theme !== undefined) {
+        updates.push({ range: `settings!G${actualRow}`, values: [[data.theme]] });
+      }
+      if (data.isReducedMotion !== undefined) {
+        updates.push({
+          range: `settings!H${actualRow}`,
+          values: [[String(data.isReducedMotion).toUpperCase()]]
+        });
+      }
+      if (data.clockFormat !== undefined) {
+        updates.push({ range: `settings!I${actualRow}`, values: [[data.clockFormat]] });
+      }
+      if (updates.length > 0) {
+        await batchUpdateValues(uiSettings.sharedRecordsId, updates);
+      }
+      return;
+    }
+
+    const currentRecord: string[] = [];
     const isPublicVal =
       data.isPublicAchievementList !== undefined
         ? String(data.isPublicAchievementList).toUpperCase()
@@ -110,13 +151,6 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       clockFormatVal
     ];
 
-    if (rowIndex === -1) {
-      await appendSheetRow(uiSettings.sharedRecordsId, "settings!A:I", [finalValues]);
-    } else {
-      const actualRow = rowIndex + 1;
-      await updateSheetValue(uiSettings.sharedRecordsId, `settings!A${actualRow}:I${actualRow}`, [
-        finalValues
-      ]);
-    }
+    await appendSheetRow(uiSettings.sharedRecordsId, "settings!A:I", [finalValues]);
   }
 };

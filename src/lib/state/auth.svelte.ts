@@ -109,6 +109,17 @@ class AuthState {
   ) {
     this.accessToken = token;
 
+    // A new session means a different identity; drop cached sheet/server data
+    // so the previous user's data is never served.
+    if (browser) {
+      import("$api/services/common").then(({ invalidateCache }) => {
+        invalidateCache();
+      });
+      import("$utils/api-client").then(({ invalidateServerCache }) => {
+        invalidateServerCache();
+      });
+    }
+
     // Normalize user photo URL to high resolution
     if (user.picture) {
       user.picture = this.getHighResPictureUrl(user.picture);
@@ -136,10 +147,14 @@ class AuthState {
     this.isRemembered = false;
 
     if (browser) {
-      import("$api/services/common").then(({ supabase }) => {
+      import("$api/services/common").then(({ supabase, invalidateCache }) => {
+        invalidateCache();
         if (supabase) {
           supabase.auth.signOut();
         }
+      });
+      import("$utils/api-client").then(({ invalidateServerCache }) => {
+        invalidateServerCache();
       });
       localStorage.removeItem(LS_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(LS_KEYS.USER);

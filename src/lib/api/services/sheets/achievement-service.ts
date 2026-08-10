@@ -11,6 +11,8 @@ import {
 
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
+import { parseCSVAmount } from "$utils/math";
+import { getLocalDateString } from "$utils/parsers";
 
 let _residentFetch: Promise<any> | null = null;
 
@@ -45,7 +47,7 @@ export const sheetsAchievementService: AchievementServiceInterface = {
       icon: (row[ACHIEVEMENT_COL.ICON] || "").trim(),
       extraUrl: (row[ACHIEVEMENT_COL.EXTRA_URL] || "").trim(),
       term: (row[ACHIEVEMENT_COL.TERM] || "").trim(),
-      points: Number(row[ACHIEVEMENT_COL.POINTS] || 0),
+      points: parseCSVAmount(row[ACHIEVEMENT_COL.POINTS]),
       raw: row
     }));
   },
@@ -155,7 +157,7 @@ export const sheetsAchievementService: AchievementServiceInterface = {
     row[ACHIEVEMENT_RECORD_COL.ID] = data.id || crypto.randomUUID();
     row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] = data.recorderId || "";
     row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] = data.accountId || "";
-    row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || new Date().toISOString().split("T")[0];
+    row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || getLocalDateString();
     row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId || "";
     row[ACHIEVEMENT_RECORD_COL.TERM] = data.term || "";
     await appendSheetRow(uiSettings.sharedRecordsId, "achievement_records!A:F", [row]);
@@ -175,8 +177,20 @@ export const sheetsAchievementService: AchievementServiceInterface = {
   },
 
   async awardAchievementBatch(records: Partial<AchievementLogRecord>[]): Promise<void> {
-    for (const r of records) {
-      await this.awardAchievement(r);
+    const { uiSettings } = await import("$state/settings.svelte");
+    if (!uiSettings.sharedRecordsId) {
+      throw new Error("Shared Records ID not configured");
     }
+    const rows = records.map((data) => {
+      const row = new Array(6).fill("");
+      row[ACHIEVEMENT_RECORD_COL.ID] = data.id || crypto.randomUUID();
+      row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] = data.recorderId || "";
+      row[ACHIEVEMENT_RECORD_COL.ACCOUNT_ID] = data.accountId || "";
+      row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || getLocalDateString();
+      row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId || "";
+      row[ACHIEVEMENT_RECORD_COL.TERM] = data.term || "";
+      return row;
+    });
+    await appendSheetRow(uiSettings.sharedRecordsId, "achievement_records!A:F", rows);
   }
 };

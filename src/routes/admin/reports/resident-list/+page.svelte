@@ -158,6 +158,7 @@
           ceRefNo: res?.ceRefNo || "",
           ceLink: res?.ceLink || "",
           ceFullName: res?.ceFullName || "",
+          id: res?.id || "",
           residentId: res?.residentId || "",
           ledgerId: res?.ledgerId || "",
           checkInDate: res?.checkInDate || "",

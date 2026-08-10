@@ -1,5 +1,10 @@
 import type { ConstantsServiceInterface } from "../interfaces/constants-service.interface";
-import { supabase } from "../common";
+import {
+  supabase,
+  handleSupabaseError,
+  assertSupabaseFound,
+  fetchAllSupabaseRows
+} from "../common";
 import type { ConstantRecord } from "$lib/types";
 
 export const supabaseConstantsService: ConstantsServiceInterface = {
@@ -7,11 +12,11 @@ export const supabaseConstantsService: ConstantsServiceInterface = {
     if (!supabase) {
       return [];
     }
-    const { data, error } = await supabase.from("constants").select("*");
-    if (error) {
-      throw error;
-    }
-    return (data || []).map((c: any) => ({
+    const sb = supabase;
+    const data = await fetchAllSupabaseRows(() =>
+      sb.from("constants").select("*").order("key", { ascending: true })
+    );
+    return data.map((c: any) => ({
       key: c.key,
       value: c.value,
       description: c.description || "",
@@ -29,7 +34,7 @@ export const supabaseConstantsService: ConstantsServiceInterface = {
       .eq("key", key)
       .maybeSingle();
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
     return data?.value ?? null;
   },
@@ -40,7 +45,7 @@ export const supabaseConstantsService: ConstantsServiceInterface = {
     }
     const { error } = await supabase.from("constants").insert({ key, value, description });
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   },
 
@@ -48,19 +53,40 @@ export const supabaseConstantsService: ConstantsServiceInterface = {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase.from("constants").update({ value }).eq("key", key);
+    const { data, error } = await supabase
+      .from("constants")
+      .update({ value })
+      .eq("key", key)
+      .select("key");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, `Constant "${key}" not found`);
   },
 
   async batchUpdateConstants(updates: { range: string; values: any[][] }[]): Promise<void> {
-    // Supabase: parse range to extract key and upsert
+    if (!supabase) {
+      return;
+    }
+    // Sheets-shaped updates ({ range: "constants!B{row}" }) encode the target
+    // constant by sheet row (1-indexed, row 1 = header). Resolve keys in the
+    // same canonical order fetchConstants returns.
+    const all = await this.fetchConstants();
     for (const u of updates) {
-      const value = u.values[0]?.[0];
-      if (value !== undefined) {
-        // range encodes the key in some cases — delegate to caller for key resolution
-        // For direct key-value updates prefer updateConstant
+      const m = u.range.match(/(\d+)/);
+      if (!m) {
+        continue;
+      }
+      const key = all[parseInt(m[1]) - 2]?.key;
+      if (!key) {
+        continue;
+      }
+      const { error } = await supabase
+        .from("constants")
+        .update({ value: String(u.values[0]?.[0] ?? "") })
+        .eq("key", key);
+      if (error) {
+        handleSupabaseError(error);
       }
     }
   }

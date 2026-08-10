@@ -78,6 +78,17 @@ export function getJournalDateRange(journal: { date: string }[]): { start: strin
   return { start: "", end: "" };
 }
 
+/**
+ * Returns today's date as YYYY-MM-DD in LOCAL time (toISOString would be UTC,
+ * which is off by a day for UTC+8 mornings).
+ */
+export function getLocalDateString(d = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function isUuid(val: string | null | undefined): boolean {

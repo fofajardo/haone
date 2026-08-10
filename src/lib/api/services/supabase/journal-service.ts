@@ -3,35 +3,72 @@ import type {
   JournalFilters
 } from "../interfaces/journal-service.interface";
 import type { JournalRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
-import { supabase } from "../common";
+import {
+  supabase,
+  handleSupabaseError,
+  assertSupabaseFound,
+  fetchAllSupabaseRows
+} from "../common";
 import { parseCSVAmount } from "$utils/math";
-import { parseDbDate } from "$utils/parsers";
+import { parseDbDate, getLocalDateString, isUuid } from "$utils/parsers";
+import { auth } from "$state/auth.svelte";
+
+function applyFilters(query: any, filters?: JournalFilters) {
+  if (filters?.term) {
+    query = query.eq("period", filters.term);
+  }
+  if (filters?.type) {
+    query = query.eq("type", filters.type);
+  }
+  if (filters?.mop) {
+    query = query.eq("mop", filters.mop);
+  }
+  if (filters?.accountId) {
+    query = query.eq("account_email", filters.accountId);
+  }
+  return query;
+}
 
 export const supabaseJournalService: JournalServiceInterface = {
   async fetchJournalEntries(
-    _filters?: JournalFilters,
+    filters?: JournalFilters,
     options?: PaginationOptions
   ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>> {
     if (!supabase) {
       return [];
     }
+    const sb = supabase;
 
-    let query = supabase.from("journal").select("*", { count: "exact" });
+    const isPaginated = !!(options?.page && options?.pageSize);
 
-    if (options?.page && options?.pageSize) {
-      const start = (options.page - 1) * options.pageSize;
-      const end = start + options.pageSize - 1;
-      query = query.range(start, end);
+    let data: any[] = [];
+    let count = 0;
+
+    if (isPaginated) {
+      let query = applyFilters(supabase.from("journal").select("*", { count: "exact" }), filters)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true });
+      const start = (options!.page! - 1) * options!.pageSize!;
+      const end = start + options!.pageSize! - 1;
+      const { data: rows, count: total, error } = await query.range(start, end);
+      if (error) {
+        handleSupabaseError(error);
+      }
+      data = rows || [];
+      count = total || 0;
+    } else {
+      data = await fetchAllSupabaseRows(() =>
+        applyFilters(sb.from("journal").select("*"), filters)
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+      );
     }
 
-    const [journalRes, usersRes] = await Promise.all([
-      query,
-      supabase.from("users_view").select("id, email, display_name, student_no")
-    ]);
-
-    const { data, count, error } = journalRes;
-    if (error) {
-      throw error;
+    const usersRes = await supabase
+      .from("users_view")
+      .select("id, email, display_name, student_no");
+    if (usersRes.error) {
+      handleSupabaseError(usersRes.error);
     }
 
     const userMap = new Map<string, any>();
@@ -41,7 +78,7 @@ export const supabaseJournalService: JournalServiceInterface = {
       }
     });
 
-    const items: JournalRecord[] = (data || []).map((row: any) => {
+    const items: JournalRecord[] = data.map((row: any) => {
       const accountEmail = (row.account_email || "").toLowerCase().trim();
       const creatorEmail = (row.creator_email || "").toLowerCase().trim();
       const accountUser = userMap.get(accountEmail);
@@ -73,14 +110,21 @@ export const supabaseJournalService: JournalServiceInterface = {
       };
     });
 
-    if (options?.page && options?.pageSize) {
-      const totalCount = count || 0;
+    // Residents must not see private notes or receipt URLs (Sheets strips them).
+    if (auth.isResident) {
+      for (const item of items) {
+        item.notesPrivate = "";
+        item.receiptUrl = "";
+      }
+    }
+
+    if (isPaginated) {
       return {
         items,
-        totalCount,
-        page: options.page,
-        pageSize: options.pageSize,
-        totalPages: Math.ceil(totalCount / options.pageSize)
+        totalCount: count,
+        page: options!.page!,
+        pageSize: options!.pageSize!,
+        totalPages: Math.ceil(count / options!.pageSize!)
       };
     }
 
@@ -93,12 +137,13 @@ export const supabaseJournalService: JournalServiceInterface = {
     }
 
     const { error } = await supabase.from("journal").insert({
-      date: parseDbDate(data.date) || new Date().toISOString().split("T")[0],
+      id: data.id || crypto.randomUUID(),
+      date: parseDbDate(data.date) || getLocalDateString(),
       creator_email: data.creator,
       account_email: data.account,
-      water: data.water,
-      assoc: data.assoc,
-      misc: data.misc,
+      water: data.water ?? 0,
+      assoc: data.assoc ?? 0,
+      misc: data.misc ?? 0,
       mop: data.mop,
       period: data.period,
       type: data.type,
@@ -107,11 +152,11 @@ export const supabaseJournalService: JournalServiceInterface = {
       mop_ref_no: data.mopRefNo,
       pr_date_issued: parseDbDate(data.prDateIssued),
       pr_ref_no: data.prRefNo,
-      was_audited: data.wasAudited,
+      was_audited: data.wasAudited ?? false,
       receipt_url: data.receiptUrl
     });
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   },
 
@@ -170,29 +215,42 @@ export const supabaseJournalService: JournalServiceInterface = {
       payload.receipt_url = data.receiptUrl;
     }
 
-    const { error } = await supabase.from("journal").update(payload).eq("id", id);
+    const { data: updated, error } = await supabase
+      .from("journal")
+      .update(payload)
+      .eq("id", id)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(updated, "Journal entry not found");
   },
 
   async deleteJournalEntry(id: string): Promise<void> {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase.from("journal").delete().eq("id", id);
+    const { data, error } = await supabase.from("journal").delete().eq("id", id).select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "Journal entry not found");
   },
 
   async batchAuditEntries(ids: string[]): Promise<void> {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase.from("journal").update({ was_audited: true }).in("id", ids);
+    const validIds = ids.filter((id) => isUuid(id));
+    if (validIds.length === 0) {
+      return;
+    }
+    const { error } = await supabase
+      .from("journal")
+      .update({ was_audited: true })
+      .in("id", validIds);
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   }
 };

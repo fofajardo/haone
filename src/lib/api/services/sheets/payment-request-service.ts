@@ -12,6 +12,8 @@ import {
 
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
+import { parseCSVAmount } from "$utils/math";
+import { getLocalDateString } from "$utils/parsers";
 
 export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
   async fetchPaymentRequests(
@@ -20,7 +22,7 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
   ): Promise<PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord>> {
     if (auth.isResident) {
       const data = await fetchServer("/api/resident/payment-requests");
-      return data.requests || data || [];
+      return Array.isArray(data) ? data : data.requests || [];
     }
 
     const { uiSettings } = await import("$state/settings.svelte");
@@ -32,9 +34,9 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
       id: (row[PAYMENT_REQUEST_COL.ID] || "").trim(),
       residentId: (row[PAYMENT_REQUEST_COL.RESIDENT_ID] || "").trim(),
       date: (row[PAYMENT_REQUEST_COL.DATE] || "").trim(),
-      waterFee: Number(row[PAYMENT_REQUEST_COL.WATER_FEE] || 0),
-      assocFee: Number(row[PAYMENT_REQUEST_COL.ASSOC_FEE] || 0),
-      misc: Number(row[PAYMENT_REQUEST_COL.MISC] || 0),
+      waterFee: parseCSVAmount(row[PAYMENT_REQUEST_COL.WATER_FEE]),
+      assocFee: parseCSVAmount(row[PAYMENT_REQUEST_COL.ASSOC_FEE]),
+      misc: parseCSVAmount(row[PAYMENT_REQUEST_COL.MISC]),
       mop: (row[PAYMENT_REQUEST_COL.MOP] || "").trim(),
       type: (row[PAYMENT_REQUEST_COL.TYPE] || "").trim(),
       proofLink: (row[PAYMENT_REQUEST_COL.PROOF_LINK] || "").trim(),
@@ -67,7 +69,7 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
     const row = new Array(12).fill("");
     row[PAYMENT_REQUEST_COL.ID] = data.id || crypto.randomUUID();
     row[PAYMENT_REQUEST_COL.RESIDENT_ID] = data.residentId || "";
-    row[PAYMENT_REQUEST_COL.DATE] = data.date || new Date().toISOString().split("T")[0];
+    row[PAYMENT_REQUEST_COL.DATE] = data.date || getLocalDateString();
     row[PAYMENT_REQUEST_COL.WATER_FEE] = String(data.waterFee || 0);
     row[PAYMENT_REQUEST_COL.ASSOC_FEE] = String(data.assocFee || 0);
     row[PAYMENT_REQUEST_COL.MISC] = String(data.misc || 0);
@@ -111,7 +113,10 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
     jRow[JOURNAL_COL.PERIOD] = journalData.period || "";
     jRow[JOURNAL_COL.TYPE] = journalData.type || "";
     jRow[JOURNAL_COL.NOTES] = journalData.notes || "";
+    jRow[JOURNAL_COL.NOTES_PRIVATE] = journalData.notesPrivate || "";
     jRow[JOURNAL_COL.MOP_REFNO] = journalData.mopRefNo || "";
+    jRow[JOURNAL_COL.PR_DATE_ISSUED] = journalData.prDateIssued || "";
+    jRow[JOURNAL_COL.PR_REFNO] = journalData.prRefNo || "";
     jRow[JOURNAL_COL.CREATOR_NAME] = journalData.creatorName || "";
     jRow[JOURNAL_COL.NAME] = journalData.name || "";
     jRow[JOURNAL_COL.STNO] = journalData.stno || "";

@@ -1,16 +1,13 @@
 import { uiSettings } from "$state/settings.svelte";
-import { roomsService } from "$api/services/rooms-service";
+import {
+  roomsService,
+  type CurrRecord,
+  type AccountRow,
+  type StaticIpRow
+} from "$api/services/rooms-service";
 import { addJournalEntries } from "$api/controllers/journal-controller";
 import { fetchConstantByKey } from "$api/controllers/constants-controller";
-import {
-  ACCOUNT_COL,
-  CURR_COL,
-  JOURNAL_COL,
-  STATIC_IP_COL,
-  AccountType,
-  UserTag,
-  type UserRecord
-} from "$lib/types";
+import { AccountType, UserTag, type UserRecord } from "$lib/types";
 import {
   fetchUsers,
   addUser,
@@ -19,26 +16,9 @@ import {
 } from "$api/controllers/resident-controller";
 import { roomsState } from "$state/rooms.svelte";
 import { auth } from "$state/auth.svelte";
+import { getLocalDateString } from "$utils/parsers";
 
-export interface CurrRecord {
-  timestamp: string;
-  email: string;
-  room: string;
-  bed: string;
-  lastName: string;
-  firstName: string;
-  college: string;
-  program: string;
-  studentNo: string;
-  checkInDate: string;
-  isEvaluated: boolean;
-  term: string;
-  accountType: string;
-  suffix?: string;
-  overrideName?: string;
-  rowIndex: number; // 1-indexed
-  raw: string[];
-}
+export type { CurrRecord };
 
 export interface SyncPreviewAction {
   type: "CREATE_USER" | "UPDATE_USER" | "CREATE_ACCOUNT" | "UPDATE_ACCOUNT" | "EVALUATE_ONLY";
@@ -49,7 +29,7 @@ export interface SyncPreviewAction {
   warning?: string;
   from?: string;
   to?: string;
-  currIndex?: number; // Row index in CURR sheet to mark as evaluated
+  currIndex?: number; // Position of the CURR record this action originated from (dedup only)
   // Payload for applying
   payload: any;
 }
@@ -59,10 +39,10 @@ export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]
 }
 
 export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAction[]> {
-  const [currRecords, users, accRows] = await Promise.all([
+  const [currRecords, users, accounts] = await Promise.all([
     fetchCurrSheet(true),
     fetchUsers(true),
-    roomsService.fetchAccountsRaw(true)
+    roomsService.fetchAccounts(true)
   ]);
 
   const userMapByStNo = new Map<string, UserRecord>();
@@ -72,20 +52,19 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
     if (u.email) userMapByEmail.set(u.email.toLowerCase(), u);
   });
 
-  // Map: residentId -> accountRow
-  const existingAccountMap = new Map<string, { row: string[]; index: number }>();
+  // Map: residentId -> account
+  const existingAccountMap = new Map<string, AccountRow>();
   // Map: room-bed -> residentName
   const currentOccupancyMap = new Map<string, string>();
 
-  accRows.slice(1).forEach((row, idx) => {
-    if (row[ACCOUNT_COL.PERIOD] === currentTerm) {
-      existingAccountMap.set(row[ACCOUNT_COL.RESIDENT_ID], { row, index: idx + 2 });
+  accounts.forEach((acc) => {
+    if (acc.period === currentTerm) {
+      existingAccountMap.set(acc.residentId, acc);
 
-      if (row[ACCOUNT_COL.ROOM] && row[ACCOUNT_COL.BED]) {
-        const userId = row[ACCOUNT_COL.RESIDENT_ID];
-        const user = users.find((u) => u.id === userId);
+      if (acc.room && acc.bed) {
+        const user = users.find((u) => u.id === acc.residentId);
         const name = user ? `${user.lastName}, ${user.firstName}` : "Unknown";
-        currentOccupancyMap.set(`${row[ACCOUNT_COL.ROOM]}-${row[ACCOUNT_COL.BED]}`, name);
+        currentOccupancyMap.set(`${acc.room}-${acc.bed}`, name);
       }
     }
   });
@@ -272,14 +251,11 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       // Check account update
       const existingAcc = existingAccountMap.get(user.id);
       if (existingAcc) {
-        if (
-          !isEmptyRoomBed &&
-          (existingAcc.row[ACCOUNT_COL.ROOM] !== curr.room ||
-            existingAcc.row[ACCOUNT_COL.BED] !== curr.bed)
-        ) {
-          const oldRoom = existingAcc.row[ACCOUNT_COL.ROOM];
-          const oldBed = existingAcc.row[ACCOUNT_COL.BED];
-          const oldLoc = oldRoom && oldBed ? `${oldRoom}-${oldBed}` : "Unassigned";
+        if (!isEmptyRoomBed && (existingAcc.room !== curr.room || existingAcc.bed !== curr.bed)) {
+          const oldLoc =
+            existingAcc.room && existingAcc.bed
+              ? `${existingAcc.room}-${existingAcc.bed}`
+              : "Unassigned";
 
           actions.push({
             type: "UPDATE_ACCOUNT",
@@ -292,7 +268,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             to: `${curr.room}-${curr.bed}`,
             warning,
             payload: {
-              rowIndex: existingAcc.index,
+              accountId: existingAcc.id,
               room: curr.room,
               bed: curr.bed,
               checkInDate: curr.checkInDate
@@ -341,9 +317,53 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
   return actions;
 }
 
-export async function applySync(actions: SyncPreviewAction[]) {
-  if (!uiSettings.accountingWorkbookId) throw new Error("Accounting Workbook ID not configured");
+/**
+ * Carries forward the most recent prior-term static IP entries for newly
+ * assigned residents. Failures are logged but never abort the sync.
+ */
+async function carryForwardStaticIps(
+  assignments: { residentId: string; period: string }[]
+): Promise<void> {
+  try {
+    const staticIpRows = await roomsService.fetchStaticIpRows();
+    const carryForwardRows: StaticIpRow[] = [];
 
+    for (const { residentId, period } of assignments) {
+      const priorRows = staticIpRows.filter(
+        (r) => r.residentId === residentId && r.period !== period
+      );
+      if (priorRows.length === 0) {
+        continue;
+      }
+
+      const sortedPeriods = [...new Set(priorRows.map((r) => r.period))].sort((p1, p2) => {
+        return p2.localeCompare(p1);
+      });
+      const latestPeriod = sortedPeriods[0];
+      const latestEntries = priorRows.filter((r) => r.period === latestPeriod);
+
+      for (const entry of latestEntries) {
+        carryForwardRows.push({
+          id: crypto.randomUUID(),
+          recorderId: entry.recorderId || auth.user?.email || "",
+          residentId,
+          period,
+          type: entry.type || "",
+          ip: entry.ip || "",
+          notes: entry.notes || ""
+        });
+      }
+    }
+
+    if (carryForwardRows.length > 0) {
+      await roomsService.appendStaticIpRows(carryForwardRows);
+    }
+  } catch (e) {
+    console.error("Failed to carry forward static IPs:", e);
+  }
+}
+
+export async function applySync(actions: SyncPreviewAction[], term: string) {
   const userCreations = actions.filter((a) => a.type === "CREATE_USER");
   const userUpdates = actions.filter((a) => a.type === "UPDATE_USER");
   const accountUpdates = actions.filter((a) => a.type === "UPDATE_ACCOUNT");
@@ -360,98 +380,56 @@ export async function applySync(actions: SyncPreviewAction[]) {
     await updateUser(id, data);
   }
 
-  // 3. Update Accounts (Batch)
+  // 3. Update Accounts
   if (accountUpdates.length > 0) {
-    const updates: any[] = [];
-    for (const a of accountUpdates) {
-      const actualRow = a.payload.rowIndex;
-      updates.push({
-        range: `accounts!D${actualRow}:E${actualRow}`,
-        values: [[a.payload.room, a.payload.bed]]
-      });
-      // Also update check-in date
-      updates.push({
-        range: `accounts!K${actualRow}`,
-        values: [[a.payload.checkInDate]]
-      });
-    }
-    await roomsService.batchUpdateAccounts(updates);
+    await roomsService.updateAccounts(
+      accountUpdates.map((a) => ({
+        id: a.payload.accountId,
+        room: a.payload.room,
+        bed: a.payload.bed,
+        checkInDate: a.payload.checkInDate
+      }))
+    );
   }
 
-  // 4. Create Accounts (Append)
+  // 4. Create Accounts
   if (accountCreations.length > 0) {
-    const rows = accountCreations.map((a) => {
-      const row = new Array(12).fill("");
-      row[ACCOUNT_COL.ID] = crypto.randomUUID();
-      row[ACCOUNT_COL.RESIDENT_ID] = a.payload.residentId;
-      row[ACCOUNT_COL.PERIOD] = a.payload.period;
-      row[ACCOUNT_COL.ROOM] = a.payload.room;
-      row[ACCOUNT_COL.BED] = a.payload.bed;
-      row[ACCOUNT_COL.CHECK_IN_DATE] = a.payload.checkInDate;
-      row[ACCOUNT_COL.TYPE] = a.payload.accountType || AccountType.STUDENT;
-      return row;
-    });
+    const rows: AccountRow[] = accountCreations.map((a) => ({
+      id: crypto.randomUUID(),
+      residentId: a.payload.residentId,
+      period: a.payload.period,
+      room: a.payload.room,
+      bed: a.payload.bed,
+      ceRefNo: "",
+      ceIssued: "",
+      ceLink: "",
+      accountNotes: "",
+      issuerId: "",
+      checkInDate: a.payload.checkInDate,
+      type: a.payload.accountType || AccountType.STUDENT
+    }));
     await roomsService.appendAccounts(rows);
 
     // Carry forward any prior term static IP addresses
-    try {
-      const staticIpRows = await roomsService.fetchStaticIpRows();
-      const carryForwardRows: any[][] = [];
-
-      for (const a of accountCreations) {
-        const rid = a.payload.residentId;
-        const targetPeriod = a.payload.period;
-
-        const priorRows = staticIpRows.slice(1).filter((r) => {
-          return r[STATIC_IP_COL.RESIDENT_ID] === rid && r[STATIC_IP_COL.PERIOD] !== targetPeriod;
-        });
-
-        if (priorRows.length > 0) {
-          const sortedPeriods = [
-            ...new Set(
-              priorRows.map((r) => {
-                return r[STATIC_IP_COL.PERIOD];
-              })
-            )
-          ].sort((p1, p2) => {
-            return p2.localeCompare(p1);
-          });
-          const latestPeriod = sortedPeriods[0];
-          const latestEntries = priorRows.filter((r) => {
-            return r[STATIC_IP_COL.PERIOD] === latestPeriod;
-          });
-
-          for (const entry of latestEntries) {
-            const newRow = new Array(7).fill("");
-            newRow[STATIC_IP_COL.ID] = crypto.randomUUID();
-            newRow[STATIC_IP_COL.RECORDER_ID] =
-              entry[STATIC_IP_COL.RECORDER_ID] || auth.user?.email || "";
-            newRow[STATIC_IP_COL.RESIDENT_ID] = rid;
-            newRow[STATIC_IP_COL.PERIOD] = targetPeriod;
-            newRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
-            newRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
-            newRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
-            carryForwardRows.push(newRow);
-          }
-        }
-      }
-
-      if (carryForwardRows.length > 0) {
-        await roomsService.appendStaticIpRows(carryForwardRows);
-      }
-    } catch (e) {
-      console.error("Failed to carry forward static IPs in applySync:", e);
-    }
+    await carryForwardStaticIps(
+      accountCreations.map((a) => ({
+        residentId: a.payload.residentId,
+        period: a.payload.period
+      }))
+    );
   }
 
   // 5. Mark CURR as Evaluated
-  const currIndices = [...new Set(actions.map((a) => a.currIndex).filter(Boolean))];
-  if (currIndices.length > 0) {
-    const updates = currIndices.map((idx) => ({
-      range: `CURR!K${idx}`,
-      values: [["TRUE"]]
-    }));
-    await roomsService.batchUpdateCurr(updates);
+  const emails = [
+    ...new Set(
+      actions
+        .filter((a) => a.currIndex)
+        .map((a) => (a.email || "").toLowerCase())
+        .filter(Boolean)
+    )
+  ];
+  if (emails.length > 0) {
+    await roomsService.markCurrEvaluated(emails.map((email) => ({ email, term })));
   }
 
   return {
@@ -459,69 +437,34 @@ export async function applySync(actions: SyncPreviewAction[]) {
     usersUpdated: userUpdates.length,
     accountsCreated: accountCreations.length,
     accountsUpdated: accountUpdates.length,
-    evaluated: currIndices.length
+    evaluated: emails.length
   };
 }
 
 export async function manualAssignBed(residentId: string, room: string, bed: string, term: string) {
-  const accRows = await roomsService.fetchAccountsRaw();
-  const rowIndex = accRows.findIndex((r) => {
-    return r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term;
-  });
+  const accounts = await roomsService.fetchAccounts();
+  const existing = accounts.find((a) => a.residentId === residentId && a.period === term);
 
-  if (rowIndex !== -1) {
+  if (existing) {
     await roomsService.updateAccountRoomBed(residentId, term, room, bed);
   } else {
-    const newRow = new Array(12).fill("");
-    newRow[ACCOUNT_COL.ID] = crypto.randomUUID();
-    newRow[ACCOUNT_COL.RESIDENT_ID] = residentId;
-    newRow[ACCOUNT_COL.PERIOD] = term;
-    newRow[ACCOUNT_COL.ROOM] = room;
-    newRow[ACCOUNT_COL.BED] = bed;
-    await roomsService.addAccountRow(newRow);
+    await roomsService.addAccount({
+      id: crypto.randomUUID(),
+      residentId,
+      period: term,
+      room,
+      bed,
+      ceRefNo: "",
+      ceIssued: "",
+      ceLink: "",
+      accountNotes: "",
+      issuerId: "",
+      checkInDate: "",
+      type: AccountType.STUDENT
+    });
 
     // Carry forward any prior term static IP addresses
-    try {
-      const staticIpRows = await roomsService.fetchStaticIpRows();
-      const priorRows = staticIpRows.slice(1).filter((r) => {
-        return r[STATIC_IP_COL.RESIDENT_ID] === residentId && r[STATIC_IP_COL.PERIOD] !== term;
-      });
-
-      if (priorRows.length > 0) {
-        const sortedPeriods = [
-          ...new Set(
-            priorRows.map((r) => {
-              return r[STATIC_IP_COL.PERIOD];
-            })
-          )
-        ].sort((p1, p2) => {
-          return p2.localeCompare(p1);
-        });
-        const latestPeriod = sortedPeriods[0];
-        const latestEntries = priorRows.filter((r) => {
-          return r[STATIC_IP_COL.PERIOD] === latestPeriod;
-        });
-
-        const carryForwardRows = latestEntries.map((entry) => {
-          const newIpRow = new Array(7).fill("");
-          newIpRow[STATIC_IP_COL.ID] = crypto.randomUUID();
-          newIpRow[STATIC_IP_COL.RECORDER_ID] =
-            entry[STATIC_IP_COL.RECORDER_ID] || auth.user?.email || "";
-          newIpRow[STATIC_IP_COL.RESIDENT_ID] = residentId;
-          newIpRow[STATIC_IP_COL.PERIOD] = term;
-          newIpRow[STATIC_IP_COL.TYPE] = entry[STATIC_IP_COL.TYPE] || "";
-          newIpRow[STATIC_IP_COL.IP] = entry[STATIC_IP_COL.IP] || "";
-          newIpRow[STATIC_IP_COL.NOTES] = entry[STATIC_IP_COL.NOTES] || "";
-          return newIpRow;
-        });
-
-        if (carryForwardRows.length > 0) {
-          await roomsService.appendStaticIpRows(carryForwardRows);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to carry forward static IPs in manualAssignBed:", e);
-    }
+    await carryForwardStaticIps([{ residentId, period: term }]);
   }
 }
 
@@ -531,19 +474,17 @@ export async function manualDelistResident(
   reason: "remove" | "early_checkout" | "transferred" | "deceased" | "loa",
   waiveBalance = false
 ) {
-  const accRows = await roomsService.fetchAccountsRaw();
-  const rowIndex = accRows.findIndex((r) => {
-    return r[ACCOUNT_COL.RESIDENT_ID] === residentId && r[ACCOUNT_COL.PERIOD] === term;
-  });
+  const accounts = await roomsService.fetchAccounts();
+  const account = accounts.find((a) => a.residentId === residentId && a.period === term);
 
-  if (rowIndex === -1) {
+  if (!account) {
     throw new Error("Active account entry for resident not found in this term.");
   }
 
   if (reason === "remove") {
     await roomsService.deleteAccountRow(residentId, term);
   } else {
-    const currentBed = (accRows[rowIndex][ACCOUNT_COL.BED] || "").trim();
+    const currentBed = (account.bed || "").trim();
 
     let reasonText = "";
     if (reason === "early_checkout") {
@@ -558,7 +499,7 @@ export async function manualDelistResident(
     }
 
     const updatedBed = `${currentBed} (${reasonText})`;
-    await roomsService.updateAccountCheckInDate(residentId, term, updatedBed);
+    await roomsService.updateAccountBed(residentId, term, updatedBed);
 
     if (
       (reason === "early_checkout" ||
@@ -611,7 +552,7 @@ export async function manualDelistResident(
 
         await addJournalEntries([
           {
-            date: new Date().toISOString().split("T")[0],
+            date: getLocalDateString(),
             creator: auth.user?.email || "",
             account: resRecord.email,
             water: waterWaiveAmt,

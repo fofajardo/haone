@@ -251,25 +251,27 @@ export async function authenticateResident(request: Request) {
     let isStudent = true;
     if (email && !isInstanceAdmin) {
       try {
-        const { PUBLIC_DB_PROVIDER } = await import("$env/static/public");
+        const { PUBLIC_DB_PROVIDER, PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } =
+          await import("$env/static/public");
         if (PUBLIC_DB_PROVIDER === "supabase") {
-          const { isSupabase, supabase } = await import("$api/services/common");
-          if (isSupabase && supabase) {
-            const { data: dbUser } = await supabase
-              .from("users")
-              .select("id, tags")
-              .eq("email", email)
-              .maybeSingle();
-            if (dbUser) {
-              residentId = dbUser.id;
-              const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
-              const { UserTag } = await import("$lib/types");
-              if (!tags.includes(UserTag.STUDENT)) {
-                isStudent = false;
-              }
-            } else {
+          // Server-side client: created locally so the server never imports the
+          // client-side service module (which pulls in $state runes).
+          const { createClient } = await import("@supabase/supabase-js");
+          const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+          const { data: dbUser } = await supabase
+            .from("users")
+            .select("id, tags")
+            .ilike("email", email)
+            .maybeSingle();
+          if (dbUser) {
+            residentId = dbUser.id;
+            const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
+            const { UserTag } = await import("$lib/types");
+            if (!tags.includes(UserTag.STUDENT)) {
               isStudent = false;
             }
+          } else {
+            isStudent = false;
           }
         } else {
           const { USER_COL, UserTag } = await import("$lib/types");
@@ -292,7 +294,7 @@ export async function authenticateResident(request: Request) {
           }
         }
       } catch (e) {
-        // Silently fail
+        console.error("[api-helper] Resident user lookup failed:", e);
       }
     }
 

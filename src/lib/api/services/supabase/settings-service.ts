@@ -1,6 +1,6 @@
 import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
 import type { UserSettingsRecord } from "$lib/types";
-import { supabase } from "../common";
+import { supabase, handleSupabaseError } from "../common";
 import { isUuid } from "$utils/parsers";
 
 export const supabaseSettingsService: SettingsServiceInterface = {
@@ -17,20 +17,24 @@ export const supabaseSettingsService: SettingsServiceInterface = {
       .eq("resident_id", residentId)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      handleSupabaseError(error);
+    }
+    if (!data) {
       return null;
     }
 
+    // Defaults mirror the Sheets implementation (missing value => default).
     return {
       residentId: data.resident_id,
-      isPublicAchievementList: data.is_public_achievement_list,
-      residentNav: data.resident_nav,
-      adminNav: data.admin_nav,
-      density: data.density,
-      typography: data.typography,
-      theme: data.theme,
-      isReducedMotion: data.is_reduced_motion,
-      clockFormat: data.clock_format,
+      isPublicAchievementList: data.is_public_achievement_list ?? true,
+      residentNav: data.resident_nav || "home,finance,laundry",
+      adminNav: data.admin_nav || "dashboard,history,residents",
+      density: data.density || "default",
+      typography: data.typography || "default",
+      theme: data.theme || "system",
+      isReducedMotion: data.is_reduced_motion ?? false,
+      clockFormat: data.clock_format || "12h",
       raw: data
     };
   },
@@ -70,7 +74,7 @@ export const supabaseSettingsService: SettingsServiceInterface = {
       .upsert(payload, { onConflict: "resident_id" });
 
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   }
 };

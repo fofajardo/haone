@@ -13,14 +13,13 @@ export function handleSupabaseError(error: any) {
   if (!error) return;
   const status = error.status || error.code;
   const msg = (error.message || "").toLowerCase();
+  // Only a 401 / invalid JWT means the Supabase session is dead. A 403 is an
+  // RLS denial for the current action and must NOT tear down the session.
   if (
     status === 401 ||
-    status === 403 ||
     status === "PGRST301" ||
     msg.includes("jwt expired") ||
-    msg.includes("invalid token") ||
-    msg.includes("not authorized") ||
-    msg.includes("permission denied")
+    msg.includes("invalid token")
   ) {
     auth.lastError = {
       title: "Session Expired",
@@ -32,19 +31,56 @@ export function handleSupabaseError(error: any) {
   throw error;
 }
 
+/**
+ * Throws `message` when a Supabase mutation matched zero rows, mirroring the
+ * "X not found" errors thrown by the Sheets implementations.
+ */
+export function assertSupabaseFound(data: any[] | null, message: string) {
+  if (!data || data.length === 0) {
+    throw new Error(message);
+  }
+}
+
+const SUPABASE_PAGE_SIZE = 1000;
+
+/**
+ * Fetches ALL rows of a Supabase query, paging past the PostgREST default
+ * 1000-row cap. The query built by `buildQuery` MUST include a deterministic
+ * `.order()` for stable pagination.
+ */
+export async function fetchAllSupabaseRows<T = any>(buildQuery: () => any): Promise<T[]> {
+  if (!supabase) {
+    return [];
+  }
+  const all: T[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await buildQuery().range(from, from + SUPABASE_PAGE_SIZE - 1);
+    if (error) {
+      handleSupabaseError(error);
+    }
+    const rows = (data || []) as T[];
+    all.push(...rows);
+    if (rows.length < SUPABASE_PAGE_SIZE) {
+      break;
+    }
+    from += SUPABASE_PAGE_SIZE;
+  }
+  return all;
+}
+
 export const supabase =
   PUBLIC_SUPABASE_URL && PUBLIC_SUPABASE_PUBLISHABLE_KEY
     ? createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
         global: {
           fetch: async (url, options) => {
             const response = await fetch(url, options);
-            if (response.status === 401 || response.status === 403) {
+            // Only a 401 means the Supabase session/JWT is invalid. A 403 is an
+            // RLS denial for the current action and must NOT end the session.
+            if (response.status === 401) {
               auth.lastError = {
-                title: response.status === 403 ? "Not Authorized" : "Session Expired",
-                description:
-                  response.status === 403
-                    ? "You do not have permission for this action."
-                    : "Please sign in again."
+                title: "Session Expired",
+                description: "Please sign in again."
               };
               auth.logout();
             }
@@ -71,10 +107,17 @@ export function invalidateCache() {
 function deleteRowFromCache(spreadsheetId: string, sheetName: string, rowIndex: number) {
   const prefix = `${spreadsheetId}:${sheetName}!`;
   for (const cacheKey in sheetsCache) {
-    if (cacheKey.startsWith(prefix)) {
-      if (sheetsCache[cacheKey] && sheetsCache[cacheKey][rowIndex]) {
-        sheetsCache[cacheKey].splice(rowIndex, 1);
-      }
+    if (!cacheKey.startsWith(prefix)) {
+      continue;
+    }
+    const data = sheetsCache[cacheKey];
+    const cached = parseA1Range(cacheKey.slice(spreadsheetId.length + 1));
+    if (!data || !cached) {
+      continue;
+    }
+    const relRow = rowIndex - cached.startRow;
+    if (relRow >= 0 && relRow < data.length) {
+      data.splice(relRow, 1);
     }
   }
 }
@@ -104,6 +147,34 @@ function numToCol(num: number): string {
   return col;
 }
 
+interface ParsedA1Range {
+  sheetName: string;
+  startCol: number;
+  startRow: number;
+  endCol: number;
+  endRow: number;
+}
+
+/**
+ * Parses an A1 range like "accounts!A:L", "accounts!D5:E5", or "settings!B5".
+ * Missing row numbers mean the range is open-ended (startRow 0, endRow +inf).
+ */
+function parseA1Range(range: string): ParsedA1Range | null {
+  const parts = range.split("!");
+  if (parts.length !== 2) {
+    return null;
+  }
+  const m = parts[1].match(/^([A-Z]+)(\d+)?(?::([A-Z]+)?(\d+)?)?$/);
+  if (!m) {
+    return null;
+  }
+  const startCol = colToNum(m[1]);
+  const startRow = m[2] ? parseInt(m[2]) - 1 : 0;
+  const endCol = m[3] ? colToNum(m[3]) : startCol;
+  const endRow = m[4] ? parseInt(m[4]) - 1 : Number.MAX_SAFE_INTEGER;
+  return { sheetName: parts[0], startCol, startRow, endCol, endRow };
+}
+
 /**
  * Surgically update a single cell in any cached range for a given sheet.
  */
@@ -121,51 +192,58 @@ export function patchCacheCell(
  * Surgically update a range of cells in any cached range for a given sheet.
  */
 export function patchCacheRange(spreadsheetId: string, range: string, values: any[][]) {
-  const parts = range.split("!");
-  if (parts.length !== 2) return;
-  const sheetName = parts[0];
-  const a1Range = parts[1];
+  const patch = parseA1Range(range);
+  if (!patch) {
+    return;
+  }
 
-  const startMatch = a1Range.match(/([A-Z]+)([0-9]+)/);
-  if (!startMatch) return;
-
-  const startCol = colToNum(startMatch[1]);
-  const startRow = parseInt(startMatch[2]) - 1;
-
-  const prefix = `${spreadsheetId}:${sheetName}!`;
+  const prefix = `${spreadsheetId}:${patch.sheetName}!`;
 
   for (const cacheKey in sheetsCache) {
-    if (cacheKey.startsWith(prefix)) {
-      const data = sheetsCache[cacheKey];
-      if (!data) continue;
+    if (!cacheKey.startsWith(prefix)) {
+      continue;
+    }
+    const data = sheetsCache[cacheKey];
+    const cached = parseA1Range(cacheKey.slice(spreadsheetId.length + 1));
+    if (!data || !cached) {
+      continue;
+    }
 
-      for (let r = 0; r < values.length; r++) {
-        const targetRow = startRow + r;
-
-        while (targetRow > data.length) {
-          data.push(new Array(data[0]?.length || 0).fill(""));
-        }
-
-        if (targetRow === data.length) {
-          const rowLength = Math.max(data[0]?.length || 0, startCol + values[r].length);
-          const newRow = new Array(rowLength).fill("");
-          for (let c = 0; c < values[r].length; c++) {
-            const targetCol = startCol + c;
-            newRow[targetCol] = String(values[r][c]);
-          }
-          data.push(newRow);
-        } else if (data[targetRow]) {
-          const requiredLength = startCol + values[r].length;
-          if (data[targetRow].length < requiredLength) {
-            const padding = new Array(requiredLength - data[targetRow].length).fill("");
-            data[targetRow].push(...padding);
-          }
-          for (let c = 0; c < values[r].length; c++) {
-            const targetCol = startCol + c;
-            data[targetRow][targetCol] = String(values[r][c]);
-          }
-        }
+    let invalidate = false;
+    for (let r = 0; r < values.length && !invalidate; r++) {
+      const relRow = patch.startRow + r - cached.startRow;
+      if (relRow < 0) {
+        continue;
       }
+      if (relRow >= data.length) {
+        // The write landed on a row this cached range does not hold. Drop the
+        // cache entry so the next read refetches instead of fabricating rows.
+        invalidate = true;
+        break;
+      }
+      for (let c = 0; c < values[r].length; c++) {
+        const relCol = patch.startCol + c - cached.startCol;
+        // Skip cells outside the cached range's declared column span (e.g. an
+        // accounts!F write must not reshape a cached accounts!A:C range).
+        if (relCol < 0 || relCol > cached.endCol - cached.startCol) {
+          continue;
+        }
+        const value = values[r][c];
+        if (relCol >= data[relRow].length) {
+          // The Sheets API trims trailing empty cells; extend the row only when
+          // the incoming value is non-empty.
+          if (value === "" || value === null || value === undefined) {
+            continue;
+          }
+          const padding = new Array(relCol - data[relRow].length).fill("");
+          data[relRow].push(...padding);
+        }
+        data[relRow][relCol] = value === null || value === undefined ? "" : String(value);
+      }
+    }
+
+    if (invalidate) {
+      delete sheetsCache[cacheKey];
     }
   }
 }
@@ -349,6 +427,15 @@ export async function appendSheetRow(spreadsheetId: string, range: string, value
   const res = await resp.json();
   if (res.updates?.updatedRange) {
     patchCacheRange(spreadsheetId, res.updates.updatedRange, values);
+  } else {
+    // Without an updatedRange we cannot patch precisely; drop cached ranges
+    // for this sheet so the next read refetches instead of serving stale data.
+    const prefix = `${spreadsheetId}:${range.split("!")[0]}!`;
+    for (const cacheKey in sheetsCache) {
+      if (cacheKey.startsWith(prefix)) {
+        delete sheetsCache[cacheKey];
+      }
+    }
   }
   return res;
 }

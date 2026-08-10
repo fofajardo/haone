@@ -286,6 +286,7 @@ export interface ResidentRecord {
   ceRefNo: string;
   ceLink: string;
   ceFullName: string;
+  id: string;
   residentId: string;
   ledgerId: string;
   checkInDate: string;

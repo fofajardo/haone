@@ -6,8 +6,28 @@ import type {
   PaginatedResponse
 } from "$lib/types";
 import { PaymentRequestStatus } from "$lib/types";
-import { supabase } from "../common";
-import { isUuid } from "$utils/parsers";
+import {
+  supabase,
+  handleSupabaseError,
+  assertSupabaseFound,
+  fetchAllSupabaseRows
+} from "../common";
+import { isUuid, parseDbDate } from "$utils/parsers";
+
+function emptyResult(
+  options?: PaginationOptions
+): PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord> {
+  if (options?.page && options?.pageSize) {
+    return {
+      items: [],
+      totalCount: 0,
+      page: options.page,
+      pageSize: options.pageSize,
+      totalPages: 0
+    };
+  }
+  return [];
+}
 
 export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
   async fetchPaymentRequests(
@@ -18,26 +38,43 @@ export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
       return [];
     }
 
-    let query = supabase.from("payment_requests").select("*", { count: "exact" });
-
-    if (residentId && isUuid(residentId)) {
-      query = query.eq("resident_id", residentId);
+    if (residentId && !isUuid(residentId)) {
+      // A non-UUID id can never match; Sheets' equality filter yields nothing.
+      return emptyResult(options);
     }
 
-    if (options?.page && options?.pageSize) {
-      const start = (options.page - 1) * options.pageSize;
-      const end = start + options.pageSize - 1;
-      query = query.range(start, end);
+    const isPaginated = !!(options?.page && options?.pageSize);
+    let data: any[] = [];
+    let count = 0;
+
+    if (isPaginated) {
+      let query = supabase.from("payment_requests").select("*", { count: "exact" });
+      if (residentId) {
+        query = query.eq("resident_id", residentId);
+      }
+      query = query.order("created_at", { ascending: true }).order("id", { ascending: true });
+      const start = (options!.page! - 1) * options!.pageSize!;
+      const end = start + options!.pageSize! - 1;
+      const { data: rows, count: total, error } = await query.range(start, end);
+      if (error) {
+        handleSupabaseError(error);
+      }
+      data = rows || [];
+      count = total || 0;
+    } else {
+      const sb = supabase;
+      data = await fetchAllSupabaseRows(() => {
+        let query = sb.from("payment_requests").select("*");
+        if (residentId) {
+          query = query.eq("resident_id", residentId);
+        }
+        return query.order("created_at", { ascending: true }).order("id", { ascending: true });
+      });
     }
 
-    const [pmtRes, usersRes] = await Promise.all([
-      query,
-      supabase.from("users_view").select("id, display_name")
-    ]);
-
-    const { data, count, error } = pmtRes;
-    if (error) {
-      throw error;
+    const usersRes = await supabase.from("users_view").select("id, display_name");
+    if (usersRes.error) {
+      handleSupabaseError(usersRes.error);
     }
 
     const userMap = new Map<string, string>();
@@ -47,31 +84,30 @@ export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
       }
     });
 
-    const items: PaymentRequestRecord[] = (data || []).map((row: any) => ({
+    const items: PaymentRequestRecord[] = data.map((row: any) => ({
       id: row.id,
       residentId: row.resident_id,
       date: row.date,
-      waterFee: row.water_fee,
-      assocFee: row.assoc_fee,
-      misc: row.misc,
-      mop: row.mop,
-      type: row.type,
-      proofLink: row.proof_link,
-      status: row.status,
-      notes: row.notes,
-      statusReason: row.status_reason,
+      waterFee: row.water_fee ?? 0,
+      assocFee: row.assoc_fee ?? 0,
+      misc: row.misc ?? 0,
+      mop: row.mop || "",
+      type: row.type || "",
+      proofLink: row.proof_link || "",
+      status: (row.status || PaymentRequestStatus.PENDING).trim().toUpperCase(),
+      notes: row.notes || "",
+      statusReason: row.status_reason || "",
       name: userMap.get(row.resident_id) || "",
       raw: row
     }));
 
-    if (options?.page && options?.pageSize) {
-      const totalCount = count || 0;
+    if (isPaginated) {
       return {
         items,
-        totalCount,
-        page: options.page,
-        pageSize: options.pageSize,
-        totalPages: Math.ceil(totalCount / options.pageSize)
+        totalCount: count,
+        page: options!.page!,
+        pageSize: options!.pageSize!,
+        totalPages: Math.ceil(count / options!.pageSize!)
       };
     }
 
@@ -83,11 +119,12 @@ export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
       return;
     }
     const { error } = await supabase.from("payment_requests").insert({
+      id: data.id || crypto.randomUUID(),
       resident_id: data.residentId,
       date: data.date,
-      water_fee: data.waterFee,
-      assoc_fee: data.assocFee,
-      misc: data.misc,
+      water_fee: data.waterFee ?? 0,
+      assoc_fee: data.assocFee ?? 0,
+      misc: data.misc ?? 0,
       mop: data.mop,
       type: data.type,
       proof_link: data.proofLink,
@@ -96,7 +133,7 @@ export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
       status_reason: data.statusReason
     });
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   },
 
@@ -107,35 +144,48 @@ export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase
+
+    // Conditional update: only a still-PENDING request can be approved. This
+    // makes double-approval (two admins / double-click) a no-op at the DB level.
+    const { data: approved, error } = await supabase
       .from("payment_requests")
       .update({ status: PaymentRequestStatus.APPROVED })
-      .eq("id", paymentId);
+      .eq("id", paymentId)
+      .eq("status", PaymentRequestStatus.PENDING)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(approved, "Payment record not found or is no longer pending");
 
     const { error: jError } = await supabase.from("journal").insert({
+      id: crypto.randomUUID(),
       date: journalData.date,
       creator_email: journalData.creator,
       account_email: journalData.account,
-      water: journalData.water,
-      assoc: journalData.assoc,
-      misc: journalData.misc,
+      water: journalData.water ?? 0,
+      assoc: journalData.assoc ?? 0,
+      misc: journalData.misc ?? 0,
       mop: journalData.mop,
       period: journalData.period,
       type: journalData.type,
       notes: journalData.notes,
       notes_private: journalData.notesPrivate,
       mop_ref_no: journalData.mopRefNo,
-      pr_date_issued: journalData.prDateIssued,
+      pr_date_issued: parseDbDate(journalData.prDateIssued),
       pr_ref_no: journalData.prRefNo,
-      was_audited: journalData.wasAudited,
+      was_audited: journalData.wasAudited ?? false,
       receipt_url: journalData.receiptUrl
     });
 
     if (jError) {
-      throw jError;
+      // Best-effort compensation so the request is not stuck APPROVED with no
+      // journal entry.
+      await supabase
+        .from("payment_requests")
+        .update({ status: PaymentRequestStatus.PENDING })
+        .eq("id", paymentId);
+      handleSupabaseError(jError);
     }
   },
 
@@ -143,28 +193,32 @@ export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("payment_requests")
       .update({
         status: PaymentRequestStatus.DECLINED,
         status_reason: reason
       })
-      .eq("id", paymentId);
+      .eq("id", paymentId)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "Payment record not found");
   },
 
   async cancelPaymentRequest(paymentId: string): Promise<void> {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("payment_requests")
       .update({ status: PaymentRequestStatus.CANCELLED })
-      .eq("id", paymentId);
+      .eq("id", paymentId)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "Payment request not found");
   }
 };

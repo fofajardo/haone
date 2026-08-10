@@ -1,7 +1,13 @@
 import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 import type { ResidentRecord, UserRecord } from "$lib/types";
 import { ACCOUNT_COL, USER_COL } from "$lib/types";
-import { fetchSheetRowsRaw, updateSheetValue, appendSheetRow, deleteSheetRow } from "../common";
+import {
+  fetchSheetRowsRaw,
+  updateSheetValue,
+  appendSheetRow,
+  deleteSheetRow,
+  batchUpdateValues
+} from "../common";
 import { parseCSVAmount } from "$utils/math";
 import { mapRowToJournal, mapRowToResident, computeDisplayNames } from "../../utils/row-mappers";
 import { auth } from "$state/auth.svelte";
@@ -37,7 +43,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
     const journal = journalRows.slice(1).map((r, idx) => mapRowToJournal(r, idx + 2));
 
     const getConst = (key: string) => constRows.find((r) => r[0] === key)?.[1] || "0";
-    const pmtWaived = getConst("PMT_WAIVED") || "PMT_WAIVED";
+    const pmtWaived = getConst("PMT_WAIVED");
 
     const allResidents = accRows
       .slice(1)
@@ -99,10 +105,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
       .filter((r) => r.residentId && r.residentId !== "");
 
     if (term) {
-      const filteredByTerm = allResidents.filter((r) => r.period === term);
-      if (filteredByTerm.length > 0) {
-        return filteredByTerm;
-      }
+      return allResidents.filter((r) => r.period === term);
     }
     return allResidents;
   },
@@ -345,15 +348,11 @@ export const sheetsResidentService: ResidentServiceInterface = {
 
     const actualRow = rowIndex + 1;
 
-    await Promise.all([
-      updateSheetValue(uiSettings.accountingWorkbookId, `accounts!F${actualRow}`, [[data.refNo]]),
-      updateSheetValue(uiSettings.accountingWorkbookId, `accounts!G${actualRow}`, [
-        [data.dateString]
-      ]),
-      updateSheetValue(uiSettings.accountingWorkbookId, `accounts!H${actualRow}`, [
-        [data.publicLink]
-      ]),
-      updateSheetValue(uiSettings.accountingWorkbookId, `accounts!J${actualRow}`, [[data.issuerId]])
+    await batchUpdateValues(uiSettings.accountingWorkbookId, [
+      { range: `accounts!F${actualRow}`, values: [[data.refNo]] },
+      { range: `accounts!G${actualRow}`, values: [[data.dateString]] },
+      { range: `accounts!H${actualRow}`, values: [[data.publicLink]] },
+      { range: `accounts!J${actualRow}`, values: [[data.issuerId]] }
     ]);
   },
 

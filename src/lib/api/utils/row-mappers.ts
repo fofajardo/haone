@@ -96,6 +96,7 @@ export function mapRowToResident(
     college: userRow ? (userRow[USER_COL.COLLEGE] || "").trim() : "",
     program: userRow ? (userRow[USER_COL.DEGREE_PROGRAM] || "").trim() : "",
     residentId: (row[ACCOUNT_COL.RESIDENT_ID] || "").trim(),
+    id: (row[ACCOUNT_COL.ID] || "").trim(),
     ledgerId: (row[ACCOUNT_COL.ID] || "").trim(),
     checkInDate: (row[ACCOUNT_COL.CHECK_IN_DATE] || "").trim(),
     type: (row[ACCOUNT_COL.TYPE] || "").trim()

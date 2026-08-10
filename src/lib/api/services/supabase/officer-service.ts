@@ -1,30 +1,76 @@
 import type { OfficerServiceInterface } from "../interfaces/officer-service.interface";
 import type { OfficerRecord } from "$lib/types";
-import { supabase } from "../common";
+import { OfficerStatus } from "$lib/types";
+import {
+  supabase,
+  handleSupabaseError,
+  assertSupabaseFound,
+  fetchAllSupabaseRows
+} from "../common";
 import { parseDbDate } from "$utils/parsers";
+import { auth } from "$state/auth.svelte";
+
+function mapRow(row: any): OfficerRecord {
+  return {
+    id: row.id,
+    position: row.position || "",
+    name: row.name || "",
+    nickname: row.nickname || "",
+    email: row.email || "",
+    fbLink: row.fb_link || "",
+    term: row.term || "",
+    committee: row.committee || "",
+    birthday: row.birthday || "",
+    status: row.status || OfficerStatus.ACTIVE,
+    raw: row
+  };
+}
 
 export const supabaseOfficerService: OfficerServiceInterface = {
   async fetchOfficers(_forceRefresh = false): Promise<OfficerRecord[]> {
     if (!supabase) {
       return [];
     }
-    const { data, error } = await supabase.from("officers").select("*").order("position");
-    if (error) {
-      throw error;
+
+    // Residents get the reduced directory shape (no emails/links/birthdays),
+    // mirroring the Sheets server route.
+    if (auth.isResident) {
+      const { data: constData } = await supabase
+        .from("constants")
+        .select("value")
+        .eq("key", "TERM_CURR")
+        .maybeSingle();
+      const activeTerm = constData?.value || "";
+
+      const { data, error } = await supabase
+        .from("officers")
+        .select("id, position, name, nickname, term, committee, status, created_at")
+        .eq("status", OfficerStatus.ACTIVE)
+        .eq("term", activeTerm)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true });
+      if (error) {
+        handleSupabaseError(error);
+      }
+      return (data || [])
+        .filter((row: any) => row.position)
+        .map((row: any) => ({
+          ...mapRow(row),
+          email: "",
+          fbLink: "",
+          birthday: ""
+        }));
     }
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      position: row.position,
-      name: row.name,
-      nickname: row.nickname,
-      email: row.email,
-      fbLink: row.fb_link,
-      term: row.term,
-      committee: row.committee,
-      birthday: row.birthday,
-      status: row.status,
-      raw: row
-    })) as OfficerRecord[];
+
+    const sb = supabase;
+    const data = await fetchAllSupabaseRows(() =>
+      sb
+        .from("officers")
+        .select("*")
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+    );
+    return data.filter((row: any) => (row.email || "").trim() !== "").map(mapRow);
   },
 
   async addOfficer(data: Partial<OfficerRecord>): Promise<void> {
@@ -32,6 +78,7 @@ export const supabaseOfficerService: OfficerServiceInterface = {
       return;
     }
     const { error } = await supabase.from("officers").insert({
+      id: data.id || crypto.randomUUID(),
       position: data.position,
       name: data.name,
       nickname: data.nickname,
@@ -40,10 +87,10 @@ export const supabaseOfficerService: OfficerServiceInterface = {
       term: data.term,
       committee: data.committee,
       birthday: parseDbDate(data.birthday),
-      status: data.status || "ACTIVE"
+      status: data.status || OfficerStatus.ACTIVE
     });
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
   },
 
@@ -80,19 +127,25 @@ export const supabaseOfficerService: OfficerServiceInterface = {
       payload.status = data.status;
     }
 
-    const { error } = await supabase.from("officers").update(payload).eq("id", id);
+    const { data: updated, error } = await supabase
+      .from("officers")
+      .update(payload)
+      .eq("id", id)
+      .select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(updated, "Officer not found");
   },
 
   async deleteOfficer(id: string): Promise<void> {
     if (!supabase) {
       return;
     }
-    const { error } = await supabase.from("officers").delete().eq("id", id);
+    const { data, error } = await supabase.from("officers").delete().eq("id", id).select("id");
     if (error) {
-      throw error;
+      handleSupabaseError(error);
     }
+    assertSupabaseFound(data, "Officer not found");
   }
 };
