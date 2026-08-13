@@ -125,7 +125,7 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
         plannedUsersByEmail.set(curr.email, userId);
 
         // Translate account type to user tag.
-        // XXX: keep this in sync with schemas.ts. This should probably be put
+        // XXX: keep this in sync with types.ts. This should probably be put
         // somewhere else to avoid duplication.
         let accountTypeTag = UserTag.STUDENT;
         switch (curr.accountType) {
