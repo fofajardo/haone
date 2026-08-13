@@ -14,19 +14,11 @@ import { residentService } from "$api/services/resident-service";
 import { constantsService } from "$api/services/constants-service";
 
 /**
- * Resolves the primary identifier of the currently signed-in resident.
- * In Supabase mode, returns the resident's UUID.
- * In GSheets mode, returns the resident's Email.
+ * Resolves the primary identifier (UUID) of the currently signed-in resident.
  */
 export async function getCurrentResidentId(): Promise<string> {
-  const { auth } = await import("$state/auth.svelte");
   const { residentState } = await import("$state/resident-state.svelte");
-  const { isSupabase } = await import("$api/services/common");
-
-  if (isSupabase) {
-    return residentState.status?.profile?.id || "";
-  }
-  return auth.user?.email || "";
+  return residentState.status?.profile?.id || "";
 }
 
 /**
