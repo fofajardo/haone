@@ -31,7 +31,8 @@ function emptyLogs(
 
 export const supabaseAchievementService: AchievementServiceInterface = {
   async fetchAchievements(
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    _forceRefresh?: boolean
   ): Promise<AchievementRecord[] | PaginatedResponse<AchievementRecord>> {
     if (!supabase) {
       return [];
@@ -44,41 +45,32 @@ export const supabaseAchievementService: AchievementServiceInterface = {
     if (isPaginated) {
       const start = (options!.page! - 1) * options!.pageSize!;
       const end = start + options!.pageSize! - 1;
-      const {
-        data: rows,
-        count: total,
-        error
-      } = await supabase
-        .from("achievement_records")
+      const { data: d, error, count: c } = await supabase
+        .from("achievements")
         .select("*", { count: "exact" })
-        .order("date", { ascending: true })
-        .order("id", { ascending: true })
         .range(start, end);
       if (error) {
         handleSupabaseError(error);
       }
-      data = rows || [];
-      count = total || 0;
+      data = d || [];
+      count = c || 0;
     } else {
-      const sb = supabase;
-      data = await fetchAllSupabaseRows(() =>
-        sb
-          .from("achievements")
-          .select("*")
-          .order("created_at", { ascending: true })
-          .order("id", { ascending: true })
-      );
+      const { data: d, error } = await supabase.from("achievements").select("*");
+      if (error) {
+        handleSupabaseError(error);
+      }
+      data = d || [];
     }
 
-    const items: AchievementRecord[] = data.map((row: any) => ({
+    const items = data.map((row: any) => ({
       id: row.id,
-      creatorId: row.creator_id,
-      name: row.name,
-      description: row.description,
-      icon: row.icon,
-      extraUrl: row.extra_url,
-      term: row.term,
-      points: row.points ?? 0,
+      creatorId: row.creator_id || "",
+      name: row.name || "",
+      description: row.description || "",
+      icon: row.icon || "",
+      extraUrl: row.extra_url || "",
+      term: row.term || "",
+      points: row.points || 0,
       raw: row
     }));
 
@@ -91,13 +83,13 @@ export const supabaseAchievementService: AchievementServiceInterface = {
         totalPages: Math.ceil(count / options!.pageSize!)
       };
     }
-
     return items;
   },
 
   async fetchAchievementLogs(
     residentId?: string,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    _forceRefresh?: boolean
   ): Promise<AchievementLogRecord[] | PaginatedResponse<AchievementLogRecord>> {
     if (!supabase) {
       return [];

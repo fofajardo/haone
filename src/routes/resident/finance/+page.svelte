@@ -22,12 +22,12 @@
   let error = $state<string | null>(null);
   let localTerm = $state(page.url.searchParams.get("term") || "");
 
-  async function loadData(term?: string) {
+  async function loadData(term?: string, forceRefresh = false) {
     if (!auth.accessToken) return;
-    await loadStatus(term || localTerm);
+    await loadStatus(term || localTerm, forceRefresh);
   }
 
-  async function loadStatus(targetTerm: string) {
+  async function loadStatus(targetTerm: string, forceRefresh = false) {
     if (!auth.user?.email) return;
 
     const url = new URL(window.location.href);
@@ -39,11 +39,11 @@
     isLoading = true;
     error = null;
     try {
-      status = await fetchResidentStatus(targetTerm);
+      status = await fetchResidentStatus(targetTerm, forceRefresh);
       if (status.activeTerm && !targetTerm) {
         // First load with no term — reload with resolved active term so transactions are filtered
         localTerm = status.activeTerm;
-        status = await fetchResidentStatus(localTerm);
+        status = await fetchResidentStatus(localTerm, forceRefresh);
         const u = new URL(window.location.href);
         u.searchParams.set("term", localTerm);
         replaceState(u.toString(), {});
@@ -79,7 +79,7 @@
       <Button
         variant="outline"
         size="sm"
-        onclick={() => loadData()}
+        onclick={() => loadData(undefined, true)}
         {isLoading}
         icon={RefreshCcw}
       />

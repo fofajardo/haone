@@ -8,7 +8,8 @@ import type {
 export interface PaymentRequestServiceInterface {
   fetchPaymentRequests(
     residentId?: string,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh?: boolean
   ): Promise<PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord>>;
 
   addPaymentRequest(data: Partial<PaymentRequestRecord>): Promise<void>;

@@ -10,7 +10,8 @@ export interface JournalFilters {
 export interface JournalServiceInterface {
   fetchJournalEntries(
     filters?: JournalFilters,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh?: boolean
   ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>>;
 
   addJournalEntry(data: Partial<JournalRecord>): Promise<void>;

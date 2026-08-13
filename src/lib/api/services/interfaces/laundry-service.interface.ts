@@ -3,7 +3,8 @@ import type { LaundryRecord, PaginationOptions, PaginatedResponse } from "$lib/t
 export interface LaundryServiceInterface {
   fetchReservations(
     residentId?: string,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh?: boolean
   ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>>;
 
   addReservation(data: Partial<LaundryRecord>): Promise<void>;

@@ -14,10 +14,12 @@ import { fetchServer } from "$utils/api-client";
 export const sheetsLaundryService: LaundryServiceInterface = {
   async fetchReservations(
     residentId?: string,
-    _options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh = false
   ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
+    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
     if (auth.isResident) {
-      const data = await fetchServer("/api/resident/laundry");
+      const data = await fetchServer("/api/resident/laundry", {}, shouldRefresh);
       return Array.isArray(data) ? data : data.reservations || [];
     }
 
@@ -25,7 +27,11 @@ export const sheetsLaundryService: LaundryServiceInterface = {
     if (!uiSettings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "laundry!A:I");
+    const rows = await fetchSheetRowsRaw(
+      uiSettings.sharedRecordsId,
+      "laundry!A:I",
+      shouldRefresh
+    );
     let items = rows.slice(1).map((row) => ({
       id: (row[LAUNDRY_COL.ID] || "").trim(),
       residentId: (row[LAUNDRY_COL.RESIDENT_ID] || "").trim(),

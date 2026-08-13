@@ -32,7 +32,8 @@ function applyFilters(query: any, filters?: JournalFilters) {
 export const supabaseJournalService: JournalServiceInterface = {
   async fetchJournalEntries(
     filters?: JournalFilters,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    _forceRefresh?: boolean
   ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>> {
     if (!supabase) {
       return [];

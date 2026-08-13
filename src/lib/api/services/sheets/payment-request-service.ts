@@ -18,10 +18,12 @@ import { getLocalDateString } from "$utils/parsers";
 export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
   async fetchPaymentRequests(
     residentId?: string,
-    _options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh = false
   ): Promise<PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord>> {
+    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
     if (auth.isResident) {
-      const data = await fetchServer("/api/resident/payment-requests");
+      const data = await fetchServer("/api/resident/payment-requests", {}, shouldRefresh);
       return Array.isArray(data) ? data : data.requests || [];
     }
 
@@ -29,7 +31,11 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
     if (!uiSettings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "payment_requests!A:L");
+    const rows = await fetchSheetRowsRaw(
+      uiSettings.sharedRecordsId,
+      "payment_requests!A:L",
+      shouldRefresh
+    );
     let items = rows.slice(1).map((row) => ({
       id: (row[PAYMENT_REQUEST_COL.ID] || "").trim(),
       residentId: (row[PAYMENT_REQUEST_COL.RESIDENT_ID] || "").trim(),

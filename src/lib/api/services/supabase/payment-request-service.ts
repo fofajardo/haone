@@ -32,7 +32,8 @@ function emptyResult(
 export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
   async fetchPaymentRequests(
     residentId?: string,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    _forceRefresh?: boolean
   ): Promise<PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord>> {
     if (!supabase) {
       return [];

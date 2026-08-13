@@ -257,12 +257,16 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!E${actualRow}`, [[bed]]);
   },
 
-  async fetchStaticIpRows(): Promise<StaticIpRow[]> {
+  async fetchStaticIpRows(forceRefresh = false): Promise<StaticIpRow[]> {
     const { uiSettings } = await import("$state/settings.svelte");
     if (!uiSettings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "static_ip!A:G");
+    const rows = await fetchSheetRowsRaw(
+      uiSettings.sharedRecordsId,
+      "static_ip!A:G",
+      forceRefresh
+    );
     return rows.slice(1).map((r) => ({
       id: (r[STATIC_IP_COL.ID] || "").trim(),
       recorderId: (r[STATIC_IP_COL.RECORDER_ID] || "").trim(),

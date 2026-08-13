@@ -13,18 +13,24 @@ import dayjs from "dayjs";
 
 export const sheetsAnnouncementService: AnnouncementServiceInterface = {
   async fetchAnnouncements(
-    _options?: PaginationOptions,
-    activeOnly = false
+    options?: PaginationOptions,
+    activeOnly = false,
+    forceRefresh = false
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>> {
+    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
     if (auth.isResident) {
-      return fetchServer("/api/resident/announcements");
+      return fetchServer("/api/resident/announcements", {}, shouldRefresh);
     }
 
     const { uiSettings } = await import("$state/settings.svelte");
     if (!uiSettings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "announcements!A:M");
+    const rows = await fetchSheetRowsRaw(
+      uiSettings.sharedRecordsId,
+      "announcements!A:M",
+      shouldRefresh
+    );
     const items = rows.slice(1).map((row) => ({
       id: (row[ANNOUNCEMENT_COL.ID] || "").trim(),
       creatorId: (row[ANNOUNCEMENT_COL.CREATOR_ID] || "").trim(),
@@ -64,15 +70,22 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
     });
   },
 
-  async fetchAnnouncementBySlug(slug: string): Promise<AnnouncementRecord | null> {
+  async fetchAnnouncementBySlug(
+    slug: string,
+    forceRefresh = false
+  ): Promise<AnnouncementRecord | null> {
     if (auth.isResident) {
       try {
-        return await fetchServer(`/api/resident/announcements?slug=${encodeURIComponent(slug)}`);
+        return await fetchServer(
+          `/api/resident/announcements?slug=${encodeURIComponent(slug)}`,
+          {},
+          forceRefresh
+        );
       } catch (e) {
         return null;
       }
     }
-    const res = await this.fetchAnnouncements();
+    const res = await this.fetchAnnouncements(undefined, false, forceRefresh);
     const list = Array.isArray(res) ? res : res.items;
     return list.find((a) => a.slug === slug) || null;
   },

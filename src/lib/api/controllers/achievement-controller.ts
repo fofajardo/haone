@@ -8,8 +8,8 @@ export async function fetchAchievements(forceRefresh = false): Promise<{
   currentResidentId: string;
 }> {
   const [achRes, logRes, currentResidentId] = await Promise.all([
-    achievementService.fetchAchievements(),
-    achievementService.fetchAchievementLogs(),
+    achievementService.fetchAchievements(undefined, forceRefresh),
+    achievementService.fetchAchievementLogs(undefined, undefined, forceRefresh),
     getCurrentResidentId()
   ]);
   const achievements = Array.isArray(achRes) ? achRes : achRes.items;
@@ -66,13 +66,13 @@ export function getEligibleCount(
   return usersCount;
 }
 
-export async function fetchAdminAchievements(_forceRefresh = false): Promise<AchievementRecord[]> {
-  const res = await achievementService.fetchAchievements();
+export async function fetchAdminAchievements(forceRefresh = false): Promise<AchievementRecord[]> {
+  const res = await achievementService.fetchAchievements(undefined, forceRefresh);
   return Array.isArray(res) ? res : res.items;
 }
 
-export async function fetchAchievementLogs(_forceRefresh = false): Promise<AchievementLogRecord[]> {
-  const res = await achievementService.fetchAchievementLogs();
+export async function fetchAchievementLogs(forceRefresh = false): Promise<AchievementLogRecord[]> {
+  const res = await achievementService.fetchAchievementLogs(undefined, undefined, forceRefresh);
   return Array.isArray(res) ? res : res.items;
 }
 

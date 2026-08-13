@@ -19,12 +19,15 @@
 
   import { fetchResidentStatus, fetchResidents } from "$api/controllers/resident-controller";
 
-  async function loadData() {
+  async function loadData(forceRefresh = false) {
     if (!auth.accessToken) return;
     isLoading = true;
     error = null;
     try {
-      const [statusJson, occJson] = await Promise.all([fetchResidentStatus(), fetchResidents()]);
+      const [statusJson, occJson] = await Promise.all([
+        fetchResidentStatus(undefined, forceRefresh),
+        fetchResidents(forceRefresh)
+      ]);
 
       status = statusJson;
       occupancyData = Array.isArray(occJson) ? occJson : (occJson as any).accounts || [];
@@ -57,7 +60,7 @@
       <Button
         variant="outline"
         size="sm"
-        onclick={() => loadData()}
+        onclick={() => loadData(true)}
         {isLoading}
         icon={RefreshCcw}
       />

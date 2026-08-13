@@ -67,6 +67,6 @@ export interface RoomsServiceInterface {
   deleteAccountRow(residentId: string, period: string): Promise<void>;
   /** Writes the BED field (used by the delist flow to annotate e.g. "101 (Early checkout)"). */
   updateAccountBed(residentId: string, period: string, bed: string): Promise<void>;
-  fetchStaticIpRows(): Promise<StaticIpRow[]>;
+  fetchStaticIpRows(forceRefresh?: boolean): Promise<StaticIpRow[]>;
   appendStaticIpRows(rows: StaticIpRow[]): Promise<void>;
 }

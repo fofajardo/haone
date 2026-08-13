@@ -3,10 +3,11 @@ import type { AnnouncementRecord, PaginationOptions, PaginatedResponse } from "$
 export interface AnnouncementServiceInterface {
   fetchAnnouncements(
     options?: PaginationOptions,
-    activeOnly?: boolean
+    activeOnly?: boolean,
+    forceRefresh?: boolean
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>>;
 
-  fetchAnnouncementBySlug(slug: string): Promise<AnnouncementRecord | null>;
+  fetchAnnouncementBySlug(slug: string, forceRefresh?: boolean): Promise<AnnouncementRecord | null>;
 
   addAnnouncement(data: Partial<AnnouncementRecord>): Promise<void>;
 

@@ -16,9 +16,9 @@ import { getLocalDateString } from "$utils/parsers";
 
 let _residentFetch: Promise<any> | null = null;
 
-function fetchResidentAchievements() {
-  if (!_residentFetch) {
-    _residentFetch = fetchServer("/api/resident/achievements").finally(() => {
+function fetchResidentAchievements(forceRefresh = false) {
+  if (!_residentFetch || forceRefresh) {
+    _residentFetch = fetchServer("/api/resident/achievements", {}, forceRefresh).finally(() => {
       _residentFetch = null;
     });
   }
@@ -27,10 +27,12 @@ function fetchResidentAchievements() {
 
 export const sheetsAchievementService: AchievementServiceInterface = {
   async fetchAchievements(
-    _options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh = false
   ): Promise<AchievementRecord[] | PaginatedResponse<AchievementRecord>> {
+    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
     if (auth.isResident) {
-      const data = await fetchResidentAchievements();
+      const data = await fetchResidentAchievements(shouldRefresh);
       return data.achievements || [];
     }
 
@@ -38,7 +40,11 @@ export const sheetsAchievementService: AchievementServiceInterface = {
     if (!uiSettings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "achievements!A:H");
+    const rows = await fetchSheetRowsRaw(
+      uiSettings.sharedRecordsId,
+      "achievements!A:H",
+      shouldRefresh
+    );
     return rows.slice(1).map((row) => ({
       id: (row[ACHIEVEMENT_COL.ID] || "").trim(),
       creatorId: (row[ACHIEVEMENT_COL.CREATOR_ID] || "").trim(),
@@ -54,17 +60,23 @@ export const sheetsAchievementService: AchievementServiceInterface = {
 
   async fetchAchievementLogs(
     residentId?: string,
-    _options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh = false
   ): Promise<AchievementLogRecord[] | PaginatedResponse<AchievementLogRecord>> {
+    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
     if (auth.isResident) {
-      const data = await fetchResidentAchievements();
+      const data = await fetchResidentAchievements(shouldRefresh);
       return data.logs || [];
     }
     const { uiSettings } = await import("$state/settings.svelte");
     if (!uiSettings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "achievement_records!A:F");
+    const rows = await fetchSheetRowsRaw(
+      uiSettings.sharedRecordsId,
+      "achievement_records!A:F",
+      shouldRefresh
+    );
     let items = rows.slice(1).map((row) => ({
       id: (row[ACHIEVEMENT_RECORD_COL.ID] || "").trim(),
       recorderId: (row[ACHIEVEMENT_RECORD_COL.RECORDER_ID] || "").trim(),

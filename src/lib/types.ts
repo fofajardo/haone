@@ -595,6 +595,7 @@ export interface PaginationOptions {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   filters?: Record<string, any>;
+  forceRefresh?: boolean;
 }
 
 export interface PaginatedResponse<T> {

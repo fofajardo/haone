@@ -7,12 +7,14 @@ import type {
 
 export interface AchievementServiceInterface {
   fetchAchievements(
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh?: boolean
   ): Promise<AchievementRecord[] | PaginatedResponse<AchievementRecord>>;
 
   fetchAchievementLogs(
     residentId?: string,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh?: boolean
   ): Promise<AchievementLogRecord[] | PaginatedResponse<AchievementLogRecord>>;
 
   addAchievement(data: Partial<AchievementRecord>): Promise<void>;

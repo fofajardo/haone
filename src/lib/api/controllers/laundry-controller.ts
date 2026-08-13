@@ -4,10 +4,10 @@ import { laundryService } from "$api/services/laundry-service";
 import { getCurrentResidentId } from "./resident-controller";
 
 export async function fetchLaundryReservations(
-  _forceRefresh = false
+  forceRefresh = false
 ): Promise<{ reservations: LaundryRecord[]; currentResidentId: string }> {
   const currentResidentId = await getCurrentResidentId();
-  const res = await laundryService.fetchReservations(currentResidentId);
+  const res = await laundryService.fetchReservations(currentResidentId, undefined, forceRefresh);
   const list = Array.isArray(res) ? res : res.items;
   return {
     reservations: list,
@@ -75,10 +75,10 @@ export async function cancelLaundryReservation(
 }
 
 export async function fetchAdminLaundryReservations(
-  _forceRefresh = false,
+  forceRefresh = false,
   options?: PaginationOptions
 ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
-  return laundryService.fetchReservations(undefined, options);
+  return laundryService.fetchReservations(undefined, options, forceRefresh);
 }
 
 export async function addAdminLaundryReservation(data: Omit<LaundryRecord, "raw">) {

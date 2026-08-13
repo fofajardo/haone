@@ -24,16 +24,16 @@ export function isAnnouncementActive(a: AnnouncementRecord) {
   return getAnnouncementStatus(a) === AnnouncementStatus.ACTIVE;
 }
 
-export async function fetchAnnouncements(_forceRefresh = false): Promise<AnnouncementRecord[]> {
-  const res = await announcementService.fetchAnnouncements(undefined, true);
+export async function fetchAnnouncements(forceRefresh = false): Promise<AnnouncementRecord[]> {
+  const res = await announcementService.fetchAnnouncements(undefined, true, forceRefresh);
   return Array.isArray(res) ? res : res.items;
 }
 
 export async function fetchAnnouncementBySlug(
   slug: string,
-  _forceRefresh = false
+  forceRefresh = false
 ): Promise<AnnouncementRecord> {
-  const record = await announcementService.fetchAnnouncementBySlug(slug);
+  const record = await announcementService.fetchAnnouncementBySlug(slug, forceRefresh);
   if (!record) {
     throw new Error("Announcement not found");
   }
@@ -41,9 +41,9 @@ export async function fetchAnnouncementBySlug(
 }
 
 export async function fetchAdminAnnouncements(
-  _forceRefresh = false
+  forceRefresh = false
 ): Promise<AnnouncementRecord[]> {
-  const res = await announcementService.fetchAnnouncements();
+  const res = await announcementService.fetchAnnouncements(undefined, false, forceRefresh);
   return Array.isArray(res) ? res : res.items;
 }
 

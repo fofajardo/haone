@@ -54,11 +54,13 @@ function mapRow(row: string[], idx: number): JournalRecord {
 export const sheetsJournalService: JournalServiceInterface = {
   async fetchJournalEntries(
     filters?: JournalFilters,
-    _options?: PaginationOptions
+    options?: PaginationOptions,
+    forceRefresh = false
   ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>> {
+    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
     if (auth.isResident) {
       const query = filters?.term ? `?term=${encodeURIComponent(filters.term)}` : "";
-      const status = await fetchServer(`/api/resident/check-status${query}`);
+      const status = await fetchServer(`/api/resident/check-status${query}`, {}, shouldRefresh);
       let items: JournalRecord[] = status.transactions || [];
       if (filters?.type) {
         items = items.filter((r) => r.type === filters.type);
@@ -74,7 +76,7 @@ export const sheetsJournalService: JournalServiceInterface = {
     if (!spreadsheetId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:T");
+    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:T", shouldRefresh);
     let items = rows.slice(1).map((row, idx) => mapRow(row, idx + 2));
 
     if (filters?.term) {

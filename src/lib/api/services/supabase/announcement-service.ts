@@ -38,7 +38,8 @@ function applyActiveFilters(query: any) {
 export const supabaseAnnouncementService: AnnouncementServiceInterface = {
   async fetchAnnouncements(
     options?: PaginationOptions,
-    activeOnly = false
+    activeOnly = false,
+    _forceRefresh?: boolean
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>> {
     if (!supabase) {
       return [];
@@ -81,7 +82,10 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
     };
   },
 
-  async fetchAnnouncementBySlug(slug: string): Promise<AnnouncementRecord | null> {
+  async fetchAnnouncementBySlug(
+    slug: string,
+    _forceRefresh?: boolean
+  ): Promise<AnnouncementRecord | null> {
     if (!supabase) {
       return null;
     }

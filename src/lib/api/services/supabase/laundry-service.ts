@@ -32,7 +32,8 @@ function emptyResult(
 export const supabaseLaundryService: LaundryServiceInterface = {
   async fetchReservations(
     residentId?: string,
-    options?: PaginationOptions
+    options?: PaginationOptions,
+    _forceRefresh?: boolean
   ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
     if (!supabase) {
       return [];
