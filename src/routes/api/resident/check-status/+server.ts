@@ -151,10 +151,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
     const assocBase = parseCSVAmount(getConstVal(`FEES_${targetTerm}_ASSOC`));
 
     const totalBase = waterBase + assocBase;
-    const paid =
-      waterPaid +
-      assocPaid +
-      filteredJor.reduce((sum: number, j: any) => sum + parseCSVAmount(j[JOURNAL_COL.MISC]), 0);
+    const paid = waterPaid + assocPaid;
     const waived = waterWaived + assocWaived;
     const bal = totalBase - paid - waived;
 
