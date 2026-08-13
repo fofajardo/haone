@@ -114,7 +114,9 @@ export const sheetsLaundryService: LaundryServiceInterface = {
     const actualRow = rowIndex + 1;
     const nowStr = new Date().toISOString();
     await Promise.all([
-      updateSheetValue(uiSettings.sharedRecordsId, `laundry!F${actualRow}`, [["CANCELLED"]]),
+      updateSheetValue(uiSettings.sharedRecordsId, `laundry!F${actualRow}`, [
+        [LaundryStatus.CANCELLED_BY_ADMIN]
+      ]),
       updateSheetValue(uiSettings.sharedRecordsId, `laundry!G${actualRow}`, [[reason]]),
       updateSheetValue(uiSettings.sharedRecordsId, `laundry!I${actualRow}`, [[nowStr]])
     ]);
