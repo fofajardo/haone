@@ -10,7 +10,6 @@
     fetchAchievements,
     calculateAchievementPercentage
   } from "$api/controllers/achievement-controller";
-  import { fetchUsers } from "$api/controllers/resident-controller";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
   import { pageState } from "$state/page-info.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -23,11 +22,11 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  async function loadData() {
+  async function loadData(forceRefresh = false) {
     isLoading = true;
     error = null;
     try {
-      const achResult = await fetchAchievements(true);
+      const achResult = await fetchAchievements(forceRefresh);
       achievements = achResult.achievements || [];
       logs = achResult.logs || [];
       currentResidentId = achResult.currentResidentId || "";
@@ -80,7 +79,7 @@
           variant="outline"
           size="sm"
           onclick={() => {
-            loadData();
+            loadData(true);
           }}
           {isLoading}
           icon={RefreshCcw}
@@ -95,7 +94,7 @@
     <ErrorView {error}>
       <Button
         onclick={() => {
-          loadData();
+          loadData(true);
         }}
         class="mt-4">Retry</Button
       >
