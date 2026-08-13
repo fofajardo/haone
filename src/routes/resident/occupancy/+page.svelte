@@ -19,14 +19,14 @@
 
   import { fetchResidentStatus, fetchResidents } from "$api/controllers/resident-controller";
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     if (!auth.accessToken) return;
     isLoading = true;
     error = null;
     try {
       const [statusJson, occJson] = await Promise.all([
-        fetchResidentStatus(undefined, forceRefresh),
-        fetchResidents(forceRefresh)
+        fetchResidentStatus(undefined, bypassCache),
+        fetchResidents(bypassCache)
       ]);
 
       status = statusJson;

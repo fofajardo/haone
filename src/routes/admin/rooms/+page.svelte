@@ -78,14 +78,14 @@
     alertDialog = { open: true, title, description, type };
   }
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
       const [resData, userData, currentTerm] = await Promise.all([
-        fetchResidents(forceRefresh),
-        fetchUsers(forceRefresh),
-        fetchTermCurr(forceRefresh)
+        fetchResidents(bypassCache),
+        fetchUsers(bypassCache),
+        fetchTermCurr(bypassCache)
       ]);
       activeTerm = currentTerm;
       if (!activeTerm) {

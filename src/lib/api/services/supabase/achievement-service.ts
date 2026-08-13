@@ -32,7 +32,7 @@ function emptyLogs(
 export const supabaseAchievementService: AchievementServiceInterface = {
   async fetchAchievements(
     options?: PaginationOptions,
-    _forceRefresh?: boolean
+    _bypassCache?: boolean
   ): Promise<AchievementRecord[] | PaginatedResponse<AchievementRecord>> {
     if (!supabase) {
       return [];
@@ -89,7 +89,7 @@ export const supabaseAchievementService: AchievementServiceInterface = {
   async fetchAchievementLogs(
     residentId?: string,
     options?: PaginationOptions,
-    _forceRefresh?: boolean
+    _bypassCache?: boolean
   ): Promise<AchievementLogRecord[] | PaginatedResponse<AchievementLogRecord>> {
     if (!supabase) {
       return [];

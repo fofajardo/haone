@@ -33,7 +33,7 @@ export const supabaseLaundryService: LaundryServiceInterface = {
   async fetchReservations(
     residentId?: string,
     options?: PaginationOptions,
-    _forceRefresh?: boolean
+    _bypassCache?: boolean
   ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
     if (!supabase) {
       return [];

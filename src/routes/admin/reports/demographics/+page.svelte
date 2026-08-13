@@ -52,12 +52,12 @@
     "chart-5": { label: "Group 5", color: "var(--chart-5)" }
   } as const;
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
 
     try {
-      const allResidents = await fetchResidents(forceRefresh);
+      const allResidents = await fetchResidents(bypassCache);
       const currentTerm = await uiSettings.ensureCurrentTerm();
       const accounts = allResidents.filter((r) => !currentTerm || r.period === currentTerm);
 

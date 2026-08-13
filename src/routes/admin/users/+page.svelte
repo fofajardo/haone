@@ -29,11 +29,11 @@
     searchKey: "search"
   });
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      users = await fetchUsers(forceRefresh);
+      users = await fetchUsers(bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {

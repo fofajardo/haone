@@ -11,7 +11,7 @@ export interface JournalServiceInterface {
   fetchJournalEntries(
     filters?: JournalFilters,
     options?: PaginationOptions,
-    forceRefresh?: boolean
+    bypassCache?: boolean
   ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>>;
 
   addJournalEntry(data: Partial<JournalRecord>): Promise<void>;

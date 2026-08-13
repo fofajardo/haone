@@ -16,9 +16,9 @@ import { getLocalDateString } from "$utils/parsers";
 
 let _residentFetch: Promise<any> | null = null;
 
-function fetchResidentAchievements(forceRefresh = false) {
-  if (!_residentFetch || forceRefresh) {
-    _residentFetch = fetchServer("/api/resident/achievements", {}, forceRefresh).finally(() => {
+function fetchResidentAchievements(bypassCache = false) {
+  if (!_residentFetch || bypassCache) {
+    _residentFetch = fetchServer("/api/resident/achievements", {}, bypassCache).finally(() => {
       _residentFetch = null;
     });
   }
@@ -28,9 +28,9 @@ function fetchResidentAchievements(forceRefresh = false) {
 export const sheetsAchievementService: AchievementServiceInterface = {
   async fetchAchievements(
     options?: PaginationOptions,
-    forceRefresh = false
+    bypassCache = false
   ): Promise<AchievementRecord[] | PaginatedResponse<AchievementRecord>> {
-    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
+    const shouldRefresh = bypassCache || options?.bypassCache || false;
     if (auth.isResident) {
       const data = await fetchResidentAchievements(shouldRefresh);
       return data.achievements || [];
@@ -61,9 +61,9 @@ export const sheetsAchievementService: AchievementServiceInterface = {
   async fetchAchievementLogs(
     residentId?: string,
     options?: PaginationOptions,
-    forceRefresh = false
+    bypassCache = false
   ): Promise<AchievementLogRecord[] | PaginatedResponse<AchievementLogRecord>> {
-    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
+    const shouldRefresh = bypassCache || options?.bypassCache || false;
     if (auth.isResident) {
       const data = await fetchResidentAchievements(shouldRefresh);
       return data.logs || [];

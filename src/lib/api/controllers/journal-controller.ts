@@ -6,9 +6,9 @@ export { mapRowToJournal } from "./resident-controller";
 export async function fetchJournalEntries(
   filters?: JournalFilters,
   options?: PaginationOptions,
-  forceRefresh?: boolean
+  bypassCache?: boolean
 ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>> {
-  return journalService.fetchJournalEntries(filters, options, forceRefresh);
+  return journalService.fetchJournalEntries(filters, options, bypassCache);
 }
 
 export async function addJournalEntry(data: Partial<JournalRecord>): Promise<void> {

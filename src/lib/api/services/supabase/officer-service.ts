@@ -27,7 +27,7 @@ function mapRow(row: any): OfficerRecord {
 }
 
 export const supabaseOfficerService: OfficerServiceInterface = {
-  async fetchOfficers(_forceRefresh = false): Promise<OfficerRecord[]> {
+  async fetchOfficers(_bypassCache = false): Promise<OfficerRecord[]> {
     if (!supabase) {
       return [];
     }

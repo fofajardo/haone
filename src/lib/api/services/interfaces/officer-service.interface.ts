@@ -1,7 +1,7 @@
 import type { OfficerRecord } from "$lib/types";
 
 export interface OfficerServiceInterface {
-  fetchOfficers(forceRefresh?: boolean): Promise<OfficerRecord[]>;
+  fetchOfficers(bypassCache?: boolean): Promise<OfficerRecord[]>;
 
   addOfficer(data: Partial<OfficerRecord>): Promise<void>;
 

@@ -15,9 +15,9 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
   async fetchAnnouncements(
     options?: PaginationOptions,
     activeOnly = false,
-    forceRefresh = false
+    bypassCache = false
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>> {
-    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
+    const shouldRefresh = bypassCache || options?.bypassCache || false;
     if (auth.isResident) {
       return fetchServer("/api/resident/announcements", {}, shouldRefresh);
     }
@@ -72,20 +72,20 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
 
   async fetchAnnouncementBySlug(
     slug: string,
-    forceRefresh = false
+    bypassCache = false
   ): Promise<AnnouncementRecord | null> {
     if (auth.isResident) {
       try {
         return await fetchServer(
           `/api/resident/announcements?slug=${encodeURIComponent(slug)}`,
           {},
-          forceRefresh
+          bypassCache
         );
       } catch (e) {
         return null;
       }
     }
-    const res = await this.fetchAnnouncements(undefined, false, forceRefresh);
+    const res = await this.fetchAnnouncements(undefined, false, bypassCache);
     const list = Array.isArray(res) ? res : res.items;
     return list.find((a) => a.slug === slug) || null;
   },

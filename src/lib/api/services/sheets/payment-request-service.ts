@@ -19,9 +19,9 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
   async fetchPaymentRequests(
     residentId?: string,
     options?: PaginationOptions,
-    forceRefresh = false
+    bypassCache = false
   ): Promise<PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord>> {
-    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
+    const shouldRefresh = bypassCache || options?.bypassCache || false;
     if (auth.isResident) {
       const data = await fetchServer("/api/resident/payment-requests", {}, shouldRefresh);
       return Array.isArray(data) ? data : data.requests || [];

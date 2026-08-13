@@ -33,7 +33,7 @@ export const supabaseJournalService: JournalServiceInterface = {
   async fetchJournalEntries(
     filters?: JournalFilters,
     options?: PaginationOptions,
-    _forceRefresh?: boolean
+    _bypassCache?: boolean
   ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>> {
     if (!supabase) {
       return [];

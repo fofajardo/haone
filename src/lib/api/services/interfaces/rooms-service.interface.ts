@@ -52,8 +52,8 @@ export interface AccountUpdate {
 }
 
 export interface RoomsServiceInterface {
-  fetchCurrRecords(forceRefresh?: boolean): Promise<CurrRecord[]>;
-  fetchAccounts(forceRefresh?: boolean): Promise<AccountRow[]>;
+  fetchCurrRecords(bypassCache?: boolean): Promise<CurrRecord[]>;
+  fetchAccounts(bypassCache?: boolean): Promise<AccountRow[]>;
   updateAccounts(updates: AccountUpdate[]): Promise<void>;
   appendAccounts(accounts: AccountRow[]): Promise<void>;
   markCurrEvaluated(entries: { email: string; term: string }[]): Promise<void>;
@@ -67,6 +67,6 @@ export interface RoomsServiceInterface {
   deleteAccountRow(residentId: string, period: string): Promise<void>;
   /** Writes the BED field (used by the delist flow to annotate e.g. "101 (Early checkout)"). */
   updateAccountBed(residentId: string, period: string, bed: string): Promise<void>;
-  fetchStaticIpRows(forceRefresh?: boolean): Promise<StaticIpRow[]>;
+  fetchStaticIpRows(bypassCache?: boolean): Promise<StaticIpRow[]>;
   appendStaticIpRows(rows: StaticIpRow[]): Promise<void>;
 }

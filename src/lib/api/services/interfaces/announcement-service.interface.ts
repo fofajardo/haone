@@ -4,10 +4,10 @@ export interface AnnouncementServiceInterface {
   fetchAnnouncements(
     options?: PaginationOptions,
     activeOnly?: boolean,
-    forceRefresh?: boolean
+    bypassCache?: boolean
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>>;
 
-  fetchAnnouncementBySlug(slug: string, forceRefresh?: boolean): Promise<AnnouncementRecord | null>;
+  fetchAnnouncementBySlug(slug: string, bypassCache?: boolean): Promise<AnnouncementRecord | null>;
 
   addAnnouncement(data: Partial<AnnouncementRecord>): Promise<void>;
 

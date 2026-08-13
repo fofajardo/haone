@@ -22,11 +22,11 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      const achResult = await fetchAchievements(forceRefresh);
+      const achResult = await fetchAchievements(bypassCache);
       achievements = achResult.achievements || [];
       logs = achResult.logs || [];
       currentResidentId = achResult.currentResidentId || "";

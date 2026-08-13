@@ -2,14 +2,14 @@ import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
 import { achievementService } from "$api/services/achievement-service";
 import { getCurrentResidentId } from "./resident-controller";
 
-export async function fetchAchievements(forceRefresh = false): Promise<{
+export async function fetchAchievements(bypassCache = false): Promise<{
   achievements: AchievementRecord[];
   logs: AchievementLogRecord[];
   currentResidentId: string;
 }> {
   const [achRes, logRes, currentResidentId] = await Promise.all([
-    achievementService.fetchAchievements(undefined, forceRefresh),
-    achievementService.fetchAchievementLogs(undefined, undefined, forceRefresh),
+    achievementService.fetchAchievements(undefined, bypassCache),
+    achievementService.fetchAchievementLogs(undefined, undefined, bypassCache),
     getCurrentResidentId()
   ]);
   const achievements = Array.isArray(achRes) ? achRes : achRes.items;
@@ -66,13 +66,13 @@ export function getEligibleCount(
   return usersCount;
 }
 
-export async function fetchAdminAchievements(forceRefresh = false): Promise<AchievementRecord[]> {
-  const res = await achievementService.fetchAchievements(undefined, forceRefresh);
+export async function fetchAdminAchievements(bypassCache = false): Promise<AchievementRecord[]> {
+  const res = await achievementService.fetchAchievements(undefined, bypassCache);
   return Array.isArray(res) ? res : res.items;
 }
 
-export async function fetchAchievementLogs(forceRefresh = false): Promise<AchievementLogRecord[]> {
-  const res = await achievementService.fetchAchievementLogs(undefined, undefined, forceRefresh);
+export async function fetchAchievementLogs(bypassCache = false): Promise<AchievementLogRecord[]> {
+  const res = await achievementService.fetchAchievementLogs(undefined, undefined, bypassCache);
   return Array.isArray(res) ? res : res.items;
 }
 

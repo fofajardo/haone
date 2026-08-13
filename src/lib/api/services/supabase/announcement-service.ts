@@ -39,7 +39,7 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
   async fetchAnnouncements(
     options?: PaginationOptions,
     activeOnly = false,
-    _forceRefresh?: boolean
+    _bypassCache?: boolean
   ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>> {
     if (!supabase) {
       return [];
@@ -84,7 +84,7 @@ export const supabaseAnnouncementService: AnnouncementServiceInterface = {
 
   async fetchAnnouncementBySlug(
     slug: string,
-    _forceRefresh?: boolean
+    _bypassCache?: boolean
   ): Promise<AnnouncementRecord | null> {
     if (!supabase) {
       return null;

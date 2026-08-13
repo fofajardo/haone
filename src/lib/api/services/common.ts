@@ -293,11 +293,11 @@ export async function fetchWithAuth(
 export async function fetchSheetRowsRaw(
   spreadsheetId: string,
   range: string,
-  forceRefresh = false,
+  bypassCache = false,
   explicitToken?: string
 ): Promise<string[][]> {
   const cacheKey = `${spreadsheetId}:${range}`;
-  if (!forceRefresh && sheetsCache[cacheKey]) {
+  if (!bypassCache && sheetsCache[cacheKey]) {
     return sheetsCache[cacheKey];
   }
 

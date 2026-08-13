@@ -55,9 +55,9 @@ export const sheetsJournalService: JournalServiceInterface = {
   async fetchJournalEntries(
     filters?: JournalFilters,
     options?: PaginationOptions,
-    forceRefresh = false
+    bypassCache = false
   ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>> {
-    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
+    const shouldRefresh = bypassCache || options?.bypassCache || false;
     if (auth.isResident) {
       const query = filters?.term ? `?term=${encodeURIComponent(filters.term)}` : "";
       const status = await fetchServer(`/api/resident/check-status${query}`, {}, shouldRefresh);

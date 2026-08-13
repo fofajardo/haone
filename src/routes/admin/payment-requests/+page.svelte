@@ -33,14 +33,14 @@
     { value: PaymentRequestStatus.CANCELLED, label: "Cancelled" }
   ];
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
       const [p, r, t] = await Promise.all([
-        fetchAdminPaymentRequests(forceRefresh),
-        fetchResidents(forceRefresh),
-        fetchTermCurr(forceRefresh)
+        fetchAdminPaymentRequests(bypassCache),
+        fetchResidents(bypassCache),
+        fetchTermCurr(bypassCache)
       ]);
       payments = p;
       residents = r;

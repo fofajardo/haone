@@ -60,7 +60,7 @@
       : []
   );
 
-  async function loadUserProfile(forceRefresh = false) {
+  async function loadUserProfile(bypassCache = false) {
     if (!userId) return;
     isLoading = true;
     error = null;

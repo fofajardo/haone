@@ -31,7 +31,7 @@ function mapAccountRow(row: any): AccountRow {
 }
 
 export const supabaseRoomsService: RoomsServiceInterface = {
-  async fetchCurrRecords(_forceRefresh = false): Promise<CurrRecord[]> {
+  async fetchCurrRecords(_bypassCache = false): Promise<CurrRecord[]> {
     if (!supabase) {
       return [];
     }
@@ -64,7 +64,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
     }));
   },
 
-  async fetchAccounts(_forceRefresh = false): Promise<AccountRow[]> {
+  async fetchAccounts(_bypassCache = false): Promise<AccountRow[]> {
     if (!supabase) {
       return [];
     }

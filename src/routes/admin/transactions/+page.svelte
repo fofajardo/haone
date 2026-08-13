@@ -41,7 +41,7 @@
 
   import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     selectedIds = new Set();
@@ -49,8 +49,8 @@
     try {
       const [entries, types, mops, currentTerm] = await Promise.all([
         fetchJournalEntries(undefined, undefined),
-        fetchTransactionTypes(forceRefresh),
-        fetchMopTypes(forceRefresh),
+        fetchTransactionTypes(bypassCache),
+        fetchMopTypes(bypassCache),
         uiSettings.ensureCurrentTerm()
       ]);
 

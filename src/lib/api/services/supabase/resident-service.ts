@@ -88,7 +88,7 @@ function mapUserRecordToDb(data: Partial<UserRecord>): Record<string, any> {
 }
 
 export const supabaseResidentService: ResidentServiceInterface = {
-  async fetchResidents(_forceRefresh = false, term?: string): Promise<ResidentRecord[]> {
+  async fetchResidents(_bypassCache = false, term?: string): Promise<ResidentRecord[]> {
     if (!supabase) {
       return [];
     }
@@ -227,7 +227,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     return result;
   },
 
-  async fetchResidentStatus(emailArg: string, term?: string, _forceRefresh = false): Promise<any> {
+  async fetchResidentStatus(emailArg: string, term?: string, _bypassCache = false): Promise<any> {
     if (!supabase) {
       return null;
     }
@@ -454,7 +454,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     assertSupabaseFound(data, "Account row not found in spreadsheet.");
   },
 
-  async fetchUsers(_forceRefresh = false): Promise<UserRecord[]> {
+  async fetchUsers(_bypassCache = false): Promise<UserRecord[]> {
     if (!supabase) {
       return [];
     }

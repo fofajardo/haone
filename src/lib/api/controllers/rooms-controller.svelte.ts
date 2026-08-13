@@ -34,8 +34,8 @@ export interface SyncPreviewAction {
   payload: any;
 }
 
-export async function fetchCurrSheet(forceRefresh = false): Promise<CurrRecord[]> {
-  return roomsService.fetchCurrRecords(forceRefresh);
+export async function fetchCurrSheet(bypassCache = false): Promise<CurrRecord[]> {
+  return roomsService.fetchCurrRecords(bypassCache);
 }
 
 export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAction[]> {

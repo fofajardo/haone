@@ -50,8 +50,8 @@ function accountToRowArray(a: AccountRow): string[] {
   return row;
 }
 
-async function fetchAccountRows(spreadsheetId: string, forceRefresh = false) {
-  return fetchSheetRowsRaw(spreadsheetId, "accounts!A:L", forceRefresh);
+async function fetchAccountRows(spreadsheetId: string, bypassCache = false) {
+  return fetchSheetRowsRaw(spreadsheetId, "accounts!A:L", bypassCache);
 }
 
 async function findAccountRowIndex(
@@ -69,7 +69,7 @@ async function findAccountRowIndex(
 }
 
 export const sheetsRoomsService: RoomsServiceInterface = {
-  async fetchCurrRecords(forceRefresh = false): Promise<CurrRecord[]> {
+  async fetchCurrRecords(bypassCache = false): Promise<CurrRecord[]> {
     if (auth.isResident) {
       return [];
     }
@@ -79,7 +79,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       return [];
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:O", forceRefresh);
+    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:O", bypassCache);
     return rows.slice(1).map((r, idx) => ({
       timestamp: (r[CURR_COL.TIMESTAMP] || "").trim(),
       email: (r[CURR_COL.EMAIL] || "").trim().toLowerCase(),
@@ -101,7 +101,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     }));
   },
 
-  async fetchAccounts(forceRefresh = false): Promise<AccountRow[]> {
+  async fetchAccounts(bypassCache = false): Promise<AccountRow[]> {
     if (auth.isResident) {
       return [];
     }
@@ -109,7 +109,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     if (!uiSettings.accountingWorkbookId) {
       return [];
     }
-    const rows = await fetchAccountRows(uiSettings.accountingWorkbookId, forceRefresh);
+    const rows = await fetchAccountRows(uiSettings.accountingWorkbookId, bypassCache);
     return rows.slice(1).map(mapAccountRow);
   },
 
@@ -257,7 +257,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!E${actualRow}`, [[bed]]);
   },
 
-  async fetchStaticIpRows(forceRefresh = false): Promise<StaticIpRow[]> {
+  async fetchStaticIpRows(bypassCache = false): Promise<StaticIpRow[]> {
     const { uiSettings } = await import("$state/settings.svelte");
     if (!uiSettings.sharedRecordsId) {
       return [];
@@ -265,7 +265,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     const rows = await fetchSheetRowsRaw(
       uiSettings.sharedRecordsId,
       "static_ip!A:G",
-      forceRefresh
+      bypassCache
     );
     return rows.slice(1).map((r) => ({
       id: (r[STATIC_IP_COL.ID] || "").trim(),

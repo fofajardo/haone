@@ -24,31 +24,31 @@ export async function getCurrentResidentId(): Promise<string> {
 /**
  * Fetches resident status (dashboard context) via direct DB in Supabase mode or API route in Sheets mode.
  */
-export async function fetchResidentStatus(term?: string, forceRefresh = false): Promise<any> {
+export async function fetchResidentStatus(term?: string, bypassCache = false): Promise<any> {
   const { auth } = await import("$state/auth.svelte");
   const userEmail = auth.user?.email || "";
   if (!userEmail) return null;
-  return residentService.fetchResidentStatus(userEmail, term, forceRefresh);
+  return residentService.fetchResidentStatus(userEmail, term, bypassCache);
 }
 
 /**
  * Fetches joined resident data from Accounts and ResidentRecords spreadsheets/database.
  */
 export async function fetchResidents(
-  forceRefresh = false,
+  bypassCache = false,
   term?: string
 ): Promise<ResidentRecord[]> {
-  return residentService.fetchResidents(forceRefresh, term);
+  return residentService.fetchResidents(bypassCache, term);
 }
 
-export async function fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
-  return residentService.fetchUsers(forceRefresh);
+export async function fetchUsers(bypassCache = false): Promise<UserRecord[]> {
+  return residentService.fetchUsers(bypassCache);
 }
 
 /**
  * Fetches the current active term from constants.
  */
-export async function fetchTermCurr(forceRefresh = false): Promise<string> {
+export async function fetchTermCurr(bypassCache = false): Promise<string> {
   const val = await constantsService.fetchConstantByKey("TERM_CURR");
   return val || "";
 }

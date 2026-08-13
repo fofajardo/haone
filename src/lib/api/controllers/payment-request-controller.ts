@@ -2,7 +2,7 @@ import type { PaymentRequestRecord } from "$lib/types";
 import { paymentRequestService } from "$api/services/payment-request-service";
 import { getCurrentResidentId } from "./resident-controller";
 
-export async function fetchPaymentRequests(forceRefresh = false): Promise<{
+export async function fetchPaymentRequests(bypassCache = false): Promise<{
   requests: PaymentRequestRecord[];
   currentResidentId: string;
 }> {
@@ -10,7 +10,7 @@ export async function fetchPaymentRequests(forceRefresh = false): Promise<{
   const res = await paymentRequestService.fetchPaymentRequests(
     currentResidentId,
     undefined,
-    forceRefresh
+    bypassCache
   );
   const list = Array.isArray(res) ? res : res.items;
   return {
@@ -28,9 +28,9 @@ export async function cancelPaymentRequest(paymentId: string) {
 }
 
 export async function fetchAdminPaymentRequests(
-  forceRefresh = false
+  bypassCache = false
 ): Promise<PaymentRequestRecord[]> {
-  const res = await paymentRequestService.fetchPaymentRequests(undefined, undefined, forceRefresh);
+  const res = await paymentRequestService.fetchPaymentRequests(undefined, undefined, bypassCache);
   return Array.isArray(res) ? res : res.items;
 }
 

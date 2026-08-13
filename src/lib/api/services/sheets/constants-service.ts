@@ -6,9 +6,9 @@ import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
 
 export const sheetsConstantsService: ConstantsServiceInterface = {
-  async fetchConstants(forceRefresh = false): Promise<ConstantRecord[]> {
+  async fetchConstants(bypassCache = false): Promise<ConstantRecord[]> {
     if (auth.isResident) {
-      const data = await fetchServer("/api/resident/check-status", {}, forceRefresh);
+      const data = await fetchServer("/api/resident/check-status", {}, bypassCache);
       const consts: ConstantRecord[] = [
         { key: "TERM_CURR", value: data.activeTerm || "", description: "Current Term", raw: [] }
       ];
@@ -32,7 +32,7 @@ export const sheetsConstantsService: ConstantsServiceInterface = {
     const rows = await fetchSheetRowsRaw(
       uiSettings.accountingWorkbookId,
       "constants!A:C",
-      forceRefresh
+      bypassCache
     );
     return rows.slice(1).map((row) => ({
       key: (row[CONSTANT_COL.KEY] || "").trim(),

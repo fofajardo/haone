@@ -17,11 +17,11 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      announcements = await fetchAnnouncements(forceRefresh);
+      announcements = await fetchAnnouncements(bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {

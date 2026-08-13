@@ -9,7 +9,7 @@ export interface PaymentRequestServiceInterface {
   fetchPaymentRequests(
     residentId?: string,
     options?: PaginationOptions,
-    forceRefresh?: boolean
+    bypassCache?: boolean
   ): Promise<PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord>>;
 
   addPaymentRequest(data: Partial<PaymentRequestRecord>): Promise<void>;

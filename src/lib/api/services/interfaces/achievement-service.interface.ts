@@ -8,13 +8,13 @@ import type {
 export interface AchievementServiceInterface {
   fetchAchievements(
     options?: PaginationOptions,
-    forceRefresh?: boolean
+    bypassCache?: boolean
   ): Promise<AchievementRecord[] | PaginatedResponse<AchievementRecord>>;
 
   fetchAchievementLogs(
     residentId?: string,
     options?: PaginationOptions,
-    forceRefresh?: boolean
+    bypassCache?: boolean
   ): Promise<AchievementLogRecord[] | PaginatedResponse<AchievementLogRecord>>;
 
   addAchievement(data: Partial<AchievementRecord>): Promise<void>;

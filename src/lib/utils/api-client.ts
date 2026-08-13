@@ -17,12 +17,12 @@ export function invalidateServerCache() {
 export async function fetchServer<T = any>(
   url: string,
   options: RequestInit = {},
-  forceRefresh = false
+  bypassCache = false
 ): Promise<T> {
   const isLaundry = url.includes("/api/resident/laundry");
   const useCache = options.method === "GET" || !options.method;
 
-  if (!forceRefresh && !isLaundry && useCache && serverCache[url]) {
+  if (!bypassCache && !isLaundry && useCache && serverCache[url]) {
     return serverCache[url] as T;
   }
 

@@ -24,14 +24,14 @@
     loadData();
   });
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
       const [resData, userData, term] = await Promise.all([
-        fetchResidents(forceRefresh),
-        fetchUsers(forceRefresh),
-        fetchTermCurr(forceRefresh)
+        fetchResidents(bypassCache),
+        fetchUsers(bypassCache),
+        fetchTermCurr(bypassCache)
       ]);
       activeTerm = term;
       if (!activeTerm) {

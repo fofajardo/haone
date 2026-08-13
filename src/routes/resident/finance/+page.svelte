@@ -22,12 +22,12 @@
   let error = $state<string | null>(null);
   let localTerm = $state(page.url.searchParams.get("term") || "");
 
-  async function loadData(term?: string, forceRefresh = false) {
+  async function loadData(term?: string, bypassCache = false) {
     if (!auth.accessToken) return;
-    await loadStatus(term || localTerm, forceRefresh);
+    await loadStatus(term || localTerm, bypassCache);
   }
 
-  async function loadStatus(targetTerm: string, forceRefresh = false) {
+  async function loadStatus(targetTerm: string, bypassCache = false) {
     if (!auth.user?.email) return;
 
     const url = new URL(window.location.href);
@@ -39,11 +39,11 @@
     isLoading = true;
     error = null;
     try {
-      status = await fetchResidentStatus(targetTerm, forceRefresh);
+      status = await fetchResidentStatus(targetTerm, bypassCache);
       if (status.activeTerm && !targetTerm) {
         // First load with no term — reload with resolved active term so transactions are filtered
         localTerm = status.activeTerm;
-        status = await fetchResidentStatus(localTerm, forceRefresh);
+        status = await fetchResidentStatus(localTerm, bypassCache);
         const u = new URL(window.location.href);
         u.searchParams.set("term", localTerm);
         replaceState(u.toString(), {});

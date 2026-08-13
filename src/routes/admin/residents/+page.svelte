@@ -67,13 +67,13 @@
     alertDialog = { open: true, title, description, type };
   }
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     selectedIndices = new Set();
     try {
       const currentTerm = await uiSettings.ensureCurrentTerm();
-      residents = await fetchResidents(forceRefresh, currentTerm);
+      residents = await fetchResidents(bypassCache, currentTerm);
     } catch (e: any) {
       error = e.message;
     } finally {

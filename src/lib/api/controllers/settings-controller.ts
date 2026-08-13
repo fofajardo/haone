@@ -3,7 +3,7 @@ import { fetchServer } from "$utils/api-client";
 import type { UserSettingsRecord } from "$lib/types";
 import { settingsService } from "$api/services/settings-service";
 
-export async function fetchUserSettings(_forceRefresh = false): Promise<UserSettingsRecord[]> {
+export async function fetchUserSettings(_bypassCache = false): Promise<UserSettingsRecord[]> {
   const { auth } = await import("$state/auth.svelte");
   const { residentState } = await import("$state/resident-state.svelte");
   const residentId = residentState.status?.profile?.id || "";

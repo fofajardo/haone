@@ -28,13 +28,13 @@
     searchKey: "search"
   });
 
-  async function loadData(forceRefresh = false) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
       [officers, currentTerm] = await Promise.all([
-        fetchOfficers(forceRefresh),
-        fetchTermCurr(forceRefresh)
+        fetchOfficers(bypassCache),
+        fetchTermCurr(bypassCache)
       ]);
       if (tableSync.filters!.term === "ALL") {
         tableSync.filters!.term = currentTerm;

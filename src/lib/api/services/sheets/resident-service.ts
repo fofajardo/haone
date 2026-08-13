@@ -14,9 +14,9 @@ import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
 
 export const sheetsResidentService: ResidentServiceInterface = {
-  async fetchResidents(forceRefresh = false, term?: string): Promise<ResidentRecord[]> {
+  async fetchResidents(bypassCache = false, term?: string): Promise<ResidentRecord[]> {
     if (auth.isResident) {
-      const data = await fetchServer("/api/resident/occupancy", {}, forceRefresh);
+      const data = await fetchServer("/api/resident/occupancy", {}, bypassCache);
       return data.accounts;
     }
 
@@ -26,10 +26,10 @@ export const sheetsResidentService: ResidentServiceInterface = {
     }
 
     const [accRows, userRows, journalRows, constRows] = await Promise.all([
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L", forceRefresh),
-      fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P", forceRefresh),
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", forceRefresh),
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", forceRefresh)
+      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L", bypassCache),
+      fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P", bypassCache),
+      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", bypassCache),
+      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", bypassCache)
     ]);
 
     const userMap = new Map<string, string[]>();
@@ -110,9 +110,9 @@ export const sheetsResidentService: ResidentServiceInterface = {
     return allResidents;
   },
 
-  async fetchResidentStatus(_email: string, term?: string, forceRefresh = false): Promise<any> {
+  async fetchResidentStatus(_email: string, term?: string, bypassCache = false): Promise<any> {
     const query = term ? `?term=${encodeURIComponent(term)}` : "";
-    return fetchServer(`/api/resident/check-status${query}`, {}, forceRefresh);
+    return fetchServer(`/api/resident/check-status${query}`, {}, bypassCache);
   },
 
   async changeAccountType(residentId: string, period: string, newType: string): Promise<void> {
@@ -134,7 +134,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
     await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!L${actualRow}`, [[newType]]);
   },
 
-  async fetchUsers(forceRefresh = false): Promise<UserRecord[]> {
+  async fetchUsers(bypassCache = false): Promise<UserRecord[]> {
     if (auth.isResident) {
       return [];
     }
@@ -147,7 +147,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
     const userRows = await fetchSheetRowsRaw(
       uiSettings.residentRecordsId,
       "users!A:P",
-      forceRefresh
+      bypassCache
     );
 
     return userRows

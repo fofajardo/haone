@@ -83,12 +83,12 @@
     alertDialog = { open: true, title, description, type };
   }
 
-  async function loadResidentProfile(forceRefresh = false) {
+  async function loadResidentProfile(bypassCache = false) {
     isLoading = true;
     error = null;
 
     try {
-      const allResidents = await fetchResidents(forceRefresh);
+      const allResidents = await fetchResidents(bypassCache);
       const allRowsForStno = allResidents.filter((r) => r.stno === stno);
 
       if (allRowsForStno.length === 0) {
@@ -116,7 +116,7 @@
       // 2. Fetch Transaction History & Types
       const [entries, types] = await Promise.all([
         fetchJournalEntries(undefined, undefined),
-        fetchTransactionTypes(forceRefresh)
+        fetchTransactionTypes(bypassCache)
       ]);
 
       const journalList = Array.isArray(entries) ? entries : entries.items;

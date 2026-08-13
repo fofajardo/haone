@@ -1,7 +1,7 @@
 import { type OfficerRecord, OfficerStatus } from "$lib/types";
 import { officerService } from "$api/services/officer-service";
 
-export async function fetchOfficers(_forceRefresh = false): Promise<OfficerRecord[]> {
+export async function fetchOfficers(_bypassCache = false): Promise<OfficerRecord[]> {
   return await officerService.fetchOfficers();
 }
 

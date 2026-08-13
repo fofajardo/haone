@@ -1,7 +1,7 @@
 import type { ConstantRecord } from "$lib/types";
 
 export interface ConstantsServiceInterface {
-  fetchConstants(forceRefresh?: boolean): Promise<ConstantRecord[]>;
+  fetchConstants(bypassCache?: boolean): Promise<ConstantRecord[]>;
 
   fetchConstantByKey(key: string): Promise<string | null>;
 

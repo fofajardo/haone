@@ -8,7 +8,7 @@ import {
 import type { ConstantRecord } from "$lib/types";
 
 export const supabaseConstantsService: ConstantsServiceInterface = {
-  async fetchConstants(_forceRefresh?: boolean): Promise<ConstantRecord[]> {
+  async fetchConstants(_bypassCache?: boolean): Promise<ConstantRecord[]> {
     if (!supabase) {
       return [];
     }

@@ -15,9 +15,9 @@ export const sheetsLaundryService: LaundryServiceInterface = {
   async fetchReservations(
     residentId?: string,
     options?: PaginationOptions,
-    forceRefresh = false
+    bypassCache = false
   ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
-    const shouldRefresh = forceRefresh || options?.forceRefresh || false;
+    const shouldRefresh = bypassCache || options?.bypassCache || false;
     if (auth.isResident) {
       const data = await fetchServer("/api/resident/laundry", {}, shouldRefresh);
       return Array.isArray(data) ? data : data.reservations || [];

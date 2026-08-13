@@ -4,7 +4,7 @@ export interface LaundryServiceInterface {
   fetchReservations(
     residentId?: string,
     options?: PaginationOptions,
-    forceRefresh?: boolean
+    bypassCache?: boolean
   ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>>;
 
   addReservation(data: Partial<LaundryRecord>): Promise<void>;
