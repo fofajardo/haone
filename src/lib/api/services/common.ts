@@ -133,20 +133,6 @@ function colToNum(col: string): number {
   return num - 1;
 }
 
-/**
- * Converts 0-indexed column number to Column Letter.
- */
-function numToCol(num: number): string {
-  let col = "";
-  let n = num + 1;
-  while (n > 0) {
-    let m = (n - 1) % 26;
-    col = String.fromCharCode(65 + m) + col;
-    n = Math.floor((n - m) / 26);
-  }
-  return col;
-}
-
 interface ParsedA1Range {
   sheetName: string;
   startCol: number;
@@ -173,19 +159,6 @@ function parseA1Range(range: string): ParsedA1Range | null {
   const endCol = m[3] ? colToNum(m[3]) : startCol;
   const endRow = m[4] ? parseInt(m[4]) - 1 : Number.MAX_SAFE_INTEGER;
   return { sheetName: parts[0], startCol, startRow, endCol, endRow };
-}
-
-/**
- * Surgically update a single cell in any cached range for a given sheet.
- */
-export function patchCacheCell(
-  spreadsheetId: string,
-  sheetName: string,
-  rowIndex: number,
-  colIndex: number,
-  value: string
-) {
-  patchCacheRange(spreadsheetId, `${sheetName}!${numToCol(colIndex)}${rowIndex + 1}`, [[value]]);
 }
 
 /**
@@ -311,9 +284,7 @@ export async function fetchWithAuth(
   return resp;
 }
 
-export interface SheetRow {
-  [key: string]: string;
-}
+
 
 /**
  * Enhanced fetch to return raw values as well, to help with row indexing.
@@ -339,25 +310,7 @@ export async function fetchSheetRowsRaw(
   return values;
 }
 
-/**
- * Legacy support for object-based fetching.
- */
-export async function fetchSheetData(spreadsheetId: string, range: string): Promise<SheetRow[]> {
-  const rows = await fetchSheetRowsRaw(spreadsheetId, range);
-  if (rows.length === 0) return [];
 
-  const headers = rows[0];
-  return rows
-    .slice(1)
-    .filter((row) => row[0] !== "#N/A" && row[0] !== "")
-    .map((row) => {
-      const obj: SheetRow = {};
-      headers.forEach((header, index) => {
-        obj[header] = row[index] || "";
-      });
-      return obj;
-    });
-}
 
 /**
  * Updates a specific range (e.g., a cell or row) in the sheet.
