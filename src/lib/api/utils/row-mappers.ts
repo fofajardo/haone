@@ -12,14 +12,6 @@ export function computeDisplayNames(data: Partial<UserRecord>) {
   const first = (data.firstName || "").trim().toUpperCase();
   const last = (data.lastName || "").trim().toUpperCase();
   const suffix = (data.suffix || "").trim().toUpperCase();
-  const override = (data.overrideName || "").trim();
-
-  if (override) {
-    return {
-      displayName: override,
-      displayNameFormal: override
-    };
-  }
 
   const dnParts = [];
   if (last) {

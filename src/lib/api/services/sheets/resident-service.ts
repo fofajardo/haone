@@ -214,7 +214,6 @@ export const sheetsResidentService: ResidentServiceInterface = {
       lastName: data.lastName ?? currentRow[USER_COL.LAST_NAME],
       middleName: data.middleName ?? currentRow[USER_COL.MIDDLE_NAME],
       suffix: data.suffix ?? currentRow[USER_COL.SUFFIX],
-      overrideName: data.overrideName ?? currentRow[USER_COL.OVERRIDE_NAME]
     });
 
     newRow[USER_COL.DISPLAY_NAME] = computed.displayName;
