@@ -99,10 +99,14 @@
 
       semesterCount = allRowsForStno.length;
 
+      const currTerm = await uiSettings.ensureCurrentTerm();
+      if (!localTerm) {
+        localTerm = currTerm;
+      }
       const matchedResident = allRowsForStno.find((r) => !localTerm || r.period === localTerm);
 
       if (!matchedResident) {
-        error = `This person is not a resident for the selected semester (${uiSettings.currentTerm || "All Term"}).`;
+        error = `This person is not a resident for the selected semester (${currTerm || "All Term"}).`;
         showAlert("Semester Error", error, "error");
         return;
       }

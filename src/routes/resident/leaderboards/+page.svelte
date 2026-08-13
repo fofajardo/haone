@@ -38,10 +38,6 @@
       achievements = Array.isArray(achResult) ? achResult : achResult.achievements;
       logs = Array.isArray(achResult) ? achResult : achResult.logs;
       currentTerm = statusJson.currentTerm;
-
-      if (!uiSettings.currentTerm) {
-        uiSettings.currentTerm = statusJson.currentTerm;
-      }
     } catch (e: any) {
       error = e.message;
     } finally {

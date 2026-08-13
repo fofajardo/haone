@@ -35,7 +35,6 @@
   import { pageState } from "$state/page-info.svelte";
   import { parseTime, parseDateWeight } from "$utils/parsers";
   import { formatTime } from "$utils/formatters";
-  import { sortPeriods } from "$utils/sort";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<any[]>([]);
@@ -64,17 +63,16 @@
     isLoading = true;
     error = null;
     try {
-      const [resResult, allUsers, allResidents] = await Promise.all([
+      const [resResult, allUsers, allResidents, currentTerm] = await Promise.all([
         fetchAdminLaundryReservations(true),
         fetchUsers(true),
-        fetchResidents(true)
+        fetchResidents(true),
+        uiSettings.ensureCurrentTerm()
       ]);
 
       const newRoomMap = new Map<string, string>();
       const newAccToResMap = new Map<string, string>();
       const newActiveResIds = new Set<string>();
-
-      const currentTerm = uiSettings.currentTerm;
 
       allResidents.forEach((res) => {
         if (res.residentId && res.period === currentTerm) {

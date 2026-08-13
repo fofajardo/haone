@@ -51,6 +51,10 @@
     }
   });
 
+  onMount(() => {
+    uiSettings.ensureCurrentTerm();
+  });
+
   // Derived data computations using shared computeFinancialReportData
   let reportData = $derived(
     computeFinancialReportData(

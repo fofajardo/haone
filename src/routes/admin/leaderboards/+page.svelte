@@ -61,10 +61,6 @@
         };
       });
       currentTerm = term;
-
-      if (!uiSettings.currentTerm) {
-        uiSettings.currentTerm = term;
-      }
     } catch (e: any) {
       error = e.message;
     } finally {

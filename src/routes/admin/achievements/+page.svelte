@@ -79,14 +79,12 @@
       logs = l;
       currentTerm = t;
       totalUsersCount = allU.length;
-      if (!uiSettings.currentTerm) {
-        uiSettings.currentTerm = t;
-      }
+      const currTerm = await uiSettings.ensureCurrentTerm();
       residents = r.filter((res) => {
-        return res.period === (uiSettings.currentTerm || t);
+        return res.period === currTerm;
       });
       if (!newAchievement.term) {
-        newAchievement.term = uiSettings.currentTerm || t;
+        newAchievement.term = currTerm;
       }
       const me = allU.find((u) => {
         return u.email.toLowerCase() === (auth.user?.email || "").toLowerCase();

@@ -47,10 +47,11 @@
     selectedIds = new Set();
 
     try {
-      const [entries, types, mops] = await Promise.all([
+      const [entries, types, mops, currentTerm] = await Promise.all([
         fetchJournalEntries(undefined, undefined),
         fetchTransactionTypes(forceRefresh),
-        fetchMopTypes(forceRefresh)
+        fetchMopTypes(forceRefresh),
+        uiSettings.ensureCurrentTerm()
       ]);
 
       transactionTypes = types;
@@ -63,7 +64,7 @@
           ...res,
           dateWeight: parseDateWeight(res.date)
         }))
-        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
+        .filter((r) => !currentTerm || r.period === currentTerm)
         .sort(
           (a, b) =>
             (b.dateWeight ?? 0) - (a.dateWeight ?? 0) || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0)

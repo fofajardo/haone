@@ -122,9 +122,9 @@
     }
 
     if (selectedCategories.includes("officers")) {
-      const currentSem = uiSettings.currentTerm.trim();
+      const currentTerm = uiSettings.currentTerm.trim();
       const activeOfficers = officers.filter(
-        (o) => o.status === OfficerStatus.ACTIVE && o.term === currentSem
+        (o) => o.status === OfficerStatus.ACTIVE && o.term === currentTerm
       );
 
       const officerEntries = activeOfficers.map((o) => {
@@ -177,15 +177,18 @@
   async function loadData() {
     isLoading = true;
     try {
-      const [mapped, officerList] = await Promise.all([fetchResidents(), fetchOfficers()]);
-      const currentSem = uiSettings.currentTerm.trim();
+      const [mapped, officerList, currentTerm] = await Promise.all([
+        fetchResidents(),
+        fetchOfficers(),
+        uiSettings.ensureCurrentTerm()
+      ]);
 
       allAccounts = mapped;
-      residents = mapped.filter((r) => r.period === currentSem);
+      residents = mapped.filter((r) => r.period === currentTerm);
       officers = officerList;
 
       // Auto-Period
-      const entries = await fetchJournalEntries({ term: currentSem });
+      const entries = await fetchJournalEntries({ term: currentTerm });
       const journalList = Array.isArray(entries) ? entries : entries.items;
       const dates = journalList
         .map((j) => j.date)

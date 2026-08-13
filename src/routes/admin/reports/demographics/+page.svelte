@@ -58,9 +58,8 @@
 
     try {
       const allResidents = await fetchResidents(forceRefresh);
-      const accounts = allResidents.filter(
-        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
-      );
+      const currentTerm = await uiSettings.ensureCurrentTerm();
+      const accounts = allResidents.filter((r) => !currentTerm || r.period === currentTerm);
 
       const totalResidents = accounts.length;
       if (totalResidents === 0) {

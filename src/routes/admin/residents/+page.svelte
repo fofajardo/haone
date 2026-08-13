@@ -72,7 +72,8 @@
     error = null;
     selectedIndices = new Set();
     try {
-      residents = await fetchResidents(forceRefresh, uiSettings.currentTerm);
+      const currentTerm = await uiSettings.ensureCurrentTerm();
+      residents = await fetchResidents(forceRefresh, currentTerm);
     } catch (e: any) {
       error = e.message;
     } finally {

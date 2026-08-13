@@ -66,6 +66,7 @@
     error = null;
 
     try {
+      await uiSettings.ensureCurrentTerm();
       const data = await fetchFinancialReportData(uiSettings.accountingWorkbookId);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
