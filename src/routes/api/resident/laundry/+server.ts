@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { LAUNDRY_COL, ACCOUNT_COL, USER_COL } from "$lib/types";
+import { LAUNDRY_COL, ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/types";
 import {
   authenticateResident,
   getSheetsClient,
@@ -198,15 +198,20 @@ export const POST: RequestHandler = async ({ request }) => {
 /**
  * DELETE: Cancel a reservation
  */
-export const DELETE: RequestHandler = async ({ url, request }) => {
+export const DELETE: RequestHandler = async ({ request }) => {
   const { residentId, error } = await authenticateResident(request);
   if (error) {
     return error;
   }
 
-  const id = url.searchParams.get("id");
+  const { id, reason } = await request.json();
+
   if (!id) {
     return json({ error: "Reservation ID is required" }, { status: 400 });
+  }
+
+  if (!reason || reason.trim() === "") {
+    return json({ error: "Cancellation reason is required" }, { status: 400 });
   }
 
   try {
@@ -238,7 +243,7 @@ export const DELETE: RequestHandler = async ({ url, request }) => {
       },
       body: JSON.stringify({
         values: [
-          ["CANCELLED_BY_USER", "Cancelled by resident", resRows[rowIndex + 1][7] || "", nowStr]
+          [LaundryStatus.CANCELLED_BY_USER, reason, resRows[rowIndex + 1][7] || "", nowStr]
         ]
       })
     });
