@@ -17,7 +17,6 @@
   let isSigningIn = $state(false);
   let isLoadingAuth = $state(true);
   let rememberMe = $state(true);
-  let currentAuthType = $state<"admin" | "resident">("resident");
 
   let alertState = $state({ open: false, title: "", description: "" });
 
@@ -144,7 +143,6 @@
 
   async function handleLogin(type: "admin" | "resident" = "resident") {
     isSigningIn = true;
-    currentAuthType = type;
     const clientId = type === "admin" ? PUBLIC_GI_CLIENT_ID : PUBLIC_RESIDENT_GI_CLIENT_ID;
 
     const adminScopes = [
@@ -181,9 +179,7 @@
   }
 </script>
 
-<div
-  class="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background p-6 md:p-12"
->
+<div class="flex flex-col items-center justify-center">
   <div class="relative z-10 w-full max-w-sm space-y-6">
     <div class="flex flex-col items-center space-y-8 text-center">
       <img
@@ -201,7 +197,7 @@
     <div class="animate-in space-y-3 pt-6 duration-1000 fade-in slide-in-from-bottom-4">
       {#if isSigningIn || isLoadingAuth}
         <div
-          class="flex h-[116px] animate-in items-center justify-center space-x-3 duration-500 zoom-in-95 fade-in"
+          class="flex h-30 animate-in items-center justify-center space-x-3 duration-500 zoom-in-95 fade-in"
         >
           <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
         </div>
@@ -221,21 +217,6 @@
           Sign In as House Council Officer
         </Button>
       {/if}
-    </div>
-  </div>
-
-  <div
-    class="absolute right-0 bottom-12 left-0 flex animate-in flex-col items-center gap-4 text-center duration-1000 fade-in slide-in-from-bottom-2"
-  >
-    <div class="h-px w-8 bg-border"></div>
-    <div class="flex cursor-default items-center gap-2">
-      <span class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-        >Powered by</span
-      >
-      <div class="flex items-center gap-1.5">
-        <img src="/ha1.svg" alt="HAOne" class="h-4 w-4" />
-        <span class="text-xs font-black tracking-tighter text-foreground">HAOne</span>
-      </div>
     </div>
   </div>
 </div>
