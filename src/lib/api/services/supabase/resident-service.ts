@@ -97,7 +97,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     const [accData, usersData, journalList, consts] = await Promise.all([
       fetchAllSupabaseRows(() => {
         let query = sb.from("accounts").select("*");
-        if (term) {
+        if (term && !auth.isResident) {
           query = query.eq("period", term);
         }
         return query.order("created_at", { ascending: true }).order("id", { ascending: true });
@@ -115,6 +115,21 @@ export const supabaseResidentService: ResidentServiceInterface = {
       supabaseConstantsService.fetchConstants()
     ]);
 
+    let currentUserId: string | null = null;
+    if (auth.isResident && auth.user?.email) {
+      const emailLower = auth.user.email.toLowerCase().trim();
+      const currentUser = usersData.find(
+        (u: any) => (u.email || "").toLowerCase().trim() === emailLower
+      );
+      if (currentUser) {
+        currentUserId = currentUser.id;
+      }
+    }
+
+    const targetAccounts = currentUserId
+      ? accData.filter((a: any) => a.resident_id === currentUserId)
+      : accData;
+
     const userMap = new Map<string, any>();
     usersData.forEach((u: any) => {
       userMap.set(u.id, u);
@@ -125,7 +140,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     const isWaivedEntry = (t: string) =>
       t === pmtWaived || (t && t.toUpperCase().includes("WAIVED"));
 
-    const result = accData
+    const result = targetAccounts
       .map((row: any) => {
         const u = userMap.get(row.resident_id) || {};
         const period = row.period || "";
@@ -138,9 +153,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
             return false;
           }
           const acc = (j.account_email || "").toLowerCase().trim();
-          // Sheets also matches on the journal row's own STNO column; Supabase
-          // journal has no STNO column (names come from users_view), so that
-          // fourth condition cannot be replicated here.
           return (email && acc === email) || (resId && acc === resId) || (stno && acc === stno);
         });
 
@@ -207,6 +219,10 @@ export const supabaseResidentService: ResidentServiceInterface = {
         };
       })
       .filter((r: any) => r.residentId && r.residentId !== "") as ResidentRecord[];
+
+    if (auth.isResident) {
+      result.sort((a, b) => b.period.localeCompare(a.period));
+    }
 
     return result;
   },
@@ -559,7 +575,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     const activeTerm = constData?.value || "";
 
     const { data: userRows, error: userErr } = await supabase
-      .from("users")
+      .from("users_view")
       .select("id")
       .ilike("email", targetEmail);
     if (userErr) {
