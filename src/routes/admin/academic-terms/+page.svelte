@@ -126,9 +126,9 @@
     }
   }
 
-  function openFees(sem: { value: string; label: string }) {
-    editingFeesFor = sem;
-    const p = sem.value;
+  function openFees(term: { value: string; label: string }) {
+    editingFeesFor = term;
+    const p = term.value;
 
     const getVal = (suffix: string) => {
       const key = `FEES_${p}_${suffix}`;
@@ -412,7 +412,7 @@
 >
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Change Active Semester?</AlertDialog.Title>
+      <AlertDialog.Title>Change Active Term?</AlertDialog.Title>
       <AlertDialog.Description>
         This will set <strong>{translatePeriod(confirmActiveCode)}</strong> as the primary academic term
         hall-wide. This affects balance calculations and default filters.

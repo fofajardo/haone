@@ -166,7 +166,7 @@
 
       stats.pendingSettlements = pending.length;
 
-      // Total Collected in Semester
+      // Total Collected in Term
       stats.totalCollected = accounts.reduce((sum, r) => sum + r.paid, 0);
 
       // Recent Transactions (last 5)

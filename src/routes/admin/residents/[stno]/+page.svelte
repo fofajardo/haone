@@ -106,8 +106,8 @@
       const matchedResident = allRowsForStno.find((r) => !localTerm || r.period === localTerm);
 
       if (!matchedResident) {
-        error = `This person is not a resident for the selected semester (${currTerm || "All Term"}).`;
-        showAlert("Semester Error", error, "error");
+        error = `This person is not a resident for the selected term (${currTerm || "All Term"}).`;
+        showAlert("Term Error", error, "error");
         return;
       }
 

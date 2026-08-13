@@ -147,16 +147,16 @@
   $effect(() => {
     if (isEos && formData.mop) {
       fetchJournalEntries().then((entries) => {
-        const currentSem = formData.period || uiSettings.currentTerm;
+        const currentTerm = formData.period || uiSettings.currentTerm;
         const journal = Array.isArray(entries) ? entries : entries.items;
 
         // 1. Filter out j.type === "EOS" to match financial report page filtering
-        const semJournal = journal.filter((j) => {
-          return j.period === currentSem && j.type !== "EOS" && j.type !== "EOS_UNSETTLED";
+        const termJournal = journal.filter((j) => {
+          return j.period === currentTerm && j.type !== "EOS" && j.type !== "EOS_UNSETTLED";
         });
 
         // 2. Data Processing (exact map from financial-report-pdf.ts)
-        const processedJournal = semJournal.map((j) => {
+        const processedJournal = termJournal.map((j) => {
           const isWaived = j.type.toUpperCase().includes("WAIVED");
           const amount = j.water + j.assoc + j.misc;
           const incoming = !isWaived && amount > 0 ? amount : 0;
