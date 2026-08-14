@@ -31,14 +31,19 @@
   } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/achievements/AchievementCard.svelte";
 
+  import * as Tabs from "$ui/tabs";
+
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
   let residents = $state<any[]>([]);
   let currentTerm = $state("");
   let currentUserId = $state("");
   let totalUsersCount = $state(0);
+  let scope = $state("term");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
+
+  let isGlobal = $derived(scope === "global");
 
   let isCreatorOpen = $state(false);
   let isAwarderOpen = $state(false);
@@ -60,7 +65,14 @@
 
   let filteredAchievements = $derived(
     achievements.filter((a) => {
-      return !a.term || a.term === uiSettings.currentTerm;
+      if (isGlobal) {
+        return true;
+      }
+      const isIndefinite = !a.term;
+      if (isIndefinite) {
+        return uiSettings.showGlobalAchievements;
+      }
+      return a.term === uiSettings.currentTerm;
     })
   );
 
@@ -176,7 +188,13 @@
 <div class="space-y-6">
   <SubpageHeader title="Achievements" isTopLevel={true}>
     {#snippet actions()}
-      <div class="flex gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <Tabs.Root bind:value={scope}>
+          <Tabs.List>
+            <Tabs.Trigger value="term">Term</Tabs.Trigger>
+            <Tabs.Trigger value="global">Global</Tabs.Trigger>
+          </Tabs.List>
+        </Tabs.Root>
         <Button
           variant="outline"
           size="sm"
@@ -199,47 +217,57 @@
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
-    <div class="mb-4 grid gap-2 lg:grid-cols-12">
-      <div class="lg:col-span-3">
-        <TermFilter
-          onSelect={() => {
-            loadData();
-          }}
-        />
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-2.5">
-      {#each filteredAchievements as a}
-        <div>
-          <AchievementCard
-            achievement={a}
-            percentage={calculateAchievementPercentage(
-              logs.filter((l) => {
-                return l.achievementId === a.id;
-              }).length,
-              getEligibleCount(
-                a.term,
-                residents.filter((r) => {
-                  return r.period === a.term;
-                }).length,
-                totalUsersCount
-              )
-            )}
-            href="/admin/achievements/{a.id}"
+    {#if !isGlobal}
+      <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
+        <div class="w-full sm:w-64">
+          <TermFilter
+            onSelect={() => {
+              loadData();
+            }}
           />
         </div>
-      {:else}
-        <EmptyView
-          title="No achievements defined."
-          description="Achievements created by admins will appear here."
-          class="col-span-full"
-        >
-          {#snippet icon()}
-            <Trophy class="h-8 w-8 text-muted-foreground" />
-          {/snippet}
-        </EmptyView>
-      {/each}
+        <div class="flex items-center space-x-2 pb-1.5">
+          <Checkbox id="admin-show-global" bind:checked={uiSettings.showGlobalAchievements} />
+          <Label for="admin-show-global" class="cursor-pointer text-xs font-medium">
+            Show globally earned achievements
+          </Label>
+        </div>
+      </div>
+    {/if}
+
+    <div class="mx-auto max-w-5xl">
+      <div class="flex flex-col gap-2.5">
+        {#each filteredAchievements as a}
+          <div>
+            <AchievementCard
+              achievement={a}
+              percentage={calculateAchievementPercentage(
+                logs.filter((l) => {
+                  return l.achievementId === a.id;
+                }).length,
+                getEligibleCount(
+                  a.term,
+                  residents.filter((r) => {
+                    return r.period === a.term;
+                  }).length,
+                  totalUsersCount
+                )
+              )}
+              href="/admin/achievements/{a.id}"
+            />
+          </div>
+        {:else}
+          <EmptyView
+            title="No achievements defined."
+            description="Achievements created by admins will appear here."
+            class="col-span-full py-8"
+          >
+            {#snippet icon()}
+              <Trophy class="h-8 w-8 text-muted-foreground" />
+            {/snippet}
+          </EmptyView>
+        {/each}
+      </div>
     </div>
   {/if}
 </div>

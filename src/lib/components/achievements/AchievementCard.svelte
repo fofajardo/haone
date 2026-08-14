@@ -37,13 +37,16 @@
       const month = d.toLocaleDateString("en-US", { month: "short" });
       const year = d.getFullYear();
 
-      const hasTime = unlockedAt.includes("T") || unlockedAt.includes(":") || unlockedAt.includes(" ");
+      const hasTime =
+        unlockedAt.includes("T") || unlockedAt.includes(":") || unlockedAt.includes(" ");
       if (hasTime && (d.getHours() !== 0 || d.getMinutes() !== 0 || unlockedAt.includes(":"))) {
-        const time = d.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true
-        }).toLowerCase();
+        const time = d
+          .toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true
+          })
+          .toLowerCase();
         return `${day} ${month}, ${year} @ ${time}`;
       }
       return `${day} ${month}, ${year}`;
@@ -80,7 +83,9 @@
       </div>
 
       <div class="min-w-0 flex-1 space-y-0.5">
-        <span class="block truncate font-bold tracking-tight text-foreground group-hover:text-primary">
+        <span
+          class="block truncate font-bold tracking-tight text-foreground group-hover:text-primary"
+        >
           {achievement.name}
         </span>
         {#if achievement.description}
@@ -94,16 +99,18 @@
     <!-- Right: XP Badge & Unlock Date / Percentage Stats -->
     <div class="relative z-10 flex shrink-0 flex-col items-end gap-1 text-right">
       {#if achievement.points}
-        <span class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground bg-background/80 border border-border/50">
+        <span
+          class="inline-flex items-center gap-0.5 rounded border border-border/50 bg-background/80 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground"
+        >
           +{achievement.points} XP
         </span>
       {/if}
       {#if formattedUnlockedAt}
-        <span class="text-xs text-muted-foreground whitespace-nowrap">
+        <span class="text-xs whitespace-nowrap text-muted-foreground">
           Unlocked {formattedUnlockedAt}
         </span>
       {:else if percentage > 0}
-        <span class="text-xs text-muted-foreground whitespace-nowrap">
+        <span class="text-xs whitespace-nowrap text-muted-foreground">
           {percentage}% of residents
         </span>
       {/if}
@@ -121,15 +128,28 @@
       </div>
 
       <div class="min-w-0 flex-1 space-y-0.5">
-        <span class="truncate font-semibold tracking-tight text-muted-foreground">
-          {isConsolidated
-            ? `${lockedCount} Hidden Achievements`
-            : "Hidden Achievement"}
+        <span class="block truncate font-semibold tracking-tight text-muted-foreground">
+          {achievement.name ||
+            (isConsolidated ? `${lockedCount} Hidden Achievements` : "Hidden Achievement")}
         </span>
-        <p class="text-xs text-muted-foreground/80">
-          {isConsolidated ? "Keep participating in dormitory activities to reveal…" : "Complete dormitory activities to unlock…"}
+        <p class="line-clamp-2 text-xs text-muted-foreground/80">
+          {achievement.description ||
+            (isConsolidated
+              ? "Keep participating in dormitory activities to reveal…"
+              : "Complete dormitory activities to unlock…")}
         </p>
       </div>
     </div>
+
+    <!-- Right: XP Badge if present -->
+    {#if achievement.points}
+      <div class="shrink-0 text-right">
+        <span
+          class="inline-flex items-center gap-0.5 rounded border border-border/30 bg-background/40 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground/70"
+        >
+          +{achievement.points} XP
+        </span>
+      </div>
+    {/if}
   </div>
 {/if}

@@ -20,6 +20,7 @@ class UISettings {
   #residentNavIds = $state<string[]>(["home", "finance", "laundry"]);
   #adminNavIds = $state<string[]>(["dashboard", "history", "residents", "officers"]);
   #clockFormat = $state<"12h" | "24h">("12h");
+  #showGlobalAchievements = $state(true);
 
   #currentTerm = $state<string>("");
   #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");
@@ -31,6 +32,8 @@ class UISettings {
       this.#fontFamily = (localStorage.getItem(LS_KEYS.UI_FONT) as UIFont) || "default";
       this.#reducedMotion = localStorage.getItem(LS_KEYS.ACC_REDUCED_MOTION) === "true";
       this.#currentTerm = localStorage.getItem("halsk.ui.current_term") || "";
+      const sga = localStorage.getItem("halsk.ui.show_global_achievements");
+      this.#showGlobalAchievements = sga === null ? true : sga === "true";
       this.#displayDensity =
         (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
       this.#theme = localStorage.getItem("halsk.ui.theme") || "system";
@@ -108,6 +111,14 @@ class UISettings {
   set clockFormat(v: "12h" | "24h") {
     this.#clockFormat = v;
     if (browser) localStorage.setItem("halsk.ui.clock_format", v);
+  }
+
+  get showGlobalAchievements() {
+    return this.#showGlobalAchievements;
+  }
+  set showGlobalAchievements(v: boolean) {
+    this.#showGlobalAchievements = v;
+    if (browser) localStorage.setItem("halsk.ui.show_global_achievements", String(v));
   }
 
   get currentTerm() {
