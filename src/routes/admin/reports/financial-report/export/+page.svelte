@@ -67,7 +67,7 @@
 
     try {
       await uiSettings.ensureCurrentTerm();
-      const data = await fetchFinancialReportData(uiSettings.accountingWorkbookId);
+      const data = await fetchFinancialReportData();
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
       allAccountsForAutocomplete = data.allAccounts;

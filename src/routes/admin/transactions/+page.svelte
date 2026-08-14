@@ -48,7 +48,7 @@
 
     try {
       const [entries, types, mops, currentTerm] = await Promise.all([
-        fetchJournalEntries(undefined, undefined),
+        fetchJournalEntries(undefined, undefined, bypassCache),
         fetchTransactionTypes(bypassCache),
         fetchMopTypes(bypassCache),
         uiSettings.ensureCurrentTerm()

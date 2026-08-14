@@ -59,7 +59,7 @@
 
     try {
       const [entries, types, currentTerm] = await Promise.all([
-        fetchJournalEntries(undefined, undefined),
+        fetchJournalEntries(undefined, undefined, bypassCache),
         fetchTransactionTypes(bypassCache),
         uiSettings.ensureCurrentTerm()
       ]);

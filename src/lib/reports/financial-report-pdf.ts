@@ -45,9 +45,9 @@ export interface FinancialReportOptions {
   availableMops: { value: string; label: string }[];
 }
 
-export async function fetchFinancialReportData(workbookId: string, bypassCache = false) {
+export async function fetchFinancialReportData(bypassCache = false) {
   const [entries, mappedAccounts, types, mops] = await Promise.all([
-    fetchJournalEntries(undefined, undefined),
+    fetchJournalEntries(undefined, undefined, bypassCache),
     fetchResidents(bypassCache),
     fetchTransactionTypes(bypassCache),
     fetchMopTypes(bypassCache)

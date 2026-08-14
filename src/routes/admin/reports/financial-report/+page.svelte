@@ -127,12 +127,12 @@
     });
   });
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
 
     try {
-      const data = await fetchFinancialReportData(uiSettings.accountingWorkbookId);
+      const data = await fetchFinancialReportData(bypassCache);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
       transactionTypes = data.transactionTypes;
@@ -162,7 +162,7 @@
           variant="outline"
           size="sm"
           onclick={() => {
-            return loadData();
+            return loadData(true);
           }}
           {isLoading}
           icon={RefreshCcw}

@@ -80,11 +80,11 @@
     searchKey: "search"
   });
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      announcements = await fetchAdminAnnouncements(true);
+      announcements = await fetchAdminAnnouncements(bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -174,7 +174,7 @@
         <Button
           variant="outline"
           size="sm"
-          onclick={() => loadData()}
+          onclick={() => loadData(true)}
           {isLoading}
           icon={RefreshCcw}
         />
