@@ -242,9 +242,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        values: [
-          [LaundryStatus.CANCELLED_BY_USER, reason, resRows[rowIndex + 1][7] || "", nowStr]
-        ]
+        values: [[LaundryStatus.CANCELLED_BY_USER, reason, resRows[rowIndex + 1][7] || "", nowStr]]
       })
     });
 

@@ -262,11 +262,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     if (!uiSettings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(
-      uiSettings.sharedRecordsId,
-      "static_ip!A:G",
-      bypassCache
-    );
+    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "static_ip!A:G", bypassCache);
     return rows.slice(1).map((r) => ({
       id: (r[STATIC_IP_COL.ID] || "").trim(),
       recorderId: (r[STATIC_IP_COL.RECORDER_ID] || "").trim(),

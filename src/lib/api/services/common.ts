@@ -284,8 +284,6 @@ export async function fetchWithAuth(
   return resp;
 }
 
-
-
 /**
  * Enhanced fetch to return raw values as well, to help with row indexing.
  * Includes session-based caching.
@@ -309,8 +307,6 @@ export async function fetchSheetRowsRaw(
   sheetsCache[cacheKey] = values;
   return values;
 }
-
-
 
 /**
  * Updates a specific range (e.g., a cell or row) in the sheet.

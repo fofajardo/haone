@@ -40,9 +40,7 @@ export async function fetchAnnouncementBySlug(
   return record;
 }
 
-export async function fetchAdminAnnouncements(
-  bypassCache = false
-): Promise<AnnouncementRecord[]> {
+export async function fetchAdminAnnouncements(bypassCache = false): Promise<AnnouncementRecord[]> {
   const res = await announcementService.fetchAnnouncements(undefined, false, bypassCache);
   return Array.isArray(res) ? res : res.items;
 }

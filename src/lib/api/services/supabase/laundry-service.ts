@@ -226,7 +226,9 @@ export const supabaseLaundryService: LaundryServiceInterface = {
     const { data, error } = await supabase
       .from("laundry")
       .update({
-        status: auth.isResident ? LaundryStatus.CANCELLED_BY_USER : LaundryStatus.CANCELLED_BY_ADMIN,
+        status: auth.isResident
+          ? LaundryStatus.CANCELLED_BY_USER
+          : LaundryStatus.CANCELLED_BY_ADMIN,
         cancel_reason: reason,
         cancelled_at: now
       })

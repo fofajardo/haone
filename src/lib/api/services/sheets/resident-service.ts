@@ -213,7 +213,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
       firstName: data.firstName ?? currentRow[USER_COL.FIRST_NAME],
       lastName: data.lastName ?? currentRow[USER_COL.LAST_NAME],
       middleName: data.middleName ?? currentRow[USER_COL.MIDDLE_NAME],
-      suffix: data.suffix ?? currentRow[USER_COL.SUFFIX],
+      suffix: data.suffix ?? currentRow[USER_COL.SUFFIX]
     });
 
     newRow[USER_COL.DISPLAY_NAME] = computed.displayName;

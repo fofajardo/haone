@@ -45,10 +45,11 @@ export const supabaseAchievementService: AchievementServiceInterface = {
     if (isPaginated) {
       const start = (options!.page! - 1) * options!.pageSize!;
       const end = start + options!.pageSize! - 1;
-      const { data: d, error, count: c } = await supabase
-        .from("achievements")
-        .select("*", { count: "exact" })
-        .range(start, end);
+      const {
+        data: d,
+        error,
+        count: c
+      } = await supabase.from("achievements").select("*", { count: "exact" }).range(start, end);
       if (error) {
         handleSupabaseError(error);
       }

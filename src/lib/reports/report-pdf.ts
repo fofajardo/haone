@@ -128,7 +128,9 @@ export async function exportReportPDF(options: PDFReportOptions) {
       ? "OFFICER LIST"
       : "RESIDENT LIST";
 
-  const subtitleText = isAttendanceReport ? semester : `${categoryLabel.toUpperCase()} - ${semester}`;
+  const subtitleText = isAttendanceReport
+    ? semester
+    : `${categoryLabel.toUpperCase()} - ${semester}`;
 
   const docContent: Content[] = [
     {
@@ -212,63 +214,61 @@ export async function exportReportPDF(options: PDFReportOptions) {
     }
   });
 
-  docContent.push(
-    {
-      margin: [0, 30, 0, 0],
-      table: {
-        widths: [150, "*"],
-        body: [
-          [
-            {
-              text: "Report issued by:",
-              fontSize: 10
-            },
-            {
-              text: issuedBy ? `${issuedBy} ${issuedByEmail ? `<${issuedByEmail}>` : ""}` : "—",
-              fontSize: 10
-            }
-          ],
-          [
-            { text: "Assessed by:", fontSize: 10 },
-            {
-              text: assessedBy
-                ? `${assessedBy} ${assessedByEmail ? `<${assessedByEmail}>` : ""}`
-                : "—",
-              fontSize: 10
-            }
-          ],
-          [
-            { text: "Certified by:", fontSize: 10 },
-            {
-              text: certifiedBy
-                ? `${certifiedBy} ${certifiedByEmail ? `<${certifiedByEmail}>` : ""}`
-                : "—",
-              fontSize: 10
-            }
-          ],
-          [
-            { text: "Period Covered:", fontSize: 10 },
-            { text: periodCovered, fontSize: 10 }
-          ],
-          [
-            { text: "Date Generated:", fontSize: 10 },
-            {
-              text: `${new Date().toLocaleString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true
-              })} (HAOne v${__APP_VERSION__}-${__COMMIT_SHA__})`,
-              fontSize: 10
-            }
-          ]
+  docContent.push({
+    margin: [0, 30, 0, 0],
+    table: {
+      widths: [150, "*"],
+      body: [
+        [
+          {
+            text: "Report issued by:",
+            fontSize: 10
+          },
+          {
+            text: issuedBy ? `${issuedBy} ${issuedByEmail ? `<${issuedByEmail}>` : ""}` : "—",
+            fontSize: 10
+          }
+        ],
+        [
+          { text: "Assessed by:", fontSize: 10 },
+          {
+            text: assessedBy
+              ? `${assessedBy} ${assessedByEmail ? `<${assessedByEmail}>` : ""}`
+              : "—",
+            fontSize: 10
+          }
+        ],
+        [
+          { text: "Certified by:", fontSize: 10 },
+          {
+            text: certifiedBy
+              ? `${certifiedBy} ${certifiedByEmail ? `<${certifiedByEmail}>` : ""}`
+              : "—",
+            fontSize: 10
+          }
+        ],
+        [
+          { text: "Period Covered:", fontSize: 10 },
+          { text: periodCovered, fontSize: 10 }
+        ],
+        [
+          { text: "Date Generated:", fontSize: 10 },
+          {
+            text: `${new Date().toLocaleString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true
+            })} (HAOne v${__APP_VERSION__}-${__COMMIT_SHA__})`,
+            fontSize: 10
+          }
         ]
-      },
-      layout: "noBorders"
-    }
-  );
+      ]
+    },
+    layout: "noBorders"
+  });
 
   if (!isAttendanceReport) {
     docContent.push({
