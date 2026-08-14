@@ -9,7 +9,8 @@
     GraduationCap,
     AwardIcon,
     MapPin,
-    Bed as BedIcon
+    Bed as BedIcon,
+    Calendar
   } from "@lucide/svelte";
   import { translateCollege, translateProgram } from "$utils/translators";
   import type { ResidentRecord } from "$lib/types";
@@ -124,6 +125,15 @@
         >
         <p class="text-sm font-semibold">{account.bed}</p>
       </div>
+      {#if account.checkInDate}
+        <div class="space-y-1 sm:col-span-2">
+          <Label
+            class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
+            ><Calendar class="h-3 w-3" /> Check-in Date</Label
+          >
+          <p class="text-sm font-semibold">{account.checkInDate}</p>
+        </div>
+      {/if}
     </div>
   </Card.Content>
 </Card.Root>
