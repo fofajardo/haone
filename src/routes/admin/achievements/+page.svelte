@@ -70,7 +70,7 @@
       }
       const isIndefinite = !a.term;
       if (isIndefinite) {
-        return uiSettings.showGlobalAchievements;
+        return uiSettings.showAllTimeAchievements;
       }
       return a.term === uiSettings.currentTerm;
     })
@@ -227,9 +227,9 @@
           />
         </div>
         <div class="flex items-center space-x-2 pb-1.5">
-          <Checkbox id="admin-show-global" bind:checked={uiSettings.showGlobalAchievements} />
-          <Label for="admin-show-global" class="cursor-pointer text-xs font-medium">
-            Show globally earned achievements
+          <Checkbox id="admin-show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
+          <Label for="admin-show-all-time" class="cursor-pointer text-xs font-medium">
+            Show all-time achievements
           </Label>
         </div>
       </div>

@@ -79,7 +79,7 @@
       }
       const isIndefinite = !a.term;
       if (isIndefinite) {
-        return uiSettings.showGlobalAchievements;
+        return uiSettings.showAllTimeAchievements;
       }
       return a.term === selectedTerm;
     })
@@ -140,9 +140,9 @@
           <TermFilter bind:value={selectedTerm} />
         </div>
         <div class="flex items-center space-x-2 pb-1.5">
-          <Checkbox id="show-global" bind:checked={uiSettings.showGlobalAchievements} />
-          <Label for="show-global" class="cursor-pointer text-xs font-medium">
-            Show globally earned achievements
+          <Checkbox id="show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
+          <Label for="show-all-time" class="cursor-pointer text-xs font-medium">
+            Show all-time achievements
           </Label>
         </div>
       </div>
