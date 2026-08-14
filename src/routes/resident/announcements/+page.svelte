@@ -44,16 +44,14 @@
   {/snippet}
 </SubpageHeader>
 
-<div class="mx-auto max-w-2xl space-y-6">
-  {#if isLoading}
-    <div class="py-12">
-      <LoadingView />
-    </div>
-  {:else if error}
-    <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
-    </ErrorView>
-  {:else}
+{#if isLoading}
+  <LoadingView />
+{:else if error}
+  <ErrorView {error}>
+    <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
+  </ErrorView>
+{:else}
+  <div class="mx-auto max-w-2xl space-y-6">
     <div class="space-y-4">
       {#each announcements as a}
         <Card.Root
@@ -118,5 +116,5 @@
         </EmptyView>
       {/each}
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
