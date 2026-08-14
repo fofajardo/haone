@@ -25,7 +25,8 @@
     Trash2,
     ExternalLink,
     Copy,
-    BookUser
+    BookUser,
+    ClipboardCheck
   } from "@lucide/svelte";
   import {
     exportReportToSheet,
@@ -34,13 +35,20 @@
   } from "$api/controllers/reports-controller";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
   import { loadGapiScript } from "$api/services/gmail-service";
-  import { matchesStatusFilter, fetchResidents } from "$api/controllers/resident-controller";
-  import type { ResidentRecord, OfficerRecord } from "$lib/types";
+  import {
+    matchesStatusFilter,
+    fetchResidents,
+    fetchUsers
+  } from "$api/controllers/resident-controller";
+  import type { ResidentRecord, OfficerRecord, UserRecord } from "$lib/types";
   import { translatePeriod } from "$utils/translators";
   import { exportReportPDF } from "$reports/report-pdf";
   import * as AlertDialog from "$ui/alert-dialog";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { OfficerStatus } from "$lib/types";
+
+  import { Combobox } from "$ui/combobox";
+  import { getAllRooms, getUnits } from "$utils/rooms-utils";
 
   let isLoading = $state(true);
   let isProcessing = $state(false);
@@ -48,6 +56,7 @@
   let allAccounts = $state<ResidentRecord[]>([]);
   let residents = $state<ResidentRecord[]>([]);
   let officers = $state<OfficerRecord[]>([]);
+  let rawUsers = $state<UserRecord[]>([]);
 
   // Export Options
   let exportFormat = $state("pdf");
@@ -61,6 +70,8 @@
   let periodEnd = $state("");
   let isPublic = $state(true);
   let hideSignatoryEmails = $state(false);
+  let useLegalName = $state(true);
+  let selectedUnit = $state("all");
 
   // Sheets specific
   let sheetsTarget = $state("new"); // "new", "existing"
@@ -80,7 +91,8 @@
     { id: "partially_paid", label: "Partially Paid", icon: CircleAlert },
     { id: "no_payment", label: "No Payment", icon: Ban },
     { id: "cleared", label: "Cleared", icon: UserCheck },
-    { id: "officers", label: "Active Officers", icon: BookUser }
+    { id: "officers", label: "Active Officers", icon: BookUser },
+    { id: "attendance", label: "Attendance Report", icon: ClipboardCheck }
   ];
 
   // Auto-generate title based on scope
@@ -108,17 +120,153 @@
       .join(", ") || "None"
   );
 
+  const availableUnits = $derived.by(() => {
+    const unitsData = getUnits(brandingState.selectedKey);
+    if (unitsData && unitsData.length > 0) {
+      return unitsData.map((u) => u.name);
+    }
+    const units = new Set<string>();
+    residents.forEach((r) => {
+      if (!r.room) return;
+      const match = r.room.match(/^(\d+)/);
+      if (match) {
+        units.add(`Unit ${match[1].slice(0, 1)}00s`);
+      } else {
+        const parts = r.room.split(/[-_\s]/);
+        if (parts[0]) units.add(parts[0]);
+      }
+    });
+    return Array.from(units).sort();
+  });
+
+  const unitOptions = $derived([
+    { value: "all", label: "All Units" },
+    ...availableUnits.map((u) => ({ value: u, label: u }))
+  ]);
+
+  function getNameToUse(residentId: string, legalName: string): string {
+    if (useLegalName) {
+      return legalName;
+    }
+    const user = rawUsers.find((u) => u.id === residentId);
+    if (!user) {
+      return legalName;
+    }
+    return user.overrideName || legalName;
+  }
+
+  function matchesUnitFilter(room: string): boolean {
+    if (selectedUnit === "all" || !room) return true;
+    const unitsData = getUnits(brandingState.selectedKey);
+    const matchedUnitObj = unitsData.find((u) => u.name === selectedUnit);
+    if (matchedUnitObj) {
+      return room.toUpperCase().startsWith(matchedUnitObj.id.toUpperCase());
+    }
+    if (selectedUnit.startsWith("Unit ")) {
+      const unitNum = selectedUnit.replace("Unit ", "").replace("00s", "");
+      return room.startsWith(unitNum);
+    }
+    return room.startsWith(selectedUnit);
+  }
+
   const filteredResidents = $derived.by(() => {
+    const isAttendance =
+      selectedCategories.length === 1 && selectedCategories.includes("attendance");
+
+    if (isAttendance) {
+      // Build slot grid from all rooms in rooms.json + residents
+      const slotMap = new Map<
+        string,
+        ResidentRecord & { position?: string; isOfficer?: boolean }
+      >();
+
+      // 1. Populate standard room slots from rooms.json
+      const configRooms = getAllRooms(brandingState.selectedKey);
+      configRooms.forEach((r) => {
+        if (r.unavailable_reason) return;
+        if (!matchesUnitFilter(r.room_number)) return;
+        r.slots.forEach((bed) => {
+          const key = `${r.room_number.toUpperCase()}-${bed.toUpperCase()}`;
+          slotMap.set(key, {
+            email: "",
+            period: uiSettings.currentTerm,
+            room: r.room_number.toUpperCase(),
+            bed: bed.toUpperCase(),
+            name: "",
+            stno: "",
+            waterBase: 0,
+            waterPaid: 0,
+            waterWaived: 0,
+            waterBal: 0,
+            assocBase: 0,
+            assocPaid: 0,
+            assocWaived: 0,
+            assocBal: 0,
+            totalBase: 0,
+            paid: 0,
+            waived: 0,
+            bal: 0,
+            isFullyPaid: true,
+            notes: "",
+            college: "",
+            program: "",
+            ceIssued: "",
+            ceRefNo: "",
+            ceLink: "",
+            ceFullName: "",
+            id: "",
+            residentId: "",
+            ledgerId: "",
+            checkInDate: "",
+            type: "",
+            raw: [],
+            isOfficer: false
+          });
+        });
+      });
+
+      // 2. Overlay assigned residents
+      residents.forEach((r) => {
+        if (!r.room || !r.bed) return;
+        if (!matchesUnitFilter(r.room)) return;
+        const key = `${r.room.toUpperCase()}-${r.bed.toUpperCase()}`;
+        const nameToUse = getNameToUse(r.residentId, r.name);
+        slotMap.set(key, {
+          ...r,
+          room: r.room.toUpperCase(),
+          bed: r.bed.toUpperCase(),
+          name: nameToUse,
+          isOfficer: false
+        });
+      });
+
+      const list = Array.from(slotMap.values());
+      list.sort((a, b) => {
+        const roomCompare = a.room.localeCompare(b.room, undefined, {
+          numeric: true,
+          sensitivity: "base"
+        });
+        if (roomCompare !== 0) return roomCompare;
+        return a.bed.localeCompare(b.bed, undefined, { numeric: true, sensitivity: "base" });
+      });
+
+      return list;
+    }
+
     let result: (ResidentRecord & { position?: string; isOfficer?: boolean })[] = [];
 
-    if (selectedCategories.some((c) => c !== "officers")) {
+    if (selectedCategories.some((c) => c !== "officers" && c !== "attendance")) {
       result = residents
         .filter((r) => {
+          if (!matchesUnitFilter(r.room)) return false;
           return selectedCategories.some(
-            (cat) => cat !== "officers" && matchesStatusFilter(r, cat.toUpperCase())
+            (cat) =>
+              cat !== "officers" &&
+              cat !== "attendance" &&
+              matchesStatusFilter(r, cat.toUpperCase())
           );
         })
-        .map((r) => ({ ...r, isOfficer: false }));
+        .map((r) => ({ ...r, name: getNameToUse(r.residentId, r.name), isOfficer: false }));
     }
 
     if (selectedCategories.includes("officers")) {
@@ -127,47 +275,55 @@
         (o) => o.status === OfficerStatus.ACTIVE && o.term === currentTerm
       );
 
-      const officerEntries = activeOfficers.map((o) => {
-        const res = allAccounts.find(
-          (a) => (a.email || "").toLowerCase() === (o.email || "").toLowerCase()
-        );
-        return {
-          email: o.email,
-          period: o.term,
-          room: res?.room || "N/A",
-          bed: res?.bed || "N/A",
-          name: o.name,
-          stno: res?.stno || `OFF-${o.id}`,
-          waterBase: res?.waterBase || 0,
-          waterPaid: res?.waterPaid || 0,
-          waterWaived: res?.waterWaived || 0,
-          waterBal: res?.waterBal || 0,
-          assocBase: res?.assocBase || 0,
-          assocPaid: res?.assocPaid || 0,
-          assocWaived: res?.assocWaived || 0,
-          assocBal: res?.assocBal || 0,
-          totalBase: res?.totalBase || 0,
-          paid: res?.paid || 0,
-          waived: res?.waived || 0,
-          bal: res?.bal || 0,
-          isFullyPaid: res?.isFullyPaid || false,
-          notes: res?.notes || "",
-          college: res?.college || "",
-          program: res?.program || "",
-          ceIssued: res?.ceIssued || "",
-          ceRefNo: res?.ceRefNo || "",
-          ceLink: res?.ceLink || "",
-          ceFullName: res?.ceFullName || "",
-          id: res?.id || "",
-          residentId: res?.residentId || "",
-          ledgerId: res?.ledgerId || "",
-          checkInDate: res?.checkInDate || "",
-          type: res?.type || "",
-          raw: res?.raw || [],
-          position: o.position,
-          isOfficer: true
-        };
-      });
+      const officerEntries = activeOfficers
+        .filter((o) => {
+          const res = allAccounts.find(
+            (a) => (a.email || "").toLowerCase() === (o.email || "").toLowerCase()
+          );
+          return matchesUnitFilter(res?.room || "");
+        })
+        .map((o) => {
+          const res = allAccounts.find(
+            (a) => (a.email || "").toLowerCase() === (o.email || "").toLowerCase()
+          );
+          const nameToUse = getNameToUse(res?.residentId || "", o.name);
+          return {
+            email: o.email,
+            period: o.term,
+            room: res?.room || "N/A",
+            bed: res?.bed || "N/A",
+            name: nameToUse,
+            stno: res?.stno || `OFF-${o.id}`,
+            waterBase: res?.waterBase || 0,
+            waterPaid: res?.waterPaid || 0,
+            waterWaived: res?.waterWaived || 0,
+            waterBal: res?.waterBal || 0,
+            assocBase: res?.assocBase || 0,
+            assocPaid: res?.assocPaid || 0,
+            assocWaived: res?.assocWaived || 0,
+            assocBal: res?.assocBal || 0,
+            totalBase: res?.totalBase || 0,
+            paid: res?.paid || 0,
+            waived: res?.waived || 0,
+            bal: res?.bal || 0,
+            isFullyPaid: res?.isFullyPaid || false,
+            notes: res?.notes || "",
+            college: res?.college || "",
+            program: res?.program || "",
+            ceIssued: res?.ceIssued || "",
+            ceRefNo: res?.ceRefNo || "",
+            ceLink: res?.ceLink || "",
+            ceFullName: res?.ceFullName || "",
+            id: res?.id || "",
+            residentId: res?.residentId || "",
+            ledgerId: res?.ledgerId || "",
+            checkInDate: res?.checkInDate || "",
+            type: res?.type || "",
+            raw: res?.raw || [],
+            position: o.position,
+            isOfficer: true
+          };
+        });
       result = [...result, ...officerEntries];
     }
 
@@ -177,15 +333,17 @@
   async function loadData() {
     isLoading = true;
     try {
-      const [mapped, officerList, currentTerm] = await Promise.all([
+      const [mapped, officerList, usersList, currentTerm] = await Promise.all([
         fetchResidents(),
         fetchOfficers(),
+        fetchUsers(),
         uiSettings.ensureCurrentTerm()
       ]);
 
       allAccounts = mapped;
       residents = mapped.filter((r) => r.period === currentTerm);
       officers = officerList;
+      rawUsers = usersList;
 
       // Auto-Period
       const entries = await fetchJournalEntries({ term: currentTerm });
@@ -221,9 +379,13 @@
     const isPublicMode = isPublic;
     const isOfficerReport =
       selectedCategories.length === 1 && selectedCategories.includes("officers");
+    const isAttendanceReport =
+      selectedCategories.length === 1 && selectedCategories.includes("attendance");
 
     let headers = [];
-    if (isOfficerReport) {
+    if (isAttendanceReport) {
+      headers = ["Room", "Bed", "Resident Name", "Signature"];
+    } else if (isOfficerReport) {
       headers = ["Position", "Name", "Room"];
     } else {
       headers = isPublicMode
@@ -232,6 +394,7 @@
     }
 
     const rows = filteredResidents.map((r) => {
+      if (isAttendanceReport) return [r.room, r.bed, r.name, ""];
       if (isOfficerReport) return [r.position, r.name, r.room];
       if (isPublicMode) return [r.name, r.room, r.bed];
       return [r.name, r.email, r.room, r.bed, r.totalBase, r.paid, r.waived, r.bal];
@@ -316,6 +479,8 @@
 
       const isOfficerReport =
         selectedCategories.length === 1 && selectedCategories.includes("officers");
+      const isAttendanceReport =
+        selectedCategories.length === 1 && selectedCategories.includes("attendance");
 
       let targetId = "";
       if (sheetsTarget === "new") {
@@ -329,7 +494,9 @@
       }
 
       let headers = [];
-      if (isOfficerReport) {
+      if (isAttendanceReport) {
+        headers = ["ROOM", "BED", "RESIDENT NAME", "SIGNATURE"];
+      } else if (isOfficerReport) {
         headers = ["POSITION", "NAME", "ROOM"];
       } else {
         headers = isPublic
@@ -338,6 +505,7 @@
       }
 
       const rows = filteredResidents.map((r) => {
+        if (isAttendanceReport) return [r.room, r.bed, r.name, ""];
         if (isOfficerReport) return [r.position, r.name, r.room];
         if (isPublic) return [r.name, r.room, r.bed];
         return [r.name, r.email, r.room, r.bed, r.totalBase, r.paid, r.waived, r.bal];
@@ -370,6 +538,8 @@
     try {
       const isOfficerReport =
         selectedCategories.length === 1 && selectedCategories.includes("officers");
+      const isAttendanceReport =
+        selectedCategories.length === 1 && selectedCategories.includes("attendance");
 
       if (exportFormat === "pdf") {
         await exportReportPDF({
@@ -379,6 +549,7 @@
           brandingKey: brandingState.selectedKey,
           isPublic: isPublic,
           isOfficerReport,
+          isAttendanceReport,
           issuedBy,
           issuedByEmail: hideSignatoryEmails ? "" : issuedByEmail,
           assessedBy,
@@ -444,11 +615,13 @@
                       checked={selectedCategories.includes(cat.id)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          if (cat.id === "officers") {
-                            selectedCategories = ["officers"];
+                          if (cat.id === "officers" || cat.id === "attendance") {
+                            selectedCategories = [cat.id];
                           } else {
                             selectedCategories = [
-                              ...selectedCategories.filter((id) => id !== "officers"),
+                              ...selectedCategories.filter(
+                                (id) => id !== "officers" && id !== "attendance"
+                              ),
                               cat.id
                             ];
                           }
@@ -471,9 +644,23 @@
 
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="space-y-2">
+                <Label>Unit Filter</Label>
+                <Combobox
+                  bind:value={selectedUnit}
+                  options={unitOptions}
+                  placeholder="Select Unit..."
+                  searchPlaceholder="Search Unit..."
+                  class="w-full"
+                />
+              </div>
+
+              <div class="space-y-2">
                 <Label>Period Start</Label>
                 <Input type="date" bind:value={periodStart} />
               </div>
+            </div>
+
+            <div class="grid gap-6 sm:grid-cols-2">
               <div class="space-y-2">
                 <Label>Period End</Label>
                 <Input type="date" bind:value={periodEnd} />
@@ -489,6 +676,17 @@
                     <Label for="isPublicPage" class="cursor-pointer font-medium">Public View</Label>
                     <p class="text-xs text-muted-foreground">
                       Exclude financial amounts and resident emails from the report.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <Checkbox id="useLegalNamePage" bind:checked={useLegalName} />
+                  <div class="space-y-1">
+                    <Label for="useLegalNamePage" class="cursor-pointer font-medium"
+                      >Use Legal Name</Label
+                    >
+                    <p class="text-xs text-muted-foreground">
+                      Format names as LAST NAME, FIRST NAME SUFFIX (ignore preferred names).
                     </p>
                   </div>
                 </div>
