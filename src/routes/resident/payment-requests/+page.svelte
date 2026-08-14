@@ -45,9 +45,7 @@
     isLoading = true;
     error = null;
     try {
-      const [pmtResult] = await Promise.all([
-        fetchPaymentRequests(bypassCache),
-      ]);
+      const [pmtResult] = await Promise.all([fetchPaymentRequests(bypassCache)]);
 
       if (Array.isArray(pmtResult)) {
         payments = pmtResult;

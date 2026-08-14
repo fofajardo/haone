@@ -128,9 +128,10 @@ export async function exportReportPDF(options: PDFReportOptions) {
       ? "OFFICER LIST"
       : "RESIDENT LIST";
 
-  const subtitleText = isAttendanceReport || isOfficerReport
-    ? semester
-    : `${categoryLabel.toUpperCase()} - ${semester}`;
+  const subtitleText =
+    isAttendanceReport || isOfficerReport
+      ? semester
+      : `${categoryLabel.toUpperCase()} - ${semester}`;
 
   const docContent: Content[] = [
     {
