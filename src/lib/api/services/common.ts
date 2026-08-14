@@ -189,10 +189,13 @@ export function patchCacheRange(spreadsheetId: string, range: string, values: an
         continue;
       }
       if (relRow >= data.length) {
-        // The write landed on a row this cached range does not hold. Drop the
-        // cache entry so the next read refetches instead of fabricating rows.
-        invalidate = true;
-        break;
+        // If appending contiguous rows to an open-ended cached range, push new rows in place
+        if (cached.endRow === Number.MAX_SAFE_INTEGER && relRow === data.length) {
+          data.push([]);
+        } else {
+          invalidate = true;
+          break;
+        }
       }
       for (let c = 0; c < values[r].length; c++) {
         const relCol = patch.startCol + c - cached.startCol;
