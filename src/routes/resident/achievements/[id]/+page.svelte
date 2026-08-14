@@ -31,7 +31,7 @@
     isLoading = true;
     error = null;
     try {
-      const [achResult] = await Promise.all([fetchAchievements(true)]);
+      const [achResult] = await Promise.all([fetchAchievements()]);
 
       let allA: AchievementRecord[];
 

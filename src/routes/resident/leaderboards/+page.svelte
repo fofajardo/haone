@@ -25,14 +25,14 @@
 
   import { fetchResidentStatus } from "$api/controllers/resident-controller";
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
 
     try {
       const [achResult, statusJson] = await Promise.all([
-        fetchAchievements(true),
-        fetchResidentStatus()
+        fetchAchievements(bypassCache),
+        fetchResidentStatus(undefined, bypassCache)
       ]);
 
       achievements = Array.isArray(achResult) ? achResult : achResult.achievements;
@@ -65,7 +65,7 @@
           variant="outline"
           size="sm"
           onclick={() => {
-            loadData();
+            loadData(true);
           }}
           {isLoading}
           icon={RefreshCcw}

@@ -6,16 +6,20 @@ import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
 
 export const sheetsOfficerService: OfficerServiceInterface = {
-  async fetchOfficers(): Promise<OfficerRecord[]> {
+  async fetchOfficers(bypassCache = false): Promise<OfficerRecord[]> {
     if (auth.isResident) {
-      return fetchServer("/api/resident/officers");
+      return fetchServer("/api/resident/officers", {}, bypassCache);
     }
 
     const { uiSettings } = await import("$state/settings.svelte");
     if (!uiSettings.residentRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "directory!A:J");
+    const rows = await fetchSheetRowsRaw(
+      uiSettings.residentRecordsId,
+      "directory!A:J",
+      bypassCache
+    );
     return rows
       .slice(1)
       .filter((row) => (row[OFFICER_COL.EMAIL] || "").trim() !== "")

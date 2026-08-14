@@ -41,13 +41,12 @@
     { value: PaymentRequestStatus.CANCELLED, label: "Cancelled" }
   ];
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      const [pmtResult, allUsers] = await Promise.all([
-        fetchPaymentRequests(true),
-        fetchUsers(true)
+      const [pmtResult] = await Promise.all([
+        fetchPaymentRequests(bypassCache),
       ]);
 
       if (Array.isArray(pmtResult)) {
@@ -113,7 +112,7 @@
         <Button
           variant="outline"
           size="sm"
-          onclick={() => loadData()}
+          onclick={() => loadData(true)}
           {isLoading}
           icon={RefreshCcw}
         />

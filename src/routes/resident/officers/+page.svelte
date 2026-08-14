@@ -7,7 +7,7 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import * as Card from "$ui/card";
-  import { fetchServer } from "$utils/api-client";
+  import { fetchOfficers } from "$api/controllers/officer-controller";
   import { Badge } from "$ui/badge";
 
   import { pageState } from "$state/page-info.svelte";
@@ -16,11 +16,11 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      officers = await fetchServer("/api/resident/officers");
+      officers = await fetchOfficers(bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -36,7 +36,7 @@
 
 <SubpageHeader title="Officers" isTopLevel={true}>
   {#snippet actions()}
-    <Button variant="outline" size="sm" onclick={() => loadData()} {isLoading} icon={RefreshCcw} />
+    <Button variant="outline" size="sm" onclick={() => loadData(true)} {isLoading} icon={RefreshCcw} />
   {/snippet}
 </SubpageHeader>
 
