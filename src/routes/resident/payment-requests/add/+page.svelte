@@ -30,9 +30,11 @@
   import { Badge } from "$ui/badge";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
+  import ErrorView from "$components/ErrorView.svelte";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);
+  let error = $state<string | null>(null);
   let resident = $state<ResidentRecord | null>(null);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let fileInput: HTMLInputElement | undefined = $state();
@@ -85,14 +87,20 @@
   import { fetchResidentStatus } from "$api/controllers/resident-controller";
 
   async function loadData() {
-    if (!auth.user?.email) return;
+    if (!auth.user?.email) {
+      return;
+    }
     isLoading = true;
+    error = null;
     try {
       const statusData = await fetchResidentStatus();
       resident = statusData.account;
       mopTypes = statusData.mopTypes;
+      if (!resident) {
+        return;
+      }
     } catch (e: any) {
-      toast.error("Failed to load account data");
+      error = e.message || "Failed to load account data";
     } finally {
       isLoading = false;
     }
@@ -176,15 +184,8 @@
   <div class="mx-auto max-w-3xl space-y-6">
     {#if isLoading}
       <LoadingView />
-    {:else if !resident}
-      <Card.Root class="border-destructive/20 bg-destructive/5 text-destructive">
-        <Card.Content class="py-10 text-center">
-          <p class="font-bold">Account Record Not Found</p>
-          <p class="text-sm">
-            We couldn't locate your resident record. Please contact the administrator.
-          </p>
-        </Card.Content>
-      </Card.Root>
+    {:else if error}
+      <ErrorView error={error || "Account record not found."} />
     {:else}
       <Card.Root>
         <Card.Content class="space-y-8">
