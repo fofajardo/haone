@@ -41,7 +41,11 @@ export async function fetchServer<T = any>(
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.message || `Server error: ${response.statusText}`);
+    const errorMsg =
+      (typeof data?.error === "string" ? data.error : null) ||
+      (typeof data?.message === "string" ? data.message : null) ||
+      `Server error: ${response.statusText}`;
+    throw new Error(errorMsg);
   }
 
   if (!isLaundry && useCache) {
