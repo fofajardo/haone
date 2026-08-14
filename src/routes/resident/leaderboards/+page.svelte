@@ -17,7 +17,7 @@
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
   let currentTerm = $state("");
-  let scope = $state("term");
+  let scope = $state("global");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 

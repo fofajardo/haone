@@ -39,7 +39,7 @@
   let currentTerm = $state("");
   let currentUserId = $state("");
   let totalUsersCount = $state(0);
-  let scope = $state("term");
+  let scope = $state("global");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
