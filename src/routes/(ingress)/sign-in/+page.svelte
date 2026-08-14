@@ -1,6 +1,6 @@
 <script lang="ts">
   import { auth } from "$state/auth.svelte";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$utils/crypto";
   import { Button } from "$ui/button";
   import { LoaderIcon } from "@lucide/svelte";
@@ -136,8 +136,11 @@
 
   $effect(() => {
     if (auth.lastError) {
-      showError(auth.lastError.title, auth.lastError.description);
-      auth.lastError = null;
+      const err = auth.lastError;
+      untrack(() => {
+        showError(err.title, err.description);
+        auth.lastError = null;
+      });
     }
   });
 

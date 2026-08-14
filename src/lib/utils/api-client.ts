@@ -34,6 +34,10 @@ export async function fetchServer<T = any>(
   const response = await fetch(url, { ...options, headers });
 
   if (response.status === 401) {
+    auth.lastError = {
+      title: "Session Expired",
+      description: "Your session has expired. Please sign in again."
+    };
     auth.logout();
     throw new Error("Session expired. Please sign in again.");
   }
