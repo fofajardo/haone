@@ -152,8 +152,8 @@ export const supabaseResidentService: ResidentServiceInterface = {
           if (j.period !== period) {
             return false;
           }
-          const acc = (j.account_email || "").toLowerCase().trim();
-          return (email && acc === email) || (resId && acc === resId) || (stno && acc === stno);
+          const accId = (j.account_id || "").toLowerCase().trim();
+          return (resId && accId === resId) || (u.id && accId === u.id.toLowerCase());
         });
 
         const waterPaid = filtered
@@ -254,14 +254,16 @@ export const supabaseResidentService: ResidentServiceInterface = {
       userRow
         ? supabase.from("accounts").select("*").eq("resident_id", userRow.id)
         : Promise.resolve({ data: [], error: null }),
-      fetchAllSupabaseRows(() =>
-        sb
-          .from("journal")
-          .select("*")
-          .ilike("account_email", email)
-          .order("created_at", { ascending: true })
-          .order("id", { ascending: true })
-      ),
+      userRow?.id
+        ? fetchAllSupabaseRows(() =>
+            sb
+              .from("journal")
+              .select("*")
+              .eq("account_id", userRow.id)
+              .order("created_at", { ascending: true })
+              .order("id", { ascending: true })
+          )
+        : Promise.resolve([]),
       supabase
         .from("curr")
         .select("*")
@@ -297,7 +299,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
         period: j.period || "",
         mop: j.mop || "",
         notes: j.notes || "",
-        creator: j.creator_email || "",
+        creator: j.creator_id || j.creator_email || "",
         prRefNo: j.pr_ref_no || "",
         runningBalance: 0
       }));

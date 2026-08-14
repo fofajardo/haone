@@ -28,7 +28,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
     const [accRows, userRows, journalRows, constRows] = await Promise.all([
       fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L", bypassCache),
       fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P", bypassCache),
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:T", bypassCache),
+      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:V", bypassCache),
       fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", bypassCache)
     ]);
 
@@ -59,10 +59,12 @@ export const sheetsResidentService: ResidentServiceInterface = {
             return false;
           }
           const acc = (j.account || "").trim().toLowerCase();
+          const jAccId = (j.accountId || "").trim().toLowerCase();
           const jStNo = (j.stno || "").trim().toLowerCase();
           return (
-            (email && acc === email) ||
+            (resId && jAccId === resId.toLowerCase()) ||
             (resId && acc === resId.toLowerCase()) ||
+            (email && acc === email) ||
             (stno && acc === stno) ||
             (stno && jStNo === stno)
           );

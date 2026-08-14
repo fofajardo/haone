@@ -38,8 +38,6 @@ export async function approvePaymentRequest(
   paymentId: string,
   journalData: {
     date: string;
-    creator: string;
-    account: string;
     water: number;
     assoc: number;
     misc: number;
@@ -47,17 +45,17 @@ export async function approvePaymentRequest(
     period: string;
     type: string;
     notes: string;
+    notesPrivate?: string;
     mopRefNo: string;
-    creatorName: string;
-    name: string;
-    stno: string;
+    prDateIssued?: string;
+    prRefNo?: string;
     receiptUrl?: string;
+    creatorId?: string;
+    accountId?: string;
   }
 ) {
   await paymentRequestService.approvePaymentRequest(paymentId, {
     date: journalData.date,
-    creator: journalData.creator,
-    account: journalData.account,
     water: journalData.water,
     assoc: journalData.assoc,
     misc: journalData.misc,
@@ -65,11 +63,13 @@ export async function approvePaymentRequest(
     period: journalData.period,
     type: journalData.type,
     notes: journalData.notes,
+    notesPrivate: journalData.notesPrivate,
     mopRefNo: journalData.mopRefNo,
-    creatorName: journalData.creatorName,
-    name: journalData.name,
-    stno: journalData.stno,
-    receiptUrl: journalData.receiptUrl
+    prDateIssued: journalData.prDateIssued,
+    prRefNo: journalData.prRefNo,
+    receiptUrl: journalData.receiptUrl,
+    creatorId: journalData.creatorId,
+    accountId: journalData.accountId
   });
 }
 

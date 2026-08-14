@@ -20,7 +20,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
     const [constRows, userRows, jorRows, accRows, currRows] = await fetchSheetsData(client, [
       "constants!A:C",
       "users!A:P",
-      "journal_general!A:T",
+      "journal_general!A:V",
       "accounts!A:L",
       "CURR!A:O"
     ]);
@@ -28,6 +28,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
     // 2. Resolve active term and user row
     const activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
     const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
+    const userId = userRow ? (userRow[USER_COL.ID] || "").trim() : "";
 
     // 3. Fetch Transaction Types & MOPs
     const transactionTypes = constRows
@@ -52,9 +53,9 @@ export const GET: RequestHandler = async ({ url, request }) => {
         label: r[2] || r[1] || r[0]
       }));
 
-    // 4. Fetch Accounts for target term
+    // 4. Determine current resident account
     const targetTerm = url.searchParams.get("term") || activeTerm;
-    const residentAccount = accRows.find((r: any) => {
+    const residentAccount = accRows.slice(1).find((r: any) => {
       return (
         r[ACCOUNT_COL.PERIOD] === targetTerm &&
         userRow &&
@@ -73,12 +74,21 @@ export const GET: RequestHandler = async ({ url, request }) => {
     const isEvaluated = currEntry?.[CURR_COL.EVALUATED]?.toUpperCase() === "TRUE";
 
     // 6. Fetch Transactions
+    const matchesUser = (r: any) => {
+      const acc = (r[JOURNAL_COL.ACCOUNT] || "").trim().toLowerCase();
+      const accId = (r[JOURNAL_COL.ACCOUNT_ID] || "").trim().toLowerCase();
+      return (
+        (userId && accId === userId.toLowerCase()) ||
+        (userId && acc === userId.toLowerCase()) ||
+        (email && acc === email)
+      );
+    };
 
     const transactions = jorRows
       .slice(1)
       .filter(
         (r: any) =>
-          (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email &&
+          matchesUser(r) &&
           (!url.searchParams.get("term") || r[JOURNAL_COL.PERIOD] === url.searchParams.get("term"))
       )
       .map((r: any, idx: number) => ({
@@ -120,11 +130,13 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     const journalTerms = jorRows
       .slice(1)
-      .filter((r: any) => (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email)
+      .filter((r: any) => matchesUser(r))
       .map((r: any) => (r[JOURNAL_COL.PERIOD] || "").trim())
       .filter(Boolean);
 
-    const allTerms = Array.from(new Set([...constTerms, ...journalTerms, activeTerm])).filter(Boolean);
+    const allTerms = Array.from(new Set([...constTerms, ...journalTerms, activeTerm])).filter(
+      Boolean
+    );
 
     // Calculate financials
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
@@ -132,11 +144,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     const filteredJor = jorRows
       .slice(1)
-      .filter(
-        (r: any) =>
-          (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email &&
-          r[JOURNAL_COL.PERIOD] === targetTerm
-      );
+      .filter((r: any) => matchesUser(r) && r[JOURNAL_COL.PERIOD] === targetTerm);
 
     const waterPaid = filteredJor
       .filter((j: any) => j[JOURNAL_COL.TYPE] !== pmtWaived)

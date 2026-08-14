@@ -22,7 +22,7 @@ export const GET: RequestHandler = async ({ request }) => {
     const [accRows, userRows, journalRows, constRows] = await fetchSheetsData(client, [
       "accounts!A:I",
       "users!A:P",
-      "journal_general!A:T",
+      "journal_general!A:V",
       "constants!A:C"
     ]);
 
@@ -31,7 +31,7 @@ export const GET: RequestHandler = async ({ request }) => {
       return json({ accounts: [] });
     }
 
-    const userId = userRow[USER_COL.ID];
+    const userId = (userRow[USER_COL.ID] || "").trim();
 
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
     const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
@@ -47,7 +47,15 @@ export const GET: RequestHandler = async ({ request }) => {
     // Filter journal for this resident
     const journal: JournalEntry[] = journalRows
       .slice(1)
-      .filter((r: any) => (r[2] || "").toLowerCase() === email)
+      .filter((r: any) => {
+        const acc = (r[2] || "").trim().toLowerCase();
+        const accId = (r[21] || "").trim().toLowerCase();
+        return (
+          (userId && accId === userId.toLowerCase()) ||
+          (userId && acc === userId.toLowerCase()) ||
+          (email && acc === email)
+        );
+      })
       .map((r: any) => ({
         period: (r[7] || "").trim(),
         water: parseCSVAmount(r[3]),

@@ -24,6 +24,8 @@ function mapRow(row: string[], idx: number): JournalRecord {
   const water = parseCSVAmount(row[JOURNAL_COL.WATER]);
   const assoc = parseCSVAmount(row[JOURNAL_COL.ASSOC]);
   const misc = parseCSVAmount(row[JOURNAL_COL.MISC]);
+  const creatorId = (row[JOURNAL_COL.CREATOR_ID] || "").trim();
+  const accountId = (row[JOURNAL_COL.ACCOUNT_ID] || "").trim();
   return {
     date: (row[JOURNAL_COL.DATE] || "").trim(),
     creator: (row[JOURNAL_COL.CREATOR] || "").trim(),
@@ -46,6 +48,8 @@ function mapRow(row: string[], idx: number): JournalRecord {
     wasAudited: (row[JOURNAL_COL.WAS_AUDITED] || "").toUpperCase() === "TRUE",
     receiptUrl: (row[JOURNAL_COL.RECEIPT_URL] || "").trim(),
     id: (row[JOURNAL_COL.ID] || "").trim(),
+    creatorId,
+    accountId,
     ledgerIndex: idx,
     raw: row
   };
@@ -73,11 +77,50 @@ export const sheetsJournalService: JournalServiceInterface = {
 
     const { uiSettings } = await import("$state/settings.svelte");
     const spreadsheetId = uiSettings.accountingWorkbookId;
+    const residentRecordsId = uiSettings.residentRecordsId;
     if (!spreadsheetId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:T", shouldRefresh);
-    let items = rows.slice(1).map((row, idx) => mapRow(row, idx + 2));
+
+    const [rows, userRows] = await Promise.all([
+      fetchSheetRowsRaw(spreadsheetId, "journal_general!A:V", shouldRefresh),
+      residentRecordsId
+        ? fetchSheetRowsRaw(residentRecordsId, "users!A:P", shouldRefresh)
+        : Promise.resolve([])
+    ]);
+
+    const userMap = new Map<string, string[]>();
+    userRows.slice(1).forEach((row) => {
+      const id = (row[15] || "").trim(); // USER_COL.ID = 15
+      const email = (row[0] || "").trim().toLowerCase(); // USER_COL.EMAIL = 0
+      if (id) {
+        userMap.set(id, row);
+      }
+      if (email) {
+        userMap.set(email, row);
+      }
+    });
+
+    let items = rows.slice(1).map((row, idx) => {
+      const parsed = mapRow(row, idx + 2);
+      const creatorUser =
+        (parsed.creatorId ? userMap.get(parsed.creatorId) : undefined) ||
+        (parsed.creator ? userMap.get(parsed.creator.toLowerCase()) : undefined);
+      if (creatorUser) {
+        parsed.creatorName = (creatorUser[6] || "").trim(); // USER_COL.DISPLAY_NAME = 6
+      }
+
+      const accountUser =
+        (parsed.accountId ? userMap.get(parsed.accountId) : undefined) ||
+        (parsed.account ? userMap.get(parsed.account.toLowerCase()) : undefined);
+      if (accountUser) {
+        parsed.name = (accountUser[6] || "").trim(); // USER_COL.DISPLAY_NAME = 6
+        if (!parsed.stno) {
+          parsed.stno = (accountUser[8] || "").trim(); // USER_COL.STUDENT_NO = 8
+        }
+      }
+      return parsed;
+    });
 
     if (filters?.term) {
       items = items.filter((r) => r.period === filters.term);
@@ -89,7 +132,9 @@ export const sheetsJournalService: JournalServiceInterface = {
       items = items.filter((r) => r.mop === filters.mop);
     }
     if (filters?.accountId) {
-      items = items.filter((r) => r.account === filters.accountId);
+      items = items.filter(
+        (r) => r.accountId === filters.accountId || r.account === filters.accountId
+      );
     }
 
     return items;
@@ -101,10 +146,10 @@ export const sheetsJournalService: JournalServiceInterface = {
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    const row = new Array(20).fill("");
+    const row = new Array(22).fill("");
     row[JOURNAL_COL.DATE] = data.date || "";
-    row[JOURNAL_COL.CREATOR] = data.creator || "";
-    row[JOURNAL_COL.ACCOUNT] = data.account || "";
+    row[JOURNAL_COL.CREATOR] = "";
+    row[JOURNAL_COL.ACCOUNT] = "";
     row[JOURNAL_COL.WATER] = data.water ?? 0;
     row[JOURNAL_COL.ASSOC] = data.assoc ?? 0;
     row[JOURNAL_COL.MISC] = data.misc ?? 0;
@@ -116,13 +161,15 @@ export const sheetsJournalService: JournalServiceInterface = {
     row[JOURNAL_COL.MOP_REFNO] = data.mopRefNo || "";
     row[JOURNAL_COL.PR_DATE_ISSUED] = data.prDateIssued || "";
     row[JOURNAL_COL.PR_REFNO] = data.prRefNo || "";
-    row[JOURNAL_COL.CREATOR_NAME] = data.creatorName || "";
-    row[JOURNAL_COL.NAME] = data.name || "";
-    row[JOURNAL_COL.STNO] = data.stno || "";
+    row[JOURNAL_COL.CREATOR_NAME] = "";
+    row[JOURNAL_COL.NAME] = "";
+    row[JOURNAL_COL.STNO] = "";
     row[JOURNAL_COL.WAS_AUDITED] = "FALSE";
     row[JOURNAL_COL.RECEIPT_URL] = data.receiptUrl || "";
     row[JOURNAL_COL.ID] = data.id || crypto.randomUUID();
-    await appendSheetRow(spreadsheetId, "journal_general!A:T", [row]);
+    row[JOURNAL_COL.CREATOR_ID] = data.creatorId || "";
+    row[JOURNAL_COL.ACCOUNT_ID] = data.accountId || "";
+    await appendSheetRow(spreadsheetId, "journal_general!A:V", [row]);
   },
 
   async updateJournalEntry(id: string, data: Partial<JournalRecord>): Promise<void> {
@@ -131,22 +178,21 @@ export const sheetsJournalService: JournalServiceInterface = {
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:T");
+    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:V");
     const rowIndex = rows.findIndex((r) => (r[JOURNAL_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Journal entry not found");
     }
     const actualRow = rowIndex + 1;
     const newRow = [...rows[rowIndex]];
+    while (newRow.length < 22) {
+      newRow.push("");
+    }
     if (data.date !== undefined) {
       newRow[JOURNAL_COL.DATE] = data.date;
     }
-    if (data.creator !== undefined) {
-      newRow[JOURNAL_COL.CREATOR] = data.creator;
-    }
-    if (data.account !== undefined) {
-      newRow[JOURNAL_COL.ACCOUNT] = data.account;
-    }
+    newRow[JOURNAL_COL.CREATOR] = "";
+    newRow[JOURNAL_COL.ACCOUNT] = "";
     if (data.water !== undefined) {
       newRow[JOURNAL_COL.WATER] = String(data.water);
     }
@@ -180,22 +226,22 @@ export const sheetsJournalService: JournalServiceInterface = {
     if (data.prRefNo !== undefined) {
       newRow[JOURNAL_COL.PR_REFNO] = data.prRefNo;
     }
-    if (data.creatorName !== undefined) {
-      newRow[JOURNAL_COL.CREATOR_NAME] = data.creatorName;
-    }
-    if (data.name !== undefined) {
-      newRow[JOURNAL_COL.NAME] = data.name;
-    }
-    if (data.stno !== undefined) {
-      newRow[JOURNAL_COL.STNO] = data.stno;
-    }
+    newRow[JOURNAL_COL.CREATOR_NAME] = "";
+    newRow[JOURNAL_COL.NAME] = "";
+    newRow[JOURNAL_COL.STNO] = "";
     if (data.wasAudited !== undefined) {
       newRow[JOURNAL_COL.WAS_AUDITED] = data.wasAudited ? "TRUE" : "FALSE";
     }
     if (data.receiptUrl !== undefined) {
       newRow[JOURNAL_COL.RECEIPT_URL] = data.receiptUrl;
     }
-    await updateSheetValue(spreadsheetId, `journal_general!A${actualRow}:T${actualRow}`, [newRow]);
+    if (data.creatorId !== undefined) {
+      newRow[JOURNAL_COL.CREATOR_ID] = data.creatorId;
+    }
+    if (data.accountId !== undefined) {
+      newRow[JOURNAL_COL.ACCOUNT_ID] = data.accountId;
+    }
+    await updateSheetValue(spreadsheetId, `journal_general!A${actualRow}:V${actualRow}`, [newRow]);
   },
 
   async deleteJournalEntry(id: string): Promise<void> {
@@ -204,7 +250,7 @@ export const sheetsJournalService: JournalServiceInterface = {
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:T");
+    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:V");
     const rowIndex = rows.findIndex((r) => (r[JOURNAL_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Journal entry not found");
@@ -218,7 +264,7 @@ export const sheetsJournalService: JournalServiceInterface = {
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:T", true);
+    const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:V", true);
     const updates: { range: string; values: any[][] }[] = [];
     for (const id of ids) {
       const rowIndex = rows.findIndex((r) => (r[JOURNAL_COL.ID] || "").trim() === id);

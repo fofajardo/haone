@@ -4,7 +4,7 @@
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
   import { fetchJournalEntries, updateJournalEntry } from "$api/controllers/journal-controller";
-  import type { JournalRecord } from "$lib/types";
+  import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
   import TransactionForm from "$components/TransactionForm.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -50,8 +50,8 @@
     try {
       await updateJournalEntry(id, {
         date: row[0],
-        creator: row[1],
-        account: row[2],
+        creator: "",
+        account: "",
         water: parseFloat(row[3] || "0"),
         assoc: parseFloat(row[4] || "0"),
         misc: parseFloat(row[5] || "0"),
@@ -63,10 +63,12 @@
         mopRefNo: row[11],
         prDateIssued: row[12],
         prRefNo: row[13],
-        creatorName: row[14],
-        name: row[15],
-        stno: row[16],
-        receiptUrl: row[18]
+        creatorName: "",
+        name: "",
+        stno: "",
+        receiptUrl: row[18],
+        creatorId: row[20] || "",
+        accountId: row[21] || ""
       });
       goto(`/admin/transactions/${id}`);
     } finally {

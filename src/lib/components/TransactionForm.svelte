@@ -81,9 +81,11 @@
     creatorEmail: auth.user?.email || "",
     creatorName: auth.displayName || "",
     creatorStNo: "",
+    creatorId: "",
     accountEmail: "",
     accountName: "",
     accountStNo: "",
+    accountId: "",
     waterFee: "0",
     assocFee: "0",
     miscFee: "0",
@@ -370,9 +372,11 @@
           creatorEmail: initialData.creator,
           creatorName: initialData.creatorName,
           creatorStNo: "", // Resolving below
+          creatorId: initialData.creatorId || "",
           accountEmail: initialData.account,
           accountName: initialData.name,
           accountStNo: initialData.stno,
+          accountId: initialData.accountId || "",
           waterFee: initialData.water.toString(),
           assocFee: initialData.assoc.toString(),
           miscFee: initialData.misc.toString(),
@@ -394,6 +398,8 @@
         selectedResident =
           accounts.find(
             (a) =>
+              (initialData!.accountId &&
+                (a.residentId === initialData!.accountId || a.id === initialData!.accountId)) ||
               a.email.toLowerCase() === initialData!.account.toLowerCase() ||
               a.residentId === initialData!.account
           ) || null;
@@ -404,22 +410,32 @@
           if (initialData.water > limitW + 0.01 || initialData.assoc > limitA + 0.01) {
             allowOverpayment = true;
           }
+          if (!formData.accountId) {
+            formData.accountId = selectedResident.residentId || selectedResident.id;
+          }
         }
 
-        // Resolve creator student number
+        // Resolve creator student number and id
         const creatorAcc = accounts.find(
-          (a) => a.email.toLowerCase() === initialData!.creator.toLowerCase()
+          (a) =>
+            (initialData!.creatorId &&
+              (a.residentId === initialData!.creatorId || a.id === initialData!.creatorId)) ||
+            a.email.toLowerCase() === initialData!.creator.toLowerCase()
         );
         if (creatorAcc) {
           formData.creatorStNo = creatorAcc.stno;
+          if (!formData.creatorId) {
+            formData.creatorId = creatorAcc.residentId || creatorAcc.id;
+          }
         }
-        // Populate current user stNo and official name if matching
+        // Populate current user stNo, official name, and residentId if matching
         const userMail = auth.user?.email;
         if (userMail) {
           const myAcc = accounts.find((a) => a.email.toLowerCase() === userMail.toLowerCase());
           if (myAcc) {
             formData.creatorStNo = myAcc.stno;
             formData.creatorName = myAcc.name;
+            formData.creatorId = myAcc.residentId || myAcc.id;
             creatorSearch = myAcc.email;
           }
         }
@@ -429,11 +445,23 @@
         if (targetAccountParam) {
           const targetAcc = accounts.find(
             (a) =>
+              a.residentId.toLowerCase() === targetAccountParam.toLowerCase() ||
               a.stno.toLowerCase() === targetAccountParam.toLowerCase() ||
               a.email.toLowerCase() === targetAccountParam.toLowerCase()
           );
           if (targetAcc) {
             selectAccount(targetAcc);
+          }
+        }
+      } else {
+        const userMail = auth.user?.email;
+        if (userMail) {
+          const myAcc = accounts.find((a) => a.email.toLowerCase() === userMail.toLowerCase());
+          if (myAcc) {
+            formData.creatorStNo = myAcc.stno;
+            formData.creatorName = myAcc.name;
+            formData.creatorId = myAcc.residentId || myAcc.id;
+            creatorSearch = myAcc.email;
           }
         }
       }
@@ -451,6 +479,7 @@
     formData.creatorEmail = a.email;
     formData.creatorName = a.name;
     formData.creatorStNo = a.stno;
+    formData.creatorId = a.residentId || a.id;
     creatorSearch = a.name;
   }
 
@@ -458,6 +487,7 @@
     formData.accountEmail = a.email;
     formData.accountName = a.name;
     formData.accountStNo = a.stno;
+    formData.accountId = a.residentId || a.id;
     accountSearch = a.name;
     selectedResident = a;
   }
@@ -513,10 +543,10 @@
     try {
       if (formData.type === "PMT_FUND_TRANSFER") {
         // From Row: Negative amount, MOP From
-        const fromRow = new Array(20).fill("");
+        const fromRow = new Array(22).fill("");
         fromRow[JOR.DATE] = formData.date;
-        fromRow[JOR.CREATOR] = formData.creatorEmail;
-        fromRow[JOR.ACCOUNT] = formData.accountEmail;
+        fromRow[JOR.CREATOR] = "";
+        fromRow[JOR.ACCOUNT] = "";
         fromRow[JOR.WATER] = water !== 0 ? `-${Math.abs(water)}` : "0";
         fromRow[JOR.ASSOC] = assoc !== 0 ? `-${Math.abs(assoc)}` : "0";
         fromRow[JOR.MISC] = misc !== 0 ? `-${Math.abs(misc)}` : "0";
@@ -530,18 +560,20 @@
           : formData.mopRefNo;
         fromRow[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
         fromRow[JOR.PR_REFNO] = "N/A";
-        fromRow[JOR.CREATOR_NAME] = formData.creatorName;
-        fromRow[JOR.NAME] = formData.accountName;
-        fromRow[JOR.STNO] = formData.accountStNo;
+        fromRow[JOR.CREATOR_NAME] = "";
+        fromRow[JOR.NAME] = "";
+        fromRow[JOR.STNO] = "";
         fromRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
         fromRow[JOR.WAS_AUDITED] = mode === "edit" && initialData?.wasAudited ? "TRUE" : "FALSE";
         fromRow[JOR.ID] = mode === "edit" && initialData ? initialData.id : crypto.randomUUID();
+        fromRow[JOR.CREATOR_ID] = formData.creatorId || "";
+        fromRow[JOR.ACCOUNT_ID] = formData.accountId || "";
 
         // To Row: Positive amount, MOP To
-        const toRow = new Array(20).fill("");
+        const toRow = new Array(22).fill("");
         toRow[JOR.DATE] = formData.date;
-        toRow[JOR.CREATOR] = formData.creatorEmail;
-        toRow[JOR.ACCOUNT] = formData.accountEmail;
+        toRow[JOR.CREATOR] = "";
+        toRow[JOR.ACCOUNT] = "";
         toRow[JOR.WATER] = water !== 0 ? `${Math.abs(water)}` : "0";
         toRow[JOR.ASSOC] = assoc !== 0 ? `${Math.abs(assoc)}` : "0";
         toRow[JOR.MISC] = misc !== 0 ? `${Math.abs(misc)}` : "0";
@@ -555,21 +587,23 @@
           : formData.mopRefNo;
         toRow[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
         toRow[JOR.PR_REFNO] = "N/A";
-        toRow[JOR.CREATOR_NAME] = formData.creatorName;
-        toRow[JOR.NAME] = formData.accountName;
-        toRow[JOR.STNO] = formData.accountStNo;
+        toRow[JOR.CREATOR_NAME] = "";
+        toRow[JOR.NAME] = "";
+        toRow[JOR.STNO] = "";
         toRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
         toRow[JOR.WAS_AUDITED] = "FALSE";
         toRow[JOR.ID] = crypto.randomUUID();
+        toRow[JOR.CREATOR_ID] = formData.creatorId || "";
+        toRow[JOR.ACCOUNT_ID] = formData.accountId || "";
 
         await onSave([fromRow, toRow]);
         return;
       }
 
-      const row = new Array(20).fill("");
+      const row = new Array(22).fill("");
       row[JOR.DATE] = formData.date;
-      row[JOR.CREATOR] = formData.creatorEmail;
-      row[JOR.ACCOUNT] = formData.accountEmail;
+      row[JOR.CREATOR] = "";
+      row[JOR.ACCOUNT] = "";
       const negativeTypes = [
         "PMT_REFUND",
         "PMT_CN_REFUND",
@@ -636,9 +670,9 @@
       }
 
       row[JOR.PR_REFNO] = prRef || "";
-      row[JOR.CREATOR_NAME] = formData.creatorName;
-      row[JOR.NAME] = formData.accountName;
-      row[JOR.STNO] = formData.accountStNo;
+      row[JOR.CREATOR_NAME] = "";
+      row[JOR.NAME] = "";
+      row[JOR.STNO] = "";
       row[JOR.RECEIPT_URL] = formData.receiptUrl || "";
 
       if (mode === "edit") {
@@ -648,12 +682,14 @@
         row[JOR.WAS_AUDITED] = "FALSE";
         row[JOR.ID] = crypto.randomUUID();
       }
+      row[JOR.CREATOR_ID] = formData.creatorId || "";
+      row[JOR.ACCOUNT_ID] = formData.accountId || "";
 
       if (mode === "add" && isEos && carryoverTerm) {
-        const carryoverRow = new Array(20).fill("");
+        const carryoverRow = new Array(22).fill("");
         carryoverRow[JOR.DATE] = formData.date;
-        carryoverRow[JOR.CREATOR] = formData.creatorEmail;
-        carryoverRow[JOR.ACCOUNT] = formData.accountEmail;
+        carryoverRow[JOR.CREATOR] = "";
+        carryoverRow[JOR.ACCOUNT] = "";
         carryoverRow[JOR.WATER] = water !== 0 ? (-water).toString() : "0";
         carryoverRow[JOR.ASSOC] = assoc !== 0 ? (-assoc).toString() : "0";
         carryoverRow[JOR.MISC] = misc !== 0 ? (-misc).toString() : "0";
@@ -669,12 +705,14 @@
         carryoverRow[JOR.MOP_REFNO] = row[JOR.MOP_REFNO];
         carryoverRow[JOR.PR_DATE_ISSUED] = "";
         carryoverRow[JOR.PR_REFNO] = "N/A";
-        carryoverRow[JOR.CREATOR_NAME] = formData.creatorName;
-        carryoverRow[JOR.NAME] = formData.accountName;
-        carryoverRow[JOR.STNO] = formData.accountStNo;
+        carryoverRow[JOR.CREATOR_NAME] = "";
+        carryoverRow[JOR.NAME] = "";
+        carryoverRow[JOR.STNO] = "";
         carryoverRow[JOR.RECEIPT_URL] = "";
         carryoverRow[JOR.WAS_AUDITED] = "FALSE";
         carryoverRow[JOR.ID] = crypto.randomUUID();
+        carryoverRow[JOR.CREATOR_ID] = formData.creatorId || "";
+        carryoverRow[JOR.ACCOUNT_ID] = formData.accountId || "";
 
         await onSave([row, carryoverRow]);
       } else {

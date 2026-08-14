@@ -108,10 +108,10 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
     }
 
     const actualRow = rowIndex + 1;
-    const jRow = new Array(20).fill("");
+    const jRow = new Array(22).fill("");
     jRow[JOURNAL_COL.DATE] = journalData.date || "";
-    jRow[JOURNAL_COL.CREATOR] = journalData.creator || "";
-    jRow[JOURNAL_COL.ACCOUNT] = journalData.account || "";
+    jRow[JOURNAL_COL.CREATOR] = "";
+    jRow[JOURNAL_COL.ACCOUNT] = "";
     jRow[JOURNAL_COL.WATER] = journalData.water || 0;
     jRow[JOURNAL_COL.ASSOC] = journalData.assoc || 0;
     jRow[JOURNAL_COL.MISC] = journalData.misc || 0;
@@ -123,16 +123,18 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
     jRow[JOURNAL_COL.MOP_REFNO] = journalData.mopRefNo || "";
     jRow[JOURNAL_COL.PR_DATE_ISSUED] = journalData.prDateIssued || "";
     jRow[JOURNAL_COL.PR_REFNO] = journalData.prRefNo || "";
-    jRow[JOURNAL_COL.CREATOR_NAME] = journalData.creatorName || "";
-    jRow[JOURNAL_COL.NAME] = journalData.name || "";
-    jRow[JOURNAL_COL.STNO] = journalData.stno || "";
+    jRow[JOURNAL_COL.CREATOR_NAME] = "";
+    jRow[JOURNAL_COL.NAME] = "";
+    jRow[JOURNAL_COL.STNO] = "";
     jRow[JOURNAL_COL.WAS_AUDITED] = "FALSE";
     jRow[JOURNAL_COL.RECEIPT_URL] = journalData.receiptUrl || "";
     jRow[JOURNAL_COL.ID] = crypto.randomUUID();
+    jRow[JOURNAL_COL.CREATOR_ID] = journalData.creatorId || "";
+    jRow[JOURNAL_COL.ACCOUNT_ID] = journalData.accountId || "";
 
     await Promise.all([
       updateSheetValue(srId, `payment_requests!J${actualRow}`, [[PaymentRequestStatus.APPROVED]]),
-      appendSheetRow(awId, "journal_general!A:T", [jRow])
+      appendSheetRow(awId, "journal_general!A:V", [jRow])
     ]);
   },
 

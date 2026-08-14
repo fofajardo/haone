@@ -162,8 +162,10 @@ export const supabasePaymentRequestService: PaymentRequestServiceInterface = {
     const { error: jError } = await supabase.from("journal").insert({
       id: crypto.randomUUID(),
       date: journalData.date,
-      creator_email: journalData.creator,
-      account_email: journalData.account,
+      creator_id:
+        journalData.creatorId && isUuid(journalData.creatorId) ? journalData.creatorId : null,
+      account_id:
+        journalData.accountId && isUuid(journalData.accountId) ? journalData.accountId : null,
       water: journalData.water ?? 0,
       assoc: journalData.assoc ?? 0,
       misc: journalData.misc ?? 0,

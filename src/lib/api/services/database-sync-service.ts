@@ -392,8 +392,8 @@ export async function syncJournal(direction: SyncDirection): Promise<SyncResult>
         const payload = items.map((item) => ({
           id: item.id,
           date: parseDbDate(item.date),
-          creator_email: item.creator,
-          account_email: item.account,
+          creator_id: item.creatorId && isUuid(item.creatorId) ? item.creatorId : null,
+          account_id: item.accountId && isUuid(item.accountId) ? item.accountId : null,
           water: item.water,
           assoc: item.assoc,
           misc: item.misc,
@@ -425,17 +425,17 @@ export async function syncJournal(direction: SyncDirection): Promise<SyncResult>
         if (!spreadsheetId) {
           throw new Error("Accounting workbook ID not configured");
         }
-        const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:T");
+        const rows = await fetchSheetRowsRaw(spreadsheetId, "journal_general!A:V");
 
         const updates: { range: string; values: any[][] }[] = [];
         const newRows: string[][] = [];
 
         for (const item of items) {
           const rowIndex = rows.findIndex((r) => r[JOURNAL_COL.ID] === item.id);
-          const row = new Array(20).fill("");
+          const row = new Array(22).fill("");
           row[JOURNAL_COL.DATE] = item.date || "";
-          row[JOURNAL_COL.CREATOR] = item.creator || "";
-          row[JOURNAL_COL.ACCOUNT] = item.account || "";
+          row[JOURNAL_COL.CREATOR] = "";
+          row[JOURNAL_COL.ACCOUNT] = "";
           row[JOURNAL_COL.WATER] = String(item.water || 0);
           row[JOURNAL_COL.ASSOC] = String(item.assoc || 0);
           row[JOURNAL_COL.MISC] = String(item.misc || 0);
@@ -447,16 +447,18 @@ export async function syncJournal(direction: SyncDirection): Promise<SyncResult>
           row[JOURNAL_COL.MOP_REFNO] = item.mopRefNo || "";
           row[JOURNAL_COL.PR_DATE_ISSUED] = item.prDateIssued || "";
           row[JOURNAL_COL.PR_REFNO] = item.prRefNo || "";
-          row[JOURNAL_COL.CREATOR_NAME] = item.creatorName || "";
-          row[JOURNAL_COL.NAME] = item.name || "";
-          row[JOURNAL_COL.STNO] = item.stno || "";
+          row[JOURNAL_COL.CREATOR_NAME] = "";
+          row[JOURNAL_COL.NAME] = "";
+          row[JOURNAL_COL.STNO] = "";
           row[JOURNAL_COL.WAS_AUDITED] = item.wasAudited ? "TRUE" : "FALSE";
           row[JOURNAL_COL.RECEIPT_URL] = item.receiptUrl || "";
           row[JOURNAL_COL.ID] = item.id;
+          row[JOURNAL_COL.CREATOR_ID] = item.creatorId || "";
+          row[JOURNAL_COL.ACCOUNT_ID] = item.accountId || "";
 
           if (rowIndex !== -1) {
             updates.push({
-              range: `journal_general!A${rowIndex + 1}:T${rowIndex + 1}`,
+              range: `journal_general!A${rowIndex + 1}:V${rowIndex + 1}`,
               values: [row]
             });
           } else {
@@ -468,7 +470,7 @@ export async function syncJournal(direction: SyncDirection): Promise<SyncResult>
           await batchUpdateValues(spreadsheetId, updates);
         }
         if (newRows.length > 0) {
-          await appendSheetRow(spreadsheetId, "journal_general!A:T", newRows);
+          await appendSheetRow(spreadsheetId, "journal_general!A:V", newRows);
         }
       }
     );

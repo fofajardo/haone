@@ -12,8 +12,8 @@
       const rows = Array.isArray(row[0]) ? (row as any[][]) : [row as any[]];
       const entries = rows.map((r) => ({
         date: r[0],
-        creator: r[1],
-        account: r[2],
+        creator: "",
+        account: "",
         water: parseFloat(r[3] || "0"),
         assoc: parseFloat(r[4] || "0"),
         misc: parseFloat(r[5] || "0"),
@@ -25,11 +25,13 @@
         mopRefNo: r[11],
         prDateIssued: r[12],
         prRefNo: r[13],
-        creatorName: r[14],
-        name: r[15],
-        stno: r[16],
+        creatorName: "",
+        name: "",
+        stno: "",
         receiptUrl: r[18],
-        id: r[19] || crypto.randomUUID()
+        id: r[19] || crypto.randomUUID(),
+        creatorId: r[20] || "",
+        accountId: r[21] || ""
       }));
       await addJournalEntries(entries);
       goto("/admin/transactions");

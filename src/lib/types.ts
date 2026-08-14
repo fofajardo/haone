@@ -96,7 +96,9 @@ export const JOURNAL_COL = {
   STNO: 16, // ST_NO
   WAS_AUDITED: 17,
   RECEIPT_URL: 18,
-  ID: 19
+  ID: 19,
+  CREATOR_ID: 20,
+  ACCOUNT_ID: 21
 } as const;
 
 export const ACCOUNT_COL = {
@@ -316,6 +318,8 @@ export interface JournalRecord {
   wasAudited: boolean;
   receiptUrl: string;
   id: string;
+  creatorId?: string;
+  accountId?: string;
   raw: string[];
   dateWeight?: number;
   ledgerIndex?: number;

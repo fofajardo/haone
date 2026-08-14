@@ -20,7 +20,7 @@
     approvePaymentRequest
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
-  import { PaymentRequestStatus } from "$lib/types";
+  import { PaymentRequestStatus, JOURNAL_COL as JOR } from "$lib/types";
   import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { formatAmount, formatDate } from "$utils/formatters";
@@ -63,6 +63,9 @@
       filtered.forEach((p) => {
         const resident = r.find((res) => res.residentId === p.residentId);
         const user = u.find((usr) => usr.id === p.residentId);
+        const currentUser = u.find(
+          (usr) => (usr.email || "").toLowerCase() === (auth.user?.email || "").toLowerCase()
+        );
         stagedForms[p.id] = {
           date: p.date,
           creator: auth.user?.email || "",
@@ -84,6 +87,8 @@
           wasAudited: false,
           receiptUrl: "",
           id: "",
+          creatorId: currentUser?.id || "",
+          accountId: p.residentId || user?.id || resident?.residentId || "",
           amount: p.waterFee + p.assocFee + p.misc,
           raw: []
         };
@@ -143,8 +148,6 @@
     try {
       await approvePaymentRequest(currentPayment.id, {
         date: row[0] || "",
-        creator: row[1] || "",
-        account: row[2] || "",
         water: parseFloat(row[3] || "0"),
         assoc: parseFloat(row[4] || "0"),
         misc: parseFloat(row[5] || "0"),
@@ -152,11 +155,13 @@
         period: row[7] || "",
         type: row[8] || "",
         notes: row[9] || "",
+        notesPrivate: row[10] || "",
         mopRefNo: row[11] || "",
-        creatorName: row[14] || "",
-        name: row[15] || "",
-        stno: row[16] || "",
-        receiptUrl: row[18] || ""
+        prDateIssued: row[12] || "",
+        prRefNo: row[13] || "",
+        receiptUrl: row[18] || "",
+        creatorId: row[20] || "",
+        accountId: row[21] || ""
       });
       await deleteUploadedImage(currentPayment.proofLink, auth.accessToken!);
 
@@ -184,6 +189,8 @@
     stagedForms[currentPayment.id] = {
       ...stagedForms[currentPayment.id],
       date: formData.date,
+      creatorId: formData.creatorId || stagedForms[currentPayment.id]?.creatorId,
+      accountId: formData.accountId || stagedForms[currentPayment.id]?.accountId,
       account: formData.accountEmail,
       water: parseFloat(formData.waterFee) || 0,
       assoc: parseFloat(formData.assocFee) || 0,

@@ -1,7 +1,6 @@
 import { json } from "@sveltejs/kit";
-import { JOURNAL_COL } from "$lib/types";
+import { JOURNAL_COL, USER_COL } from "$lib/types";
 import type { RequestHandler } from "./$types";
-
 import { getSheetsClient, fetchSheetsData } from "$lib/server/api-helper";
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -13,14 +12,23 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const token = await getSheetsClient();
-    const [jorRows] = await fetchSheetsData(token, ["journal_general!A:T"]);
+    const [jorRows, userRows] = await fetchSheetsData(token, ["journal_general!A:V", "users!A:P"]);
 
-    const row = jorRows
-      .slice(1)
-      .find(
-        (r: any) =>
-          r[JOURNAL_COL.PR_REFNO] === pr_refno && (r[JOURNAL_COL.STNO] || "").trim() === stno.trim()
-      );
+    const userMap = new Map<string, string>();
+    userRows.slice(1).forEach((u: any) => {
+      userMap.set((u[USER_COL.ID] || "").trim(), (u[USER_COL.STUDENT_NO] || "").trim());
+    });
+
+    const targetStno = stno.trim();
+
+    const row = jorRows.slice(1).find((r: any) => {
+      if (r[JOURNAL_COL.PR_REFNO] !== pr_refno) {
+        return false;
+      }
+      const accountId = (r[JOURNAL_COL.ACCOUNT_ID] || "").trim();
+      const resolvedStno = accountId ? userMap.get(accountId) : "";
+      return resolvedStno === targetStno;
+    });
 
     if (!row) {
       return json({ error: "Transaction not found or unauthorized" }, { status: 404 });

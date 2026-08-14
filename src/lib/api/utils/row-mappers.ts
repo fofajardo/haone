@@ -95,16 +95,47 @@ export function mapRowToResident(
   };
 }
 
-export function mapRowToJournal(row: string[], index?: number): JournalRecord {
+export function mapRowToJournal(
+  row: string[],
+  index?: number,
+  userMap?: Map<string, string[]>
+): JournalRecord {
   const water = parseCSVAmount(row[JOURNAL_COL.WATER]);
   const assoc = parseCSVAmount(row[JOURNAL_COL.ASSOC]);
   const misc = parseCSVAmount(row[JOURNAL_COL.MISC]);
+  const creatorId = (row[JOURNAL_COL.CREATOR_ID] || "").trim();
+  const accountId = (row[JOURNAL_COL.ACCOUNT_ID] || "").trim();
+  const creatorRaw = (row[JOURNAL_COL.CREATOR] || "").trim();
+  const accountRaw = (row[JOURNAL_COL.ACCOUNT] || "").trim();
+
+  let creatorName = (row[JOURNAL_COL.CREATOR_NAME] || "").trim();
+  let name = (row[JOURNAL_COL.NAME] || "").trim();
+  let stno = (row[JOURNAL_COL.STNO] || "").trim();
+
+  if (userMap) {
+    const creatorUser =
+      (creatorId ? userMap.get(creatorId) : undefined) ||
+      (creatorRaw ? userMap.get(creatorRaw.toLowerCase()) : undefined);
+    if (creatorUser) {
+      creatorName = (creatorUser[USER_COL.DISPLAY_NAME] || "").trim();
+    }
+
+    const accountUser =
+      (accountId ? userMap.get(accountId) : undefined) ||
+      (accountRaw ? userMap.get(accountRaw.toLowerCase()) : undefined);
+    if (accountUser) {
+      name = (accountUser[USER_COL.DISPLAY_NAME] || "").trim();
+      if (!stno) {
+        stno = (accountUser[USER_COL.STUDENT_NO] || "").trim();
+      }
+    }
+  }
 
   return {
     raw: row,
     date: (row[JOURNAL_COL.DATE] || "").trim(),
-    creator: (row[JOURNAL_COL.CREATOR] || "").trim(),
-    account: (row[JOURNAL_COL.ACCOUNT] || "").trim(),
+    creator: creatorRaw,
+    account: accountRaw,
     water,
     assoc,
     misc,
@@ -117,12 +148,14 @@ export function mapRowToJournal(row: string[], index?: number): JournalRecord {
     mopRefNo: (row[JOURNAL_COL.MOP_REFNO] || "").trim(),
     prDateIssued: (row[JOURNAL_COL.PR_DATE_ISSUED] || "").trim(),
     prRefNo: (row[JOURNAL_COL.PR_REFNO] || "").trim(),
-    creatorName: (row[JOURNAL_COL.CREATOR_NAME] || "").trim(),
-    name: (row[JOURNAL_COL.NAME] || "").trim(),
-    stno: (row[JOURNAL_COL.STNO] || "").trim(),
+    creatorName,
+    name,
+    stno,
     wasAudited: (row[JOURNAL_COL.WAS_AUDITED] || "").toUpperCase() === "TRUE",
     receiptUrl: (row[JOURNAL_COL.RECEIPT_URL] || "").trim(),
     id: (row[JOURNAL_COL.ID] || "").trim(),
+    creatorId,
+    accountId,
     ledgerIndex: index
   };
 }

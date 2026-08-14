@@ -24,7 +24,7 @@ function applyFilters(query: any, filters?: JournalFilters) {
     query = query.eq("mop", filters.mop);
   }
   if (filters?.accountId) {
-    query = query.eq("account_email", filters.accountId);
+    query = query.or(`account_id.eq.${filters.accountId},creator_id.eq.${filters.accountId}`);
   }
   return query;
 }
@@ -50,7 +50,7 @@ export const supabaseJournalService: JournalServiceInterface = {
         .order("created_at", { ascending: true })
         .order("id", { ascending: true });
       const start = (options!.page! - 1) * options!.pageSize!;
-      const end = start + options!.pageSize! - 1;
+      const end = start + options!.pageSize!;
       const { data: rows, count: total, error } = await query.range(start, end);
       if (error) {
         handleSupabaseError(error);
@@ -74,22 +74,25 @@ export const supabaseJournalService: JournalServiceInterface = {
 
     const userMap = new Map<string, any>();
     (usersRes.data || []).forEach((u: any) => {
+      if (u.id) {
+        userMap.set(u.id.toLowerCase().trim(), u);
+      }
       if (u.email) {
         userMap.set(u.email.toLowerCase().trim(), u);
       }
     });
 
     const items: JournalRecord[] = data.map((row: any) => {
-      const accountEmail = (row.account_email || "").toLowerCase().trim();
-      const creatorEmail = (row.creator_email || "").toLowerCase().trim();
-      const accountUser = userMap.get(accountEmail);
-      const creatorUser = userMap.get(creatorEmail);
+      const accountId = (row.account_id || "").toLowerCase().trim();
+      const creatorId = (row.creator_id || "").toLowerCase().trim();
+      const accountUser = userMap.get(accountId);
+      const creatorUser = userMap.get(creatorId);
 
       return {
         id: row.id,
         date: row.date,
-        creator: row.creator_email || "",
-        account: row.account_email || "",
+        creator: creatorUser?.email || "",
+        account: accountUser?.email || "",
         water: parseCSVAmount(row.water),
         assoc: parseCSVAmount(row.assoc),
         misc: parseCSVAmount(row.misc),
@@ -107,6 +110,8 @@ export const supabaseJournalService: JournalServiceInterface = {
         stno: accountUser?.student_no || "",
         wasAudited: row.was_audited || false,
         receiptUrl: row.receipt_url || "",
+        creatorId: row.creator_id || undefined,
+        accountId: row.account_id || undefined,
         raw: row
       };
     });
@@ -137,11 +142,43 @@ export const supabaseJournalService: JournalServiceInterface = {
       return;
     }
 
+    let creatorId = data.creatorId;
+    if (!creatorId && data.creator) {
+      if (isUuid(data.creator)) {
+        creatorId = data.creator;
+      } else {
+        const { data: u } = await supabase
+          .from("users_view")
+          .select("id")
+          .ilike("email", data.creator.trim())
+          .maybeSingle();
+        if (u?.id) {
+          creatorId = u.id;
+        }
+      }
+    }
+
+    let accountId = data.accountId;
+    if (!accountId && data.account) {
+      if (isUuid(data.account)) {
+        accountId = data.account;
+      } else {
+        const { data: u } = await supabase
+          .from("users_view")
+          .select("id")
+          .or(`email.ilike.${data.account.trim()},student_no.ilike.${data.account.trim()}`)
+          .maybeSingle();
+        if (u?.id) {
+          accountId = u.id;
+        }
+      }
+    }
+
     const { error } = await supabase.from("journal").insert({
       id: data.id || crypto.randomUUID(),
       date: parseDbDate(data.date) || getLocalDateString(),
-      creator_email: data.creator,
-      account_email: data.account,
+      creator_id: creatorId && isUuid(creatorId) ? creatorId : null,
+      account_id: accountId && isUuid(accountId) ? accountId : null,
       water: data.water ?? 0,
       assoc: data.assoc ?? 0,
       misc: data.misc ?? 0,
@@ -170,11 +207,41 @@ export const supabaseJournalService: JournalServiceInterface = {
     if (data.date !== undefined) {
       payload.date = parseDbDate(data.date);
     }
-    if (data.creator !== undefined) {
-      payload.creator_email = data.creator;
+    if (data.creatorId !== undefined || data.creator !== undefined) {
+      let cId = data.creatorId;
+      if (!cId && data.creator) {
+        if (isUuid(data.creator)) {
+          cId = data.creator;
+        } else {
+          const { data: u } = await supabase
+            .from("users_view")
+            .select("id")
+            .ilike("email", data.creator.trim())
+            .maybeSingle();
+          if (u?.id) {
+            cId = u.id;
+          }
+        }
+      }
+      payload.creator_id = cId && isUuid(cId) ? cId : null;
     }
-    if (data.account !== undefined) {
-      payload.account_email = data.account;
+    if (data.accountId !== undefined || data.account !== undefined) {
+      let aId = data.accountId;
+      if (!aId && data.account) {
+        if (isUuid(data.account)) {
+          aId = data.account;
+        } else {
+          const { data: u } = await supabase
+            .from("users_view")
+            .select("id")
+            .or(`email.ilike.${data.account.trim()},student_no.ilike.${data.account.trim()}`)
+            .maybeSingle();
+          if (u?.id) {
+            aId = u.id;
+          }
+        }
+      }
+      payload.account_id = aId && isUuid(aId) ? aId : null;
     }
     if (data.water !== undefined) {
       payload.water = data.water;
