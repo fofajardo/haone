@@ -128,7 +128,7 @@ export async function exportReportPDF(options: PDFReportOptions) {
       ? "OFFICER LIST"
       : "RESIDENT LIST";
 
-  const subtitleText = isAttendanceReport
+  const subtitleText = isAttendanceReport || isOfficerReport
     ? semester
     : `${categoryLabel.toUpperCase()} - ${semester}`;
 
