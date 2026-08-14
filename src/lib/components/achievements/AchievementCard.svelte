@@ -9,7 +9,9 @@
     href,
     showStatusBadge = false,
     lockedCount = 0,
-    unlockedAt
+    unlockedAt,
+    showProgressBar = true,
+    alwaysShowPercentage = false
   } = $props<{
     achievement: AchievementRecord;
     isEarned?: boolean;
@@ -18,6 +20,8 @@
     showStatusBadge?: boolean;
     lockedCount?: number;
     unlockedAt?: string;
+    showProgressBar?: boolean;
+    alwaysShowPercentage?: boolean;
   }>();
 
   // Only navigate when earned (or not using status badge i.e. admin)
@@ -54,6 +58,19 @@
       return unlockedAt;
     }
   });
+
+  const statusLabel = $derived.by(() => {
+    if (alwaysShowPercentage) {
+      return `${percentage}% of residents`;
+    }
+    if (formattedUnlockedAt) {
+      return `Unlocked ${formattedUnlockedAt}`;
+    }
+    if (percentage > 0) {
+      return `${percentage}% of residents`;
+    }
+    return "";
+  });
 </script>
 
 {#if isClickable}
@@ -62,7 +79,7 @@
     class="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-md border border-border/40 bg-muted/40 p-3 transition-colors hover:border-border hover:bg-muted/60"
   >
     <!-- Steam-style Progress Bar Fill Background -->
-    {#if percentage > 0}
+    {#if showProgressBar && percentage > 0}
       <div
         class="pointer-events-none absolute inset-y-0 left-0 bg-primary/10 transition-all duration-500 group-hover:bg-primary/15"
         style="width: {Math.min(100, Math.max(0, percentage))}%;"
@@ -105,13 +122,9 @@
           +{achievement.points} XP
         </span>
       {/if}
-      {#if formattedUnlockedAt}
+      {#if statusLabel}
         <span class="text-xs whitespace-nowrap text-muted-foreground">
-          Unlocked {formattedUnlockedAt}
-        </span>
-      {:else if percentage > 0}
-        <span class="text-xs whitespace-nowrap text-muted-foreground">
-          {percentage}% of residents
+          {statusLabel}
         </span>
       {/if}
     </div>

@@ -27,8 +27,10 @@
     currentResidentId?: string;
   }>();
 
+  let uniqueEarnersCount = $derived(new Set(earners.map((e: Earner) => e.residentId)).size);
+
   let percentage = $derived(
-    calculateAchievementPercentage(earners.length, achievement.totalEligibleCount || 0)
+    calculateAchievementPercentage(uniqueEarnersCount, achievement.totalEligibleCount || 0)
   );
 
   let publicEarners = $derived(

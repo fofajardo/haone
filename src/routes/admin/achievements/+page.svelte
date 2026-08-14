@@ -87,14 +87,26 @@
         fetchTermCurr(bypassCache),
         fetchUsers(bypassCache)
       ]);
-      achievements = a;
+      const accountsCountMap = new Map<string, number>();
+      r.forEach((res) => {
+        const term = (res.period || "").trim();
+        if (term) {
+          accountsCountMap.set(term, (accountsCountMap.get(term) || 0) + 1);
+        }
+      });
+
+      achievements = a.map((ach) => {
+        const eligible = ach.term ? accountsCountMap.get(ach.term) || 0 : allU.length;
+        return {
+          ...ach,
+          totalEligibleCount: eligible
+        };
+      });
       logs = l;
       currentTerm = t;
       totalUsersCount = allU.length;
+      residents = r;
       const currTerm = await uiSettings.ensureCurrentTerm();
-      residents = r.filter((res) => {
-        return res.period === currTerm;
-      });
       if (!newAchievement.term) {
         newAchievement.term = currTerm;
       }
@@ -179,9 +191,11 @@
     })
   );
   let residentOptions = $derived(
-    residents.map((r) => {
-      return { value: r.residentId, label: r.name };
-    })
+    residents
+      .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
+      .map((r) => {
+        return { value: r.residentId, label: r.name };
+      })
   );
 </script>
 
@@ -238,20 +252,16 @@
     <div class="mx-auto max-w-5xl">
       <div class="flex flex-col gap-2.5">
         {#each filteredAchievements as a}
+          {@const uniqueEarnersCount = new Set(
+            logs.filter((l) => l.achievementId === a.id).map((l) => l.accountId)
+          ).size}
           <div>
             <AchievementCard
               achievement={a}
+              alwaysShowPercentage={true}
               percentage={calculateAchievementPercentage(
-                logs.filter((l) => {
-                  return l.achievementId === a.id;
-                }).length,
-                getEligibleCount(
-                  a.term,
-                  residents.filter((r) => {
-                    return r.period === a.term;
-                  }).length,
-                  totalUsersCount
-                )
+                uniqueEarnersCount,
+                a.totalEligibleCount || 0
               )}
               href="/admin/achievements/{a.id}"
             />

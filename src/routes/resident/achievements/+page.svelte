@@ -158,15 +158,16 @@
               ((currentResidentId && l.accountId === currentResidentId) ||
                 (auth.user?.email && l.accountId === auth.user?.email))
           )}
+          {@const uniqueEarnersCount = new Set(
+            logs.filter((l) => l.achievementId === a.id).map((l) => l.accountId)
+          ).size}
           <div>
             <AchievementCard
               achievement={a}
               isEarned={true}
               unlockedAt={userLog?.date || ""}
               percentage={calculateAchievementPercentage(
-                logs.filter((l) => {
-                  return l.achievementId === a.id;
-                }).length,
+                uniqueEarnersCount,
                 a.totalEligibleCount || 0
               )}
               href="/resident/achievements/{a.id}"
