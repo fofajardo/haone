@@ -34,7 +34,7 @@
             return true;
           }
 
-          return !achievement.term || achievement.term === term;
+          return Boolean(achievement.term) && achievement.term === term;
         })
         .map((achievement) => {
           return achievement.id;
@@ -142,22 +142,22 @@
 </script>
 
 <div class="space-y-6">
-  <Card.Root class="relative overflow-hidden border-0 bg-brand/5">
-    <div class="absolute inset-x-8 top-5 flex justify-between text-2xl opacity-30">
-      <span>✦</span>
-      <span>✧</span>
-      <span>✦</span>
-      <span>✧</span>
-    </div>
-    <div
-      class="absolute top-12 -left-8 h-24 w-24 rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
-    ></div>
-    <div
-      class="absolute -right-8 bottom-12 h-24 w-24 -rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
-    ></div>
+  {#if podium.length > 0}
+    <Card.Root class="relative overflow-hidden border-0 bg-brand/5">
+      <div class="absolute inset-x-8 top-5 flex justify-between text-2xl opacity-30">
+        <span>✦</span>
+        <span>✧</span>
+        <span>✦</span>
+        <span>✧</span>
+      </div>
+      <div
+        class="absolute top-12 -left-8 h-24 w-24 rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
+      ></div>
+      <div
+        class="absolute -right-8 bottom-12 h-24 w-24 -rotate-12 rounded-md border-2 border-brand/30 bg-background/60 shadow-lg"
+      ></div>
 
-    <Card.Content class="relative p-6 sm:p-8">
-      {#if podium.length > 0}
+      <Card.Content class="relative p-6 sm:p-8">
         <div class="grid gap-3 md:grid-cols-3 md:items-end">
           {#each podium as row, index}
             <div class={`flex flex-col ${podiumOrder(index)}`}>
@@ -201,9 +201,9 @@
             </div>
           {/each}
         </div>
-      {/if}
-    </Card.Content>
-  </Card.Root>
+      </Card.Content>
+    </Card.Root>
+  {/if}
 
   <div class="mx-auto max-w-3xl space-y-2">
     {#each rest as row, index}

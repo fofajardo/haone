@@ -209,9 +209,9 @@
       </div>
     </div>
 
-    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div class="flex flex-col gap-2.5">
       {#each filteredAchievements as a}
-        <div class="h-full">
+        <div>
           <AchievementCard
             achievement={a}
             percentage={calculateAchievementPercentage(
@@ -226,9 +226,6 @@
                 totalUsersCount
               )
             )}
-            earnersCount={logs.filter((l) => {
-              return l.achievementId === a.id;
-            }).length}
             href="/admin/achievements/{a.id}"
           />
         </div>

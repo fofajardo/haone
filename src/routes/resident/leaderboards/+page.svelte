@@ -17,7 +17,7 @@
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
   let currentTerm = $state("");
-  let scope = $state("global");
+  let scope = $state("term");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
@@ -30,14 +30,15 @@
     error = null;
 
     try {
-      const [achResult, statusJson] = await Promise.all([
+      const [achResult, statusJson, activeTerm] = await Promise.all([
         fetchAchievements(bypassCache),
-        fetchResidentStatus(undefined, bypassCache)
+        fetchResidentStatus(undefined, bypassCache),
+        uiSettings.ensureCurrentTerm()
       ]);
 
       achievements = Array.isArray(achResult) ? achResult : achResult.achievements;
       logs = Array.isArray(achResult) ? achResult : achResult.logs;
-      currentTerm = statusJson.currentTerm;
+      currentTerm = statusJson.currentTerm || activeTerm;
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -49,6 +50,9 @@
     pageState.title = "Leaderboards";
     loadData();
   });
+  let selectedTerm = $state(uiSettings.currentTerm || "");
+
+  let effectiveTerm = $derived(selectedTerm || uiSettings.currentTerm || currentTerm);
 </script>
 
 <div class="space-y-6">
@@ -91,11 +95,7 @@
     <div class="grid gap-2 lg:grid-cols-12">
       {#if !isGlobal}
         <div class="lg:col-span-3">
-          <TermFilter
-            onSelect={() => {
-              loadData();
-            }}
-          />
+          <TermFilter bind:value={selectedTerm} />
         </div>
       {/if}
     </div>
@@ -103,7 +103,7 @@
     <AchievementLeaderboard
       {achievements}
       {logs}
-      term={uiSettings.currentTerm || currentTerm}
+      term={effectiveTerm}
       {isGlobal}
     />
   {/if}

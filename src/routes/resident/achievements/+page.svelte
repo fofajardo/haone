@@ -100,12 +100,14 @@
       >
     </ErrorView>
   {:else}
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="flex flex-col gap-2.5 mx-auto max-w-5xl">
       {#each earnedAchievements as a}
-        <div class="h-full">
+        {@const userLog = logs.find((l) => l.achievementId === a.id && ((currentResidentId && l.accountId === currentResidentId) || (auth.user?.email && l.accountId === auth.user?.email)))}
+        <div>
           <AchievementCard
             achievement={a}
             isEarned={true}
+            unlockedAt={userLog?.date || ""}
             percentage={calculateAchievementPercentage(
               logs.filter((l) => {
                 return l.achievementId === a.id;

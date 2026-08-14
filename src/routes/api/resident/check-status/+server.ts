@@ -108,18 +108,23 @@ export const GET: RequestHandler = async ({ url, request }) => {
       t.runningBalance = globalBalance;
     }
 
-    // 7. Get all available terms for this resident (from journal only)
-    const allTerms = [
-      ...new Set(
-        jorRows
-          .slice(1)
-          .filter((r: any) => (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email)
-          .map((r: any) => r[JOURNAL_COL.PERIOD])
-      )
-    ].filter(Boolean);
+    // 7. Get all available terms from constants and resident journal
+    const constTerms = constRows
+      .slice(1)
+      .filter((r: any) => {
+        const k = (r[0] || "").trim();
+        return k.startsWith("TERM_") && k !== "TERM_CURR" && k !== "TERM_RESERVED";
+      })
+      .map((r: any) => (r[1] || "").trim())
+      .filter(Boolean);
 
-    // Always ensure activeTerm is present in the list
-    if (activeTerm && !allTerms.includes(activeTerm)) allTerms.push(activeTerm);
+    const journalTerms = jorRows
+      .slice(1)
+      .filter((r: any) => (r[JOURNAL_COL.ACCOUNT] || "").toLowerCase() === email)
+      .map((r: any) => (r[JOURNAL_COL.PERIOD] || "").trim())
+      .filter(Boolean);
+
+    const allTerms = Array.from(new Set([...constTerms, ...journalTerms, activeTerm])).filter(Boolean);
 
     // Calculate financials
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";

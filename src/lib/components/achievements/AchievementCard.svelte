@@ -1,73 +1,135 @@
 <script lang="ts">
-  import * as Card from "$ui/card";
-  import { Badge } from "$ui/badge";
   import type { AchievementRecord } from "$lib/types";
-  import { Zap } from "@lucide/svelte";
+  import { Zap, Lock } from "@lucide/svelte";
 
   let {
     achievement,
     isEarned = true,
     percentage = 0,
-    earnersCount = 0,
     href,
     showStatusBadge = false,
-    lockedCount = 0
+    lockedCount = 0,
+    unlockedAt
   } = $props<{
     achievement: AchievementRecord;
     isEarned?: boolean;
     percentage: number;
-    earnersCount?: number;
     href: string;
     showStatusBadge?: boolean;
     lockedCount?: number;
+    unlockedAt?: string;
   }>();
 
   // Only navigate when earned (or not using status badge i.e. admin)
   const isClickable = $derived(!showStatusBadge || isEarned);
   const isConsolidated = $derived(lockedCount > 1);
+
+  const formattedUnlockedAt = $derived.by(() => {
+    if (!unlockedAt) {
+      return "";
+    }
+    try {
+      const d = new Date(unlockedAt);
+      if (isNaN(d.getTime())) {
+        return unlockedAt;
+      }
+      const day = d.getDate();
+      const month = d.toLocaleDateString("en-US", { month: "short" });
+      const year = d.getFullYear();
+
+      const hasTime = unlockedAt.includes("T") || unlockedAt.includes(":") || unlockedAt.includes(" ");
+      if (hasTime && (d.getHours() !== 0 || d.getMinutes() !== 0 || unlockedAt.includes(":"))) {
+        const time = d.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true
+        }).toLowerCase();
+        return `${day} ${month}, ${year} @ ${time}`;
+      }
+      return `${day} ${month}, ${year}`;
+    } catch {
+      return unlockedAt;
+    }
+  });
 </script>
 
 {#if isClickable}
-  <a {href} class="group block h-full">
-    <Card.Root
-      class="flex h-full flex-col transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
-    >
-      <Card.Header>
-        <div class="flex items-center justify-between">
-          <div class="text-5xl transition-transform duration-500 group-hover:scale-110">
-            {achievement.icon || "🏆"}
-          </div>
-          <Badge variant="outline" class="gap-1 border-brand/30 bg-brand/5 text-brand">
-            <Zap class="h-3.5 w-3.5" />
-            {achievement.points || 0} XP
-          </Badge>
-        </div>
-        <Card.Title class="mt-4 text-xl font-bold">{achievement.name}</Card.Title>
-        <Card.Description class="mt-1 line-clamp-2">
-          <div class="text-sm font-semibold">
-            {percentage}% of residents have this achievement
-          </div>
-          <div>{achievement.description}</div>
-        </Card.Description>
-      </Card.Header>
-    </Card.Root>
+  <a
+    {href}
+    class="group relative flex w-full items-center justify-between gap-4 overflow-hidden rounded-md border border-border/40 bg-muted/40 p-3 transition-colors hover:border-border hover:bg-muted/60"
+  >
+    <!-- Steam-style Progress Bar Fill Background -->
+    {#if percentage > 0}
+      <div
+        class="pointer-events-none absolute inset-y-0 left-0 bg-primary/10 transition-all duration-500 group-hover:bg-primary/15"
+        style="width: {Math.min(100, Math.max(0, percentage))}%;"
+      ></div>
+    {/if}
+
+    <!-- Left: Icon & Info -->
+    <div class="relative z-10 flex min-w-0 items-center gap-3.5">
+      <!-- Steam-style Achievement Icon Frame -->
+      <div
+        class="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-border/70 bg-background/90 text-2xl shadow-inner transition-transform group-hover:scale-105"
+      >
+        {#if achievement.icon}
+          <span>{achievement.icon}</span>
+        {:else}
+          <Zap class="h-6 w-6 text-amber-500" />
+        {/if}
+      </div>
+
+      <div class="min-w-0 flex-1 space-y-0.5">
+        <span class="block truncate font-bold tracking-tight text-foreground group-hover:text-primary">
+          {achievement.name}
+        </span>
+        {#if achievement.description}
+          <p class="line-clamp-2 text-xs text-muted-foreground">
+            {achievement.description}
+          </p>
+        {/if}
+      </div>
+    </div>
+
+    <!-- Right: XP Badge & Unlock Date / Percentage Stats -->
+    <div class="relative z-10 flex shrink-0 flex-col items-end gap-1 text-right">
+      {#if achievement.points}
+        <span class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground bg-background/80 border border-border/50">
+          +{achievement.points} XP
+        </span>
+      {/if}
+      {#if formattedUnlockedAt}
+        <span class="text-xs text-muted-foreground whitespace-nowrap">
+          Unlocked {formattedUnlockedAt}
+        </span>
+      {:else if percentage > 0}
+        <span class="text-xs text-muted-foreground whitespace-nowrap">
+          {percentage}% of residents
+        </span>
+      {/if}
+    </div>
   </a>
 {:else}
-  <div class="h-full cursor-default select-none">
-    <Card.Root class="flex h-full flex-col border-neutral-800 bg-black text-white">
-      <Card.Header>
-        <div class="flex items-center justify-between">
-          <div class="text-5xl">👻</div>
-        </div>
-        <Card.Title class="mt-4 text-xl font-bold text-white">
+  <div
+    class="flex w-full items-center justify-between gap-4 rounded-md border border-border/20 bg-muted/10 p-3 opacity-60"
+  >
+    <div class="flex min-w-0 items-center gap-3.5">
+      <div
+        class="flex h-14 w-14 shrink-0 items-center justify-center rounded border border-border/30 bg-background/40 text-muted-foreground"
+      >
+        <Lock class="h-5 w-5" />
+      </div>
+
+      <div class="min-w-0 flex-1 space-y-0.5">
+        <span class="truncate font-semibold tracking-tight text-muted-foreground">
           {isConsolidated
-            ? `${lockedCount} hidden achievement${lockedCount === 1 ? "" : "s"} remaining`
-            : "???"}
-        </Card.Title>
-        <Card.Description class="mt-1 text-neutral-400">
-          {isConsolidated ? "Keep participating to unlock them…" : "Earn this to reveal…"}
-        </Card.Description>
-      </Card.Header>
-    </Card.Root>
+            ? `${lockedCount} Hidden Achievements`
+            : "Hidden Achievement"}
+        </span>
+        <p class="text-xs text-muted-foreground/80">
+          {isConsolidated ? "Keep participating in dormitory activities to reveal…" : "Complete dormitory activities to unlock…"}
+        </p>
+      </div>
+    </div>
   </div>
 {/if}

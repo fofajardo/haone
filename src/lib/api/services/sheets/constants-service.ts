@@ -12,6 +12,11 @@ export const sheetsConstantsService: ConstantsServiceInterface = {
       const consts: ConstantRecord[] = [
         { key: "TERM_CURR", value: data.activeTerm || "", description: "Current Term", raw: [] }
       ];
+      if (Array.isArray(data.allTerms)) {
+        for (const t of data.allTerms) {
+          consts.push({ key: `TERM_${t}`, value: t, description: t, raw: [] });
+        }
+      }
       if (Array.isArray(data.transactionTypes)) {
         for (const t of data.transactionTypes) {
           consts.push({ key: t.value, value: t.label, description: t.label, raw: [] });
