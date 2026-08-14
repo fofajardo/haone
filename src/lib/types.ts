@@ -484,7 +484,10 @@ export enum UserTag {
   DECEASED = "DECEASED",
   BACKED_OUT = "BACKED-OUT",
   RETURNING = "RETURNING",
-  GUEST = "GUEST"
+  GUEST = "GUEST",
+  TRANSFERRED_DORM = "TRANSFERRED_DORM",
+  TRANSFERRED_OUTSIDE = "TRANSFERRED_OUTSIDE",
+  UNKNOWN = "UNKNOWN"
 }
 
 export enum AccountType {
@@ -519,6 +522,9 @@ export const USER_TAG_COLORS: Record<string, string> = {
   [UserTag.BACKED_OUT]: "bg-red-100 text-red-700 border-red-200",
   [UserTag.RETURNING]: "bg-cyan-100 text-cyan-700 border-cyan-200",
   [UserTag.GUEST]: "bg-slate-100 text-slate-700 border-slate-200",
+  [UserTag.TRANSFERRED_DORM]: "bg-orange-100 text-orange-700 border-orange-200",
+  [UserTag.TRANSFERRED_OUTSIDE]: "bg-orange-100 text-orange-700 border-orange-200",
+  [UserTag.UNKNOWN]: "bg-stone-100 text-stone-700 border-stone-200",
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };
 
