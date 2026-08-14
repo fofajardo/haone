@@ -111,13 +111,20 @@ export const POST: RequestHandler = async ({ request }) => {
 /**
  * DELETE: Cancel a pending payment request
  */
-export const DELETE: RequestHandler = async ({ url, request }) => {
+export const DELETE: RequestHandler = async ({ request }) => {
   const { residentId, error } = await authenticateResident(request);
   if (error) {
     return error;
   }
 
-  const id = url.searchParams.get("id");
+  let id = "";
+  try {
+    const body = await request.json();
+    id = (body?.id || "").trim();
+  } catch {
+    return json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   if (!id) {
     return json({ error: "Payment Request ID is required" }, { status: 400 });
   }
