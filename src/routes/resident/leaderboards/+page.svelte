@@ -92,19 +92,14 @@
       >
     </ErrorView>
   {:else}
-    <div class="grid gap-2 lg:grid-cols-12">
-      {#if !isGlobal}
+    {#if !isGlobal}
+      <div class="grid gap-2 lg:grid-cols-12">
         <div class="lg:col-span-3">
           <TermFilter bind:value={selectedTerm} />
         </div>
-      {/if}
-    </div>
+      </div>
+    {/if}
 
-    <AchievementLeaderboard
-      {achievements}
-      {logs}
-      term={effectiveTerm}
-      {isGlobal}
-    />
+    <AchievementLeaderboard {achievements} {logs} term={effectiveTerm} {isGlobal} />
   {/if}
 </div>
