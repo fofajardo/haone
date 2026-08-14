@@ -27,17 +27,17 @@
 
   let isGlobal = $derived(scope === "global");
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
 
     try {
       const [achievementRows, logRows, users, settings, term] = await Promise.all([
-        fetchAdminAchievements(true),
-        fetchAchievementLogs(true),
-        fetchUsers(true),
-        fetchUserSettings(true),
-        fetchTermCurr(true)
+        fetchAdminAchievements(bypassCache),
+        fetchAchievementLogs(bypassCache),
+        fetchUsers(bypassCache),
+        fetchUserSettings(bypassCache),
+        fetchTermCurr(bypassCache)
       ]);
 
       const userMap = new Map(
@@ -88,7 +88,7 @@
           variant="outline"
           size="sm"
           onclick={() => {
-            loadData();
+            loadData(true);
           }}
           {isLoading}
           icon={RefreshCcw}

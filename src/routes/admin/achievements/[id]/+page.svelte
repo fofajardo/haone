@@ -97,15 +97,15 @@
     }
   }
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
       const [allA, allL, allU, allR] = await Promise.all([
-        fetchAdminAchievements(true),
-        fetchAchievementLogs(true),
-        fetchUsers(true),
-        fetchResidents(true)
+        fetchAdminAchievements(bypassCache),
+        fetchAchievementLogs(bypassCache),
+        fetchUsers(bypassCache),
+        fetchResidents(bypassCache)
       ]);
 
       const foundA =
@@ -162,7 +162,7 @@
           variant="outline"
           size="sm"
           onclick={() => {
-            loadData();
+            loadData(true);
           }}
           {isLoading}
           icon={RefreshCcw}
