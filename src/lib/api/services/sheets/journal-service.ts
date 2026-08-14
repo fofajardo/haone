@@ -108,6 +108,9 @@ export const sheetsJournalService: JournalServiceInterface = {
         (parsed.creator ? userMap.get(parsed.creator.toLowerCase()) : undefined);
       if (creatorUser) {
         parsed.creatorName = (creatorUser[6] || "").trim(); // USER_COL.DISPLAY_NAME = 6
+        if (!parsed.creator) {
+          parsed.creator = (creatorUser[0] || "").trim(); // USER_COL.EMAIL = 0
+        }
       }
 
       const accountUser =
@@ -115,6 +118,9 @@ export const sheetsJournalService: JournalServiceInterface = {
         (parsed.account ? userMap.get(parsed.account.toLowerCase()) : undefined);
       if (accountUser) {
         parsed.name = (accountUser[6] || "").trim(); // USER_COL.DISPLAY_NAME = 6
+        if (!parsed.account) {
+          parsed.account = (accountUser[0] || "").trim(); // USER_COL.EMAIL = 0
+        }
         if (!parsed.stno) {
           parsed.stno = (accountUser[8] || "").trim(); // USER_COL.STUDENT_NO = 8
         }
