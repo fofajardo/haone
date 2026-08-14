@@ -92,25 +92,25 @@
   ];
 </script>
 
-<Card.Root class="overflow-hidden {className}">
-  <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
-    <Card.Title class="flex items-center gap-2 text-lg">
-      <History class="h-5 w-5" />
-      Transaction History
-    </Card.Title>
-  </Card.Header>
-  <Card.Content>
-    {#if history.length > 0}
+{#if history.length > 0}
+  <Card.Root class="overflow-hidden {className}">
+    <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
+      <Card.Title class="flex items-center gap-2 text-lg">
+        <History class="h-5 w-5" />
+        Transaction History
+      </Card.Title>
+    </Card.Header>
+    <Card.Content>
       <DataTable data={history} {columns} {onRowClick} rowId="id" />
-    {:else}
-      <EmptyView
-        title="No transaction history found."
-        description="Transactions for this term will appear here."
-      >
-        {#snippet icon()}
-          <Clock class="h-8 w-8 text-muted-foreground" />
-        {/snippet}
-      </EmptyView>
-    {/if}
-  </Card.Content>
-</Card.Root>
+    </Card.Content>
+  </Card.Root>
+{:else}
+  <EmptyView
+    title="No transaction history found."
+    description="Transactions for this term will appear here."
+  >
+    {#snippet icon()}
+      <Clock class="h-8 w-8 text-muted-foreground" />
+    {/snippet}
+  </EmptyView>
+{/if}
