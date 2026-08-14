@@ -439,20 +439,6 @@
             creatorSearch = myAcc.email;
           }
         }
-
-        // Pre-fill target account from query parameters if provided
-        const targetAccountParam = page.url.searchParams.get("account");
-        if (targetAccountParam) {
-          const targetAcc = accounts.find(
-            (a) =>
-              a.residentId.toLowerCase() === targetAccountParam.toLowerCase() ||
-              a.stno.toLowerCase() === targetAccountParam.toLowerCase() ||
-              a.email.toLowerCase() === targetAccountParam.toLowerCase()
-          );
-          if (targetAcc) {
-            selectAccount(targetAcc);
-          }
-        }
       } else {
         const userMail = auth.user?.email;
         if (userMail) {
@@ -463,6 +449,20 @@
             formData.creatorId = myAcc.residentId || myAcc.id;
             creatorSearch = myAcc.email;
           }
+        }
+      }
+
+      // Pre-fill target account from query parameters if provided
+      const targetAccountParam = page.url.searchParams.get("account");
+      if (targetAccountParam) {
+        const targetAcc = accounts.find(
+          (a) =>
+            (a.residentId && a.residentId.toLowerCase() === targetAccountParam.toLowerCase()) ||
+            (a.stno && a.stno.toLowerCase() === targetAccountParam.toLowerCase()) ||
+            (a.email && a.email.toLowerCase() === targetAccountParam.toLowerCase())
+        );
+        if (targetAcc) {
+          selectAccount(targetAcc);
         }
       }
       isReady = true;
