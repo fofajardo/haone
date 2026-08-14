@@ -56,9 +56,8 @@ export const GET: RequestHandler = async ({ request }) => {
       const term = (r[ACCOUNT_COL.PERIOD] || "").trim();
       if (resId && (term === activeTerm || !term)) {
         const room = (r[ACCOUNT_COL.ROOM] || "").trim();
-        const bed = (r[ACCOUNT_COL.BED] || "").trim();
         if (room) {
-          resIdToRoomMap.set(resId, bed ? `${room}-${bed}` : room);
+          resIdToRoomMap.set(resId, room);
         }
       }
     });
