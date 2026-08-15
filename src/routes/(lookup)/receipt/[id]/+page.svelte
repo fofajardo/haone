@@ -3,7 +3,7 @@
   import { decryptJSON } from "$utils/crypto";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
-  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
 
   import * as AlertDialog from "$ui/alert-dialog";
   import ReceiptExportTemplate from "$components/receipt/ReceiptExportTemplate.svelte";
@@ -44,7 +44,7 @@
 
   $effect(() => {
     if (receiptData && isVerified) {
-      const profile = branding[receiptData.branding as keyof typeof branding] || branding.default;
+      const profile = brandingState.profile;
       pageState.title = `${profile.issuerName} - Acknowledgment Receipt`;
 
       // Generate QR if we verified

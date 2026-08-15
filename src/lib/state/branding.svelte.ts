@@ -1,35 +1,17 @@
-import { browser } from "$app/environment";
-import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
-import { LS_KEYS } from "$lib/constants";
+import { PUBLIC_GI_CLIENT_ID, PUBLIC_BRANDING } from "$env/static/public";
 import branding from "$data/branding.json";
 
 export type BrandingKey = keyof typeof branding;
 
+const resolvedKey: BrandingKey = PUBLIC_BRANDING as BrandingKey;
+
 class BrandingState {
-  #selectedKey = $state<BrandingKey>("default");
-
-  constructor() {
-    if (browser) {
-      const saved = localStorage.getItem(LS_KEYS.BRANDING_PROFILE) as BrandingKey;
-      if (saved && branding[saved]) {
-        this.#selectedKey = saved;
-      }
-    }
-  }
-
-  get selectedKey() {
-    return this.#selectedKey;
-  }
-
-  set selectedKey(value: BrandingKey) {
-    this.#selectedKey = value;
-    if (browser) {
-      localStorage.setItem(LS_KEYS.BRANDING_PROFILE, value);
-    }
+  get selectedKey(): BrandingKey {
+    return resolvedKey;
   }
 
   get profile() {
-    const prof = branding[this.#selectedKey] as any;
+    const prof = branding[resolvedKey] as any;
     return {
       ...prof,
       googleClientId: PUBLIC_GI_CLIENT_ID

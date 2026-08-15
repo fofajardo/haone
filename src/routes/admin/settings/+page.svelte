@@ -5,8 +5,6 @@
   import { Input } from "$ui/input";
   import { TriangleAlert, ExternalLink } from "@lucide/svelte";
   import { Button } from "$ui/button";
-  import branding from "$data/branding.json";
-  import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID, PUBLIC_GS_SR_ID } from "$env/static/public";
   import SubpageHeader from "$components/SubpageHeader.svelte";
@@ -16,8 +14,6 @@
   import NavSettings from "$components/residents/NavSettings.svelte";
   import PrivacySettings from "$components/residents/PrivacySettings.svelte";
   import SettingsActions from "$components/SettingsActions.svelte";
-
-  const brandingProfiles = Object.keys(branding);
 </script>
 
 <div class="space-y-6">
@@ -33,29 +29,6 @@
       <SettingsActions />
 
       {#if uiSettings.isDev}
-        <!-- Branding Section -->
-        <Card.Root>
-          <Card.Header>
-            <Card.Title>Application Branding</Card.Title>
-            <Card.Description>Select the active profile for tools and reports.</Card.Description>
-          </Card.Header>
-          <Card.Content>
-            <div class="space-y-4">
-              <div class="space-y-2">
-                <Label for="branding">Active Profile</Label>
-                <Combobox
-                  bind:value={brandingState.selectedKey}
-                  options={brandingProfiles.map((key) => ({
-                    value: key,
-                    label: (branding as any)[key].name
-                  }))}
-                  class="w-full"
-                />
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
-
         <!-- Development Configuration -->
         <Card.Root>
           <Card.Header>

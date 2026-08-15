@@ -1,4 +1,4 @@
-import branding from "$data/branding.json";
+import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
 import { translateMop } from "$utils/translators";
 import { parseDateWeight } from "$utils/parsers";
@@ -283,7 +283,7 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
     }
   });
 
-  const profile = branding[brandingKey as keyof typeof branding] || branding.default;
+  const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(
     (profile as any).letterheadHalfInchUrl || profile.letterheadUrl
   );

@@ -1,4 +1,4 @@
-import branding from "$data/branding.json";
+import { brandingState } from "$state/branding.svelte";
 import { calculateTotal } from "$utils/math";
 import { formatAmount, formatCurrency, formatDate } from "$utils/formatters";
 import { parseRef } from "$utils/parsers";
@@ -66,7 +66,7 @@ export async function exportReceiptPDF(receiptData: ReceiptData, qrDataUrl: stri
     }
   });
 
-  const profile = branding[receiptData.branding as keyof typeof branding] || branding.default;
+  const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(profile.letterheadUrl);
   const qrImage = qrDataUrl ? await imgToDataUrl(qrDataUrl) : "";
 

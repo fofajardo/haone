@@ -2,7 +2,7 @@
   import { onMount, tick } from "svelte";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
-  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
 
   import * as AlertDialog from "$ui/alert-dialog";
   import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
@@ -40,7 +40,7 @@
 
   $effect(() => {
     if (clearanceData) {
-      const profile = branding[clearanceData.branding as keyof typeof branding] || branding.default;
+      const profile = brandingState.profile;
       pageState.title = `${profile.issuerName} - Certificate of Full Payment`;
 
       QRCode.toDataURL(window.location.href, {

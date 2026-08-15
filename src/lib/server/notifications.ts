@@ -1,4 +1,4 @@
-import { PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";
+import { PUBLIC_VAPID_PUBLIC_KEY, PUBLIC_BRANDING } from "$env/static/public";
 import { VAPID_PRIVATE_KEY } from "$env/static/private";
 import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
 import {
@@ -9,6 +9,8 @@ import {
 } from "@block65/webcrypto-web-push";
 import { getFirebaseToken, fetchGoogleAPI } from "$lib/server/api-helper";
 import branding from "$data/branding.json";
+
+const brandingProfile = (branding as any)[PUBLIC_BRANDING];
 
 const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
 const PROJECT_ID = keys.project_id;
@@ -75,7 +77,7 @@ export async function notifyResident(
         options: { ttl: 86400 }
       };
       const vapid: VapidKeys = {
-        subject: `mailto:${branding.default.replyTo}`,
+        subject: `mailto:${brandingProfile.replyTo}`,
         publicKey: PUBLIC_VAPID_PUBLIC_KEY,
         privateKey: VAPID_PRIVATE_KEY
       };
@@ -141,7 +143,7 @@ export async function notifyAllResidents(
         options: { ttl: 86400 }
       };
       const vapid: VapidKeys = {
-        subject: `mailto:${branding.default.replyTo}`,
+        subject: `mailto:${brandingProfile.replyTo}`,
         publicKey: PUBLIC_VAPID_PUBLIC_KEY,
         privateKey: VAPID_PRIVATE_KEY
       };

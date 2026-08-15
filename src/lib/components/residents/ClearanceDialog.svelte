@@ -38,8 +38,6 @@
       for (const res of residents) {
         const result = await clearResident(
           res,
-          uiSettings.accountingWorkbookId,
-          brandingState.selectedKey,
           issuerId
         );
 

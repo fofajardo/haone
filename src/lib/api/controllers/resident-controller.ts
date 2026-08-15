@@ -320,8 +320,6 @@ function mapResidentToStagedClearance(resident: ResidentRecord, branding: Brandi
  */
 export async function clearResident(
   resident: ResidentRecord,
-  spreadsheetId: string,
-  brandingKey: string,
   issuerId: string
 ) {
   const now = new Date();
@@ -332,16 +330,6 @@ export async function clearResident(
   });
 
   const refNo = crypto.randomUUID();
-
-  const clearanceData = {
-    name: resident.ceFullName,
-    stno: resident.stno,
-    period: resident.period,
-    dateIssued: dateString,
-    refNo: refNo,
-    branding: brandingKey,
-    issuerId
-  };
 
   const publicLink = `${window.location.origin}/clearance/${refNo}`;
 

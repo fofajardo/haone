@@ -10,7 +10,7 @@
     StickyNote
   } from "@lucide/svelte";
   import { Spinner } from "$ui/spinner";
-  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
   import { translatePeriod } from "$utils/translators";
 
   interface Props {
@@ -42,9 +42,7 @@
     onShareQR
   }: Props = $props();
 
-  const activeBranding = $derived(
-    branding[clearanceData.branding as keyof typeof branding] || branding.default
-  );
+  const activeBranding = $derived(brandingState.profile);
 
   let clickedAction = $state<string | null>(null);
 

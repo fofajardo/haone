@@ -1,4 +1,4 @@
-import branding from "$data/branding.json";
+import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
 import type { ResidentRecord } from "$lib/types";
 import type {
@@ -47,7 +47,6 @@ export async function exportReportPDF(options: PDFReportOptions) {
     residents,
     categoryLabel,
     semester,
-    brandingKey,
     issuedBy,
     issuedByEmail,
     assessedBy,
@@ -83,7 +82,7 @@ export async function exportReportPDF(options: PDFReportOptions) {
     }
   });
 
-  const profile = branding[brandingKey as keyof typeof branding] || branding.default;
+  const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(profile.letterheadUrl);
 
   let headers: TableCell[] = [];

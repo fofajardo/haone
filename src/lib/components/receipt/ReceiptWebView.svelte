@@ -11,7 +11,7 @@
     StickyNote
   } from "@lucide/svelte";
   import { Spinner } from "$ui/spinner";
-  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
   import type { ReceiptData } from "$lib/types";
   import { calculateTotal } from "$utils/math";
   import { formatAmount, formatCurrency, formatDate } from "$utils/formatters";
@@ -40,9 +40,7 @@
   }: Props = $props();
 
   const refInfo = $derived(parseRef(receiptData.referenceNumber));
-  const activeBranding = $derived(
-    branding[receiptData.branding as keyof typeof branding] || branding.default
-  );
+  const activeBranding = $derived(brandingState.profile);
 
   let clickedAction = $state<string | null>(null);
 

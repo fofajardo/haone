@@ -3,15 +3,13 @@
   import { formatCurrency, formatDate } from "$utils/formatters";
   import { parseRef } from "$utils/parsers";
   import { translateMop, translatePeriod } from "$utils/translators";
-  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
   import type { ReceiptData } from "$lib/types";
 
   let { receiptData, qrDataUrl }: { receiptData: ReceiptData; qrDataUrl: string } = $props();
 
   const refInfo = $derived(parseRef(receiptData.referenceNumber));
-  const activeBranding = $derived(
-    branding[receiptData.branding as keyof typeof branding] || branding.default
-  );
+  const activeBranding = $derived(brandingState.profile);
 </script>
 
 <div

@@ -1,4 +1,4 @@
-import branding from "$data/branding.json";
+import { brandingState } from "$state/branding.svelte";
 import { translatePeriod } from "$utils/translators";
 import type {
   TDocumentDefinitions,
@@ -68,7 +68,7 @@ export async function exportClearancePDF(options: ClearancePDFOptions) {
     }
   });
 
-  const profile = branding[brandingKey as keyof typeof branding] || branding.default;
+  const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(profile.letterheadUrl);
   const qrImage = qrDataUrl ? await imgToDataUrl(qrDataUrl) : "";
 

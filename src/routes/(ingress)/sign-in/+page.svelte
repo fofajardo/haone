@@ -5,7 +5,7 @@
   import { Button } from "$ui/button";
   import { LoaderIcon } from "@lucide/svelte";
   import { goto, replaceState } from "$app/navigation";
-  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import {
     PUBLIC_GI_CLIENT_ID,
@@ -186,13 +186,13 @@
   <div class="relative z-10 w-full max-w-sm space-y-6">
     <div class="flex flex-col items-center space-y-8 text-center">
       <img
-        src={branding.default.logoUrl}
-        alt={branding.default.logoAlt}
+        src={brandingState.profile.logoUrl}
+        alt={brandingState.profile.logoAlt}
         class="h-28 w-auto object-contain transition-all duration-500 hover:scale-[1.02] dark:hidden"
       />
       <img
-        src={branding.default.logoUrlDark || branding.default.logoUrl}
-        alt={branding.default.logoAlt}
+        src={brandingState.profile.logoUrlDark || brandingState.profile.logoUrl}
+        alt={brandingState.profile.logoAlt}
         class="hidden h-28 w-auto object-contain transition-all duration-500 hover:scale-[1.02] dark:block"
       />
     </div>

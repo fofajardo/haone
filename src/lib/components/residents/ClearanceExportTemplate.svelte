@@ -1,5 +1,5 @@
 <script lang="ts">
-  import branding from "$data/branding.json";
+  import { brandingState } from "$state/branding.svelte";
   import { translatePeriod } from "$utils/translators";
 
   interface Props {
@@ -18,9 +18,7 @@
 
   let { clearanceData, qrDataUrl }: Props = $props();
 
-  const activeBranding = $derived(
-    branding[clearanceData.branding as keyof typeof branding] || branding.default
-  );
+  const activeBranding = $derived(brandingState.profile);
 
   const now = new Date();
   const getOrdinalNum = (n: number) =>
