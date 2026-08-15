@@ -258,7 +258,7 @@
           class="list-disc space-y-1.5 border-t border-blue-100 px-8 py-4 text-sm text-blue-900/70 dark:border-blue-800 dark:text-blue-100/70"
         >
           <li>Operating Hours: 5:00 AM - 10:00 PM.</li>
-          <li>Maximum of two (2) hours for any reservation.</li>
+          <li>Maximum of two (2) hours per day.</li>
           <li>Maximum of two (2) weeks space for reservation.</li>
           <li>Be present at your reserved hours.</li>
           <li>Be mindful and inform others if you will not be able to attend.</li>
