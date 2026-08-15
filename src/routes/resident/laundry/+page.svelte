@@ -12,7 +12,8 @@
   import {
     fetchLaundryReservations,
     addLaundryReservation,
-    cancelLaundryReservation
+    cancelLaundryReservation,
+    validateLaundryReservation
   } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
@@ -81,48 +82,13 @@
   }
 
   const validationError = $derived.by(() => {
-    try {
-      if (!newReservation.date) return "Please select a date";
-      if (!newReservation.timeStart || !newReservation.timeEnd) return "Please provide times";
-
-      const startH = parseTime(newReservation.timeStart);
-      const endH = parseTime(newReservation.timeEnd);
-      if (isNaN(startH) || isNaN(endH)) return "Invalid time format";
-
-      if (startH >= endH) return "Start must be before end";
-
-      const duration = endH - startH;
-      if (duration > 2) return "Max 2 hours allowed";
-
-      const [y, m, d] = newReservation.date.split("-").map(Number);
-      const selectedDateTime = new Date(y, m - 1, d, startH);
-      const now = new Date();
-      const isToday = y === now.getFullYear() && m === now.getMonth() + 1 && d === now.getDate();
-
-      if (isToday) {
-        if (startH < now.getHours()) return "Cannot reserve for a past time";
-      } else if (selectedDateTime < now) {
-        return "Cannot reserve for a past time";
-      }
-
-      const maxAdvance = new Date();
-      maxAdvance.setDate(now.getDate() + 14);
-      if (selectedDateTime > maxAdvance) return "Max 2 weeks in advance";
-
-      if (startH < 5 || endH > 22) return "Open 5 AM - 10 PM only";
-
-      const isOverlapping = reservations.some((r) => {
-        if (r.status !== "ACTIVE" || r.date !== newReservation.date) return false;
-        const rStart = parseTime(r.timeStart);
-        const rEnd = parseTime(r.timeEnd);
-        return startH < rEnd && endH > rStart;
-      });
-      if (isOverlapping) return "Overlaps with existing booking";
-
-      return null;
-    } catch {
-      return "Invalid reservation details";
-    }
+    return validateLaundryReservation({
+      date: newReservation.date,
+      timeStart: newReservation.timeStart,
+      timeEnd: newReservation.timeEnd,
+      isAdmin: false,
+      existingReservations: reservations
+    });
   });
 
   async function handleBook() {

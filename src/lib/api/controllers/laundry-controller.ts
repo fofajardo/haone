@@ -3,6 +3,87 @@ import { parseTime } from "$utils/parsers";
 import { laundryService } from "$api/services/laundry-service";
 import { getCurrentResidentId } from "./resident-controller";
 
+export interface ValidateLaundryOptions {
+  date: string;
+  timeStart: string;
+  timeEnd: string;
+  residentId?: string;
+  isAdmin?: boolean;
+  existingReservations?: LaundryRecord[];
+}
+
+export function validateLaundryReservation(options: ValidateLaundryOptions): string | null {
+  try {
+    const { date, timeStart, timeEnd, residentId, isAdmin = false, existingReservations = [] } = options;
+
+    if (!date) {
+      return "Please select a date";
+    }
+    if (!timeStart || !timeEnd) {
+      return "Please provide times";
+    }
+    if (isAdmin && !residentId) {
+      return "Please select a resident";
+    }
+
+    const startH = parseTime(timeStart);
+    const endH = parseTime(timeEnd);
+    if (isNaN(startH) || isNaN(endH)) {
+      return "Invalid time format";
+    }
+
+    if (startH >= endH) {
+      return "Start must be before end";
+    }
+
+    const duration = endH - startH;
+    if (!isAdmin && duration > 2) {
+      return "Max 2 hours allowed";
+    }
+
+    if (!isAdmin) {
+      const [y, m, d] = date.split("-").map(Number);
+      const selectedDateTime = new Date(y, m - 1, d, startH);
+      const now = new Date();
+      const isToday = y === now.getFullYear() && m === now.getMonth() + 1 && d === now.getDate();
+
+      if (isToday) {
+        if (startH < now.getHours()) {
+          return "Cannot reserve for a past time";
+        }
+      } else if (selectedDateTime < now) {
+        return "Cannot reserve for a past time";
+      }
+
+      const maxAdvance = new Date();
+      maxAdvance.setDate(now.getDate() + 14);
+      if (selectedDateTime > maxAdvance) {
+        return "Max 2 weeks in advance";
+      }
+    }
+
+    if (startH < 5 || endH > 22) {
+      return isAdmin ? "Facility open 5 AM - 10 PM" : "Open 5 AM - 10 PM only";
+    }
+
+    const isOverlapping = existingReservations.some((r) => {
+      if (r.status !== "ACTIVE" || r.date !== date) {
+        return false;
+      }
+      const rStart = parseTime(r.timeStart);
+      const rEnd = parseTime(r.timeEnd);
+      return startH < rEnd && endH > rStart;
+    });
+    if (isOverlapping) {
+      return "Overlaps with existing booking";
+    }
+
+    return null;
+  } catch {
+    return "Invalid reservation details";
+  }
+}
+
 export async function fetchLaundryReservations(
   bypassCache = false
 ): Promise<{ reservations: LaundryRecord[]; currentResidentId: string }> {
@@ -16,10 +97,16 @@ export async function fetchLaundryReservations(
 }
 
 export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
-  const { canAccessLaundry } = await import("./resident-controller");
-  const accountType = "STUDENT";
-  if (!canAccessLaundry(accountType)) {
-    throw new Error("Access Denied: Account type cannot book laundry");
+  const { auth } = await import("$state/auth.svelte");
+  const isAdmin = !auth.isResident;
+
+  if (!isAdmin) {
+    const { canAccessLaundry } = await import("./resident-controller");
+    const { residentState } = await import("$state/resident-state.svelte");
+    const accountType = residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
+    if (!canAccessLaundry(accountType)) {
+      throw new Error("Access Denied: Account type cannot book laundry");
+    }
   }
 
   const { date, timeStart, timeEnd } = data;
@@ -32,8 +119,9 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
     throw new Error("Invalid time window specified");
   }
-  if (endMinutes - startMinutes > 180) {
-    throw new Error("Reservations cannot exceed 3 hours");
+
+  if (!isAdmin && endMinutes - startMinutes > 120) {
+    throw new Error("Reservations cannot exceed 2 hours");
   }
 
   const currentResidentId = data.residentId || (await getCurrentResidentId());
@@ -74,63 +162,6 @@ export async function fetchAdminLaundryReservations(
   options?: PaginationOptions
 ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
   return laundryService.fetchReservations(undefined, options, bypassCache);
-}
-
-export async function addAdminLaundryReservation(data: Omit<LaundryRecord, "raw">) {
-  const startH = parseTime(data.timeStart);
-  const endH = parseTime(data.timeEnd);
-  const [y, m, d] = data.date.split("-").map(Number);
-  const start = new Date(y, m - 1, d, startH || 0);
-  const end = new Date(y, m - 1, d, endH || 0);
-
-  if (start >= end) {
-    throw new Error("Start time must be before end time.");
-  }
-
-  const opStart = 5;
-  const opEnd = 22;
-  if (
-    start.getHours() < opStart ||
-    end.getHours() > opEnd ||
-    (end.getHours() === opEnd && end.getMinutes() > 0)
-  ) {
-    throw new Error("Laundry facility is only open from 5:00 AM to 10:00 PM.");
-  }
-
-  const durationMs = end.getTime() - start.getTime();
-  if (durationMs > 2 * 60 * 60 * 1000) {
-    throw new Error("Maximum of two (2) hours for any reservation.");
-  }
-
-  const existingResult = await fetchAdminLaundryReservations(true);
-  const existing = Array.isArray(existingResult) ? existingResult : existingResult.items;
-
-  const isOverlapping = existing.some((r) => {
-    if (r.date !== data.date) {
-      return false;
-    }
-    if (
-      r.status === "CANCELLED" ||
-      r.status === "CANCELLED_BY_ADMIN" ||
-      r.status === "CANCELLED_BY_USER"
-    ) {
-      return false;
-    }
-    const rStartH = parseTime(r.timeStart);
-    const rEndH = parseTime(r.timeEnd);
-    const rStart = new Date(y, m - 1, d, rStartH || 0);
-    const rEnd = new Date(y, m - 1, d, rEndH || 0);
-    return start < rEnd && end > rStart;
-  });
-
-  if (isOverlapping) {
-    throw new Error("Selected time slot overlaps with an existing active reservation.");
-  }
-
-  await laundryService.addReservation({
-    ...data,
-    status: "ACTIVE"
-  });
 }
 
 export async function cancelAdminLaundryReservation(

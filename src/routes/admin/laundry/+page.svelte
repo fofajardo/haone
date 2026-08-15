@@ -10,7 +10,8 @@
   import {
     fetchAdminLaundryReservations,
     cancelLaundryReservation,
-    addLaundryReservation
+    addLaundryReservation,
+    validateLaundryReservation
   } from "$api/controllers/laundry-controller";
   import {
     computeDisplayNames,
@@ -134,36 +135,14 @@
   }
 
   const validationError = $derived.by(() => {
-    try {
-      if (!newReservation.date) return "Please select a date";
-      if (!newReservation.timeStart || !newReservation.timeEnd) return "Please provide times";
-      if (!newReservation.residentId) return "Please select a resident";
-
-      const startH = parseTime(newReservation.timeStart);
-      const endH = parseTime(newReservation.timeEnd);
-      if (isNaN(startH) || isNaN(endH)) return "Invalid time format";
-
-      if (startH >= endH) return "Start must be before end";
-
-      const duration = endH - startH;
-      if (duration > 2) return "Max 2 hours allowed";
-
-      // ADMIN: No past time validation
-
-      if (startH < 5 || endH > 22) return "Facility open 5 AM - 10 PM";
-
-      const isOverlapping = reservations.some((r) => {
-        if (r.status !== "ACTIVE" || r.date !== newReservation.date) return false;
-        const rStart = parseTime(r.timeStart);
-        const rEnd = parseTime(r.timeEnd);
-        return startH < rEnd && endH > rStart;
-      });
-      if (isOverlapping) return "Overlaps with existing booking";
-
-      return null;
-    } catch {
-      return "Invalid reservation details";
-    }
+    return validateLaundryReservation({
+      date: newReservation.date,
+      timeStart: newReservation.timeStart,
+      timeEnd: newReservation.timeEnd,
+      residentId: newReservation.residentId,
+      isAdmin: true,
+      existingReservations: reservations
+    });
   });
 
   async function handleBook() {
