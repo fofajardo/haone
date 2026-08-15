@@ -29,7 +29,8 @@
     ChevronDown,
     FileCheck,
     ShieldCheck,
-    Trophy
+    Trophy,
+    FileSpreadsheet
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
   import * as AlertDialog from "$ui/alert-dialog";
@@ -219,6 +220,10 @@
             {isLoading}
             icon={RefreshCcw}
           />
+
+          <Button variant="outline" size="sm" href="/admin/residents/export" icon={FileSpreadsheet}>
+            Export
+          </Button>
 
           <DropdownMenu.Root>
             <DropdownMenu.Trigger disabled={selectedIndices.size === 0}>

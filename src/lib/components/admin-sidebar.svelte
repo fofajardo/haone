@@ -75,23 +75,15 @@
       title: "Officers",
       url: "/admin/officers",
       icon: BookUser
-    }
-  ];
-
-  const reportItems = [
+    },
     {
       title: "Financial Report",
-      url: "/admin/reports/financial-report",
+      url: "/admin/financial-report",
       icon: HandCoins
     },
     {
-      title: "Resident List",
-      url: "/admin/reports/resident-list",
-      icon: FileSpreadsheet
-    },
-    {
       title: "Demographics",
-      url: "/admin/reports/demographics",
+      url: "/admin/demographics",
       icon: ChartPie
     }
   ];
@@ -208,29 +200,6 @@
       </Sidebar.Menu>
     </Sidebar.Group>
 
-    <Sidebar.Group>
-      <Sidebar.GroupLabel>Reports</Sidebar.GroupLabel>
-      <Sidebar.GroupContent>
-        <Sidebar.Menu>
-          {#each reportItems as item}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton
-                size={sidebar.isMobile ? "lg" : "default"}
-                isActive={page.url.pathname === item.url}
-                onclick={() => sidebar.setOpenMobile(false)}
-              >
-                {#snippet child({ props })}
-                  <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-        </Sidebar.Menu>
-      </Sidebar.GroupContent>
-    </Sidebar.Group>
     <Sidebar.Group class="mt-auto">
       <Sidebar.Menu>
         {#each secondaryItems as item}

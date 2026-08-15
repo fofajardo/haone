@@ -88,16 +88,16 @@
     {
       title: "Demographics",
       description: "Analyze resident distribution and historical trends.",
-      href: "/admin/reports/demographics",
+      href: "/admin/demographics",
       icon: ChartPie,
       color: "text-brand",
       bg: "bg-brand/10",
       border: "hover:border-brand/50"
     },
     {
-      title: "Reports",
-      description: "Generate collection summaries, financial statements, and resident rosters.",
-      href: "/admin/reports",
+      title: "Financial Report",
+      description: "Generate collection summaries and financial statements.",
+      href: "/admin/financial-report",
       icon: FileSpreadsheet,
       color: "text-brand",
       bg: "bg-brand/10",

@@ -16,7 +16,9 @@
     GraduationCap,
     Mail,
     Settings,
-    BookUser
+    BookUser,
+    HandCoins,
+    ChartPie
   } from "@lucide/svelte";
   import { page } from "$app/state";
   import { uiSettings } from "$state/settings.svelte";
@@ -46,6 +48,8 @@
     rooms: { label: "Rooms", href: "/admin/rooms", icon: Bed },
     users: { label: "Users", href: "/admin/users", icon: Contact },
     officers: { label: "Officers", href: "/admin/officers", icon: BookUser },
+    financial: { label: "Financial", href: "/admin/financial-report", icon: HandCoins },
+    demographics: { label: "Demographics", href: "/admin/demographics", icon: ChartPie },
     terms: { label: "Terms", href: "/admin/academic-terms", icon: GraduationCap },
     dispatcher: { label: "Email", href: "/admin/email-dispatcher", icon: Mail },
     settings: { label: "Settings", href: "/admin/settings", icon: Settings },

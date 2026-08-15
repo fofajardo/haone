@@ -568,7 +568,7 @@
 </script>
 
 <div class="space-y-6 pb-20">
-  <SubpageHeader title="Resident List" isTopLevel={true} />
+  <SubpageHeader title="Export Residents" />
 
   {#if isLoading && allAccounts.length === 0}
     <LoadingView />

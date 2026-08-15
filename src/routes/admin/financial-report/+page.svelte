@@ -168,9 +168,7 @@
           {isLoading}
           icon={RefreshCcw}
         />
-        <Button size="sm" href="/admin/reports/financial-report/export" icon={FileDown}>
-          Export PDF
-        </Button>
+        <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export PDF</Button>
       </div>
     {/snippet}
   </SubpageHeader>

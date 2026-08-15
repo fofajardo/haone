@@ -19,6 +19,8 @@
     Settings,
     History,
     Receipt,
+    HandCoins,
+    ChartPie,
     ChevronUp,
     ChevronDown,
     X
@@ -46,6 +48,8 @@
     { id: "residents", label: "Residents", icon: Users },
     { id: "rooms", label: "Rooms", icon: Bed },
     { id: "users", label: "Users", icon: Contact },
+    { id: "financial", label: "Financial", icon: HandCoins },
+    { id: "demographics", label: "Demographics", icon: ChartPie },
     { id: "terms", label: "Terms", icon: GraduationCap },
     { id: "dispatcher", label: "Email", icon: Mail },
     { id: "settings", label: "Settings", icon: Settings },
