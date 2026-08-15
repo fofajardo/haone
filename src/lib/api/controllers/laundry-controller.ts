@@ -4,9 +4,10 @@ import {
   type PaginatedResponse,
   LaundryStatus
 } from "$lib/types";
-import { parseTime } from "$utils/parsers";
+import { parseTime, parseTimeMinutes } from "$utils/parsers";
 import { laundryService } from "$api/services/laundry-service";
-import { getCurrentResidentId } from "./resident-controller";
+import { getCurrentResidentId, canAccessLaundry } from "./resident-controller";
+import { residentState } from "$state/resident-state.svelte";
 
 export interface ValidateLaundryOptions {
   date: string;
@@ -38,18 +39,18 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
       return "Please select a resident";
     }
 
-    const startH = parseTime(timeStart);
-    const endH = parseTime(timeEnd);
-    if (isNaN(startH) || isNaN(endH)) {
+    const startMinutes = parseTimeMinutes(timeStart);
+    const endMinutes = parseTimeMinutes(timeEnd);
+    if (isNaN(startMinutes) || isNaN(endMinutes)) {
       return "Invalid time format";
     }
 
-    if (startH >= endH) {
+    if (startMinutes >= endMinutes) {
       return "Start must be before end";
     }
 
-    const duration = endH - startH;
-    if (!isAdmin && duration > 2) {
+    const durationMinutes = endMinutes - startMinutes;
+    if (!isAdmin && durationMinutes > 120) {
       return "Max 2 hours per day allowed";
     }
 
@@ -68,26 +69,28 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
             return true;
           })
           .reduce((total, r) => {
-            const s = parseTime(r.timeStart);
-            const e = parseTime(r.timeEnd);
-            if (s !== null && e !== null && e > s) {
+            const s = parseTimeMinutes(r.timeStart);
+            const e = parseTimeMinutes(r.timeEnd);
+            if (!isNaN(s) && !isNaN(e) && e > s) {
               return total + (e - s);
             }
             return total;
           }, 0);
 
-        if (residentDayMinutes + duration > 2) {
+        if (residentDayMinutes + durationMinutes > 120) {
           return "Max 2 hours per day allowed";
         }
       }
 
       const [y, m, d] = date.split("-").map(Number);
-      const selectedDateTime = new Date(y, m - 1, d, startH);
+      const startH = Math.floor(startMinutes / 60);
+      const startM = startMinutes % 60;
+      const selectedDateTime = new Date(y, m - 1, d, startH, startM);
       const now = new Date();
       const isToday = y === now.getFullYear() && m === now.getMonth() + 1 && d === now.getDate();
 
       if (isToday) {
-        if (startH < now.getHours()) {
+        if (selectedDateTime.getTime() < now.getTime()) {
           return "Cannot reserve for a past time";
         }
       } else if (selectedDateTime < now) {
@@ -99,19 +102,18 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
       if (selectedDateTime > maxAdvance) {
         return "Max 2 weeks in advance";
       }
-    }
-
-    if (startH < 5 || endH > 22) {
-      return isAdmin ? "Facility open 5 AM - 10 PM" : "Open 5 AM - 10 PM only";
+      if (startMinutes < 300 || endMinutes > 1320) {
+        return "Open 5 AM - 10 PM only";
+      }
     }
 
     const isOverlapping = existingReservations.some((r) => {
       if (r.status !== LaundryStatus.ACTIVE || r.date !== date) {
         return false;
       }
-      const rStart = parseTime(r.timeStart);
-      const rEnd = parseTime(r.timeEnd);
-      return startH < rEnd && endH > rStart;
+      const rStart = parseTimeMinutes(r.timeStart);
+      const rEnd = parseTimeMinutes(r.timeEnd);
+      return startMinutes < rEnd && endMinutes > rStart;
     });
     if (isOverlapping) {
       return "Overlaps with existing booking";
@@ -135,13 +137,11 @@ export async function fetchLaundryReservations(
   };
 }
 
-export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
-  const { auth } = await import("$state/auth.svelte");
-  const isAdmin = !auth.isResident;
-
+export async function addLaundryReservation(
+  data: Partial<LaundryRecord>,
+  isAdmin = false
+): Promise<void> {
   if (!isAdmin) {
-    const { canAccessLaundry } = await import("./resident-controller");
-    const { residentState } = await import("$state/resident-state.svelte");
     const accountType =
       residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
     if (!canAccessLaundry(accountType)) {
@@ -154,9 +154,9 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
     throw new Error("Date, Start Time, and End Time are required");
   }
 
-  const startMinutes = parseTime(timeStart);
-  const endMinutes = parseTime(timeEnd);
-  if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) {
+  const startMinutes = parseTimeMinutes(timeStart);
+  const endMinutes = parseTimeMinutes(timeEnd);
+  if (isNaN(startMinutes) || isNaN(endMinutes) || endMinutes <= startMinutes) {
     throw new Error("Invalid time window specified");
   }
 
@@ -173,19 +173,19 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   );
 
   if (!isAdmin && currentResidentId) {
-    const durationHours = endMinutes - startMinutes;
-    const existingResidentDayHours = active
+    const durationMinutes = endMinutes - startMinutes;
+    const existingResidentDayMinutes = active
       .filter((r) => r.date === date && r.residentId === currentResidentId)
       .reduce((total, r) => {
-        const s = parseTime(r.timeStart);
-        const e = parseTime(r.timeEnd);
-        if (s !== null && e !== null && e > s) {
+        const s = parseTimeMinutes(r.timeStart);
+        const e = parseTimeMinutes(r.timeEnd);
+        if (!isNaN(s) && !isNaN(e) && e > s) {
           return total + (e - s);
         }
         return total;
       }, 0);
 
-    if (existingResidentDayHours + durationHours > 2) {
+    if (existingResidentDayMinutes + durationMinutes > 120) {
       throw new Error("Maximum of two (2) hours per day allowed");
     }
   }

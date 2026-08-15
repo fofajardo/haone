@@ -7,7 +7,7 @@ import {
   assertSupabaseFound,
   fetchAllSupabaseRows
 } from "../common";
-import { isUuid, parseDbUuid, parseTime } from "$utils/parsers";
+import { isUuid, parseDbUuid, parseTimeMinutes } from "$utils/parsers";
 import { formatTime } from "$utils/formatters";
 import { auth } from "$state/auth.svelte";
 import { canAccessLaundry } from "$api/controllers/resident-controller";
@@ -143,9 +143,9 @@ export const supabaseLaundryService: LaundryServiceInterface = {
         throw new Error("Date, Start Time, and End Time are required");
       }
 
-      const startMinutes = parseTime(timeStart);
-      const endMinutes = parseTime(timeEnd);
-      if (endMinutes <= startMinutes) {
+      const startMinutes = parseTimeMinutes(timeStart);
+      const endMinutes = parseTimeMinutes(timeEnd);
+      if (isNaN(startMinutes) || isNaN(endMinutes) || endMinutes <= startMinutes) {
         throw new Error("End time must be after start time");
       }
       if (endMinutes - startMinutes > 180) {
@@ -175,12 +175,14 @@ export const supabaseLaundryService: LaundryServiceInterface = {
         if (res.date !== date) {
           continue;
         }
-        const exStart = parseTime(res.time_start);
-        const exEnd = parseTime(res.time_end);
-        if (startMinutes < exEnd && endMinutes > exStart) {
-          throw new Error(
-            `Slot Unavailable: Clashes with reservation from ${formatTime(res.time_start)} to ${formatTime(res.time_end)}`
-          );
+        const exStart = parseTimeMinutes(res.time_start);
+        const exEnd = parseTimeMinutes(res.time_end);
+        if (!isNaN(exStart) && !isNaN(exEnd)) {
+          if (startMinutes < exEnd && endMinutes > exStart) {
+            throw new Error(
+              `Slot Unavailable: Clashes with reservation from ${formatTime(res.time_start)} to ${formatTime(res.time_end)}`
+            );
+          }
         }
       }
     }
