@@ -56,7 +56,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
       college: (row.college || "").trim(),
       isEvaluated: row.evaluated ?? false,
       term: (row.term || "").trim(),
-      accountType: (row.account_type || "STUDENT").trim().toUpperCase(),
+      accountType: (row.account_type || "").trim().toUpperCase(),
       suffix: (row.suffix || "").trim().toUpperCase(),
       overrideName: (row.override_name || "").trim(),
       rowIndex: idx + 2,
@@ -125,7 +125,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
       account_notes: a.accountNotes,
       issuer_id: parseDbUuid(a.issuerId),
       check_in_date: parseDbDate(a.checkInDate),
-      type: a.type || "STUDENT"
+      type: a.type || ""
     }));
     const { error } = await supabase.from("accounts").insert(formatted);
     if (error) {
@@ -186,7 +186,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
       account_notes: account.accountNotes,
       issuer_id: parseDbUuid(account.issuerId),
       check_in_date: parseDbDate(account.checkInDate),
-      type: account.type || "STUDENT"
+      type: account.type || ""
     });
     if (error) {
       handleSupabaseError(error);

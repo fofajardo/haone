@@ -93,7 +93,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       checkInDate: (r[CURR_COL.CHECK_IN_DATE] || "").trim(),
       isEvaluated: (r[CURR_COL.EVALUATED] || "").trim().toUpperCase() === "TRUE",
       term: (r[CURR_COL.TERM] || "").trim(),
-      accountType: (r[CURR_COL.ACCOUNT_TYPE] || "STUDENT").trim().toUpperCase(),
+      accountType: (r[CURR_COL.ACCOUNT_TYPE] || "").trim().toUpperCase(),
       suffix: (r[CURR_COL.SUFFIX] || "").trim().toUpperCase(),
       overrideName: (r[CURR_COL.OVERRIDE_NAME] || "").trim(),
       rowIndex: idx + 2,

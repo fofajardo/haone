@@ -194,7 +194,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
           notes: row.account_notes || "",
           issuerId: row.issuer_id || "",
           checkInDate: row.check_in_date || "",
-          type: row.type || "STUDENT",
+          type: row.type || "",
           email: u.email || "",
           name: u.display_name || "",
           stno: u.student_no || "",
@@ -413,7 +413,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
             ceLink: targetAccount.ce_link || "",
             college,
             program,
-            type: (targetAccount.type || AccountType.STUDENT).toUpperCase()
+            type: (targetAccount.type || "").trim().toUpperCase()
           }
         : null,
       currEntry: currEntryData
@@ -425,7 +425,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
             college: currEntryData.college || "",
             program: currEntryData.program || "",
             studentNo: currEntryData.student_no || "",
-            accountType: currEntryData.account_type || AccountType.STUDENT,
+            accountType: (currEntryData.account_type || "").trim().toUpperCase(),
             suffix: currEntryData.suffix || "",
             overrideName: currEntryData.override_name || "",
             isEvaluated

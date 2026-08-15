@@ -132,7 +132,7 @@ export const supabaseLaundryService: LaundryServiceInterface = {
         .eq("resident_id", residentUuid)
         .eq("period", activeTerm)
         .maybeSingle();
-      const accountType = (account?.type || "STUDENT").toUpperCase();
+      const accountType = (account?.type || "").trim().toUpperCase();
 
       if (!canAccessLaundry(accountType)) {
         throw new Error("Access Denied: Account type cannot book laundry");

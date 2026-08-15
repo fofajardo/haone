@@ -1,5 +1,6 @@
 import { json } from "@sveltejs/kit";
 import { GOOGLE_SERVICE_ACCOUNT_JSON, INSTANCE_ADMIN } from "$env/static/private";
+import { ACCOUNT_COL } from "$lib/types";
 
 /**
  * Base64url encoding helper
@@ -412,12 +413,15 @@ export function resolveResidentAccountType(
   activeTerm: string,
   residentId: string
 ): string | null {
-  // Column indices: RESIDENT_ID = 1, PERIOD = 2, TYPE = 11
   const account = accRows.find((r: any) => {
-    return (r[2] || "").trim() === activeTerm && (r[1] || "").trim() === residentId;
+    return (
+      (r[ACCOUNT_COL.PERIOD] || "").trim() === activeTerm &&
+      (r[ACCOUNT_COL.RESIDENT_ID] || "").trim() === residentId
+    );
   });
   if (account) {
-    return (account[11] || "STUDENT").trim().toUpperCase();
+    const rawType = (account[ACCOUNT_COL.TYPE] || "").trim().toUpperCase();
+    return rawType || null;
   }
   return null;
 }
