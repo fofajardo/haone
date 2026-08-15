@@ -75,7 +75,7 @@
     const map = new Map<string, ResidentRecord>();
     residents.forEach((r) => {
       if (r.room && r.bed) {
-        map.set(`${r.room}-${r.bed}`, r);
+        map.set(`${r.room}-${r.bed}`.toUpperCase(), r);
       }
     });
     return map;

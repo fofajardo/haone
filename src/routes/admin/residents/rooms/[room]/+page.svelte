@@ -52,7 +52,7 @@
     const map = new Map<string, ResidentRecord>();
     residents.forEach((r) => {
       if (r.bed) {
-        map.set(r.bed, r);
+        map.set(r.bed.toUpperCase(), r);
       }
     });
     return map;
