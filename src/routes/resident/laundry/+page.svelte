@@ -4,7 +4,16 @@
   import { brandingState } from "$state/branding.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, Info, Funnel, CircleX, CircleCheck } from "@lucide/svelte";
+  import {
+    RefreshCcw,
+    Plus,
+    Info,
+    Funnel,
+    CircleX,
+    CircleCheck,
+    Clock,
+    SlidersHorizontal
+  } from "@lucide/svelte";
   import * as NativeSelect from "$ui/native-select";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -46,6 +55,35 @@
     timeStart: "05:00",
     timeEnd: "07:00"
   });
+
+  let durationMode = $state<"1hr" | "2hrs" | "custom">("2hrs");
+
+  function calculateEndTime(start: string, durationMinutes: number): string {
+    const parts = (start || "05:00").split(":");
+    const startM = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    const endM = Math.min(startM + durationMinutes, 24 * 60);
+    const h = Math.floor(endM / 60);
+    const m = endM % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  }
+
+  $effect(() => {
+    const start = newReservation.timeStart;
+    if (durationMode === "1hr") {
+      newReservation.timeEnd = calculateEndTime(start, 60);
+    } else if (durationMode === "2hrs") {
+      newReservation.timeEnd = calculateEndTime(start, 120);
+    }
+  });
+
+  function handleDurationSelect(mode: "1hr" | "2hrs" | "custom") {
+    durationMode = mode;
+    if (mode === "1hr") {
+      newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 60);
+    } else if (mode === "2hrs") {
+      newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 120);
+    }
+  }
 
   let selectedRow = $state<LaundryRecord | null>(null);
   let statusFilter = $state<LaundryStatus>(LaundryStatus.ACTIVE);
@@ -293,7 +331,8 @@
 
           newReservation.date = date;
           newReservation.timeStart = `${hour.toString().padStart(2, "0")}:00`;
-          newReservation.timeEnd = `${(hour + 1).toString().padStart(2, "0")}:00`;
+          durationMode = "1hr";
+          newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 60);
           isBookingOpen = true;
         }}
       />
@@ -370,16 +409,61 @@
         <DatePicker.Root bind:value={newReservation.date} class="w-full" />
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="space-y-4">
         <div class="space-y-2">
           <Label>Start Time</Label>
           <TimePicker.Root bind:value={newReservation.timeStart} class="w-full" />
         </div>
 
         <div class="space-y-2">
-          <Label>End Time</Label>
-          <TimePicker.Root bind:value={newReservation.timeEnd} class="w-full" />
+          <Label class="text-sm">Duration</Label>
+          <div class="grid grid-cols-3 gap-2">
+            <Button
+              type="button"
+              variant={durationMode === "1hr" ? "default" : "outline"}
+              size="default"
+              class="h-10 text-sm font-medium"
+              onclick={() => handleDurationSelect("1hr")}
+              icon={Clock}
+            >
+              1 Hour
+            </Button>
+            <Button
+              type="button"
+              variant={durationMode === "2hrs" ? "default" : "outline"}
+              size="default"
+              class="h-10 text-sm font-medium"
+              onclick={() => handleDurationSelect("2hrs")}
+              icon={Clock}
+            >
+              2 Hours
+            </Button>
+            <Button
+              type="button"
+              variant={durationMode === "custom" ? "default" : "outline"}
+              size="default"
+              class="h-10 text-sm font-medium"
+              onclick={() => handleDurationSelect("custom")}
+              icon={SlidersHorizontal}
+            >
+              Custom
+            </Button>
+          </div>
         </div>
+
+        {#if durationMode === "custom"}
+          <div class="space-y-2">
+            <Label class="text-sm">End Time</Label>
+            <TimePicker.Root bind:value={newReservation.timeEnd} class="w-full" />
+          </div>
+        {:else}
+          <div
+            class="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm"
+          >
+            <span class="font-medium text-muted-foreground">End Time</span>
+            <span class="font-semibold text-foreground">{formatTime(newReservation.timeEnd)}</span>
+          </div>
+        {/if}
       </div>
       {#if validationError}
         <div class="flex items-center gap-2 px-1 text-xs font-bold text-destructive uppercase">
