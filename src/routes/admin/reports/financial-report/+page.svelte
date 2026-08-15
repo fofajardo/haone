@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
   import TermFilter from "$components/TermFilter.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -192,13 +193,15 @@
   {:else}
     <div class="mx-auto max-w-5xl space-y-6">
       <!-- Scope / Term filter -->
-      <div class="max-w-xs">
-        <TermFilter
-          onSelect={() => {
-            return loadData();
-          }}
-        />
-      </div>
+      <FilterDrawer>
+        <div class="max-w-xs">
+          <TermFilter
+            onSelect={() => {
+              return loadData();
+            }}
+          />
+        </div>
+      </FilterDrawer>
 
       <!-- KPI Grid -->
       <div class="grid gap-4 sm:grid-cols-3">

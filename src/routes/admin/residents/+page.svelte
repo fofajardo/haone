@@ -19,6 +19,7 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import TermFilter from "$components/TermFilter.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import {
     RefreshCcw,
     Users,
@@ -286,46 +287,52 @@
         >
       </ErrorView>
     {:else}
-      <div class="grid gap-2 lg:grid-cols-12">
-        <div class="lg:col-span-3">
-          <TermFilter onSelect={() => loadData()} />
-        </div>
-        <div class="space-y-1 lg:col-span-4">
-          <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              bind:value={tableSync.filters!.search}
-              placeholder="Search by name, email, or room…"
-              class="h-9 pl-9 text-xs"
-            />
+      <FilterDrawer
+        activeCount={Number(tableSync.filters!.search !== "") +
+          Number(tableSync.filters!.room !== "ALL") +
+          Number(tableSync.filters!.status !== "ALL")}
+      >
+        <div class="grid gap-2 lg:grid-cols-12">
+          <div class="lg:col-span-3">
+            <TermFilter onSelect={() => loadData()} />
+          </div>
+          <div class="space-y-1 lg:col-span-4">
+            <Label>Search</Label>
+            <div class="relative">
+              <Search
+                class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                bind:value={tableSync.filters!.search}
+                placeholder="Search by name, email, or room…"
+                class="h-9 pl-9 text-xs"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-1 lg:col-span-2">
+            <Label>Room</Label>
+            <Combobox bind:value={tableSync.filters!.room} options={roomOptions} class="h-9" />
+          </div>
+
+          <div class="space-y-1 lg:col-span-2">
+            <Label>Payment Status</Label>
+            <Combobox bind:value={tableSync.filters!.status} options={statusOptions} class="h-9" />
+          </div>
+
+          <div class="flex items-end lg:col-span-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onclick={resetFilters}
+              class="h-9 w-full px-2"
+              icon={FunnelX}
+            >
+              Clear
+            </Button>
           </div>
         </div>
-
-        <div class="space-y-1 lg:col-span-2">
-          <Label>Room</Label>
-          <Combobox bind:value={tableSync.filters!.room} options={roomOptions} class="h-9" />
-        </div>
-
-        <div class="space-y-1 lg:col-span-2">
-          <Label>Payment Status</Label>
-          <Combobox bind:value={tableSync.filters!.status} options={statusOptions} class="h-9" />
-        </div>
-
-        <div class="flex items-end lg:col-span-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={resetFilters}
-            class="h-9 w-full px-2"
-            icon={FunnelX}
-          >
-            Clear
-          </Button>
-        </div>
-      </div>
+      </FilterDrawer>
 
       {#if filteredResidents.length > 0}
         <DataTable

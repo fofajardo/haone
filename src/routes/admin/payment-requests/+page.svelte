@@ -3,6 +3,7 @@
   import { Button } from "$ui/button";
   import { RefreshCcw, Search, Wallet, ListChecks } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -105,31 +106,36 @@
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
-    <div class="grid gap-4 lg:grid-cols-12">
-      <div class="space-y-1 lg:col-span-8">
-        <Label>Search</Label>
-        <div class="relative">
-          <Search
-            class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            bind:value={searchQuery}
-            placeholder="Search by resident ID, MOP, or notes…"
-            class="h-9 pl-9"
+    <FilterDrawer
+      activeCount={Number(searchQuery !== "") +
+        Number(statusFilter !== PaymentRequestStatus.PENDING)}
+    >
+      <div class="grid gap-4 lg:grid-cols-12">
+        <div class="space-y-1 lg:col-span-8">
+          <Label>Search</Label>
+          <div class="relative">
+            <Search
+              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              bind:value={searchQuery}
+              placeholder="Search by resident ID, MOP, or notes…"
+              class="h-9 pl-9"
+            />
+          </div>
+        </div>
+
+        <div class="space-y-1 lg:col-span-4">
+          <Label>Status</Label>
+          <Combobox
+            bind:value={statusFilter}
+            options={statusOptions}
+            placeholder="Select status..."
+            class="h-9"
           />
         </div>
       </div>
-
-      <div class="space-y-1 lg:col-span-4">
-        <Label>Status</Label>
-        <Combobox
-          bind:value={statusFilter}
-          options={statusOptions}
-          placeholder="Select status..."
-          class="h-9"
-        />
-      </div>
-    </div>
+    </FilterDrawer>
 
     {#if filteredPayments.length > 0}
       <DataTable

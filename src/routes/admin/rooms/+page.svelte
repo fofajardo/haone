@@ -13,6 +13,7 @@
   import type { ResidentRecord, UserRecord } from "$lib/types";
   import { pluralize } from "$utils/formatters";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { Button } from "$ui/button";
@@ -237,29 +238,31 @@
     {/snippet}
   </SubpageHeader>
 
-  <div class="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    <div class="space-y-1">
-      <Label>Unit</Label>
-      <Combobox
-        bind:value={selectedUnit}
-        options={[
-          { value: "ALL", label: "All Units" },
-          ...unitOptions.map((u) => ({ value: u, label: `Unit ${u}` }))
-        ]}
-        placeholder="Filter by Unit"
-        class="h-9"
-      />
+  <FilterDrawer activeCount={Number(selectedUnit !== "ALL")}>
+    <div class="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="space-y-1">
+        <Label>Unit</Label>
+        <Combobox
+          bind:value={selectedUnit}
+          options={[
+            { value: "ALL", label: "All Units" },
+            ...unitOptions.map((u) => ({ value: u, label: `Unit ${u}` }))
+          ]}
+          placeholder="Filter by Unit"
+          class="h-9"
+        />
+      </div>
+      <div class="flex items-center gap-2 pb-2">
+        <Checkbox id="compact-view" bind:checked={isCompact} />
+        <Label
+          for="compact-view"
+          class="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          Compact View
+        </Label>
+      </div>
     </div>
-    <div class="flex items-center gap-2 pb-2">
-      <Checkbox id="compact-view" bind:checked={isCompact} />
-      <Label
-        for="compact-view"
-        class="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
-        Compact View
-      </Label>
-    </div>
-  </div>
+  </FilterDrawer>
 
   {#if unassignedResidents.length > 0}
     <Card.Root class="border-destructive/20 bg-destructive/5">

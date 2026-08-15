@@ -3,6 +3,7 @@
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Search } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { fetchOfficers } from "$api/controllers/officer-controller";
@@ -92,25 +93,27 @@
       <Button onclick={() => loadData()} {isLoading} icon={RefreshCcw} class="mt-4">Retry</Button>
     </ErrorView>
   {:else}
-    <div class="grid gap-4 lg:grid-cols-12">
-      <div class="lg:col-span-4">
-        <TermFilter bind:value={tableSync.filters!.term} onSelect={() => loadData()} />
-      </div>
+    <FilterDrawer activeCount={Number(tableSync.filters!.search !== "")}>
+      <div class="grid gap-4 lg:grid-cols-12">
+        <div class="lg:col-span-4">
+          <TermFilter bind:value={tableSync.filters!.term} onSelect={() => loadData()} />
+        </div>
 
-      <div class="space-y-1 lg:col-span-8">
-        <Label>Search</Label>
-        <div class="relative">
-          <Search
-            class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            bind:value={tableSync.filters!.search}
-            placeholder="Search officers…"
-            class="h-9 pl-9 text-xs"
-          />
+        <div class="space-y-1 lg:col-span-8">
+          <Label>Search</Label>
+          <div class="relative">
+            <Search
+              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              bind:value={tableSync.filters!.search}
+              placeholder="Search officers…"
+              class="h-9 pl-9 text-xs"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </FilterDrawer>
 
     <DataTable
       {columns}

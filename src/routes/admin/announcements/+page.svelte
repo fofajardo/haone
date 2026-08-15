@@ -3,6 +3,7 @@
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Megaphone } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -199,59 +200,65 @@
       <Button onclick={() => loadData()} {isLoading} icon={RefreshCcw} class="mt-4">Retry</Button>
     </ErrorView>
   {:else}
-    <div class="grid gap-4 lg:grid-cols-12">
-      <div class="space-y-1 lg:col-span-5">
-        <Label>Search</Label>
-        <div class="relative">
-          <Search
-            class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            bind:value={tableSync.filters!.search}
-            placeholder="Search announcements…"
-            class="h-9 pl-9 text-xs"
+    <FilterDrawer
+      activeCount={Number(tableSync.filters!.search !== "") +
+        Number(tableSync.filters!.status !== "ALL") +
+        Number(tableSync.filters!.tags !== "ALL")}
+    >
+      <div class="grid gap-4 lg:grid-cols-12">
+        <div class="space-y-1 lg:col-span-5">
+          <Label>Search</Label>
+          <div class="relative">
+            <Search
+              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              bind:value={tableSync.filters!.search}
+              placeholder="Search announcements…"
+              class="h-9 pl-9 text-xs"
+            />
+          </div>
+        </div>
+
+        <div class="space-y-1 lg:col-span-3">
+          <Label>Status</Label>
+          <Combobox
+            bind:value={tableSync.filters!.status}
+            options={[
+              { value: "ALL", label: "All Status" },
+              { value: AnnouncementStatus.ACTIVE, label: "Active" },
+              { value: AnnouncementStatus.FUTURE, label: "Future" },
+              { value: AnnouncementStatus.EXPIRED, label: "Expired" }
+            ]}
+            class="h-9"
           />
         </div>
-      </div>
 
-      <div class="space-y-1 lg:col-span-3">
-        <Label>Status</Label>
-        <Combobox
-          bind:value={tableSync.filters!.status}
-          options={[
-            { value: "ALL", label: "All Status" },
-            { value: AnnouncementStatus.ACTIVE, label: "Active" },
-            { value: AnnouncementStatus.FUTURE, label: "Future" },
-            { value: AnnouncementStatus.EXPIRED, label: "Expired" }
-          ]}
-          class="h-9"
-        />
-      </div>
+        <div class="space-y-1 lg:col-span-3">
+          <Label>Tags</Label>
+          <Combobox
+            bind:value={tableSync.filters!.tags}
+            options={[
+              { value: "ALL", label: "All Tags" },
+              ...tagsOptions.map((t) => ({ value: t, label: t }))
+            ]}
+            class="h-9"
+          />
+        </div>
 
-      <div class="space-y-1 lg:col-span-3">
-        <Label>Tags</Label>
-        <Combobox
-          bind:value={tableSync.filters!.tags}
-          options={[
-            { value: "ALL", label: "All Tags" },
-            ...tagsOptions.map((t) => ({ value: t, label: t }))
-          ]}
-          class="h-9"
-        />
+        <div class="flex items-end lg:col-span-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={resetFilters}
+            class="h-9 w-full px-2"
+            icon={FunnelX}
+          >
+            Clear
+          </Button>
+        </div>
       </div>
-
-      <div class="flex items-end lg:col-span-1">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={resetFilters}
-          class="h-9 w-full px-2"
-          icon={FunnelX}
-        >
-          Clear
-        </Button>
-      </div>
-    </div>
+    </FilterDrawer>
 
     {#if filteredAnnouncements.length > 0}
       <DataTable

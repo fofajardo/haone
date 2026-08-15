@@ -3,6 +3,7 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import {
     RefreshCcw,
     GraduationCap,
@@ -182,9 +183,11 @@
       >
     </ErrorView>
   {:else}
-    <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
-      <TermFilter onSelect={() => loadData()} />
-    </div>
+    <FilterDrawer>
+      <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+        <TermFilter onSelect={() => loadData()} />
+      </div>
+    </FilterDrawer>
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <!-- Payment Status -->

@@ -7,6 +7,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import {
     fetchAdminLaundryReservations,
     cancelLaundryReservation,
@@ -285,20 +286,22 @@
           <h3 class="text-sm font-bold tracking-wider text-muted-foreground uppercase">
             Reservation History
           </h3>
-          <div class="flex items-center gap-2">
-            <Funnel class="h-4 w-4 text-muted-foreground" />
-            <NativeSelect.Root bind:value={statusFilter} class="h-9 w-[140px] text-xs">
-              <NativeSelect.Option value="">All Status</NativeSelect.Option>
-              <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
-              <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
-              <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
-                >Cancelled (Admin)</NativeSelect.Option
-              >
-              <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
-                >Cancelled (User)</NativeSelect.Option
-              >
-            </NativeSelect.Root>
-          </div>
+          <FilterDrawer activeCount={Number(statusFilter !== "")}>
+            <div class="flex items-center gap-2">
+              <Funnel class="h-4 w-4 text-muted-foreground" />
+              <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-[140px]">
+                <NativeSelect.Option value="">All Status</NativeSelect.Option>
+                <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
+                <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
+                <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
+                  >Cancelled (Admin)</NativeSelect.Option
+                >
+                <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
+                  >Cancelled (User)</NativeSelect.Option
+                >
+              </NativeSelect.Root>
+            </div>
+          </FilterDrawer>
         </div>
 
         <DataTable
