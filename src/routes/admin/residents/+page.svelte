@@ -30,7 +30,8 @@
     FileCheck,
     ShieldCheck,
     Trophy,
-    FileSpreadsheet
+    FileSpreadsheet,
+    Bed
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
   import * as AlertDialog from "$ui/alert-dialog";
@@ -220,6 +221,10 @@
             {isLoading}
             icon={RefreshCcw}
           />
+
+          <Button variant="outline" size="sm" href="/admin/residents/rooms" icon={Bed}>
+            Rooms
+          </Button>
 
           <Button variant="outline" size="sm" href="/admin/residents/export" icon={FileSpreadsheet}>
             Export

@@ -215,7 +215,7 @@
 </script>
 
 <div class="space-y-4">
-  <SubpageHeader title="Rooms" isTopLevel={true}>
+  <SubpageHeader title="Rooms">
     {#snippet actions()}
       <div class="flex gap-2">
         <Button
@@ -311,7 +311,7 @@
       {#each filteredRooms as room}
         {#if isCompact}
           <button
-            onclick={() => goto(`/admin/rooms/${room.room_number}`)}
+            onclick={() => goto(`/admin/residents/rooms/${room.room_number}`)}
             class="group flex w-full items-center gap-3 rounded-xl border bg-muted/30 p-3 text-left transition-all hover:bg-muted/50 {room.unavailable_reason
               ? 'opacity-60 grayscale'
               : ''}"
@@ -359,7 +359,7 @@
             <Card.Header class="bg-muted/50 p-3">
               <div class="flex items-center justify-between">
                 <a
-                  href="/admin/rooms/{room.room_number}"
+                  href="/admin/residents/rooms/{room.room_number}"
                   class="group/title flex items-center gap-1.5 transition-colors hover:text-primary"
                 >
                   <Card.Title class="text-lg font-bold">{room.room_number}</Card.Title>

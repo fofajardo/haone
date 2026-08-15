@@ -45,7 +45,6 @@
     pending: { label: "Pending", href: "/admin/pending", icon: Receipt },
     history: { label: "History", href: "/admin/transactions", icon: History },
     residents: { label: "Residents", href: "/admin/residents", icon: Users },
-    rooms: { label: "Rooms", href: "/admin/rooms", icon: Bed },
     users: { label: "Users", href: "/admin/users", icon: Contact },
     officers: { label: "Officers", href: "/admin/officers", icon: BookUser },
     financial: { label: "Financial", href: "/admin/financial-report", icon: HandCoins },

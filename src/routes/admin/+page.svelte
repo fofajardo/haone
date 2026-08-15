@@ -106,7 +106,7 @@
     {
       title: "Rooms",
       description: "Manage room inventory, bed assignments, and occupancy.",
-      href: "/admin/rooms",
+      href: "/admin/residents/rooms",
       icon: Bed,
       color: "text-brand",
       bg: "bg-brand/10",

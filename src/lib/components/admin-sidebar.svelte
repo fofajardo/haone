@@ -55,12 +55,6 @@
       url: "/admin/residents",
       icon: Users
     },
-
-    {
-      title: "Rooms",
-      url: "/admin/rooms",
-      icon: Bed
-    },
     {
       title: "Users",
       url: "/admin/users",

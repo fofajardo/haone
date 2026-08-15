@@ -100,7 +100,7 @@
 </script>
 
 <div class="space-y-4">
-  <SubpageHeader title="Room {roomNumber}" isTopLevel={false}>
+  <SubpageHeader title="Room {roomNumber}" href="/admin/residents/rooms">
     {#snippet actions()}
       <Button
         variant="outline"
