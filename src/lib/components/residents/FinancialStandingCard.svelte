@@ -67,7 +67,7 @@
         </div>
         <div class="flex flex-col gap-0.5">
           <span>Paid</span>
-          <span class="text-foreground text-primary">{formatAmount(account.assocPaid)}</span>
+          <span class="text-foreground">{formatAmount(account.assocPaid)}</span>
         </div>
         <div class="flex flex-col gap-0.5">
           <span>Waived</span>
