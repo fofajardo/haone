@@ -19,10 +19,10 @@ export async function fetchServer<T = any>(
   options: RequestInit = {},
   bypassCache = false
 ): Promise<T> {
-  const isLaundry = url.includes("/api/resident/laundry");
-  const useCache = options.method === "GET" || !options.method;
+  const method = (options.method || "GET").toUpperCase();
+  const isGet = method === "GET";
 
-  if (!bypassCache && !isLaundry && useCache && serverCache[url]) {
+  if (isGet && !bypassCache && serverCache[url]) {
     return serverCache[url] as T;
   }
 
@@ -52,8 +52,11 @@ export async function fetchServer<T = any>(
     throw new Error(errorMsg);
   }
 
-  if (!isLaundry && useCache) {
+  if (isGet) {
     serverCache[url] = data;
+  } else {
+    // Invalidate client GET cache upon any mutating request
+    serverCache = {};
   }
 
   return data as T;
