@@ -400,7 +400,7 @@
     <Dialog.Header>
       <Dialog.Title>Book Laundry Slot</Dialog.Title>
       <Dialog.Description
-        >Select your preferred date and time. Maximum of 2 hours.</Dialog.Description
+        >Select your preferred date and time.</Dialog.Description
       >
     </Dialog.Header>
     <div class="space-y-6 pb-4">
