@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Search, Wallet, ListChecks } from "@lucide/svelte";
+  import { RefreshCcw, Search, Wallet, ListChecks, FunnelX } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -94,8 +94,8 @@
       activeCount={Number(searchQuery !== "") +
         Number(statusFilter !== PaymentRequestStatus.PENDING)}
     >
-      <div class="grid gap-4 lg:grid-cols-12">
-        <div class="space-y-1 lg:col-span-8">
+      <div class="grid gap-2 lg:grid-cols-12">
+        <div class="space-y-1 lg:col-span-7">
           <Label>Search</Label>
           <div class="relative">
             <Search
@@ -117,6 +117,21 @@
             placeholder="Select status..."
             class="h-9"
           />
+        </div>
+
+        <div class="flex items-end lg:col-span-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={() => {
+              searchQuery = "";
+              statusFilter = PaymentRequestStatus.PENDING;
+            }}
+            class="h-9 w-full px-2"
+            icon={FunnelX}
+          >
+            Clear
+          </Button>
         </div>
       </div>
     </FilterDrawer>

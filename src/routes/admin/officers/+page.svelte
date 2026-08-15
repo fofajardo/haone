@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, Search } from "@lucide/svelte";
+  import { RefreshCcw, Plus, Search, FunnelX } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -89,13 +89,16 @@
       <Button onclick={() => loadData()} {isLoading} icon={RefreshCcw} class="mt-4">Retry</Button>
     </ErrorView>
   {:else}
-    <FilterDrawer activeCount={Number(tableSync.filters!.search !== "")}>
-      <div class="grid gap-4 lg:grid-cols-12">
+    <FilterDrawer
+      activeCount={Number(tableSync.filters!.search !== "") +
+        Number(tableSync.filters!.term !== currentTerm && tableSync.filters!.term !== "ALL")}
+    >
+      <div class="grid gap-2 lg:grid-cols-12">
         <div class="lg:col-span-4">
           <TermFilter bind:value={tableSync.filters!.term} onSelect={() => loadData()} />
         </div>
 
-        <div class="space-y-1 lg:col-span-8">
+        <div class="space-y-1 lg:col-span-7">
           <Label>Search</Label>
           <div class="relative">
             <Search
@@ -107,6 +110,21 @@
               class="h-9 pl-9 text-xs"
             />
           </div>
+        </div>
+
+        <div class="flex items-end lg:col-span-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onclick={() => {
+              tableSync.reset();
+              tableSync.filters!.term = currentTerm;
+            }}
+            class="h-9 w-full px-2"
+            icon={FunnelX}
+          >
+            Clear
+          </Button>
         </div>
       </div>
     </FilterDrawer>
