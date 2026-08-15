@@ -139,16 +139,6 @@
           {isLoading}
           icon={RefreshCcw}
         />
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={handleBatchAudit}
-          isLoading={isAuditing}
-          icon={ShieldCheck}
-          disabled={selectedIds.size === 0}
-        >
-          Mark as Audited
-        </Button>
         <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
       </div>
     {/snippet}
@@ -226,7 +216,13 @@
         meta={{ transactionTypes }}
         rowId="id"
         enableSelection
-      />
+      >
+        {#snippet actions()}
+          <Button size="sm" onclick={handleBatchAudit} isLoading={isAuditing} icon={ShieldCheck}>
+            Mark as Audited
+          </Button>
+        {/snippet}
+      </DataTable>
     {:else}
       <EmptyView>
         {#snippet icon()}

@@ -179,15 +179,6 @@
           {isLoading}
           icon={RefreshCcw}
         />
-        <Button
-          variant="secondary"
-          size="sm"
-          onclick={handleBroadcast}
-          isLoading={isBroadcasting}
-          icon={Megaphone}
-        >
-          Broadcast
-        </Button>
         <Button size="sm" onclick={() => goto("/admin/announcements/add")} icon={Plus}>New</Button>
       </div>
     {/snippet}
@@ -271,7 +262,19 @@
         enableSelection={true}
         onSelectionChange={(ids) => (selectedIds = ids)}
         meta={{ onExpire: handleExpire, onDelete: handleDelete }}
-      />
+      >
+        {#snippet actions()}
+          <Button
+            variant="secondary"
+            size="sm"
+            onclick={handleBroadcast}
+            isLoading={isBroadcasting}
+            icon={Megaphone}
+          >
+            Broadcast
+          </Button>
+        {/snippet}
+      </DataTable>
     {:else}
       <EmptyView title="No announcements found.">
         {#snippet icon()}

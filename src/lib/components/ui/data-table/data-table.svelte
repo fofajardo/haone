@@ -1,4 +1,5 @@
 <script lang="ts" generics="TData, TValue">
+  import type { Snippet } from "svelte";
   import {
     type ColumnDef,
     type ColumnFiltersState,
@@ -18,6 +19,8 @@
   import { cn } from "$lib/utils";
   import * as NativeSelect from "$ui/native-select/index.js";
   import { pluralize } from "$utils/formatters";
+  import { X } from "@lucide/svelte";
+  import { fly } from "svelte/transition";
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -33,6 +36,7 @@
     onPaginationChange?: (pagination: PaginationState) => void;
     rowId: keyof TData | ((row: TData) => string);
     enableSelection?: boolean;
+    actions?: Snippet;
   };
 
   let {
@@ -48,7 +52,8 @@
     pagination = $bindable({ pageIndex: 0, pageSize: 20 }),
     onPaginationChange: onPaginationChangeProp,
     rowId,
-    enableSelection = false
+    enableSelection = false,
+    actions
   }: DataTableProps<TData, TValue> & { meta?: any } = $props();
 
   let sorting = $state<SortingState>([]);
@@ -152,32 +157,45 @@
 </script>
 
 <div class={cn("w-full", className)}>
-  {#if hasSelection}
-    {#if table.getIsAllPageRowsSelected() && !table.getIsAllRowsSelected()}
-      <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
-        All <span class="font-bold">{table.getPaginationRowModel().rows.length}</span> items on this
-        page are selected.
-        <Button
-          variant="link"
-          class="h-auto p-0 font-bold"
-          onclick={() => table.toggleAllRowsSelected(true)}
-        >
-          Select all {table.getFilteredRowModel().rows.length} items in match
-        </Button>
+  {#if hasSelection && table.getFilteredSelectedRowModel().rows.length > 0}
+    {@const selectedCount = table.getFilteredSelectedRowModel().rows.length}
+    {@const pageCount = table.getPaginationRowModel().rows.length}
+    {@const totalFilteredCount = table.getFilteredRowModel().rows.length}
+    {@const isAllPageSelected = table.getIsAllPageRowsSelected()}
+    {@const isAllMatchSelected = table.getIsAllRowsSelected()}
+
+    <div
+      transition:fly={{ y: 16, duration: 180 }}
+      class="fixed inset-x-3 bottom-22 z-30 flex flex-col gap-2 rounded-xl border border-border bg-card p-3 shadow-lg transition-all sm:sticky sm:inset-auto sm:top-2 sm:z-20 sm:mb-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-2.5 sm:shadow-sm"
+    >
+      <div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        {#if isAllPageSelected && !isAllMatchSelected && totalFilteredCount > pageCount}
+          <span>
+            All <span class="font-semibold text-foreground">{pageCount}</span> on page selected.
+          </span>
+          <Button
+            variant="link"
+            size="sm"
+            class="font-semibold text-primary"
+            onclick={() => table.toggleAllRowsSelected(true)}
+          >
+            Select all {totalFilteredCount} in match
+          </Button>
+        {:else}
+          <span>
+            <span class="font-semibold text-foreground">{selectedCount}</span> of
+            <span class="font-semibold text-foreground">{totalFilteredCount}</span> selected
+          </span>
+        {/if}
       </div>
-    {:else if table.getIsAllRowsSelected() && table.getFilteredRowModel().rows.length > table.getState().pagination.pageSize}
-      <div class="mb-2 rounded-md bg-muted/50 p-2 text-center text-sm">
-        All <span class="font-bold">{table.getFilteredRowModel().rows.length}</span> items are
-        selected.
-        <Button
-          variant="link"
-          class="h-auto p-0 font-bold text-destructive"
-          onclick={() => table.resetRowSelection()}
-        >
-          Clear selection
-        </Button>
+
+      <div class="flex flex-wrap items-center justify-end gap-2">
+        <Button variant="ghost" onclick={() => table.resetRowSelection()} icon={X}>Clear</Button>
+        {#if actions}
+          {@render actions()}
+        {/if}
       </div>
-    {/if}
+    </div>
   {/if}
 
   <div class="rounded-md border">
@@ -234,16 +252,9 @@
 
   <div class="flex flex-col items-center justify-between gap-4 py-4 md:flex-row">
     <div class="flex flex-col items-center gap-4 text-sm sm:flex-row sm:gap-6">
-      {#if hasSelection}
-        <span class="whitespace-nowrap">
-          {table.getFilteredSelectedRowModel().rows.length} of
-          {pluralize(table.getFilteredRowModel().rows.length, "row", "rows")} selected.
-        </span>
-      {:else}
-        <span class="whitespace-nowrap">
-          Total of {pluralize(table.getFilteredRowModel().rows.length, "entry", "entries")}.
-        </span>
-      {/if}
+      <span class="whitespace-nowrap">
+        Total of {pluralize(table.getFilteredRowModel().rows.length, "entry", "entries")}.
+      </span>
     </div>
     <div class="flex flex-col items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
       <div class="flex items-center gap-2 text-sm font-medium">

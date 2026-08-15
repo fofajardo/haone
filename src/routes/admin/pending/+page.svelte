@@ -163,25 +163,13 @@
 <div class="space-y-3">
   <SubpageHeader title="Pending Receipts" isTopLevel={true}>
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-
-        <Button
-          size="sm"
-          onclick={prepareDispatch}
-          {isLoading}
-          disabled={selectedIndices.size === 0}
-          icon={FileCheck}
-        >
-          Settle
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData(true)}
+        {isLoading}
+        icon={RefreshCcw}
+      />
     {/snippet}
   </SubpageHeader>
 
@@ -231,7 +219,11 @@
         meta={{ transactionTypes }}
         rowId="id"
         enableSelection
-      />
+      >
+        {#snippet actions()}
+          <Button size="sm" onclick={prepareDispatch} {isLoading} icon={FileCheck}>Settle</Button>
+        {/snippet}
+      </DataTable>
     {:else}
       <EmptyView title="No pending entries.">
         {#snippet icon()}

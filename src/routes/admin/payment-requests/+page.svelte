@@ -78,24 +78,13 @@
 <div class="space-y-6">
   <SubpageHeader title="Payment Requests" isTopLevel={true}>
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-        <Button
-          size="sm"
-          onclick={handleReviewSelected}
-          {isLoading}
-          disabled={selectedIndices.size === 0}
-          icon={ListChecks}
-        >
-          Review
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData(true)}
+        {isLoading}
+        icon={RefreshCcw}
+      />
     {/snippet}
   </SubpageHeader>
 
@@ -147,7 +136,13 @@
         meta={{
           residents
         }}
-      />
+      >
+        {#snippet actions()}
+          <Button size="sm" onclick={handleReviewSelected} {isLoading} icon={ListChecks}>
+            Review
+          </Button>
+        {/snippet}
+      </DataTable>
     {:else}
       <EmptyView
         title="No payment requests found."

@@ -229,56 +229,6 @@
           <Button variant="outline" size="sm" href="/admin/residents/export" icon={FileSpreadsheet}>
             Export
           </Button>
-
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger disabled={selectedIndices.size === 0}>
-              {#snippet child({ props })}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={selectedIndices.size === 0}
-                  {...props}
-                  icon={Mail}
-                >
-                  Send
-                  <ChevronDown class="ml-2 h-3 w-3 opacity-50" />
-                </Button>
-              {/snippet}
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end" class="w-56">
-              <DropdownMenu.Item onclick={prepareDispatchForStatementOfAccount}>
-                <Mail class="mr-2 h-4 w-4" />
-                <span>Send Statement of Account</span>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onclick={prepareDispatchForPaymentStatus}>
-                <Mail class="mr-2 h-4 w-4" />
-                <span>Send Payment Status</span>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onclick={prepareDispatchForClearance}>
-                <FileCheck class="mr-2 h-4 w-4" />
-                <span>Send Clearance Certificate</span>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={handleBatchAward}
-            disabled={selectedIndices.size === 0}
-            icon={Trophy}
-          >
-            Award
-          </Button>
-
-          <Button
-            size="sm"
-            onclick={handleBatchClear}
-            disabled={selectedIndices.size === 0}
-            icon={ShieldCheck}
-          >
-            Mark as Cleared
-          </Button>
         </div>
       {/snippet}
     </SubpageHeader>
@@ -354,7 +304,40 @@
           onSelectionChange={(ids) => (selectedIndices = ids)}
           rowId="stno"
           enableSelection
-        />
+        >
+          {#snippet actions()}
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger>
+                {#snippet child({ props })}
+                  <Button variant="outline" size="sm" {...props} icon={Mail}>
+                    Send
+                    <ChevronDown class="ml-2 h-3 w-3 opacity-50" />
+                  </Button>
+                {/snippet}
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content align="end" class="w-56">
+                <DropdownMenu.Item onclick={prepareDispatchForStatementOfAccount}>
+                  <Mail class="mr-2 h-4 w-4" />
+                  <span>Send Statement of Account</span>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onclick={prepareDispatchForPaymentStatus}>
+                  <Mail class="mr-2 h-4 w-4" />
+                  <span>Send Payment Status</span>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onclick={prepareDispatchForClearance}>
+                  <FileCheck class="mr-2 h-4 w-4" />
+                  <span>Send Clearance Certificate</span>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
+
+            <Button variant="outline" size="sm" onclick={handleBatchAward} icon={Trophy}>
+              Award
+            </Button>
+
+            <Button size="sm" onclick={handleBatchClear} icon={ShieldCheck}>Mark as Cleared</Button>
+          {/snippet}
+        </DataTable>
       {:else}
         <EmptyView
           title="No residents found."
