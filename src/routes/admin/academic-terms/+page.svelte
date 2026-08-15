@@ -58,11 +58,11 @@
     { value: "MY", label: "Midyear Term" }
   ];
 
-  async function loadTerms() {
+  async function loadTerms(bypassCache = false) {
     isLoading = true;
     errorMessage = "";
     try {
-      const records = await fetchConstants(true);
+      const records = await fetchConstants(bypassCache);
       allConstants = records.map((r, idx) => ({
         key: r.key,
         value: r.value,
@@ -97,7 +97,7 @@
     }
   }
 
-  onMount(loadTerms);
+  onMount(() => loadTerms());
 
   async function handleAdd() {
     errorMessage = "";
@@ -209,11 +209,11 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader
     title="Academic Terms"
     isTopLevel={true}
-    onRefresh={loadTerms}
+    onRefresh={() => loadTerms(true)}
     isRefreshing={isLoading}
   >
     {#snippet actions()}
