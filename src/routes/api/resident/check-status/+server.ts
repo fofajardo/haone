@@ -212,12 +212,12 @@ export const GET: RequestHandler = async ({ url, request }) => {
             waived,
             bal,
             isFullyPaid: bal <= 0,
-            ceRefNo: (residentAccount[ACCOUNT_COL.CE_REFNO] || residentAccount[5] || "").trim(),
-            ceIssued: (residentAccount[ACCOUNT_COL.CE_ISSUED] || residentAccount[6] || "").trim(),
-            ceLink: (residentAccount[ACCOUNT_COL.CE_LINK] || residentAccount[7] || "").trim(),
+            ceRefNo: (residentAccount[ACCOUNT_COL.CE_REFNO] || "").trim(),
+            ceIssued: (residentAccount[ACCOUNT_COL.CE_ISSUED] || "").trim(),
+            ceLink: (residentAccount[ACCOUNT_COL.CE_LINK] || "").trim(),
             college: (userRow?.[USER_COL.COLLEGE] || "").split(",").pop()?.trim() || "",
             program: (userRow?.[USER_COL.DEGREE_PROGRAM] || "").split(":").pop()?.trim() || "",
-            type: (residentAccount[ACCOUNT_COL.TYPE] || AccountType.STUDENT).trim().toUpperCase()
+            type: (residentAccount[ACCOUNT_COL.TYPE] || "").trim().toUpperCase()
           }
         : null,
       currEntry: currEntry
@@ -229,7 +229,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
             college: currEntry[CURR_COL.COLLEGE],
             program: currEntry[CURR_COL.PROGRAM],
             studentNo: currEntry[CURR_COL.STUDENT_NO],
-            accountType: currEntry[CURR_COL.ACCOUNT_TYPE] || AccountType.STUDENT,
+            accountType: (currEntry[CURR_COL.ACCOUNT_TYPE] || "").trim().toUpperCase(),
             suffix: currEntry[CURR_COL.SUFFIX] || "",
             overrideName: currEntry[CURR_COL.OVERRIDE_NAME] || "",
             isEvaluated
