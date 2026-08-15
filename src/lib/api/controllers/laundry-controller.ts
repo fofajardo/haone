@@ -38,10 +38,33 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 
     const duration = endH - startH;
     if (!isAdmin && duration > 2) {
-      return "Max 2 hours allowed";
+      return "Max 2 hours per day allowed";
     }
 
     if (!isAdmin) {
+      const targetResidentId = residentId;
+      if (targetResidentId) {
+        const residentDayMinutes = existingReservations
+          .filter((r) => {
+            if (r.status !== LaundryStatus.ACTIVE || r.date !== date || r.residentId !== targetResidentId) {
+              return false;
+            }
+            return true;
+          })
+          .reduce((total, r) => {
+            const s = parseTime(r.timeStart);
+            const e = parseTime(r.timeEnd);
+            if (s !== null && e !== null && e > s) {
+              return total + (e - s);
+            }
+            return total;
+          }, 0);
+
+        if (residentDayMinutes + duration > 2) {
+          return "Max 2 hours per day allowed";
+        }
+      }
+
       const [y, m, d] = date.split("-").map(Number);
       const selectedDateTime = new Date(y, m - 1, d, startH);
       const now = new Date();
@@ -130,6 +153,24 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   const active = list.filter(
     (r) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER"
   );
+
+  if (!isAdmin && currentResidentId) {
+    const durationHours = endMinutes - startMinutes;
+    const existingResidentDayHours = active
+      .filter((r) => r.date === date && r.residentId === currentResidentId)
+      .reduce((total, r) => {
+        const s = parseTime(r.timeStart);
+        const e = parseTime(r.timeEnd);
+        if (s !== null && e !== null && e > s) {
+          return total + (e - s);
+        }
+        return total;
+      }, 0);
+
+    if (existingResidentDayHours + durationHours > 2) {
+      throw new Error("Maximum of two (2) hours per day allowed");
+    }
+  }
 
   const sameSlotUser = active.find(
     (r) =>

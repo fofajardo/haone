@@ -86,6 +86,7 @@
       date: newReservation.date,
       timeStart: newReservation.timeStart,
       timeEnd: newReservation.timeEnd,
+      residentId: currentResidentId,
       isAdmin: false,
       existingReservations: reservations
     });
