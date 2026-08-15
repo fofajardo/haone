@@ -107,33 +107,28 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Users" isTopLevel={true}>
+  <SubpageHeader
+    title="Users"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger>
-            {#snippet child({ props })}
-              <Button size="sm" {...props} icon={Plus}>Add</Button>
-            {/snippet}
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content align="end">
-            <DropdownMenu.Item onclick={() => goto("/admin/users/add")}>
-              <UserPlus class="mr-2 h-4 w-4" /> Single User
-            </DropdownMenu.Item>
-            <DropdownMenu.Item onclick={() => goto("/admin/users/batch")}>
-              <FileUp class="mr-2 h-4 w-4" /> Batch Import
-            </DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      </div>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          {#snippet child({ props })}
+            <Button size="sm" {...props} icon={Plus}>Add</Button>
+          {/snippet}
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content align="end">
+          <DropdownMenu.Item onclick={() => goto("/admin/users/add")}>
+            <UserPlus class="mr-2 h-4 w-4" /> Single User
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onclick={() => goto("/admin/users/batch")}>
+            <FileUp class="mr-2 h-4 w-4" /> Batch Import
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     {/snippet}
   </SubpageHeader>
 

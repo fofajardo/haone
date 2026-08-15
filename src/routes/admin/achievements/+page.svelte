@@ -201,7 +201,12 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Achievements" isTopLevel={true}>
+  <SubpageHeader
+    title="Achievements"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
       <div class="flex flex-wrap items-center gap-2">
         <Tabs.Root bind:value={scope}>
@@ -210,13 +215,6 @@
             <Tabs.Trigger value="global">Global</Tabs.Trigger>
           </Tabs.List>
         </Tabs.Root>
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
         <Button variant="outline" size="sm" onclick={() => (isAwarderOpen = true)} icon={UserPlus}>
           Award
         </Button>

@@ -211,17 +211,14 @@
 
 <Tooltip.Provider>
   <div class="space-y-3">
-    <SubpageHeader title="Residents" isTopLevel={true}>
+    <SubpageHeader
+      title="Residents"
+      isTopLevel={true}
+      onRefresh={() => loadData(true)}
+      isRefreshing={isLoading}
+    >
       {#snippet actions()}
         <div class="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={() => loadData(true)}
-            {isLoading}
-            icon={RefreshCcw}
-          />
-
           <Button variant="outline" size="sm" href="/admin/residents/rooms" icon={Bed}>
             Rooms
           </Button>

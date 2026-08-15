@@ -101,20 +101,16 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Payment Requests" isTopLevel={true}>
+  <SubpageHeader
+    title="Payment Requests"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-        <Button size="sm" onclick={() => goto("/resident/payment-requests/add")} icon={Plus}>
-          Add
-        </Button>
-      </div>
+      <Button size="sm" onclick={() => goto("/resident/payment-requests/add")} icon={Plus}>
+        Add
+      </Button>
     {/snippet}
   </SubpageHeader>
 

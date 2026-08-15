@@ -161,17 +161,12 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Pending Receipts" isTopLevel={true}>
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData(true)}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader
+    title="Pending Receipts"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  />
 
   {#if isLoading && queue.length === 0}
     <LoadingView />

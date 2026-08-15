@@ -100,17 +100,12 @@
 </script>
 
 <div class="space-y-4">
-  <SubpageHeader title="Room {roomNumber}" href="/admin/residents/rooms">
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData(true)}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader
+    title="Room {roomNumber}"
+    href="/admin/residents/rooms"
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  />
 
   {#if isLoading && residents.length === 0}
     <LoadingView />

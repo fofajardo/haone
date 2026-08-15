@@ -75,17 +75,12 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Finance" isTopLevel={true}>
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData(undefined, true)}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader
+    title="Finance"
+    isTopLevel={true}
+    onRefresh={() => loadData(undefined, true)}
+    isRefreshing={isLoading}
+  />
 
   <FilterDrawer>
     <div class="grid gap-4 lg:grid-cols-12">

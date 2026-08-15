@@ -215,26 +215,17 @@
 </script>
 
 <div class="space-y-4">
-  <SubpageHeader title="Rooms">
+  <SubpageHeader title="Rooms" onRefresh={() => loadData(true)} isRefreshing={isLoading}>
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-        <Button
-          size="sm"
-          onclick={handleSync}
-          isLoading={isSyncing}
-          disabled={isLoading}
-          icon={CloudDownload}
-        >
-          Sync
-        </Button>
-      </div>
+      <Button
+        size="sm"
+        onclick={handleSync}
+        isLoading={isSyncing}
+        disabled={isLoading}
+        icon={CloudDownload}
+      >
+        Sync
+      </Button>
     {/snippet}
   </SubpageHeader>
 

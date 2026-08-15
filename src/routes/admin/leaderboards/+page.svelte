@@ -81,25 +81,19 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Leaderboards" isTopLevel={true}>
+  <SubpageHeader
+    title="Leaderboards"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <div class="flex flex-wrap items-center gap-2">
-        <Tabs.Root bind:value={scope}>
-          <Tabs.List>
-            <Tabs.Trigger value="term">Term</Tabs.Trigger>
-            <Tabs.Trigger value="global">Global</Tabs.Trigger>
-          </Tabs.List>
-        </Tabs.Root>
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => {
-            loadData(true);
-          }}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-      </div>
+      <Tabs.Root bind:value={scope}>
+        <Tabs.List>
+          <Tabs.Trigger value="term">Term</Tabs.Trigger>
+          <Tabs.Trigger value="global">Global</Tabs.Trigger>
+        </Tabs.List>
+      </Tabs.Root>
     {/snippet}
   </SubpageHeader>
 

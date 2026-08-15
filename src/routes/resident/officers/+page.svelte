@@ -35,17 +35,12 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Officers" isTopLevel={true}>
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData(true)}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader
+    title="Officers"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  />
 
   {#if isLoading}
     <div>

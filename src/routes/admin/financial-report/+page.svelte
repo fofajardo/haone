@@ -156,20 +156,14 @@
 </script>
 
 <div class="space-y-6 pb-20">
-  <SubpageHeader title="Financial Report" isTopLevel={true}>
+  <SubpageHeader
+    title="Financial Report"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => {
-            return loadData(true);
-          }}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-        <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export PDF</Button>
-      </div>
+      <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export PDF</Button>
     {/snippet}
   </SubpageHeader>
 

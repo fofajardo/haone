@@ -129,18 +129,14 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Transactions" isTopLevel={true}>
+  <SubpageHeader
+    title="Transactions"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-        <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
-      </div>
+      <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
     {/snippet}
   </SubpageHeader>
 

@@ -233,18 +233,14 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Laundry" isTopLevel={true}>
+  <SubpageHeader
+    title="Laundry"
+    isTopLevel={true}
+    onRefresh={() => loadData()}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadData()}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-        <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
-      </div>
+      <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
     {/snippet}
   </SubpageHeader>
 

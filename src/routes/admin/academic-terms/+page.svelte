@@ -210,7 +210,12 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Academic Terms" isTopLevel={true}>
+  <SubpageHeader
+    title="Academic Terms"
+    isTopLevel={true}
+    onRefresh={loadTerms}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
       <Button size="sm" onclick={() => (showAddDialog = true)} icon={Plus}>Add</Button>
     {/snippet}

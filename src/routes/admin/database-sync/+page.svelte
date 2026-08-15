@@ -116,16 +116,14 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Database Sync" isTopLevel={true}>
+  <SubpageHeader
+    title="Database Sync"
+    isTopLevel={true}
+    onRefresh={loadStatus}
+    isRefreshing={loading}
+  >
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={loadStatus}
-          isLoading={loading}
-          icon={RefreshCcw}
-        />
         <Button
           variant="outline"
           size="sm"

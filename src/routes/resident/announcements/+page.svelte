@@ -32,17 +32,12 @@
   onMount(loadData);
 </script>
 
-<SubpageHeader title="Announcements" isTopLevel={true}>
-  {#snippet actions()}
-    <Button
-      variant="outline"
-      size="sm"
-      onclick={() => loadData(true)}
-      {isLoading}
-      icon={RefreshCcw}
-    />
-  {/snippet}
-</SubpageHeader>
+<SubpageHeader
+  title="Announcements"
+  isTopLevel={true}
+  onRefresh={() => loadData(true)}
+  isRefreshing={isLoading}
+/>
 
 {#if isLoading}
   <LoadingView />

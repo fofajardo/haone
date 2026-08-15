@@ -76,17 +76,12 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Payment Requests" isTopLevel={true}>
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => loadData(true)}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader
+    title="Payment Requests"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  />
 
   {#if isLoading && payments.length === 0}
     <LoadingView />
