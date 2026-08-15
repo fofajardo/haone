@@ -1,6 +1,7 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
   import { auth } from "$state/auth.svelte";
+  import { brandingState } from "$state/branding.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Info, Funnel, CircleX, CircleCheck } from "@lucide/svelte";
@@ -257,12 +258,9 @@
         <ul
           class="list-disc space-y-1.5 border-t border-blue-100 px-8 py-4 text-sm text-blue-900/70 dark:border-blue-800 dark:text-blue-100/70"
         >
-          <li>Operating Hours: 5:00 AM - 10:00 PM.</li>
-          <li>Maximum of two (2) hours per day.</li>
-          <li>Maximum of two (2) weeks space for reservation.</li>
-          <li>Be present at your reserved hours.</li>
-          <li>Be mindful and inform others if you will not be able to attend.</li>
-          <li>Inform other residents when done with your laundry.</li>
+          {#each brandingState.profile.laundryRules || [] as rule}
+            <li>{rule}</li>
+          {/each}
         </ul>
       </Collapsible.Content>
     </Collapsible.Root>

@@ -65,6 +65,7 @@ export interface BrandingProfile {
   regFormUrl?: string;
   paymentInstructionsUrl?: string;
   defaultReminders?: string;
+  laundryRules?: string[];
 }
 
 export interface EmailTemplate<T> {
