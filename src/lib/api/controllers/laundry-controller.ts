@@ -1,4 +1,4 @@
-import type { LaundryRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
+import { type LaundryRecord, type PaginationOptions, type PaginatedResponse, LaundryStatus } from "$lib/types";
 import { parseTime } from "$utils/parsers";
 import { laundryService } from "$api/services/laundry-service";
 import { getCurrentResidentId } from "./resident-controller";
@@ -90,7 +90,7 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
     }
 
     const isOverlapping = existingReservations.some((r) => {
-      if (r.status !== "ACTIVE" || r.date !== date) {
+      if (r.status !== LaundryStatus.ACTIVE || r.date !== date) {
         return false;
       }
       const rStart = parseTime(r.timeStart);
@@ -151,7 +151,7 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   const res = await laundryService.fetchReservations();
   const list = Array.isArray(res) ? res : res.items;
   const active = list.filter(
-    (r) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER"
+    (r) => r.status !== LaundryStatus.CANCELLED_BY_ADMIN && r.status !== LaundryStatus.CANCELLED_BY_USER
   );
 
   if (!isAdmin && currentResidentId) {
@@ -186,7 +186,7 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   return laundryService.addReservation({
     ...data,
     residentId: currentResidentId,
-    status: "ACTIVE"
+    status: LaundryStatus.ACTIVE
   });
 }
 
