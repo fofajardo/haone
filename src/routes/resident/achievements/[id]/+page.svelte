@@ -27,21 +27,13 @@
     })
   );
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      const [achResult] = await Promise.all([fetchAchievements()]);
-
-      let allA: AchievementRecord[];
-
-      if (Array.isArray(achResult)) {
-        allA = achResult;
-      } else {
-        allA = achResult.achievements;
-        currentResidentId = achResult.currentResidentId;
-      }
-
+      const achResult = await fetchAchievements(bypassCache);
+      const allA = achResult.achievements;
+      currentResidentId = achResult.currentResidentId;
       allLogs = achResult.logs;
 
       achievement =
@@ -71,11 +63,15 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => loadData());
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Achievement Details">
+  <SubpageHeader
+    title="Achievement Details"
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
       {#if achievement && isEarned}
         <AchievementStoryShareButton {achievement} />

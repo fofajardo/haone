@@ -208,14 +208,20 @@
   });
 
   async function handleClear() {
-    if (!account) return;
+    if (!account) {
+      return;
+    }
     residentsToClear = [account];
     isClearDialogOpen = true;
   }
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title={account?.name || "Resident Profile"}>
+  <SubpageHeader
+    title={account?.name || "Resident Profile"}
+    onRefresh={() => loadResidentProfile(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet titleExtra()}
       {#if account}
         <div class="flex flex-wrap gap-2">
@@ -235,18 +241,6 @@
           {/if}
         </div>
       {/if}
-    {/snippet}
-
-    {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadResidentProfile(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-      </div>
     {/snippet}
   </SubpageHeader>
 

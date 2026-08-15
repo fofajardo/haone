@@ -155,23 +155,18 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="Achievement Details">
+  <SubpageHeader
+    title="Achievement Details"
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => {
-            loadData(true);
-          }}
-          {isLoading}
-          icon={RefreshCcw}
-        />
-        {#if achievement}
+      {#if achievement}
+        <div class="flex items-center gap-2">
           <AchievementStoryShareButton {achievement} />
           <Button variant="outline" size="sm" onclick={openEditor} icon={Pencil}>Edit</Button>
-        {/if}
-      </div>
+        </div>
+      {/if}
     {/snippet}
   </SubpageHeader>
 
