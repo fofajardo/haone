@@ -10,7 +10,6 @@
     Info,
     Funnel,
     CircleX,
-    CircleCheck,
     Clock,
     SlidersHorizontal
   } from "@lucide/svelte";
@@ -41,6 +40,7 @@
   import { formatTime } from "$utils/formatters";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
+  import CancelLaundryDialog from "$components/residents/CancelLaundryDialog.svelte";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<UserRecord[]>([]);
@@ -49,6 +49,7 @@
   let isBookingOpen = $state(false);
   let isBooking = $state(false);
   let isCancelling = $state(false);
+  let cancelTargetId = $state<string | null>(null);
 
   let newReservation = $state({
     date: new Date().toISOString().split("T")[0],
@@ -162,7 +163,7 @@
     }
   }
 
-  async function handleCancel(id: string) {
+  function openCancelDialog(id: string) {
     const res = reservations.find((r) => r.id === id);
     if (res) {
       const [y, m, d] = res.date.split("-").map(Number);
@@ -172,17 +173,25 @@
         return;
       }
     }
+    cancelTargetId = id;
+    selectedRow = null;
+  }
+
+  async function handleConfirmCancel(reason: string) {
+    if (!cancelTargetId) {
+      return;
+    }
 
     try {
       isCancelling = true;
-      await cancelLaundryReservation(id, "Cancelled by user", "CANCELLED_BY_USER");
+      await cancelLaundryReservation(cancelTargetId, reason, "CANCELLED_BY_USER");
       toast.success("Reservation cancelled");
+      cancelTargetId = null;
       loadData();
     } catch (e: any) {
       toast.error(e.message);
     } finally {
       isCancelling = false;
-      selectedRow = null;
     }
   }
 
@@ -312,7 +321,7 @@
         {users}
         currentUserId={currentResidentId}
         isAdminView={false}
-        onCancelReservation={handleCancel}
+        onCancelReservation={openCancelDialog}
         {isCancelling}
         bind:selectedReservation={selectedRow}
         onSelectSlot={(date, hour) => {
@@ -399,9 +408,7 @@
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>Book Laundry Slot</Dialog.Title>
-      <Dialog.Description
-        >Select your preferred date and time.</Dialog.Description
-      >
+      <Dialog.Description>Select your preferred date and time.</Dialog.Description>
     </Dialog.Header>
     <div class="space-y-6 pb-4">
       <div class="space-y-2">
@@ -473,7 +480,7 @@
       {/if}
     </div>
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (isBookingOpen = false)} isLoading={isBooking}>
+      <Button variant="outline" onclick={() => (isBookingOpen = false)} disabled={isBooking}>
         Cancel
       </Button>
       <Button onclick={handleBook} isLoading={isBooking} disabled={!!validationError}>
@@ -482,3 +489,18 @@
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
+
+<CancelLaundryDialog
+  open={Boolean(cancelTargetId)}
+  onOpenChange={(isOpen) => {
+    if (!isOpen && !isCancelling) {
+      cancelTargetId = null;
+    }
+  }}
+  {isCancelling}
+  isAdmin={false}
+  onConfirm={handleConfirmCancel}
+  onCancel={() => {
+    cancelTargetId = null;
+  }}
+/>

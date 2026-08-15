@@ -29,6 +29,7 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
+  import CancelLaundryDialog from "$components/residents/CancelLaundryDialog.svelte";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
@@ -115,14 +116,13 @@
     }
   }
 
-  async function handleCancel() {
-    if (!cancelData || !cancelData.reason.trim()) {
-      toast.error("Please provide a reason");
+  async function handleCancel(reason: string) {
+    if (!cancelData) {
       return;
     }
     try {
       isCancelling = true;
-      await cancelLaundryReservation(cancelData.id, cancelData.reason, "CANCELLED_BY_ADMIN");
+      await cancelLaundryReservation(cancelData.id, reason, "CANCELLED_BY_ADMIN");
       toast.success("Reservation cancelled");
       cancelData = null;
       loadData();
@@ -304,42 +304,6 @@
   {/if}
 </div>
 
-<Dialog.Root open={!!cancelData} onOpenChange={(o) => !o && (cancelData = null)}>
-  <Dialog.Content class="z-[100]">
-    {#if cancelData}
-      <Dialog.Header>
-        <Dialog.Title>Cancel Reservation</Dialog.Title>
-        <Dialog.Description
-          >Please provide a reason for cancellation. This will be visible to the resident.</Dialog.Description
-        >
-      </Dialog.Header>
-      <div class="space-y-4 pb-4">
-        <div class="space-y-2">
-          <Label for="reason">Reason</Label>
-          <Input
-            id="reason"
-            placeholder="e.g., maintenance, violations, etc."
-            bind:value={cancelData.reason}
-          />
-        </div>
-      </div>
-      <Dialog.Footer>
-        <Button variant="outline" onclick={() => (cancelData = null)} disabled={isCancelling}>
-          Back
-        </Button>
-        <Button
-          variant="destructive"
-          onclick={handleCancel}
-          isLoading={isCancelling}
-          icon={CircleX}
-        >
-          Cancel Reservation
-        </Button>
-      </Dialog.Footer>
-    {/if}
-  </Dialog.Content>
-</Dialog.Root>
-
 <Dialog.Root bind:open={isBookingOpen}>
   <Dialog.Content>
     <Dialog.Header>
@@ -393,3 +357,18 @@
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
+
+<CancelLaundryDialog
+  open={Boolean(cancelData)}
+  onOpenChange={(isOpen) => {
+    if (!isOpen && !isCancelling) {
+      cancelData = null;
+    }
+  }}
+  isAdmin={true}
+  {isCancelling}
+  onConfirm={handleCancel}
+  onCancel={() => {
+    cancelData = null;
+  }}
+/>

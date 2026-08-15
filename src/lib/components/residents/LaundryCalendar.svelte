@@ -638,11 +638,9 @@
             class="w-full"
             disabled={isCancelling || isDetailPast}
             onclick={() => {
-              if (isAdminView) {
-                onCancelReservation?.(selectedReservation.id);
-              } else {
-                isCancelConfirmOpen = true;
-              }
+              const targetId = selectedReservation.id;
+              selectedReservation = null;
+              onCancelReservation?.(targetId);
             }}
             icon={Trash2}
           >
@@ -656,32 +654,6 @@
     {/if}
   </Sheet.Content>
 </Sheet.Root>
-
-<AlertDialog.Root bind:open={isCancelConfirmOpen}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Cancel Reservation?</AlertDialog.Title>
-      <AlertDialog.Description>
-        This action cannot be undone. This will permanently cancel {isAdminView ? "this" : "your"} laundry
-        reservation.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel disabled={isCancelling}>Go Back</AlertDialog.Cancel>
-      <Button
-        variant="destructive"
-        onclick={() => {
-          if (selectedReservation) {
-            onCancelReservation?.(selectedReservation.id);
-          }
-        }}
-        isLoading={isCancelling}
-      >
-        Confirm
-      </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
 
 <style>
   /* Ensure the dialog doesn't close too fast if we want to show the spinner */
