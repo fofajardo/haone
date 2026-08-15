@@ -9,7 +9,7 @@ import {
   fetchSheetsData,
   resolveResidentAccountType
 } from "$lib/server/api-helper";
-import { parseTime } from "$utils/parsers";
+import { parseTimeMinutes } from "$utils/parsers";
 import { formatTime } from "$utils/formatters";
 import { canAccessLaundry, canSeeLaundryNames } from "$api/controllers/resident-controller";
 import type { RequestHandler } from "./$types";
@@ -125,10 +125,10 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: "Date, Start Time, and End Time are required" }, { status: 400 });
     }
 
-    const startMinutes = parseTime(timeStart);
-    const endMinutes = parseTime(timeEnd);
+    const startMinutes = parseTimeMinutes(timeStart);
+    const endMinutes = parseTimeMinutes(timeEnd);
 
-    if (startMinutes === null || endMinutes === null) {
+    if (isNaN(startMinutes) || isNaN(endMinutes)) {
       return json({ error: "Invalid time format" }, { status: 400 });
     }
 
@@ -167,9 +167,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const dateClashes = activeReservations.filter((r: any) => r.date === date);
     for (const res of dateClashes) {
-      const exStart = parseTime(res.timeStart);
-      const exEnd = parseTime(res.timeEnd);
-      if (exStart !== null && exEnd !== null) {
+      const exStart = parseTimeMinutes(res.timeStart);
+      const exEnd = parseTimeMinutes(res.timeEnd);
+      if (!isNaN(exStart) && !isNaN(exEnd)) {
         if (startMinutes < exEnd && endMinutes > exStart) {
           return json(
             {

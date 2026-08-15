@@ -53,10 +53,42 @@ export function formatDate(dateStr: string) {
   }
 }
 
-export function formatTime(hour: number): string {
-  const h = hour % 12 || 12;
-  const ampm = hour >= 12 ? "PM" : "AM";
-  return `${h}:00 ${ampm}`;
+export function formatTime(timeInput: number | string): string {
+  if (timeInput === undefined || timeInput === null || timeInput === "") {
+    return "";
+  }
+
+  let totalMinutes = 0;
+  if (typeof timeInput === "number") {
+    totalMinutes = Math.round(timeInput * 60);
+  } else {
+    const str = timeInput.trim().toUpperCase();
+    const match = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+    if (match) {
+      let h = parseInt(match[1]);
+      const m = parseInt(match[2]);
+      const ampm = match[3];
+      if (ampm === "PM" && h < 12) {
+        h += 12;
+      }
+      if (ampm === "AM" && h === 12) {
+        h = 0;
+      }
+      totalMinutes = h * 60 + m;
+    } else {
+      const parts = str.split(":");
+      const h = parseInt(parts[0]) || 0;
+      const m = parseInt(parts[1]) || 0;
+      totalMinutes = h * 60 + m;
+    }
+  }
+
+  const h24 = Math.floor(totalMinutes / 60) % 24;
+  const m = totalMinutes % 60;
+  const h12 = h24 % 12 || 12;
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const mStr = m.toString().padStart(2, "0");
+  return `${h12}:${mStr} ${ampm}`;
 }
 
 export function pluralize(count: number, singular: string, plural: string) {

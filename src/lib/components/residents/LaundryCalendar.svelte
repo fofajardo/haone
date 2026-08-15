@@ -45,9 +45,10 @@
   let selectedDate = $state(new Date());
   let viewMode = $state<"week" | "day">("week");
 
-  const startHour = 5;
-  const endHour = 21; // Last slot starts at 9 PM
-  const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => startHour + i);
+  const startHour = 0;
+  const opStartHour = 5;
+  const opEndHour = 22; // Operating hours: 5 AM - 10 PM (last slot 9 PM - 10 PM, hour 21)
+  const hours = Array.from({ length: 24 }, (_, i) => i);
 
   let now = $state(new Date());
 
@@ -58,15 +59,15 @@
     return () => clearInterval(timer);
   });
 
-  const nowTime = $derived(now.getHours() + now.getMinutes() / 60);
-
   const currentTimeIndicator = $derived.by(() => {
     const currentH = now.getHours();
     const currentM = now.getMinutes();
-    const currentTotalMinutes = (currentH - startHour) * 60 + currentM;
+    const currentTotalMinutes = currentH * 60 + currentM;
     const totalGridMinutes = hours.length * 60;
 
-    if (currentTotalMinutes < 0 || currentTotalMinutes >= totalGridMinutes) return null;
+    if (currentTotalMinutes < 0 || currentTotalMinutes >= totalGridMinutes) {
+      return null;
+    }
 
     // Position in pixels from the top of the hour grid (Row 2 onwards)
     return { top: currentTotalMinutes };
@@ -391,21 +392,29 @@
 
           {#each weekDays as day, dayIdx}
             {@const dateStr = formatDate(day)}
+            {@const isOutsideHours = hour < opStartHour || hour >= opEndHour}
+            {@const isBlocked = !isAdminView && isOutsideHours}
             <!-- Slot Button (Background) -->
             <button
               type="button"
               class={cn(
-                "h-[60px] w-full rounded-none border-b border-l bg-transparent p-0 transition-colors",
-                "enabled:cursor-pointer enabled:hover:bg-muted/30",
-                "disabled:cursor-not-allowed disabled:bg-muted/5"
+                "h-15 w-full rounded-none border-b border-l p-0 transition-colors",
+                isBlocked
+                  ? "cursor-not-allowed bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_6px,var(--color-border)_6px,var(--color-border)_7px)] opacity-50"
+                  : isOutsideHours
+                    ? "bg-muted/10 enabled:cursor-pointer enabled:hover:bg-muted/30 disabled:cursor-not-allowed disabled:bg-muted/5"
+                    : "bg-transparent enabled:cursor-pointer enabled:hover:bg-muted/30 disabled:cursor-not-allowed disabled:bg-muted/5"
               )}
               style="grid-row: {hourIdx + 2}; grid-column: {dayIdx + 2};"
-              disabled={reservations.some((r: LaundryRecord) => {
-                if (r.status !== "ACTIVE" || r.date !== dateStr) return false;
-                const start = parseTime(r.timeStart);
-                const end = parseTime(r.timeEnd);
-                return hour >= start && hour < end;
-              }) ||
+              disabled={isBlocked ||
+                reservations.some((r: LaundryRecord) => {
+                  if (r.status !== "ACTIVE" || r.date !== dateStr) {
+                    return false;
+                  }
+                  const start = parseTime(r.timeStart);
+                  const end = parseTime(r.timeEnd);
+                  return hour < end && hour + 1 > start;
+                }) ||
                 (isAdminView
                   ? false
                   : day.getFullYear() === now.getFullYear() &&
@@ -421,7 +430,7 @@
 
         <!-- Bottom Spacer Row -->
         <div class="bg-muted/5" style="grid-row: {hours.length + 2}; grid-column: 1;"></div>
-        {#each weekDays as day, dayIdx}
+        {#each weekDays as { }, dayIdx}
           <div
             class="border-l bg-transparent"
             style="grid-row: {hours.length + 2}; grid-column: {dayIdx + 2};"
@@ -451,52 +460,57 @@
         <!-- Actual Reservations (Overlaid) -->
         {#each weekDays as day, dayIdx}
           {@const dateStr = formatDate(day)}
-          {#each getActiveReservationsForDay(dateStr) as res}
-            {@const startRow = Math.max(0, res.startHour - startHour) + 2}
-            {@const rowSpan = Math.min(res.duration, endHour - res.startHour + 1)}
-            {@const isMine =
-              res.residentId === currentUserId ||
-              (auth.user?.email && res.residentId === auth.user.email)}
-            {@const resEndTime = day.getTime() + res.endHour * 3600000}
-            {@const isPast = resEndTime <= now.getTime()}
-            {#if startRow >= 2 && rowSpan > 0}
-              <button
-                type="button"
-                class={cn(
-                  "relative z-10 m-1 mr-3 flex cursor-pointer flex-col justify-center overflow-hidden rounded-md border-0 p-2 text-left transition-all",
-                  isPast
-                    ? "bg-emerald-100 dark:bg-emerald-950"
-                    : isMine
-                      ? "bg-brand"
-                      : "bg-emerald-700 dark:bg-emerald-900"
-                )}
-                style="grid-row: {startRow} / span {rowSpan}; grid-column: {dayIdx + 2};"
-                onclick={() => handleReservationClick(res)}
-              >
-                <div
+          <div
+            class="pointer-events-none relative"
+            style="grid-row: 2 / span {hours.length}; grid-column: {dayIdx + 2};"
+          >
+            {#each getActiveReservationsForDay(dateStr) as res}
+              {@const startMin = (res.startHour - startHour) * 60}
+              {@const durationMin = res.duration * 60}
+              {@const isMine =
+                res.residentId === currentUserId ||
+                (auth.user?.email && res.residentId === auth.user.email)}
+              {@const resEndTime = day.getTime() + res.endHour * 3600000}
+              {@const isPast = resEndTime <= now.getTime()}
+              {#if durationMin > 0}
+                <button
+                  type="button"
                   class={cn(
-                    "flex w-full min-w-0 items-center gap-1 text-sm leading-none font-semibold",
-                    isPast ? "text-muted-foreground" : "text-white"
+                    "pointer-events-auto absolute right-2 left-1 z-10 flex cursor-pointer flex-col justify-center overflow-hidden rounded-md border-0 p-2 text-left transition-all",
+                    isPast
+                      ? "bg-emerald-100 dark:bg-emerald-950"
+                      : isMine
+                        ? "bg-brand"
+                        : "bg-emerald-700 dark:bg-emerald-900"
                   )}
+                  style="top: {startMin + 3}px; height: {Math.max(durationMin - 6, 24)}px;"
+                  onclick={() => handleReservationClick(res)}
                 >
-                  {#if isMine}
-                    <BookmarkIcon class="h-3.5 w-3.5 shrink-0" />
-                  {/if}
-                  <span class="truncate">{res.name}</span>
-                </div>
-                {#if res.room}
                   <div
                     class={cn(
-                      "mt-1 text-xs tracking-wider uppercase",
+                      "flex w-full min-w-0 items-center gap-1 text-sm leading-none font-semibold",
                       isPast ? "text-muted-foreground" : "text-white"
                     )}
                   >
-                    {res.room}
+                    {#if isMine}
+                      <BookmarkIcon class="h-3.5 w-3.5 shrink-0" />
+                    {/if}
+                    <span class="truncate">{res.name}</span>
                   </div>
-                {/if}
-              </button>
-            {/if}
-          {/each}
+                  {#if res.room}
+                    <div
+                      class={cn(
+                        "mt-1 text-xs tracking-wider uppercase",
+                        isPast ? "text-muted-foreground" : "text-white"
+                      )}
+                    >
+                      {res.room}
+                    </div>
+                  {/if}
+                </button>
+              {/if}
+            {/each}
+          </div>
         {/each}
       </div>
     </div>
@@ -519,6 +533,12 @@
     <div class="flex items-center gap-1.5">
       <div class="h-3 w-3 rounded-sm border border-dashed"></div>
       <span>Available</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div
+        class="h-3 w-3 rounded-sm border border-border bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,var(--color-border)_2px,var(--color-border)_3px)] opacity-50"
+      ></div>
+      <span>Closed</span>
     </div>
   </div>
 </div>

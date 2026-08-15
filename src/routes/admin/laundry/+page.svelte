@@ -17,7 +17,8 @@
   import {
     computeDisplayNames,
     fetchResidents,
-    fetchUsers
+    fetchUsers,
+    canAccessLaundry
   } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
   import { LaundryStatus } from "$lib/types";
@@ -47,7 +48,7 @@
   let roomMap = $state(new Map<string, string>());
   let accountToResidentMap = $state(new Map<string, string>());
   let activeResidentIds = $state(new Set<string>());
-  let statusFilter = $state(LaundryStatus.ACTIVE);
+  let statusFilter = $state<LaundryStatus>(LaundryStatus.ACTIVE);
 
   let cancelData = $state<{ id: string; reason: string } | null>(null);
 
@@ -74,7 +75,7 @@
       const newActiveResIds = new Set<string>();
 
       allResidents.forEach((res) => {
-        if (res.residentId && res.period === currentTerm) {
+        if (res.residentId && res.period === currentTerm && canAccessLaundry(res.type || "")) {
           newActiveResIds.add(res.residentId);
         }
 
@@ -151,18 +152,18 @@
 
     try {
       isBooking = true;
-      const startH = parseTime(newReservation.timeStart);
-      const endH = parseTime(newReservation.timeEnd);
-
-      await addLaundryReservation({
-        id: crypto.randomUUID(),
-        residentId: newReservation.residentId,
-        date: newReservation.date,
-        timeStart: formatTime(startH),
-        timeEnd: formatTime(endH),
-        status: LaundryStatus.ACTIVE,
-        cancelReason: ""
-      });
+      await addLaundryReservation(
+        {
+          id: crypto.randomUUID(),
+          residentId: newReservation.residentId,
+          date: newReservation.date,
+          timeStart: formatTime(newReservation.timeStart),
+          timeEnd: formatTime(newReservation.timeEnd),
+          status: LaundryStatus.ACTIVE,
+          cancelReason: ""
+        },
+        true
+      );
       toast.success("Reservation successful");
       isBookingOpen = false;
       loadData();

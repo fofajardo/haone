@@ -48,7 +48,7 @@
   });
 
   let selectedRow = $state<LaundryRecord | null>(null);
-  let statusFilter = $state(LaundryStatus.ACTIVE);
+  let statusFilter = $state<LaundryStatus>(LaundryStatus.ACTIVE);
 
   let currentResidentId = $state("");
 
@@ -101,17 +101,16 @@
 
     try {
       isBooking = true;
-      const startH = parseTime(newReservation.timeStart);
-      const endH = parseTime(newReservation.timeEnd);
-
-      if (!currentResidentId) throw new Error("Could not find your resident record.");
+      if (!currentResidentId) {
+        throw new Error("Could not find your resident record.");
+      }
 
       await addLaundryReservation({
         id: crypto.randomUUID(),
         residentId: currentResidentId,
         date: newReservation.date,
-        timeStart: formatTime(startH),
-        timeEnd: formatTime(endH),
+        timeStart: formatTime(newReservation.timeStart),
+        timeEnd: formatTime(newReservation.timeEnd),
         status: LaundryStatus.ACTIVE,
         cancelReason: ""
       });

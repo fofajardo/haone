@@ -36,7 +36,7 @@ export function parseDateWeight(dateStr: any): number {
         }
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   return weight;
 }
 
@@ -45,12 +45,16 @@ export function parseTime(timeStr: string): number {
     return 0;
   }
   const str = timeStr.trim().toUpperCase();
+  if (str === "24:00" || str === "24") {
+    return 24;
+  }
   const match = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
   if (!match) {
     return parseInt(str.split(":")[0]) || 0;
   }
 
   const hours = parseInt(match[1]);
+  const minutes = parseInt(match[2]) || 0;
   const ampm = match[3];
 
   let h = hours;
@@ -60,7 +64,36 @@ export function parseTime(timeStr: string): number {
   if (ampm === "AM" && h === 12) {
     h = 0;
   }
-  return h;
+  return h + minutes / 60;
+}
+
+export function parseTimeMinutes(timeStr: string): number {
+  if (!timeStr) {
+    return 0;
+  }
+  const str = timeStr.trim().toUpperCase();
+  if (str === "24:00" || str === "24") {
+    return 1440;
+  }
+  const match = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
+  if (!match) {
+    const parts = str.split(":");
+    const h = parseInt(parts[0]) || 0;
+    const m = parseInt(parts[1]) || 0;
+    return h * 60 + m;
+  }
+
+  let hours = parseInt(match[1]);
+  const minutes = parseInt(match[2]) || 0;
+  const ampm = match[3];
+
+  if (ampm === "PM" && hours < 12) {
+    hours += 12;
+  }
+  if (ampm === "AM" && hours === 12) {
+    hours = 0;
+  }
+  return hours * 60 + minutes;
 }
 
 export function getJournalDateRange(journal: { date: string }[]): { start: string; end: string } {
