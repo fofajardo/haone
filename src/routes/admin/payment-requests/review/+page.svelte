@@ -211,7 +211,7 @@
   onMount(loadData);
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="Review Queue" isTopLevel={false}>
     {#snippet actions()}
       <div class="flex items-center gap-4">

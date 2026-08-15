@@ -16,7 +16,7 @@
   import SettingsActions from "$components/SettingsActions.svelte";
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="Settings" isTopLevel={true} />
 
   <div class="flex flex-col gap-8 lg:flex-row">

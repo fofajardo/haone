@@ -567,7 +567,7 @@
   }
 </script>
 
-<div class="space-y-6 pb-20">
+<div class="space-y-3">
   <SubpageHeader title="Export Residents" />
 
   {#if isLoading && allAccounts.length === 0}

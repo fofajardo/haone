@@ -168,7 +168,7 @@
   }
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader
     title="Announcements"
     isTopLevel={true}
@@ -176,7 +176,7 @@
     isRefreshing={isLoading}
   >
     {#snippet actions()}
-      <Button size="sm" onclick={() => goto("/admin/announcements/add")} icon={Plus}>New</Button>
+      <Button size="sm" onclick={() => goto("/admin/announcements/add")} icon={Plus}>Add</Button>
     {/snippet}
   </SubpageHeader>
 

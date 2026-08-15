@@ -155,7 +155,7 @@
   onMount(loadData);
 </script>
 
-<div class="space-y-6 pb-20">
+<div class="space-y-3">
   <SubpageHeader
     title="Financial Report"
     isTopLevel={true}

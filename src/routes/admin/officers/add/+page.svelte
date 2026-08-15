@@ -131,8 +131,8 @@
   }
 </script>
 
-<div class="space-y-6">
-  <SubpageHeader title="Add New Officer" href="/admin/officers" />
+<div class="space-y-3">
+  <SubpageHeader title="Add Officer" />
 
   {#if isLoading}
     <LoadingView />

@@ -158,7 +158,7 @@
   });
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="View Transaction">
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}

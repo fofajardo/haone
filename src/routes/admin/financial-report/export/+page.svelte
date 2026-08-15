@@ -123,7 +123,7 @@
   }
 </script>
 
-<div class="space-y-6 pb-20">
+<div class="space-y-3 pb-20">
   <SubpageHeader title="Export Financial Report">
     {#snippet actions()}
       <Button

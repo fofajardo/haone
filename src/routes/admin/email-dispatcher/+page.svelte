@@ -140,7 +140,7 @@
   }
 </script>
 
-<div class="space-y-4">
+<div class="space-y-3">
   <SubpageHeader title="Email Dispatcher" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">

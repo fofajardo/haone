@@ -80,7 +80,7 @@
   let effectiveTerm = $derived(selectedTerm || uiSettings.currentTerm || currentTerm);
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader
     title="Leaderboards"
     isTopLevel={true}

@@ -83,8 +83,8 @@
   }
 </script>
 
-<div class="space-y-6">
-  <SubpageHeader title="New Announcement" />
+<div class="space-y-3">
+  <SubpageHeader title="Add Announcement" />
 
   <div class="mx-auto max-w-3xl">
     <div class="space-y-6 rounded-xl border bg-card p-6">

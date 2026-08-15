@@ -152,7 +152,7 @@
   const isImmutable = $derived(officer?.status === OfficerStatus.CHANGED_POSITION);
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="Edit Officer" />
 
   {#if isLoading}

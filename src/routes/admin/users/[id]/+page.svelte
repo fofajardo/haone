@@ -96,7 +96,7 @@
   onMount(loadUserProfile);
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="View User">
     {#snippet actions()}
       <div class="flex gap-2">
