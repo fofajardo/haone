@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$state/settings.svelte";
   import { fetchJournalEntries, updateJournalEntry } from "$api/controllers/journal-controller";
   import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
   import TransactionForm from "$components/TransactionForm.svelte";
@@ -45,30 +44,32 @@
   onMount(loadTransaction);
 
   async function handleSave(row: any[]) {
-    if (!initialData || !id) return;
+    if (!initialData || !id) {
+      return;
+    }
     isSubmitting = true;
     try {
       await updateJournalEntry(id, {
-        date: row[0],
-        creator: "",
-        account: "",
-        water: parseFloat(row[3] || "0"),
-        assoc: parseFloat(row[4] || "0"),
-        misc: parseFloat(row[5] || "0"),
-        mop: row[6],
-        period: row[7],
-        type: row[8],
-        notes: row[9],
-        notesPrivate: row[10],
-        mopRefNo: row[11],
-        prDateIssued: row[12],
-        prRefNo: row[13],
-        creatorName: "",
-        name: "",
-        stno: "",
-        receiptUrl: row[18],
-        creatorId: row[20] || "",
-        accountId: row[21] || ""
+        date: row[JOR.DATE],
+        creator: row[JOR.CREATOR] || "",
+        account: row[JOR.ACCOUNT] || "",
+        water: parseFloat(row[JOR.WATER] || "0"),
+        assoc: parseFloat(row[JOR.ASSOC] || "0"),
+        misc: parseFloat(row[JOR.MISC] || "0"),
+        mop: row[JOR.MOP],
+        period: row[JOR.PERIOD],
+        type: row[JOR.TYPE],
+        notes: row[JOR.NOTES],
+        notesPrivate: row[JOR.NOTES_PRIVATE],
+        mopRefNo: row[JOR.MOP_REFNO],
+        prDateIssued: row[JOR.PR_DATE_ISSUED],
+        prRefNo: row[JOR.PR_REFNO],
+        creatorName: row[JOR.CREATOR_NAME] || "",
+        name: row[JOR.NAME] || "",
+        stno: row[JOR.STNO] || "",
+        receiptUrl: row[JOR.RECEIPT_URL],
+        creatorId: row[JOR.CREATOR_ID] || "",
+        accountId: row[JOR.ACCOUNT_ID] || ""
       });
       goto(`/admin/transactions/${id}`);
     } finally {
