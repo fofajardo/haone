@@ -4,6 +4,7 @@
   import { Button } from "$ui/button";
   import { RefreshCcw, Trophy } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TermFilter from "$components/TermFilter.svelte";
@@ -135,17 +136,19 @@
   {:else}
     <!-- Filter Bar (shown in Term mode) -->
     {#if !isGlobal}
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div class="w-full sm:w-64">
-          <TermFilter bind:value={selectedTerm} />
+      <FilterDrawer>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div class="w-full sm:w-64">
+            <TermFilter bind:value={selectedTerm} />
+          </div>
+          <div class="flex items-center space-x-2 pb-1.5">
+            <Checkbox id="show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
+            <Label for="show-all-time" class="cursor-pointer text-xs font-medium">
+              Show all-time achievements
+            </Label>
+          </div>
         </div>
-        <div class="flex items-center space-x-2 pb-1.5">
-          <Checkbox id="show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
-          <Label for="show-all-time" class="cursor-pointer text-xs font-medium">
-            Show all-time achievements
-          </Label>
-        </div>
-      </div>
+      </FilterDrawer>
     {/if}
 
     <!-- Achievements List Container -->

@@ -6,6 +6,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import ResidentTermFilter from "$components/residents/ResidentTermFilter.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
@@ -86,15 +87,17 @@
     {/snippet}
   </SubpageHeader>
 
-  <div class="grid gap-4 lg:grid-cols-12">
-    <div class="lg:col-span-3">
-      <ResidentTermFilter
-        bind:value={localTerm}
-        options={status?.allTerms}
-        onSelect={() => loadData(localTerm)}
-      />
+  <FilterDrawer>
+    <div class="grid gap-4 lg:grid-cols-12">
+      <div class="lg:col-span-3">
+        <ResidentTermFilter
+          bind:value={localTerm}
+          options={status?.allTerms}
+          onSelect={() => loadData(localTerm)}
+        />
+      </div>
     </div>
-  </div>
+  </FilterDrawer>
 
   {#if isLoading}
     <LoadingView />

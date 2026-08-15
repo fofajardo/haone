@@ -6,6 +6,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TermFilter from "$components/TermFilter.svelte";
+  import FilterDrawer from "$components/FilterDrawer.svelte";
   import * as Tabs from "$ui/tabs";
   import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
   import { fetchAchievements } from "$api/controllers/achievement-controller";
@@ -93,11 +94,13 @@
     </ErrorView>
   {:else}
     {#if !isGlobal}
-      <div class="grid gap-2 lg:grid-cols-12">
-        <div class="lg:col-span-3">
-          <TermFilter bind:value={selectedTerm} />
+      <FilterDrawer>
+        <div class="grid gap-2 lg:grid-cols-12">
+          <div class="lg:col-span-3">
+            <TermFilter bind:value={selectedTerm} />
+          </div>
         </div>
-      </div>
+      </FilterDrawer>
     {/if}
 
     <AchievementLeaderboard {achievements} {logs} term={effectiveTerm} {isGlobal} />
