@@ -88,15 +88,9 @@
     loadData();
   });
 
-  let userPayments = $derived(
-    payments
-      .filter((p) => currentResidentId && p.residentId === currentResidentId)
-      .sort((a, b) => b.date.localeCompare(a.date))
-  );
-
   let filteredPayments = $derived.by(() => {
     const s = searchQuery.toLowerCase().trim();
-    return userPayments.filter((p) => {
+    return payments.filter((p) => {
       const matchesSearch =
         !s || (p.mop || "").toLowerCase().includes(s) || (p.notes || "").toLowerCase().includes(s);
       const matchesStatus = !statusFilter || p.status === statusFilter;
