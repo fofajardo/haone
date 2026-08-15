@@ -29,9 +29,7 @@
     ChevronDown,
     FileCheck,
     ShieldCheck,
-    Trophy,
-    FileSpreadsheet,
-    Bed
+    Trophy
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
   import * as AlertDialog from "$ui/alert-dialog";
@@ -44,6 +42,7 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
   import AwardDialog from "$components/residents/AwardDialog.svelte";
+  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
 
   let residents = $state<Resident[]>([]);
   let isLoading = $state(false);
@@ -218,15 +217,7 @@
       isRefreshing={isLoading}
     >
       {#snippet actions()}
-        <div class="flex gap-2">
-          <Button variant="outline" size="sm" href="/admin/residents/rooms" icon={Bed}>
-            Rooms
-          </Button>
-
-          <Button variant="outline" size="sm" href="/admin/residents/export" icon={FileSpreadsheet}>
-            Export
-          </Button>
-        </div>
+        <AdminResidentsHeaderActions active="list" />
       {/snippet}
     </SubpageHeader>
 

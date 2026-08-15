@@ -1,17 +1,10 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import { uiSettings } from "$state/settings.svelte";
   import { roomsState } from "$state/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import { fetchTermCurr } from "$api/controllers/constants-controller";
-  import {
-    getSyncPreview,
-    applySync,
-    type SyncPreviewAction
-  } from "$api/controllers/rooms-controller.svelte";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import { pluralize } from "$utils/formatters";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -25,48 +18,26 @@
   import * as Tooltip from "$ui/tooltip";
   import * as AlertDialog from "$ui/alert-dialog";
   import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
+  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
   import {
     RefreshCcw,
     User,
     Users,
     Bed,
-    CloudDownload,
     CircleCheck,
     CircleAlert,
     ExternalLink,
     ShieldCheck,
-    ChevronRight,
-    MoveRight
-  } from "@lucide/svelte";
+    ChevronRight  } from "@lucide/svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let users = $state<UserRecord[]>([]);
   let isLoading = $state(false);
-  let isSyncing = $state(false);
   let error = $state<string | null>(null);
   let activeTerm = $state("");
 
   let selectedUnit = $state("ALL");
   let isCompact = $state(true);
-  let previewActions = $state<SyncPreviewAction[]>([]);
-  let showPreview = $state(false);
-  let selectedGroups = $state<Set<number>>(new Set());
-
-  const groupedPreview = $derived.by(() => {
-    const groups = new Map<number, SyncPreviewAction[]>();
-    for (const action of previewActions) {
-      const key = action.currIndex ?? -1;
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key)!.push(action);
-    }
-    return Array.from(groups.entries()).map(([currIndex, actions]) => ({ currIndex, actions }));
-  });
-
-  const selectedActions = $derived(
-    previewActions.filter((a) => selectedGroups.has(a.currIndex ?? -1))
-  );
 
   let alertDialog = $state({
     open: false,
@@ -75,9 +46,6 @@
     type: "info" as "info" | "error"
   });
 
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
-  }
 
   async function loadData(bypassCache = false) {
     isLoading = true;
@@ -156,45 +124,6 @@
     )
   );
 
-  async function handleSync() {
-    if (!activeTerm) {
-      showAlert("Term Required", "Active academic term (TERM_CURR) not found.", "error");
-      return;
-    }
-    isSyncing = true;
-    try {
-      previewActions = await getSyncPreview(activeTerm);
-      if (previewActions.length === 0) {
-        showAlert("Sync", "All records are already up to date.");
-      } else {
-        // Pre-select all groups by default
-        selectedGroups = new Set(previewActions.map((a) => a.currIndex ?? -1));
-        showPreview = true;
-      }
-    } catch (e: any) {
-      showAlert("Sync Failed", e.message || "An error occurred.", "error");
-    } finally {
-      isSyncing = false;
-    }
-  }
-
-  async function confirmSync() {
-    isSyncing = true;
-    showPreview = false;
-    try {
-      const result = await applySync(selectedActions, activeTerm);
-      showAlert(
-        "Sync Complete",
-        `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
-      );
-      await loadData(true);
-    } catch (e: any) {
-      showAlert("Sync Failed", e.message || "An error occurred.", "error");
-    } finally {
-      isSyncing = false;
-    }
-  }
-
   let assignmentDialog = $state({
     open: false,
     room: "",
@@ -215,17 +144,14 @@
 </script>
 
 <div class="space-y-4">
-  <SubpageHeader title="Rooms" onRefresh={() => loadData(true)} isRefreshing={isLoading}>
+  <SubpageHeader
+    title="Residents"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
     {#snippet actions()}
-      <Button
-        size="sm"
-        onclick={handleSync}
-        isLoading={isSyncing}
-        disabled={isLoading}
-        icon={CloudDownload}
-      >
-        Sync
-      </Button>
+      <AdminResidentsHeaderActions active="rooms" />
     {/snippet}
   </SubpageHeader>
 
@@ -460,98 +386,6 @@
     </AlertDialog.Header>
     <AlertDialog.Footer>
       <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
-
-<AlertDialog.Root bind:open={showPreview}>
-  <AlertDialog.Content class="max-w-3xl">
-    <AlertDialog.Header>
-      <AlertDialog.Title>Sync Preview</AlertDialog.Title>
-      <AlertDialog.Description>
-        Select the registration groups to apply. Uncheck any you want to skip.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <div class="max-h-[60vh] overflow-auto py-4 pr-1">
-      <div class="space-y-3">
-        {#each groupedPreview as group}
-          {@const isChecked = selectedGroups.has(group.currIndex)}
-          {@const primaryAction = group.actions[0]}
-          <div
-            class="rounded-xl border transition-colors {isChecked
-              ? 'border-primary/40 bg-primary/5'
-              : 'border-border bg-muted/20 opacity-60'}"
-          >
-            <div class="flex items-start gap-3 p-3">
-              <Checkbox
-                id={`group-${group.currIndex}`}
-                checked={isChecked}
-                onCheckedChange={(v) => {
-                  const next = new Set(selectedGroups);
-                  if (v) {
-                    next.add(group.currIndex);
-                  } else {
-                    next.delete(group.currIndex);
-                  }
-                  selectedGroups = next;
-                }}
-                class="mt-0.5"
-              />
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2">
-                  <p class="text-sm font-bold text-foreground">{primaryAction.residentName}</p>
-                  <p class="text-xs text-muted-foreground">
-                    {primaryAction.studentNo || primaryAction.email}
-                  </p>
-                </div>
-                <div class="mt-2 space-y-1.5">
-                  {#each group.actions as action}
-                    <div class="flex flex-wrap items-center gap-2 text-xs">
-                      <Badge
-                        variant={action.type.startsWith("CREATE") ? "default" : "outline"}
-                        class="shrink-0 text-xs font-bold tracking-tighter uppercase"
-                      >
-                        {action.type.replace("_", " ")}
-                      </Badge>
-                      <span class="text-muted-foreground">{action.details}</span>
-                      {#if action.from}
-                        <Badge variant="secondary" class="bg-muted text-xs font-bold">
-                          {action.from}
-                        </Badge>
-                      {/if}
-                      {#if action.from && action.to}
-                        <MoveRight class="h-3 w-3 text-muted-foreground" />
-                      {/if}
-                      {#if action.to}
-                        <Badge
-                          variant="secondary"
-                          class="bg-primary/10 text-xs font-bold text-primary"
-                        >
-                          {action.to}
-                        </Badge>
-                      {/if}
-                    </div>
-                    {#if action.warning}
-                      <p
-                        class="flex items-center gap-1 text-xs font-bold text-destructive uppercase"
-                      >
-                        <CircleAlert class="h-3 w-3" />
-                        {action.warning}
-                      </p>
-                    {/if}
-                  {/each}
-                </div>
-              </div>
-            </div>
-          </div>
-        {/each}
-      </div>
-    </div>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action onclick={confirmSync} disabled={selectedGroups.size === 0}>
-        Apply Selected ({selectedGroups.size} of {groupedPreview.length})
-      </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>
