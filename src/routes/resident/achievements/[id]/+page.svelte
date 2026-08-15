@@ -74,7 +74,7 @@
   >
     {#snippet actions()}
       {#if achievement && isEarned}
-        <AchievementStoryShareButton {achievement} />
+        <AchievementStoryShareButton {achievement} isPrimary={true} />
       {/if}
     {/snippet}
   </SubpageHeader>

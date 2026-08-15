@@ -163,8 +163,8 @@
     {#snippet actions()}
       {#if achievement}
         <div class="flex items-center gap-2">
-          <AchievementStoryShareButton {achievement} />
-          <Button variant="outline" size="sm" onclick={openEditor} icon={Pencil}>Edit</Button>
+          <AchievementStoryShareButton {achievement} isPrimary={false} />
+          <Button size="sm" onclick={openEditor} icon={Pencil}>Edit</Button>
         </div>
       {/if}
     {/snippet}

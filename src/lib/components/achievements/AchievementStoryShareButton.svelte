@@ -6,9 +6,11 @@
   import { toast } from "svelte-sonner";
 
   let {
-    achievement
+    achievement,
+    isPrimary
   }: {
     achievement: AchievementRecord;
+    isPrimary: boolean;
   } = $props();
 
   let isSharingStory = $state(false);
@@ -357,7 +359,7 @@
 
 <Button
   type="button"
-  variant="outline"
+  variant={isPrimary ? "default" : "outline"}
   size="sm"
   icon={Share2}
   isLoading={isSharingStory}
