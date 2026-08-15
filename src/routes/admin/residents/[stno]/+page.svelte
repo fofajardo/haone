@@ -22,9 +22,7 @@
     ArrowUpRight,
     Mail,
     ChevronDown,
-    FileCheck,
-    FileDown,
-    UserCog
+    FileCheck
   } from "@lucide/svelte";
   import {
     JOURNAL_COL as JOR,
@@ -242,6 +240,33 @@
         </div>
       {/if}
     {/snippet}
+    {#snippet actions()}
+      {#if account}
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            {#snippet child({ props })}
+              <Button size="sm" {...props} icon={Mail}>
+                Send
+                <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
+              </Button>
+            {/snippet}
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content align="end" class="w-56">
+            <DropdownMenu.Item onclick={sendStatusEmail}>
+              <Mail class="mr-2 h-4 w-4" />
+              <span>Send Payment Status</span>
+            </DropdownMenu.Item>
+            <DropdownMenu.Item
+              onclick={sendClearanceEmail}
+              disabled={!account.ceLink || account.ceLink === "N/A" || account.ceLink === ""}
+            >
+              <FileCheck class="mr-2 h-4 w-4" />
+              <span>Send Clearance Certificate</span>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
+      {/if}
+    {/snippet}
   </SubpageHeader>
 
   {#if isLoading}
@@ -256,99 +281,38 @@
         <TermFilter bind:value={localTerm} onSelect={loadResidentProfile} />
       </div>
 
-      <div class="space-y-1 lg:col-span-9">
-        <Label class="text-xs font-bold text-muted-foreground uppercase">Actions</Label>
-        <div class="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            href="/admin/transactions/add?account={account.stno}"
-            icon={ArrowUpRight}
-          >
-            Add Transaction
-          </Button>
-
-          {#if (!account.ceIssued || account.ceIssued === "" || account.ceIssued === "#N/A") && account.bal <= 0 && account.totalBase > 0}
-            <Button variant="outline" size="sm" onclick={handleClear} icon={ShieldCheck}>
-              Mark as Cleared
-            </Button>
-          {/if}
-
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              {#snippet child({ props })}
-                <Button variant="outline" size="sm" {...props} icon={Mail}>
-                  Send
-                  <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
-                </Button>
-              {/snippet}
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="start" class="w-56">
-              <DropdownMenu.Item onclick={sendStatusEmail}>
-                <Mail class="mr-2 h-4 w-4" />
-                <span>Send Payment Status</span>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onclick={sendClearanceEmail}
-                disabled={!account.ceLink || account.ceLink === "N/A" || account.ceLink === ""}
-              >
-                <FileCheck class="mr-2 h-4 w-4" />
-                <span>Send Clearance Certificate</span>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-          <Button
-            variant="outline"
-            size="sm"
-            href="/admin/users/{account.residentId}"
-            icon={UserCog}
-          >
-            View User Profile
-          </Button>
-
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              {#snippet child({ props })}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  {...props}
-                  icon={UserCog}
-                  isLoading={isChangingType}
-                >
-                  Account Type{account?.type ? `: ${account.type}` : ""}
-                  <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
-                </Button>
-              {/snippet}
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="start" class="w-48">
-              {#each ACCOUNT_TYPE_OPTIONS as opt}
-                <DropdownMenu.Item
-                  onclick={() => changeAccountType(opt.value)}
-                  class={account.type === opt.value ? "font-bold text-primary" : ""}
-                >
-                  {opt.label}
-                  {#if account.type === opt.value}
-                    <span class="ml-auto text-xs text-primary">✓</span>
-                  {/if}
-                </DropdownMenu.Item>
-              {/each}
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-
-          <Button variant="outline" size="sm" disabled icon={FileDown}>
-            Export Statement (PDF)
+      {#if (!account.ceIssued || account.ceIssued === "" || account.ceIssued === "#N/A") && account.bal <= 0 && account.totalBase > 0}
+        <div class="flex items-center lg:col-span-9">
+          <Button variant="outline" size="sm" onclick={handleClear} icon={ShieldCheck}>
+            Mark as Cleared
           </Button>
         </div>
-      </div>
+      {/if}
     </div>
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Student Profile -->
-      <StudentProfileCard {account} {semesterCount} />
+      <StudentProfileCard
+        {account}
+        {semesterCount}
+        {isChangingType}
+        onChangeAccountType={changeAccountType}
+      />
 
       <!-- Financial & Clearance Info -->
       <div class="flex h-full flex-col gap-6">
-        <FinancialStandingCard {account} />
+        <FinancialStandingCard {account}>
+          {#snippet actions()}
+            <Button
+              variant="secondary"
+              size="sm"
+              class="w-full"
+              href="/admin/transactions/add?account={account.stno}"
+              icon={ArrowUpRight}
+            >
+              Add Transaction
+            </Button>
+          {/snippet}
+        </FinancialStandingCard>
 
         {#if account.notes?.trim()}
           <Card.Root class="border-amber-200 bg-amber-50/30">

@@ -9,9 +9,10 @@
     account: ResidentRecord;
     class?: string;
     hideCard?: boolean;
+    actions?: import("svelte").Snippet;
   }
 
-  let { account, class: className, hideCard = false }: Props = $props();
+  let { account, class: className, hideCard = false, actions }: Props = $props();
 </script>
 
 {#snippet financialContent()}
@@ -116,5 +117,10 @@
     <Card.Content class="flex-1">
       {@render financialContent()}
     </Card.Content>
+    {#if actions}
+      <Card.Footer>
+        {@render actions()}
+      </Card.Footer>
+    {/if}
   </Card.Root>
 {/if}

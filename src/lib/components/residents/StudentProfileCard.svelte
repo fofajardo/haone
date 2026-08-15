@@ -1,6 +1,8 @@
 <script lang="ts">
   import * as Card from "$ui/card";
   import { Label } from "$ui/label";
+  import { Button } from "$ui/button";
+  import * as DropdownMenu from "$ui/dropdown-menu";
   import {
     Mail,
     Send,
@@ -10,18 +12,39 @@
     AwardIcon,
     MapPin,
     Bed as BedIcon,
-    Calendar
+    Calendar,
+    UserCog,
+    Pencil,
+    ArrowUpRight
   } from "@lucide/svelte";
   import { translateCollege, translateProgram } from "$utils/translators";
-  import type { ResidentRecord } from "$lib/types";
+  import { type ResidentRecord, AccountType, ACCOUNT_TYPE_LABELS } from "$lib/types";
 
   interface Props {
     account: ResidentRecord;
     semesterCount?: number;
     class?: string;
+    isChangingType?: boolean;
+    onChangeAccountType?: (newType: string) => void;
   }
 
-  let { account, semesterCount, class: className }: Props = $props();
+  let {
+    account,
+    semesterCount,
+    class: className,
+    isChangingType = false,
+    onChangeAccountType
+  }: Props = $props();
+
+  const ACCOUNT_TYPE_OPTIONS = [
+    { value: AccountType.STUDENT, label: ACCOUNT_TYPE_LABELS.STUDENT },
+    { value: AccountType.TRANSIENT, label: ACCOUNT_TYPE_LABELS.TRANSIENT },
+    { value: AccountType.BOOTCAMP, label: ACCOUNT_TYPE_LABELS.BOOTCAMP },
+    { value: AccountType.ALUMNUS, label: ACCOUNT_TYPE_LABELS.ALUMNUS },
+    { value: AccountType.FACULTY, label: ACCOUNT_TYPE_LABELS.FACULTY },
+    { value: AccountType.STAFF, label: ACCOUNT_TYPE_LABELS.STAFF },
+    { value: AccountType.REPS, label: ACCOUNT_TYPE_LABELS.REPS }
+  ];
 
   const qualifications = $derived(
     account
@@ -58,6 +81,48 @@
         >
           <Send class="h-3.5 w-3.5" />
         </a>
+      </div>
+    </div>
+
+    <div class="space-y-1">
+      <Label
+        class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
+        ><UserCog class="h-3 w-3" /> Account Type</Label
+      >
+      <div class="flex items-center gap-2">
+        <p class="text-sm font-semibold text-foreground">
+          {account.type || "STUDENT"}
+        </p>
+        {#if onChangeAccountType}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              {#snippet child({ props })}
+                <button
+                  type="button"
+                  {...props}
+                  class="text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                  title="Change Account Type"
+                  disabled={isChangingType}
+                >
+                  <Pencil class="h-3.5 w-3.5" />
+                </button>
+              {/snippet}
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="start" class="w-48">
+              {#each ACCOUNT_TYPE_OPTIONS as opt}
+                <DropdownMenu.Item
+                  onclick={() => onChangeAccountType(opt.value)}
+                  class={account.type === opt.value ? "font-bold text-primary" : ""}
+                >
+                  {opt.label}
+                  {#if account.type === opt.value}
+                    <span class="ml-auto text-xs text-primary">✓</span>
+                  {/if}
+                </DropdownMenu.Item>
+              {/each}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        {/if}
       </div>
     </div>
     <div class="space-y-1">
@@ -136,4 +201,15 @@
       {/if}
     </div>
   </Card.Content>
+  <Card.Footer>
+    <Button
+      variant="secondary"
+      size="sm"
+      class="w-full"
+      href="/admin/users/{account.residentId}"
+      icon={ArrowUpRight}
+    >
+      View User Profile
+    </Button>
+  </Card.Footer>
 </Card.Root>
