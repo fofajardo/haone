@@ -225,6 +225,7 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/users/${r.id}`)}
         rowId="id"
+        sorting={[{ id: "displayName", desc: false }]}
       />
     {:else}
       <EmptyView title="No users found." description="Try adjusting your filters or search query.">

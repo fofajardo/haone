@@ -28,7 +28,8 @@
     CircleAlert,
     ExternalLink,
     ShieldCheck,
-    ChevronRight  } from "@lucide/svelte";
+    ChevronRight
+  } from "@lucide/svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let users = $state<UserRecord[]>([]);
@@ -45,7 +46,6 @@
     description: "",
     type: "info" as "info" | "error"
   });
-
 
   async function loadData(bypassCache = false) {
     isLoading = true;

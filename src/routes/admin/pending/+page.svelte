@@ -81,8 +81,7 @@
             r.prRefNo !== "N/A" &&
             r.prRefNo !== "#N/A"
           );
-        })
-        .sort((a, b) => b.dateWeight - a.dateWeight || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0));
+        });
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -214,6 +213,7 @@
         meta={{ transactionTypes }}
         rowId="id"
         enableSelection
+        sorting={[{ id: "date", desc: true }]}
       >
         {#snippet actions()}
           <Button size="sm" onclick={prepareDispatch} {isLoading} icon={FileCheck}>Settle</Button>

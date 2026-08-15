@@ -258,6 +258,7 @@
         enableSelection={true}
         onSelectionChange={(ids) => (selectedIds = ids)}
         meta={{ onExpire: handleExpire, onDelete: handleDelete }}
+        sorting={[{ id: "startDate", desc: true }]}
       >
         {#snippet actions()}
           <Button

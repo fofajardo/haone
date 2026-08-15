@@ -292,6 +292,7 @@
           onSelectionChange={(ids) => (selectedIndices = ids)}
           rowId="stno"
           enableSelection
+          sorting={[{ id: "name", desc: false }]}
         >
           {#snippet actions()}
             <DropdownMenu.Root>

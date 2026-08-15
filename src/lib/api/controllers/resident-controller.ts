@@ -444,7 +444,8 @@ export function isResidentRouteAllowed(
   }
 
   if (urlOrHref.includes("/static-ip")) {
-    const brandKey = brandingState.selectedKey || brandingState.profile?.shortName?.toLowerCase() || "default";
+    const brandKey =
+      brandingState.selectedKey || brandingState.profile?.shortName?.toLowerCase() || "default";
     return !!(room && isStaticIpEnabled(room, brandKey) && canAccessLaundry(type));
   }
 

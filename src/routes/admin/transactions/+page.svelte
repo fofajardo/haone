@@ -212,6 +212,7 @@
         meta={{ transactionTypes }}
         rowId="id"
         enableSelection
+        sorting={[{ id: "date", desc: true }]}
       >
         {#snippet actions()}
           <Button size="sm" onclick={handleBatchAudit} isLoading={isAuditing} icon={ShieldCheck}>

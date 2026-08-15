@@ -36,7 +36,7 @@ export function parseDateWeight(dateStr: any): number {
         }
       }
     }
-  } catch (e) { }
+  } catch (e) {}
   return weight;
 }
 

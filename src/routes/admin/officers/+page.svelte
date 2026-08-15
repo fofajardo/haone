@@ -116,6 +116,7 @@
       data={filteredOfficers}
       rowId="id"
       onRowClick={(o) => goto(`/admin/officers/${o.id}`)}
+      sorting={[{ id: "position", desc: false }]}
     />
   {/if}
 </div>

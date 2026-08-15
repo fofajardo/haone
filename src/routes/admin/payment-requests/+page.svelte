@@ -128,6 +128,7 @@
         onSelectionChange={(ids) => (selectedIndices = ids)}
         rowId="id"
         enableSelection
+        sorting={[{ id: "date", desc: true }]}
         meta={{
           residents
         }}

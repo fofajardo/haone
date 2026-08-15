@@ -37,6 +37,8 @@
     rowId: keyof TData | ((row: TData) => string);
     enableSelection?: boolean;
     actions?: Snippet;
+    sorting?: SortingState;
+    onSortingChange?: (sorting: SortingState) => void;
   };
 
   let {
@@ -53,10 +55,11 @@
     onPaginationChange: onPaginationChangeProp,
     rowId,
     enableSelection = false,
-    actions
+    actions,
+    sorting = $bindable([]),
+    onSortingChange: onSortingChangeProp
   }: DataTableProps<TData, TValue> & { meta?: any } = $props();
 
-  let sorting = $state<SortingState>([]);
   let columnFilters = $state<ColumnFiltersState>([]);
   let rowSelection = $state<RowSelectionState>({});
   let columnVisibility = $state<VisibilityState>({});
@@ -118,20 +121,33 @@
       onPaginationChangeProp?.(pagination);
     },
     onSortingChange: (updater) => {
-      if (typeof updater === "function") sorting = updater(sorting);
-      else sorting = updater;
+      if (typeof updater === "function") {
+        sorting = updater(sorting);
+      } else {
+        sorting = updater;
+      }
+      onSortingChangeProp?.(sorting);
     },
     onColumnFiltersChange: (updater) => {
-      if (typeof updater === "function") columnFilters = updater(columnFilters);
-      else columnFilters = updater;
+      if (typeof updater === "function") {
+        columnFilters = updater(columnFilters);
+      } else {
+        columnFilters = updater;
+      }
     },
     onColumnVisibilityChange: (updater) => {
-      if (typeof updater === "function") columnVisibility = updater(columnVisibility);
-      else columnVisibility = updater;
+      if (typeof updater === "function") {
+        columnVisibility = updater(columnVisibility);
+      } else {
+        columnVisibility = updater;
+      }
     },
     onRowSelectionChange: (updater) => {
-      if (typeof updater === "function") rowSelection = updater(rowSelection);
-      else rowSelection = updater;
+      if (typeof updater === "function") {
+        rowSelection = updater(rowSelection);
+      } else {
+        rowSelection = updater;
+      }
     }
   });
 
