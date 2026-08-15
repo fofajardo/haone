@@ -43,11 +43,6 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
     (r) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER"
   );
 
-  const userActiveCount = active.filter((r) => r.residentId === currentResidentId).length;
-  if (userActiveCount >= 2) {
-    throw new Error("You already have 2 active laundry reservations");
-  }
-
   const sameSlotUser = active.find(
     (r) =>
       r.date === date &&
