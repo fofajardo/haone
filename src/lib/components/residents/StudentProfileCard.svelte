@@ -26,6 +26,7 @@
     class?: string;
     isChangingType?: boolean;
     onChangeAccountType?: (newType: string) => void;
+    onDelist?: () => void;
   }
 
   let {
@@ -33,7 +34,8 @@
     semesterCount,
     class: className,
     isChangingType = false,
-    onChangeAccountType
+    onChangeAccountType,
+    onDelist
   }: Props = $props();
 
   const ACCOUNT_TYPE_OPTIONS = [
@@ -181,14 +183,25 @@
           class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
           ><MapPin class="h-3 w-3" /> Room</Label
         >
-        <div class="text-sm font-semibold">{account.room}</div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-sm font-semibold">{account.room || "—"}</span>
+          {#if account.room}
+            <a
+              href="/admin/residents/rooms/{account.room}"
+              class="text-muted-foreground transition-colors hover:text-primary"
+              title="View Room {account.room}"
+            >
+              <ArrowUpRight class="h-3.5 w-3.5" />
+            </a>
+          {/if}
+        </div>
       </div>
       <div class="space-y-1">
         <Label
           class="flex items-center gap-1.5 text-xs font-bold tracking-widest text-muted-foreground uppercase"
           ><BedIcon class="h-3 w-3" /> Bed</Label
         >
-        <p class="text-sm font-semibold">{account.bed}</p>
+        <p class="text-sm font-semibold">{account.bed || "—"}</p>
       </div>
       {#if account.checkInDate}
         <div class="space-y-1 sm:col-span-2">
@@ -201,7 +214,17 @@
       {/if}
     </div>
   </Card.Content>
-  <Card.Footer>
+  <Card.Footer class="flex flex-col gap-2">
+    {#if onDelist}
+      <Button
+        variant="destructive"
+        size="sm"
+        class="w-full"
+        onclick={onDelist}
+      >
+        Delist Resident
+      </Button>
+    {/if}
     <Button
       variant="secondary"
       size="sm"

@@ -47,6 +47,7 @@
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
   import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
+  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
 
   const stno = $derived(page.params.stno);
 
@@ -171,6 +172,7 @@
   }
 
   let isClearDialogOpen = $state(false);
+  let isDelistOpen = $state(false);
   let residentsToClear = $state<ResidentRecord[]>([]);
   let allAccounts = $state<ResidentRecord[]>([]);
   let isChangingType = $state(false);
@@ -296,6 +298,9 @@
         {semesterCount}
         {isChangingType}
         onChangeAccountType={changeAccountType}
+        onDelist={() => {
+          isDelistOpen = true;
+        }}
       />
 
       <!-- Financial & Clearance Info -->
@@ -339,6 +344,22 @@
     />
   {/if}
 </div>
+
+{#if account}
+  <AssignmentDialog
+    bind:open={isDelistOpen}
+    room={account.room}
+    bed={account.bed}
+    userId={account.residentId}
+    isOccupied={true}
+    activeTerm={localTerm}
+    userOptions={[]}
+    availableBedOptions={[]}
+    onSuccess={async () => {
+      await loadResidentProfile(true);
+    }}
+  />
+{/if}
 
 <ClearanceDialog
   bind:open={isClearDialogOpen}
