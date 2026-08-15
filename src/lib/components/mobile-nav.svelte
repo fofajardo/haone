@@ -24,6 +24,8 @@
   import { uiSettings } from "$state/settings.svelte";
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
+  import { residentState } from "$state/resident-state.svelte";
+  import { isResidentRouteAllowed } from "$api/controllers/resident-controller";
 
   const MAP_RESIDENT: Record<string, any> = {
     home: { label: "Home", href: "/resident", icon: LayoutDashboard },
@@ -68,7 +70,17 @@
   const navItems = $derived.by(() => {
     const ids = isAdmin ? uiSettings.adminNavIds : uiSettings.residentNavIds;
     const map = isAdmin ? MAP_ADMIN : MAP_RESIDENT;
-    return ids.map((id) => map[id]).filter(Boolean);
+    const items = ids.map((id) => map[id]).filter(Boolean);
+
+    if (isAdmin) {
+      return items;
+    }
+
+    const type = residentState.status?.account?.type || "";
+    const room = residentState.status?.account?.room || "";
+    return items.filter((item) => {
+      return isResidentRouteAllowed(item.href, type, room);
+    });
   });
 
   function isActive(href: string) {

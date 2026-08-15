@@ -12,6 +12,8 @@ export { mapRowToResident, mapRowToJournal, parseCSVAmount, computeDisplayNames 
 
 import { residentService } from "$api/services/resident-service";
 import { constantsService } from "$api/services/constants-service";
+import { isStaticIpEnabled } from "$utils/rooms-utils";
+import { brandingState } from "$state/branding.svelte";
 
 /**
  * Resolves the primary identifier (UUID) of the currently signed-in resident.
@@ -425,6 +427,28 @@ export function canAccessAchievements(accountType: string): boolean {
     return true;
   }
   return false;
+}
+export function isResidentRouteAllowed(
+  urlOrHref: string,
+  accountType: string,
+  room?: string
+): boolean {
+  const type = (accountType || "").trim().toUpperCase();
+
+  if (urlOrHref.includes("/laundry")) {
+    return canAccessLaundry(type);
+  }
+
+  if (urlOrHref.includes("/achievements") || urlOrHref.includes("/leaderboards")) {
+    return canAccessAchievements(type);
+  }
+
+  if (urlOrHref.includes("/static-ip")) {
+    const brandKey = brandingState.selectedKey || brandingState.profile?.shortName?.toLowerCase() || "default";
+    return !!(room && isStaticIpEnabled(room, brandKey) && canAccessLaundry(type));
+  }
+
+  return true;
 }
 
 export async function changeAccountType(

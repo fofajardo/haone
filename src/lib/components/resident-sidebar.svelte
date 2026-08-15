@@ -21,9 +21,8 @@
   import { auth } from "$state/auth.svelte";
   import { residentState } from "$state/resident-state.svelte";
   import { page } from "$app/state";
-  import { canAccessLaundry, canAccessAchievements } from "$api/controllers/resident-controller";
+  import { isResidentRouteAllowed } from "$api/controllers/resident-controller";
   import { AccountType } from "$lib/types";
-  import { isStaticIpEnabled } from "$utils/rooms-utils";
   import ProfileHeader from "$components/ProfileHeader.svelte";
   import MobileProfileCard from "$components/MobileProfileCard.svelte";
 
@@ -92,25 +91,7 @@
     const type = residentState.status?.account?.type || "";
     const room = residentState.status?.account?.room || "";
     return serviceItems.filter((item) => {
-      if (item.title === "Laundry") {
-        if (!canAccessLaundry(type)) {
-          return false;
-        }
-      }
-      if (item.title === "Achievements") {
-        if (isAlum) {
-          return true;
-        }
-        if (!canAccessAchievements(type)) {
-          return false;
-        }
-      }
-      if (item.title === "Static IP Address") {
-        if (!room || !isStaticIpEnabled(room, "ati") || !canAccessLaundry(type)) {
-          return false;
-        }
-      }
-      return true;
+      return isResidentRouteAllowed(item.url, type, room);
     });
   });
 

@@ -11,6 +11,7 @@
   import { page } from "$app/state";
   import { fly } from "svelte/transition";
   import { goto } from "$app/navigation";
+  import { isResidentRouteAllowed } from "$api/controllers/resident-controller";
 
   import { createHeaderScrollState } from "$utils/scroll.svelte";
 
@@ -66,8 +67,18 @@
       if (residentState.status) {
         if (residentState.needsOnboarding && !isOnboardingPage) {
           goto("/resident/onboarding");
+          return;
         } else if (!residentState.needsOnboarding && isOnboardingPage) {
           goto("/resident");
+          return;
+        }
+
+        const accountType =
+          residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
+        const room = residentState.status?.account?.room || "";
+        if (!isOnboardingPage && !isResidentRouteAllowed(pathname, accountType, room)) {
+          goto("/resident");
+          return;
         }
       }
     }
