@@ -427,16 +427,8 @@
           if (!formData.creatorId) {
             formData.creatorId = creatorAcc.residentId || creatorAcc.id;
           }
-        }
-        // Populate current user stNo, official name, and residentId if matching
-        const userMail = auth.user?.email;
-        if (userMail) {
-          const myAcc = accounts.find((a) => a.email.toLowerCase() === userMail.toLowerCase());
-          if (myAcc) {
-            formData.creatorStNo = myAcc.stno;
-            formData.creatorName = myAcc.name;
-            formData.creatorId = myAcc.residentId || myAcc.id;
-            creatorSearch = myAcc.email;
+          if (!formData.creatorName) {
+            formData.creatorName = creatorAcc.name;
           }
         }
       } else {
