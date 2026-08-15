@@ -25,14 +25,10 @@
   import { translatePeriod } from "$utils/translators";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
+  import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import {
-    calculateAchievementPercentage,
-    getEligibleCount
-  } from "$api/controllers/achievement-controller";
+  import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/achievements/AchievementCard.svelte";
-
-  import * as Tabs from "$ui/tabs";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -209,12 +205,7 @@
   >
     {#snippet actions()}
       <div class="flex flex-wrap items-center gap-2">
-        <Tabs.Root bind:value={scope}>
-          <Tabs.List>
-            <Tabs.Trigger value="term">Term</Tabs.Trigger>
-            <Tabs.Trigger value="global">Global</Tabs.Trigger>
-          </Tabs.List>
-        </Tabs.Root>
+        <ScopeSwitcher bind:value={scope} />
         <Button variant="outline" size="sm" onclick={() => (isAwarderOpen = true)} icon={UserPlus}>
           Award
         </Button>

@@ -10,7 +10,7 @@
   import TermFilter from "$components/TermFilter.svelte";
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
-  import * as Tabs from "$ui/tabs";
+  import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import {
     fetchAchievements,
@@ -107,12 +107,7 @@
     isRefreshing={isLoading}
   >
     {#snippet actions()}
-      <Tabs.Root bind:value={scope}>
-        <Tabs.List>
-          <Tabs.Trigger value="term">Term</Tabs.Trigger>
-          <Tabs.Trigger value="global">Global</Tabs.Trigger>
-        </Tabs.List>
-      </Tabs.Root>
+      <ScopeSwitcher bind:value={scope} />
     {/snippet}
   </SubpageHeader>
 
