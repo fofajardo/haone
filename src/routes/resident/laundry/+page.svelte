@@ -312,7 +312,10 @@
               <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
               <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
               <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
-                >Cancelled</NativeSelect.Option
+                >Cancelled (User)</NativeSelect.Option
+              >
+              <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
+                >Cancelled (Admin)</NativeSelect.Option
               >
             </NativeSelect.Root>
           </div>

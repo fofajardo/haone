@@ -90,8 +90,7 @@ export const GET: RequestHandler = async ({ request }) => {
           displayName,
           room: resIdToRoomMap.get(resId) || ""
         };
-      })
-      .filter((r: any) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER");
+      });
 
     return json({ reservations, currentResidentId });
   } catch (e: any) {
