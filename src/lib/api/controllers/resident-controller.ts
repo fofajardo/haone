@@ -318,10 +318,7 @@ function mapResidentToStagedClearance(resident: ResidentRecord, branding: Brandi
 /**
  * Clears a resident by generating a clearance link and updating the spreadsheet.
  */
-export async function clearResident(
-  resident: ResidentRecord,
-  issuerId: string
-) {
+export async function clearResident(resident: ResidentRecord, issuerId: string) {
   const now = new Date();
   const dateString = now.toLocaleDateString("en-PH", {
     year: "numeric",

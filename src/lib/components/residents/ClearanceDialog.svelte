@@ -36,10 +36,7 @@
       const issuerId = issuer?.residentId || "";
 
       for (const res of residents) {
-        const result = await clearResident(
-          res,
-          issuerId
-        );
+        const result = await clearResident(res, issuerId);
 
         // In-place update for reactivity
         res.ceRefNo = result.refNo;

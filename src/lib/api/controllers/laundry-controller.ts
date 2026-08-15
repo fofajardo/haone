@@ -1,4 +1,9 @@
-import { type LaundryRecord, type PaginationOptions, type PaginatedResponse, LaundryStatus } from "$lib/types";
+import {
+  type LaundryRecord,
+  type PaginationOptions,
+  type PaginatedResponse,
+  LaundryStatus
+} from "$lib/types";
 import { parseTime } from "$utils/parsers";
 import { laundryService } from "$api/services/laundry-service";
 import { getCurrentResidentId } from "./resident-controller";
@@ -14,7 +19,14 @@ export interface ValidateLaundryOptions {
 
 export function validateLaundryReservation(options: ValidateLaundryOptions): string | null {
   try {
-    const { date, timeStart, timeEnd, residentId, isAdmin = false, existingReservations = [] } = options;
+    const {
+      date,
+      timeStart,
+      timeEnd,
+      residentId,
+      isAdmin = false,
+      existingReservations = []
+    } = options;
 
     if (!date) {
       return "Please select a date";
@@ -46,7 +58,11 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
       if (targetResidentId) {
         const residentDayMinutes = existingReservations
           .filter((r) => {
-            if (r.status !== LaundryStatus.ACTIVE || r.date !== date || r.residentId !== targetResidentId) {
+            if (
+              r.status !== LaundryStatus.ACTIVE ||
+              r.date !== date ||
+              r.residentId !== targetResidentId
+            ) {
               return false;
             }
             return true;
@@ -126,7 +142,8 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   if (!isAdmin) {
     const { canAccessLaundry } = await import("./resident-controller");
     const { residentState } = await import("$state/resident-state.svelte");
-    const accountType = residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
+    const accountType =
+      residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
     if (!canAccessLaundry(accountType)) {
       throw new Error("Access Denied: Account type cannot book laundry");
     }
@@ -151,7 +168,8 @@ export async function addLaundryReservation(data: Omit<LaundryRecord, "raw">) {
   const res = await laundryService.fetchReservations();
   const list = Array.isArray(res) ? res : res.items;
   const active = list.filter(
-    (r) => r.status !== LaundryStatus.CANCELLED_BY_ADMIN && r.status !== LaundryStatus.CANCELLED_BY_USER
+    (r) =>
+      r.status !== LaundryStatus.CANCELLED_BY_ADMIN && r.status !== LaundryStatus.CANCELLED_BY_USER
   );
 
   if (!isAdmin && currentResidentId) {
