@@ -25,6 +25,12 @@ export interface SyncPreviewAction {
   residentName: string;
   email: string;
   studentNo: string;
+  college: string;
+  program: string;
+  room: string;
+  bed: string;
+  checkInDate: string;
+  accountType: string;
   details: string;
   warning?: string;
   from?: string;
@@ -159,6 +165,12 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           residentName,
           email: curr.email,
           studentNo: curr.studentNo,
+          college: curr.college,
+          program: curr.program,
+          room: curr.room,
+          bed: curr.bed,
+          checkInDate: curr.checkInDate,
+          accountType: curr.accountType || AccountType.STUDENT,
           currIndex: curr.rowIndex,
           details: `Create profile for ${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`,
           payload: {
@@ -182,6 +194,12 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           residentName,
           email: curr.email,
           studentNo: curr.studentNo,
+          college: curr.college,
+          program: curr.program,
+          room: curr.room,
+          bed: curr.bed,
+          checkInDate: curr.checkInDate,
+          accountType: curr.accountType || AccountType.STUDENT,
           currIndex: curr.rowIndex,
           details: `Complete registration (No Room/Bed Assigned)`,
           to: "No Room/Bed Assigned",
@@ -194,6 +212,12 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           residentName,
           email: curr.email,
           studentNo: curr.studentNo,
+          college: curr.college,
+          program: curr.program,
+          room: curr.room,
+          bed: curr.bed,
+          checkInDate: curr.checkInDate,
+          accountType: curr.accountType || AccountType.STUDENT,
           currIndex: curr.rowIndex,
           details: `Assign to`,
           to: `${curr.room}-${curr.bed}`,
@@ -236,6 +260,12 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
           residentName,
           email: user.email,
           studentNo: user.studentNo,
+          college: curr.college,
+          program: curr.program,
+          room: curr.room,
+          bed: curr.bed,
+          checkInDate: curr.checkInDate,
+          accountType: curr.accountType || AccountType.STUDENT,
           currIndex: curr.rowIndex,
           details: `Update profile`,
           payload: {
@@ -262,6 +292,12 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             residentName,
             email: user.email,
             studentNo: user.studentNo,
+            college: curr.college,
+            program: curr.program,
+            room: curr.room,
+            bed: curr.bed,
+            checkInDate: curr.checkInDate,
+            accountType: curr.accountType || AccountType.STUDENT,
             currIndex: curr.rowIndex,
             details: `Change bed`,
             from: oldLoc,
@@ -284,6 +320,12 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
               residentName,
               email: user.email,
               studentNo: user.studentNo,
+              college: curr.college,
+              program: curr.program,
+              room: curr.room,
+              bed: curr.bed,
+              checkInDate: curr.checkInDate,
+              accountType: curr.accountType || AccountType.STUDENT,
               currIndex: curr.rowIndex,
               details: `Complete registration (No Room/Bed Assigned)`,
               to: "No Room/Bed Assigned",
@@ -296,6 +338,12 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
             residentName,
             email: user.email,
             studentNo: user.studentNo,
+            college: curr.college,
+            program: curr.program,
+            room: curr.room,
+            bed: curr.bed,
+            checkInDate: curr.checkInDate,
+            accountType: curr.accountType || AccountType.STUDENT,
             currIndex: curr.rowIndex,
             details: `New assignment`,
             to: `${curr.room}-${curr.bed}`,

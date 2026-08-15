@@ -8,6 +8,7 @@
     type SyncPreviewAction
   } from "$api/controllers/rooms-controller.svelte";
   import { pluralize } from "$utils/formatters";
+  import { translateCollege, translateProgram } from "$utils/translators";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -163,7 +164,7 @@
           disabled={selectedGroups.size === 0}
           icon={CheckCheck}
         >
-          Apply Sync ({selectedGroups.size})
+          Apply
         </Button>
       </div>
 
@@ -191,14 +192,65 @@
                 }}
                 class="mt-0.5"
               />
-              <div class="min-w-0 flex-1">
+              <div class="min-w-0 flex-1 space-y-3">
+                <!-- Header: Name + Account Type -->
                 <div class="flex flex-wrap items-center gap-2">
                   <p class="text-sm font-bold text-foreground">{primaryAction.residentName}</p>
-                  <p class="text-xs text-muted-foreground">
-                    {primaryAction.studentNo || primaryAction.email}
-                  </p>
+                  {#if primaryAction.accountType}
+                    <Badge variant="outline" class="text-xs font-bold tracking-tighter uppercase">
+                      {primaryAction.accountType}
+                    </Badge>
+                  {/if}
                 </div>
-                <div class="mt-2 space-y-1.5">
+
+                <!-- Details grid -->
+                <div class="grid grid-cols-2 gap-x-6 gap-y-1 text-xs sm:grid-cols-3">
+                  {#if primaryAction.email}
+                    <div>
+                      <span class="font-semibold text-muted-foreground">Email</span>
+                      <p class="truncate font-medium text-foreground">{primaryAction.email}</p>
+                    </div>
+                  {/if}
+                  {#if primaryAction.studentNo}
+                    <div>
+                      <span class="font-semibold text-muted-foreground">Student No.</span>
+                      <p class="font-medium text-foreground">{primaryAction.studentNo}</p>
+                    </div>
+                  {/if}
+                  {#if primaryAction.college}
+                    <div>
+                      <span class="font-semibold text-muted-foreground">College</span>
+                      <p class="font-medium text-foreground">
+                        {translateCollege(primaryAction.college).join(", ")}
+                      </p>
+                    </div>
+                  {/if}
+                  {#if primaryAction.program}
+                    <div class="col-span-2 sm:col-span-1">
+                      <span class="font-semibold text-muted-foreground">Program</span>
+                      <p class="font-medium text-foreground">
+                        {translateProgram(primaryAction.program).join(", ")}
+                      </p>
+                    </div>
+                  {/if}
+                  {#if primaryAction.room && primaryAction.room !== "NONE" && primaryAction.room !== "N/A"}
+                    <div>
+                      <span class="font-semibold text-muted-foreground">Room / Bed</span>
+                      <p class="font-medium text-foreground">
+                        {primaryAction.room}{#if primaryAction.bed && primaryAction.bed !== "NONE" && primaryAction.bed !== "N/A"}-{primaryAction.bed}{/if}
+                      </p>
+                    </div>
+                  {/if}
+                  {#if primaryAction.checkInDate}
+                    <div>
+                      <span class="font-semibold text-muted-foreground">Check-in</span>
+                      <p class="font-medium text-foreground">{primaryAction.checkInDate}</p>
+                    </div>
+                  {/if}
+                </div>
+
+                <!-- Actions -->
+                <div class="space-y-1.5 border-t border-border/50 pt-2">
                   {#each group.actions as action}
                     <div class="flex flex-wrap items-center gap-2 text-xs">
                       <Badge
