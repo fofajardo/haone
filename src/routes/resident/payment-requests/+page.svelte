@@ -70,7 +70,7 @@
       toast.success("Payment request cancelled");
       requestToCancel = null;
       isCancelDialogOpen = false;
-      loadData();
+      await loadData();
     } catch (e: any) {
       toast.error(e.message);
     } finally {
