@@ -180,7 +180,7 @@
 </script>
 
 <div class="space-y-6">
-  <SubpageHeader title="New Payment Request" />
+  <SubpageHeader title="Add Payment Request" />
   <div class="mx-auto max-w-3xl space-y-6">
     {#if isLoading}
       <LoadingView />

@@ -34,35 +34,35 @@
   });
 </script>
 
-<SubpageHeader title="Officers" isTopLevel={true}>
-  {#snippet actions()}
-    <Button
-      variant="outline"
-      size="sm"
-      onclick={() => loadData(true)}
-      {isLoading}
-      icon={RefreshCcw}
-    />
-  {/snippet}
-</SubpageHeader>
-
-{#if isLoading}
-  <div>
-    <LoadingView />
-  </div>
-{:else if error}
-  <ErrorView {error}>
-    <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
-  </ErrorView>
-{:else if officers.length === 0}
-  <EmptyView title="No officers listed." description="The directory is currently empty.">
-    {#snippet icon()}
-      <BookUser class="h-8 w-8 text-muted-foreground" />
+<div class="space-y-3">
+  <SubpageHeader title="Officers" isTopLevel={true}>
+    {#snippet actions()}
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => loadData(true)}
+        {isLoading}
+        icon={RefreshCcw}
+      />
     {/snippet}
-  </EmptyView>
-{:else}
-  <div class="mx-auto max-w-5xl space-y-8">
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  </SubpageHeader>
+
+  {#if isLoading}
+    <div>
+      <LoadingView />
+    </div>
+  {:else if error}
+    <ErrorView {error}>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
+    </ErrorView>
+  {:else if officers.length === 0}
+    <EmptyView title="No officers listed." description="The directory is currently empty.">
+      {#snippet icon()}
+        <BookUser class="h-8 w-8 text-muted-foreground" />
+      {/snippet}
+    </EmptyView>
+  {:else}
+    <div class="mx-auto grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {#each officers as o}
         <Card.Root
           class="flex flex-col border-none bg-card text-center transition-all hover:shadow-md"
@@ -101,5 +101,5 @@
         </Card.Root>
       {/each}
     </div>
-  </div>
-{/if}
+  {/if}
+</div>

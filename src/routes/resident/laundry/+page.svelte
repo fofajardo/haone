@@ -213,7 +213,7 @@
   let isRulesOpen = $state(false);
 </script>
 
-<div class="space-y-6">
+<div class="space-y-3">
   <SubpageHeader title="Laundry" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
