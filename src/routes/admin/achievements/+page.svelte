@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, Trophy, UserPlus } from "@lucide/svelte";
+  import { RefreshCcw, Plus, Trophy } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -10,8 +10,7 @@
   import {
     fetchAdminAchievements,
     fetchAchievementLogs,
-    addAchievement,
-    awardAchievement
+    addAchievement
   } from "$api/controllers/achievement-controller";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
@@ -20,9 +19,7 @@
   import { Label } from "$ui/label";
   import { Textarea } from "$ui/textarea";
   import { toast } from "svelte-sonner";
-  import { Combobox } from "$ui/combobox";
   import { Checkbox } from "$ui/checkbox";
-  import { translatePeriod } from "$utils/translators";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
@@ -32,7 +29,6 @@
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
-  let residents = $state<any[]>([]);
   let currentTerm = $state("");
   let currentUserId = $state("");
   let totalUsersCount = $state(0);
@@ -43,7 +39,6 @@
   let isGlobal = $derived(scope === "global");
 
   let isCreatorOpen = $state(false);
-  let isAwarderOpen = $state(false);
 
   let newAchievement = $state({
     name: "",
@@ -53,11 +48,6 @@
     points: 10,
     term: "",
     isIndefinite: false
-  });
-
-  let awardData = $state({
-    achievementId: "",
-    residentId: ""
   });
 
   let filteredAchievements = $derived(
@@ -102,7 +92,6 @@
       logs = l;
       currentTerm = t;
       totalUsersCount = allU.length;
-      residents = r;
       const currTerm = await uiSettings.ensureCurrentTerm();
       if (!newAchievement.term) {
         newAchievement.term = currTerm;
@@ -147,53 +136,7 @@
     }
   }
 
-  async function handleAward() {
-    if (!awardData.achievementId || !awardData.residentId) {
-      toast.error("Please select both achievement and resident");
-      return;
-    }
-
-    // Local validation to block duplicate awards
-    const hasAlready = logs.some((l) => {
-      return l.accountId === awardData.residentId && l.achievementId === awardData.achievementId;
-    });
-    if (hasAlready) {
-      toast.error("This resident has already been awarded this achievement.");
-      return;
-    }
-
-    try {
-      await awardAchievement({
-        id: crypto.randomUUID(),
-        recorderId: currentUserId,
-        accountId: awardData.residentId,
-        achievementId: awardData.achievementId,
-        term: currentTerm,
-        date: new Date().toISOString().split("T")[0]
-      });
-      toast.success("Achievement awarded");
-      isAwarderOpen = false;
-      awardData = { achievementId: "", residentId: "" };
-      loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    }
-  }
-
   onMount(loadData);
-
-  let achievementOptions = $derived(
-    achievements.map((a) => {
-      return { value: a.id, label: a.name };
-    })
-  );
-  let residentOptions = $derived(
-    residents
-      .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
-      .map((r) => {
-        return { value: r.residentId, label: r.name };
-      })
-  );
 </script>
 
 <div class="space-y-6">
@@ -205,11 +148,8 @@
   >
     {#snippet actions()}
       <div class="flex flex-wrap items-center gap-2">
-        <ScopeSwitcher bind:value={scope} />
-        <Button variant="outline" size="sm" onclick={() => (isAwarderOpen = true)} icon={UserPlus}>
-          Award
-        </Button>
         <Button size="sm" onclick={() => (isCreatorOpen = true)} icon={Plus}>New</Button>
+        <ScopeSwitcher bind:value={scope} />
       </div>
     {/snippet}
   </SubpageHeader>
@@ -322,43 +262,6 @@
         }}>Cancel</Button
       >
       <Button onclick={handleCreate} {isLoading} icon={Plus}>Create</Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
-
-<!-- Award Dialog -->
-<Dialog.Root bind:open={isAwarderOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Award Achievement</Dialog.Title>
-      <Dialog.Description
-        >Select a resident to give an achievement to for the current term ({translatePeriod(
-          currentTerm
-        )}).</Dialog.Description
-      >
-    </Dialog.Header>
-    <div class="space-y-4 pb-4">
-      <div class="space-y-2">
-        <Label>Achievement</Label>
-        <Combobox
-          bind:value={awardData.achievementId}
-          options={achievementOptions}
-          class="h-9 w-full"
-        />
-      </div>
-      <div class="space-y-2">
-        <Label>Resident</Label>
-        <Combobox bind:value={awardData.residentId} options={residentOptions} class="h-9 w-full" />
-      </div>
-    </div>
-    <Dialog.Footer>
-      <Button
-        variant="outline"
-        onclick={() => {
-          isAwarderOpen = false;
-        }}>Cancel</Button
-      >
-      <Button onclick={handleAward} {isLoading} icon={UserPlus}>Award Achievement</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
