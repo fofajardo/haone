@@ -46,8 +46,8 @@ export async function fetchServer<T = any>(
 
   if (!response.ok) {
     const errorMsg =
-      (typeof data?.error === "string" ? data.error : null) ||
       (typeof data?.message === "string" ? data.message : null) ||
+      (typeof data?.error === "string" ? data.error : null) ||
       `Server error: ${response.statusText}`;
     throw new Error(errorMsg);
   }
