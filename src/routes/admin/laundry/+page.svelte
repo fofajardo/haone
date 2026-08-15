@@ -28,12 +28,10 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
-  import LaundryImportDialog from "$components/admin/LaundryImportDialog.svelte";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import { toast } from "svelte-sonner";
-  import { FileUp } from "@lucide/svelte";
   import { pageState } from "$state/page-info.svelte";
   import { parseTime, parseDateWeight } from "$utils/parsers";
   import { formatTime } from "$utils/formatters";
@@ -42,7 +40,6 @@
   let users = $state<any[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let isImportOpen = $state(false);
   let isBookingOpen = $state(false);
   let isBooking = $state(false);
   let isCancelling = $state(false);
@@ -246,15 +243,10 @@
           {isLoading}
           icon={RefreshCcw}
         />
-        <Button variant="secondary" size="sm" onclick={() => (isImportOpen = true)} icon={FileUp}>
-          Import
-        </Button>
         <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
       </div>
     {/snippet}
   </SubpageHeader>
-
-  <LaundryImportDialog bind:open={isImportOpen} onComplete={loadData} />
 
   {#if isLoading}
     <LoadingView />
