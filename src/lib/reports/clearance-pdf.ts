@@ -1,5 +1,6 @@
 import { brandingState } from "$state/branding.svelte";
 import { translatePeriod } from "$utils/translators";
+import { imgToDataUrl, getPdfMake } from "./pdf-utils";
 import type {
   TDocumentDefinitions,
   Content,
@@ -7,21 +8,6 @@ import type {
   Margins,
   ContextPageSize
 } from "pdfmake/interfaces";
-
-async function imgToDataUrl(url: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((r) => {
-      const reader = new FileReader();
-      reader.onloadend = () => r(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.error("Failed to fetch image for PDF:", e);
-    return "";
-  }
-}
 
 function getOrdinalNum(n: number) {
   return n + (n > 0 ? ["th", "st", "nd", "rd"][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : "");
@@ -45,28 +31,7 @@ export async function exportClearancePDF(options: ClearancePDFOptions) {
   const { name, ceFullName, period, refNo, brandingKey, signatory, signatoryTitle, qrDataUrl } =
     options;
 
-  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
-    import("pdfmake/build/pdfmake"),
-    import("pdfmake/build/vfs_fonts")
-  ]);
-
-  const pdfMake = pdfMakeMod.default;
-  const pdfFonts = pdfFontsMod.default;
-
-  const vfs = (pdfFonts as any).pdfMake
-    ? (pdfFonts as any).pdfMake.vfs
-    : (pdfFonts as any).vfs || pdfFonts;
-  (pdfMake as any).vfs = vfs;
-
-  const fontBase = "https://raw.githubusercontent.com/Omnibus-Type/Archivo/master/fonts/ttf";
-  (pdfMake as any).addFonts({
-    Archivo: {
-      normal: `${fontBase}/Archivo-Regular.ttf`,
-      bold: `${fontBase}/Archivo-SemiBold.ttf`,
-      italics: `${fontBase}/Archivo-Italic.ttf`,
-      bolditalics: `${fontBase}/Archivo-SemiBoldItalic.ttf`
-    }
-  });
+  const pdfMake = await getPdfMake();
 
   const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(profile.letterheadUrl);

@@ -2,9 +2,10 @@ import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
 import { translateMop } from "$utils/translators";
 import { parseDateWeight } from "$utils/parsers";
-import { fetchResidents, mapRowToJournal } from "$api/controllers/resident-controller";
+import { fetchResidents } from "$api/controllers/resident-controller";
 import { fetchJournalEntries } from "$api/controllers/journal-controller";
 import { fetchTransactionTypes, fetchMopTypes } from "$api/controllers/constants-controller";
+import { imgToDataUrl, getPdfMake } from "./pdf-utils";
 import type { JournalRecord, ResidentRecord } from "$lib/types";
 import type {
   TDocumentDefinitions,
@@ -16,21 +17,6 @@ import type {
 
 declare const __APP_VERSION__: string;
 declare const __COMMIT_SHA__: string;
-
-async function imgToDataUrl(url: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((r) => {
-      const reader = new FileReader();
-      reader.onloadend = () => r(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.error("Failed to fetch image for PDF:", e);
-    return "";
-  }
-}
 
 export interface FinancialReportOptions {
   journal: JournalRecord[];
@@ -260,28 +246,7 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
     availableMops
   } = options;
 
-  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
-    import("pdfmake/build/pdfmake"),
-    import("pdfmake/build/vfs_fonts")
-  ]);
-
-  const pdfMake = pdfMakeMod.default;
-  const pdfFonts = pdfFontsMod.default;
-
-  const vfs = (pdfFonts as any).pdfMake
-    ? (pdfFonts as any).pdfMake.vfs
-    : (pdfFonts as any).vfs || pdfFonts;
-  (pdfMake as any).vfs = vfs;
-
-  const fontBase = "https://raw.githubusercontent.com/Omnibus-Type/Archivo/master/fonts/ttf";
-  (pdfMake as any).addFonts({
-    Archivo: {
-      normal: `${fontBase}/Archivo-Regular.ttf`,
-      bold: `${fontBase}/Archivo-SemiBold.ttf`,
-      italics: `${fontBase}/Archivo-Italic.ttf`,
-      bolditalics: `${fontBase}/Archivo-SemiBoldItalic.ttf`
-    }
-  });
+  const pdfMake = await getPdfMake();
 
   const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(

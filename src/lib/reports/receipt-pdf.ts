@@ -3,6 +3,7 @@ import { calculateTotal } from "$utils/math";
 import { formatAmount, formatCurrency, formatDate } from "$utils/formatters";
 import { parseRef } from "$utils/parsers";
 import { translateMop, translatePeriod } from "$utils/translators";
+import { imgToDataUrl, getPdfMake } from "./pdf-utils";
 import type { ReceiptData } from "$lib/types";
 import type {
   TDocumentDefinitions,
@@ -15,56 +16,12 @@ import type {
   Margins
 } from "pdfmake/interfaces";
 
-async function imgToDataUrl(url: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((r) => {
-      const reader = new FileReader();
-      reader.onloadend = () => r(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.error("Failed to fetch image for PDF:", e);
-    return "";
-  }
-}
-
 /**
  * Generates and downloads a branded, selectable PDF receipt.
  * Optimized with dynamic imports for SvelteKit SSR stability.
  */
 export async function exportReceiptPDF(receiptData: ReceiptData, qrDataUrl: string) {
-  // Dynamic imports to avoid SSR and hydration issues
-  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
-    import("pdfmake/build/pdfmake"),
-    import("pdfmake/build/vfs_fonts")
-  ]);
-
-  const pdfMake = pdfMakeMod.default;
-  const pdfFonts = pdfFontsMod.default;
-
-  // Setup VFS and Fonts
-  const vfs = (pdfFonts as any).pdfMake
-    ? (pdfFonts as any).pdfMake.vfs
-    : (pdfFonts as any).vfs || pdfFonts;
-  (pdfMake as any).vfs = vfs;
-
-  const fontBase = "https://raw.githubusercontent.com/Omnibus-Type/Archivo/master/fonts/ttf";
-  (pdfMake as any).addFonts({
-    Archivo: {
-      normal: `${fontBase}/Archivo-Regular.ttf`,
-      bold: `${fontBase}/Archivo-SemiBold.ttf`,
-      italics: `${fontBase}/Archivo-Italic.ttf`,
-      bolditalics: `${fontBase}/Archivo-SemiBoldItalic.ttf`
-    },
-    Roboto: {
-      normal: "https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-Regular.ttf",
-      bold: "https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-Medium.ttf",
-      italics: "https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-Italic.ttf",
-      bolditalics: "https://unpkg.com/pdfmake@0.3/build/fonts/Roboto/Roboto-MediumItalic.ttf"
-    }
-  });
+  const pdfMake = await getPdfMake();
 
   const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(profile.letterheadUrl);

@@ -1,5 +1,6 @@
 import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
+import { imgToDataUrl, getPdfMake } from "./pdf-utils";
 import type { ResidentRecord } from "$lib/types";
 import type {
   TDocumentDefinitions,
@@ -9,21 +10,6 @@ import type {
   TableCell,
   Size
 } from "pdfmake/interfaces";
-
-async function imgToDataUrl(url: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((r) => {
-      const reader = new FileReader();
-      reader.onloadend = () => r(reader.result as string);
-      reader.readAsDataURL(blob);
-    });
-  } catch (e) {
-    console.error("Failed to fetch image for PDF:", e);
-    return "";
-  }
-}
 
 export interface PDFReportOptions {
   residents: (ResidentRecord & { position?: string })[];
@@ -59,28 +45,7 @@ export async function exportReportPDF(options: PDFReportOptions) {
     isAttendanceReport
   } = options;
 
-  const [pdfMakeMod, pdfFontsMod] = await Promise.all([
-    import("pdfmake/build/pdfmake"),
-    import("pdfmake/build/vfs_fonts")
-  ]);
-
-  const pdfMake = pdfMakeMod.default;
-  const pdfFonts = pdfFontsMod.default;
-
-  const vfs = (pdfFonts as any).pdfMake
-    ? (pdfFonts as any).pdfMake.vfs
-    : (pdfFonts as any).vfs || pdfFonts;
-  (pdfMake as any).vfs = vfs;
-
-  const fontBase = "https://raw.githubusercontent.com/Omnibus-Type/Archivo/master/fonts/ttf";
-  (pdfMake as any).addFonts({
-    Archivo: {
-      normal: `${fontBase}/Archivo-Regular.ttf`,
-      bold: `${fontBase}/Archivo-SemiBold.ttf`,
-      italics: `${fontBase}/Archivo-Italic.ttf`,
-      bolditalics: `${fontBase}/Archivo-SemiBoldItalic.ttf`
-    }
-  });
+  const pdfMake = await getPdfMake();
 
   const profile = brandingState.profile;
   const letterheadData = await imgToDataUrl(profile.letterheadUrl);
