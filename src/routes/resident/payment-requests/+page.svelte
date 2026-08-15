@@ -61,7 +61,9 @@
   }
 
   async function handleCancel() {
-    if (!requestToCancel) return;
+    if (!requestToCancel) {
+      return;
+    }
     isCancelling = true;
     try {
       await cancelPaymentRequest(requestToCancel);
@@ -185,25 +187,21 @@
     <AlertDialog.Header>
       <AlertDialog.Title>Cancel Payment Request?</AlertDialog.Title>
       <AlertDialog.Description>
-        This will permanently cancel your pending payment request. You will need to create a new one
-        if you wish to proceed.
+        This action cannot be undone. This will permanently cancel your pending payment request.
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel onclick={() => (requestToCancel = null)}>Back</AlertDialog.Cancel>
-      <AlertDialog.Action
-        class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
-        onclick={(e) => {
-          e.preventDefault();
-          handleCancel();
-        }}
+      <AlertDialog.Cancel disabled={isCancelling} onclick={() => (requestToCancel = null)}
+        >Go Back</AlertDialog.Cancel
+      >
+      <Button
+        variant="destructive"
+        onclick={handleCancel}
+        isLoading={isCancelling}
         disabled={isCancelling}
       >
-        {#if isCancelling}
-          <RefreshCcw class="mr-2 h-4 w-4 animate-spin" />
-        {/if}
-        Cancel Request
-      </AlertDialog.Action>
+        Confirm
+      </Button>
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>
