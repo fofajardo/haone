@@ -63,6 +63,7 @@
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
   import TermFilter from "$components/TermFilter.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
@@ -513,19 +514,24 @@
         <Card.Header>
           <Card.Title class="flex items-center gap-2 text-lg">
             <StickyNote class="h-5 w-5" />
-            Administrative Notes
+            Notes
           </Card.Title>
         </Card.Header>
         <Card.Content class="flex-1">
           {#if user.notes}
-            <p class="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground italic">
+            <p class="text-sm leading-relaxed whitespace-pre-wrap">
               {user.notes}
             </p>
           {:else}
-            <div class="flex flex-col items-center justify-center py-12 opacity-30">
-              <StickyNote class="mb-2 h-8 w-8" />
-              <p class="text-xs font-bold tracking-widest uppercase">No notes available</p>
-            </div>
+            <EmptyView
+              title="No notes available."
+              description="No notes have been recorded for this user."
+              class="h-48 border-none bg-transparent"
+            >
+              {#snippet icon()}
+                <StickyNote class="h-8 w-8 text-muted-foreground/40" />
+              {/snippet}
+            </EmptyView>
           {/if}
         </Card.Content>
       </Card.Root>
