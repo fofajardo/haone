@@ -58,8 +58,8 @@ export async function fetchTermCurr(bypassCache = false): Promise<string> {
 /**
  * Fetches a single user by their ID.
  */
-export async function fetchUserById(id: string): Promise<UserRecord | null> {
-  const users = await fetchUsers();
+export async function fetchUserById(id: string, bypassCache = false): Promise<UserRecord | null> {
+  const users = await fetchUsers(bypassCache);
   return users.find((u) => u.id === id) || null;
 }
 
@@ -78,8 +78,11 @@ export async function addUsersBatch(users: Partial<UserRecord>[]) {
   return residentService.addUsersBatch(users);
 }
 
-export async function fetchAccountsByUserId(userId: string): Promise<ResidentRecord[]> {
-  const allResidents = await fetchResidents();
+export async function fetchAccountsByUserId(
+  userId: string,
+  bypassCache = false
+): Promise<ResidentRecord[]> {
+  const allResidents = await fetchResidents(bypassCache);
   return allResidents.filter((r) => r.residentId === userId);
 }
 

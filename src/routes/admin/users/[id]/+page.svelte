@@ -61,18 +61,20 @@
   );
 
   async function loadUserProfile(bypassCache = false) {
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
     isLoading = true;
     error = null;
 
     try {
-      user = await fetchUserById(userId);
+      user = await fetchUserById(userId, bypassCache);
       if (!user) {
         error = `User with ID ${userId} not found.`;
         return;
       }
       pageState.title = user.displayName;
-      accounts = await fetchAccountsByUserId(userId);
+      accounts = await fetchAccountsByUserId(userId, bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -97,16 +99,9 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="View User">
+  <SubpageHeader title="View User" onRefresh={() => loadUserProfile(true)} isRefreshing={isLoading}>
     {#snippet actions()}
       <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => loadUserProfile(true)}
-          {isLoading}
-          icon={RefreshCcw}
-        />
         <Button size="sm" href="/admin/users/{userId}/edit" icon={UserCog}>Edit</Button>
         {#if accounts.length === 0}
           <Button
