@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
@@ -12,21 +11,21 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
+  import * as RadioGroup from "$ui/radio-group";
   import {
     FileText,
     FileSpreadsheet,
     Download,
     RefreshCcw,
-    Clock,
-    Ban,
-    UserCheck,
     CircleAlert,
-    CircleCheck,
     Trash2,
     ExternalLink,
     Copy,
     BookUser,
-    ClipboardCheck
+    ClipboardCheck,
+    CreditCard,
+    CheckCheck,
+    X
   } from "@lucide/svelte";
   import {
     exportReportToSheet,
@@ -49,6 +48,8 @@
 
   import { Combobox } from "$ui/combobox";
   import { getAllRooms, getUnits } from "$utils/rooms-utils";
+  import { fly, fade } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
 
   let isLoading = $state(true);
   let isProcessing = $state(false);
@@ -85,21 +86,74 @@
     url: ""
   });
 
-  const categories = [
-    { id: "fully_paid", label: "Fully Paid", icon: CircleCheck },
-    { id: "half_fully_paid", label: "Half-Fully Paid", icon: Clock },
-    { id: "partially_paid", label: "Partially Paid", icon: CircleAlert },
-    { id: "no_payment", label: "No Payment", icon: Ban },
-    { id: "cleared", label: "Cleared", icon: UserCheck },
+  const reportTypes = [
+    {
+      id: "payment_status",
+      label: "Payment Status",
+      description: "Filter residents by payment status or clearance",
+      icon: CreditCard
+    },
+    {
+      id: "officers",
+      label: "Active Officers",
+      description: "Export current active dorm officers",
+      icon: BookUser
+    },
+    {
+      id: "attendance",
+      label: "Attendance Report",
+      description: "Generate room-by-room attendance sheet with signatures",
+      icon: ClipboardCheck
+    }
+  ];
+
+  const paymentStatuses = [
+    { id: "fully_paid", label: "Fully Paid" },
+    { id: "half_fully_paid", label: "Half-Fully Paid" },
+    { id: "partially_paid", label: "Partially Paid" },
+    { id: "no_payment", label: "No Payment" },
+    { id: "cleared", label: "Cleared" }
+  ];
+
+  const allTypeDefinitions = [
+    ...paymentStatuses,
     { id: "officers", label: "Active Officers", icon: BookUser },
     { id: "attendance", label: "Attendance Report", icon: ClipboardCheck }
   ];
+
+  const categoryParam = "fully_paid";
+  let reportType = $state<"payment_status" | "officers" | "attendance">(
+    categoryParam === "officers"
+      ? "officers"
+      : categoryParam === "attendance"
+        ? "attendance"
+        : "payment_status"
+  );
+  let selectedPaymentCategories = $state<string[]>(
+    categoryParam !== "officers" && categoryParam !== "attendance"
+      ? [categoryParam]
+      : ["fully_paid"]
+  );
+
+  const selectedCategories = $derived.by(() => {
+    if (reportType === "officers") {
+      return ["officers"];
+    }
+    if (reportType === "attendance") {
+      return ["attendance"];
+    }
+    return selectedPaymentCategories;
+  });
+
+  const isExportBlocked = $derived(
+    reportType === "payment_status" && selectedPaymentCategories.length === 0
+  );
 
   // Auto-generate title based on scope
   $effect(() => {
     if (sheetsTarget === "new" && selectedCategories.length > 0) {
       const labels = selectedCategories
-        .map((id) => categories.find((c) => c.id === id)?.label)
+        .map((id) => allTypeDefinitions.find((c) => c.id === id)?.label)
         .filter(Boolean);
 
       const joinedLabels = labels.length > 3 ? "Consolidated" : labels.join(" & ");
@@ -110,11 +164,8 @@
     }
   });
 
-  const categoryParam = page.url.searchParams.get("category") || "fully_paid";
-  let selectedCategories = $state<string[]>([categoryParam]);
-
   const combinedCategoryLabel = $derived(
-    categories
+    allTypeDefinitions
       .filter((c) => selectedCategories.includes(c.id))
       .map((c) => c.label)
       .join(", ") || "None"
@@ -529,6 +580,10 @@
   }
 
   async function handleAction() {
+    if (isExportBlocked) {
+      return;
+    }
+
     if (exportFormat === "sheets") {
       await syncToSheets();
       return;
@@ -589,21 +644,59 @@
     <div
       class="mx-auto max-w-2xl space-y-12 {isProcessing ? 'pointer-events-none opacity-50' : ''}"
     >
-      <!-- Step 1: Scope -->
+      <!-- Step 1: Type -->
       <section class="space-y-4">
         <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-          >1. Scope</Label
+          >1. Type</Label
         >
-        <div class="grid gap-6 rounded-2xl border bg-card p-6">
-          <div class="flex flex-col gap-8">
-            <TermFilter onSelect={() => loadData()} />
+        <RadioGroup.Root bind:value={reportType} class="grid gap-3 sm:grid-cols-3">
+          {#each reportTypes as rt}
+            <RadioGroup.Card
+              value={rt.id}
+              title={rt.label}
+              description={rt.description}
+              icon={rt.icon}
+              selected={reportType === rt.id}
+            />
+          {/each}
+        </RadioGroup.Root>
 
+        {#if reportType === "payment_status"}
+          <div
+            in:fly={{ y: 8, duration: 150, easing: cubicOut }}
+            out:fade={{ duration: 100 }}
+            class="grid gap-6 rounded-2xl border bg-muted/30 p-6"
+          >
             <div class="space-y-3">
-              <Label>Report Categories</Label>
+              <div class="flex items-center justify-between">
+                <Label>Payment Categories</Label>
+                <div class="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    icon={CheckCheck}
+                    onclick={() => {
+                      selectedPaymentCategories = paymentStatuses.map((c) => c.id);
+                    }}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    icon={X}
+                    onclick={() => {
+                      selectedPaymentCategories = [];
+                    }}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              </div>
               <div class="grid gap-3 sm:grid-cols-2">
-                {#each categories as cat}
+                {#each paymentStatuses as cat}
                   <div
-                    class="flex items-center gap-3 rounded-xl border p-4 transition-all {selectedCategories.includes(
+                    class="flex items-center gap-3 rounded-xl border bg-card p-4 transition-all {selectedPaymentCategories.includes(
                       cat.id
                     )
                       ? 'border-primary/40 bg-primary/5'
@@ -612,33 +705,48 @@
                     <Checkbox
                       id={cat.id}
                       class="h-5 w-5"
-                      checked={selectedCategories.includes(cat.id)}
+                      checked={selectedPaymentCategories.includes(cat.id)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          if (cat.id === "officers" || cat.id === "attendance") {
-                            selectedCategories = [cat.id];
-                          } else {
-                            selectedCategories = [
-                              ...selectedCategories.filter(
-                                (id) => id !== "officers" && id !== "attendance"
-                              ),
-                              cat.id
-                            ];
-                          }
+                          selectedPaymentCategories = [...selectedPaymentCategories, cat.id];
                         } else {
-                          selectedCategories = selectedCategories.filter((id) => id !== cat.id);
+                          selectedPaymentCategories = selectedPaymentCategories.filter(
+                            (id) => id !== cat.id
+                          );
                         }
                       }}
                     />
                     <Label
                       for={cat.id}
-                      class="flex flex-1 cursor-pointer items-center gap-3 text-sm font-bold"
+                      class="flex flex-1 cursor-pointer items-center text-sm font-bold"
                     >
-                      <cat.icon class="h-4 w-4 text-muted-foreground" />
                       {cat.label}
                     </Label>
                   </div>
                 {/each}
+              </div>
+            </div>
+          </div>
+        {/if}
+      </section>
+
+      <!-- Step 2: Scope -->
+      <section class="space-y-4">
+        <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
+          >2. Scope</Label
+        >
+        <div class="grid gap-6 rounded-2xl border bg-card p-6">
+          <div class="flex flex-col gap-8">
+            <TermFilter onSelect={() => loadData()} />
+
+            <div class="grid gap-6 sm:grid-cols-2">
+              <div class="space-y-2">
+                <Label>Period Start</Label>
+                <Input type="date" bind:value={periodStart} />
+              </div>
+              <div class="space-y-2">
+                <Label>Period End</Label>
+                <Input type="date" bind:value={periodEnd} />
               </div>
             </div>
 
@@ -652,18 +760,6 @@
                   searchPlaceholder="Search Unit..."
                   class="w-full"
                 />
-              </div>
-
-              <div class="space-y-2">
-                <Label>Period Start</Label>
-                <Input type="date" bind:value={periodStart} />
-              </div>
-            </div>
-
-            <div class="grid gap-6 sm:grid-cols-2">
-              <div class="space-y-2">
-                <Label>Period End</Label>
-                <Input type="date" bind:value={periodEnd} />
               </div>
             </div>
 
@@ -709,118 +805,54 @@
 
       <section class="space-y-4">
         <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-          >2. Export Format</Label
+          >3. Export Format</Label
         >
-        <div class="grid grid-cols-3 gap-3">
-          <button
-            class="group relative flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all hover:bg-muted {exportFormat ===
-            'pdf'
-              ? 'border-primary bg-primary/5'
-              : 'border-transparent bg-muted/50'}"
-            onclick={() => (exportFormat = "pdf")}
-          >
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-full bg-background shadow-sm transition-transform group-hover:scale-110"
-            >
-              <FileText
-                class="h-5 w-5 {exportFormat === 'pdf' ? 'text-primary' : 'text-muted-foreground'}"
-              />
-            </div>
-            <span class="text-xs font-bold tracking-tight">PDF</span>
-            {#if exportFormat === "pdf"}
-              <div
-                class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary"
-              >
-                <CircleCheck class="h-3 w-3 text-primary-foreground" />
-              </div>
-            {/if}
-          </button>
-          <button
-            class="group relative flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all hover:bg-muted {exportFormat ===
-            'csv'
-              ? 'border-primary bg-primary/5'
-              : 'border-transparent bg-muted/50'}"
-            onclick={() => (exportFormat = "csv")}
-          >
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-full bg-background shadow-sm transition-transform group-hover:scale-110"
-            >
-              <Download
-                class="h-5 w-5 {exportFormat === 'csv' ? 'text-primary' : 'text-muted-foreground'}"
-              />
-            </div>
-            <span class="text-xs font-bold tracking-tight">CSV Sheet</span>
-            {#if exportFormat === "csv"}
-              <div
-                class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary"
-              >
-                <CircleCheck class="h-3 w-3 text-primary-foreground" />
-              </div>
-            {/if}
-          </button>
-          <button
-            class="group relative flex flex-col items-center gap-3 rounded-xl border-2 p-4 transition-all hover:bg-muted {exportFormat ===
-            'sheets'
-              ? 'border-primary bg-primary/5'
-              : 'border-transparent bg-muted/50'}"
-            onclick={() => (exportFormat = "sheets")}
-          >
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-full bg-background shadow-sm transition-transform group-hover:scale-110"
-            >
-              <FileSpreadsheet
-                class="h-5 w-5 {exportFormat === 'sheets'
-                  ? 'text-primary'
-                  : 'text-muted-foreground'}"
-              />
-            </div>
-            <span class="text-xs font-bold tracking-tight">Google Sheets</span>
-            {#if exportFormat === "sheets"}
-              <div
-                class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary"
-              >
-                <CircleCheck class="h-3 w-3 text-primary-foreground" />
-              </div>
-            {/if}
-          </button>
-        </div>
+        <RadioGroup.Root bind:value={exportFormat} class="grid gap-3 sm:grid-cols-3">
+          <RadioGroup.Card
+            value="pdf"
+            title="PDF"
+            description="Formatted PDF document ready for printing or archiving"
+            icon={FileText}
+            selected={exportFormat === "pdf"}
+          />
+          <RadioGroup.Card
+            value="csv"
+            title="CSV Sheet"
+            description="Raw data in spreadsheet-compatible CSV file"
+            icon={Download}
+            selected={exportFormat === "csv"}
+          />
+          <RadioGroup.Card
+            value="sheets"
+            title="Google Sheets"
+            description="Sync directly to new or existing Google Spreadsheet"
+            icon={FileSpreadsheet}
+            selected={exportFormat === "sheets"}
+          />
+        </RadioGroup.Root>
 
         {#if exportFormat === "sheets"}
           <div
-            class="mt-4 grid animate-in gap-6 rounded-2xl border bg-muted/30 p-6 fade-in slide-in-from-top-2"
+            in:fly={{ y: 8, duration: 150, easing: cubicOut }}
+            out:fade={{ duration: 100 }}
+            class="mt-4 grid gap-6 rounded-2xl border bg-muted/30 p-6"
           >
             <div class="space-y-3">
               <Label>Destination</Label>
-              <div class="grid gap-2">
-                <button
-                  class="flex items-center gap-4 rounded-xl border bg-background p-4 text-left transition-all {sheetsTarget ===
-                  'new'
-                    ? 'border-primary ring-1 ring-primary'
-                    : 'hover:bg-muted/50'}"
-                  onclick={() => (sheetsTarget = "new")}
-                >
-                  <div
-                    class="h-3 w-3 rounded-full {sheetsTarget === 'new'
-                      ? 'bg-primary'
-                      : 'bg-muted'}"
-                  ></div>
-                  <span class="text-sm font-bold">Create New Spreadsheet</span>
-                </button>
-                <button
-                  class="flex items-center gap-4 rounded-xl border bg-background p-4 text-left transition-all {sheetsTarget ===
-                  'existing'
-                    ? 'border-primary ring-1 ring-primary'
-                    : 'hover:bg-muted/50'}"
-                  onclick={() => (sheetsTarget = "existing")}
-                >
-                  <div
-                    class="h-3 w-3 rounded-full {sheetsTarget === 'existing'
-                      ? 'bg-primary'
-                      : 'bg-muted'}"
-                  ></div>
-                  <span class="text-sm font-bold">Use Existing Spreadsheet</span>
-                </button>
-              </div>
+              <RadioGroup.Root bind:value={sheetsTarget} class="flex flex-col gap-3">
+                <div class="flex items-center space-x-2">
+                  <RadioGroup.Item value="new" id="dest-new" />
+                  <Label for="dest-new" class="cursor-pointer font-medium"
+                    >Create a new spreadsheet</Label
+                  >
+                </div>
+                <div class="flex items-center space-x-2">
+                  <RadioGroup.Item value="existing" id="dest-existing" />
+                  <Label for="dest-existing" class="cursor-pointer font-medium"
+                    >Use an existing spreadsheet</Label
+                  >
+                </div>
+              </RadioGroup.Root>
             </div>
 
             {#if sheetsTarget === "new"}
@@ -865,7 +897,7 @@
 
       <section class="space-y-4">
         <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-          >3. Signatories</Label
+          >4. Signatories</Label
         >
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <!-- Issued By -->
@@ -957,23 +989,30 @@
         </div>
       </section>
 
-      <section class="pt-4">
+      <section>
         <Button
           size="lg"
           class="w-full font-bold"
           onclick={handleAction}
           isLoading={isProcessing}
+          disabled={isExportBlocked}
           icon={exportFormat === "sheets" ? RefreshCcw : Download}
         >
           {#if exportFormat === "sheets"}
             Sync to Google Sheets
           {:else}
-            Generate {exportFormat.toUpperCase()} Report
+            Generate {exportFormat.toUpperCase()}
           {/if}
         </Button>
-        <p class="mt-3 text-center text-xs text-muted-foreground">
-          Processing <b>{filteredResidents.length}</b> records for <b>{combinedCategoryLabel}</b>
-        </p>
+        {#if isExportBlocked}
+          <p class="mt-3 text-center text-xs font-medium text-destructive">
+            Please select at least one payment category to export.
+          </p>
+        {:else}
+          <p class="mt-3 text-center text-xs">
+            Processing <b>{filteredResidents.length}</b> records for <b>{combinedCategoryLabel}</b>
+          </p>
+        {/if}
       </section>
     </div>
   {/if}
