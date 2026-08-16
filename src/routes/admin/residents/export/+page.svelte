@@ -122,19 +122,8 @@
   ];
 
   let eventName = $state("");
-  const categoryParam = "fully_paid";
-  let reportType = $state<"payment_status" | "officers" | "attendance">(
-    categoryParam === "officers"
-      ? "officers"
-      : categoryParam === "attendance"
-        ? "attendance"
-        : "payment_status"
-  );
-  let selectedPaymentCategories = $state<string[]>(
-    categoryParam !== "officers" && categoryParam !== "attendance"
-      ? [categoryParam]
-      : ["fully_paid"]
-  );
+  let reportType = $state<"payment_status" | "officers" | "attendance">("payment_status");
+  let selectedPaymentCategories = $state<string[]>(["fully_paid"]);
 
   const selectedCategories = $derived.by(() => {
     if (reportType === "officers") {
