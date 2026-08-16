@@ -44,11 +44,11 @@
 
   const MAP_ADMIN: Record<string, any> = {
     dashboard: { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    financial: { label: "Financial", href: "/admin/financial-report", icon: HandCoins },
     history: { label: "History", href: "/admin/transactions", icon: History },
     residents: { label: "Residents", href: "/admin/residents", icon: Users },
     users: { label: "Users", href: "/admin/users", icon: Contact },
     officers: { label: "Officers", href: "/admin/residents/officers", icon: BookUser },
-    financial: { label: "Financial", href: "/admin/financial-report", icon: HandCoins },
     demographics: { label: "Demographics", href: "/admin/demographics", icon: ChartPie },
     terms: { label: "Terms", href: "/admin/academic-terms", icon: GraduationCap },
     dispatcher: { label: "Email", href: "/admin/email-dispatcher", icon: Mail },

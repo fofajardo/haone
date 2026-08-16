@@ -37,6 +37,11 @@
       icon: LayoutDashboard
     },
     {
+      title: "Financial Report",
+      url: "/admin/financial-report",
+      icon: HandCoins
+    },
+    {
       title: "Transactions",
       url: "/admin/transactions",
       icon: RotateCcwClock
@@ -50,11 +55,6 @@
       title: "Users",
       url: "/admin/users",
       icon: Contact
-    },
-    {
-      title: "Financial Report",
-      url: "/admin/financial-report",
-      icon: HandCoins
     },
     {
       title: "Demographics",
