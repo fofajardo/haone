@@ -101,7 +101,7 @@
     },
     {
       id: "attendance",
-      label: "Attendance Report",
+      label: "Attendance Sheet",
       description: "Generate room-by-room attendance sheet with signatures",
       icon: ClipboardCheck
     }
@@ -118,9 +118,10 @@
   const allTypeDefinitions = [
     ...paymentStatuses,
     { id: "officers", label: "Active Officers", icon: BookUser },
-    { id: "attendance", label: "Attendance Report", icon: ClipboardCheck }
+    { id: "attendance", label: "Attendance Sheet", icon: ClipboardCheck }
   ];
 
+  let eventName = $state("");
   const categoryParam = "fully_paid";
   let reportType = $state<"payment_status" | "officers" | "attendance">(
     categoryParam === "officers"
@@ -605,6 +606,7 @@
           isPublic: isPublic,
           isOfficerReport,
           isAttendanceReport,
+          eventName: isAttendanceReport ? eventName.trim() : undefined,
           issuedBy,
           issuedByEmail: hideSignatoryEmails ? "" : issuedByEmail,
           assessedBy,
@@ -725,6 +727,28 @@
                   </div>
                 {/each}
               </div>
+            </div>
+          </div>
+        {/if}
+
+        {#if reportType === "attendance"}
+          <div
+            in:fly={{ y: 8, duration: 150, easing: cubicOut }}
+            out:fade={{ duration: 100 }}
+            class="grid gap-6 rounded-2xl border bg-muted/30 p-6"
+          >
+            <div class="space-y-2">
+              <Label for="eventName">Event Name</Label>
+              <Input
+                id="eventName"
+                bind:value={eventName}
+                placeholder="General Assembly, Fire Drill, Activity…"
+                class="bg-card"
+              />
+              <p class="text-xs text-muted-foreground">
+                Printed on the header of the attendance sheet. Leave blank to print a blank line for
+                writing.
+              </p>
             </div>
           </div>
         {/if}

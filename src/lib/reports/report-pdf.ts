@@ -26,6 +26,7 @@ export interface PDFReportOptions {
   isPublic: boolean;
   isOfficerReport?: boolean;
   isAttendanceReport?: boolean;
+  eventName?: string;
 }
 
 export async function exportReportPDF(options: PDFReportOptions) {
@@ -42,7 +43,8 @@ export async function exportReportPDF(options: PDFReportOptions) {
     periodCovered,
     isPublic,
     isOfficerReport,
-    isAttendanceReport
+    isAttendanceReport,
+    eventName
   } = options;
 
   const pdfMake = await getPdfMake();
@@ -87,7 +89,7 @@ export async function exportReportPDF(options: PDFReportOptions) {
   }
 
   const headerTitle = isAttendanceReport
-    ? "ATTENDANCE REPORT"
+    ? "ATTENDANCE SHEET"
     : isOfficerReport
       ? "OFFICER LIST"
       : "RESIDENT LIST";
@@ -115,14 +117,27 @@ export async function exportReportPDF(options: PDFReportOptions) {
   ];
 
   if (isAttendanceReport) {
-    docContent.push({
-      text: "Event: _______________________________________________________________________________",
-      alignment: "left" as Alignment,
-      margin: [0, 0, 0, 15] as Margins,
-      fontSize: 10,
-      bold: true,
-      color: "#000000"
-    });
+    if (eventName) {
+      docContent.push({
+        text: [
+          { text: "Event: ", bold: true },
+          { text: eventName, decoration: "underline", bold: true }
+        ],
+        alignment: "center" as Alignment,
+        margin: [0, 0, 0, 15] as Margins,
+        fontSize: 10,
+        color: "#000000"
+      });
+    } else {
+      docContent.push({
+        text: "Event: _______________________________________________________________________________",
+        alignment: "left" as Alignment,
+        margin: [0, 0, 0, 15] as Margins,
+        fontSize: 10,
+        bold: true,
+        color: "#000000"
+      });
+    }
   }
 
   docContent.push({
