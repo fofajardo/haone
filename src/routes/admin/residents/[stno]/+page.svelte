@@ -299,15 +299,17 @@
       <div class="flex h-full flex-col gap-6">
         <FinancialStandingCard {account}>
           {#snippet actions()}
-            <Button
-              variant="secondary"
-              size="sm"
-              class="w-full"
-              href="/admin/transactions/add?account={account.stno}"
-              icon={ArrowUpRight}
-            >
-              Add Transaction
-            </Button>
+            {#if account}
+              <Button
+                variant="secondary"
+                size="sm"
+                class="w-full"
+                href="/admin/transactions/add?account={account.stno}"
+                icon={ArrowUpRight}
+              >
+                Add Transaction
+              </Button>
+            {/if}
           {/snippet}
         </FinancialStandingCard>
 
