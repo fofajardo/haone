@@ -44,7 +44,6 @@
 
   const MAP_ADMIN: Record<string, any> = {
     dashboard: { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    pending: { label: "Pending", href: "/admin/pending", icon: Receipt },
     history: { label: "History", href: "/admin/transactions", icon: History },
     residents: { label: "Residents", href: "/admin/residents", icon: Users },
     users: { label: "Users", href: "/admin/users", icon: Contact },
@@ -55,7 +54,6 @@
     dispatcher: { label: "Email", href: "/admin/email-dispatcher", icon: Mail },
     settings: { label: "Settings", href: "/admin/settings", icon: Settings },
     laundry: { label: "Laundry", href: "/admin/laundry", icon: WashingMachine },
-    payments: { label: "Payments", href: "/admin/payment-requests", icon: Banknote },
     news: { label: "News", href: "/admin/announcements", icon: Megaphone },
     achievements: { label: "Trophy", href: "/admin/achievements", icon: Trophy },
     leaderboards: {

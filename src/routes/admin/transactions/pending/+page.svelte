@@ -24,6 +24,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
+  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
   import { columns } from "./columns";
   import type { ReceiptData } from "$lib/types";
 
@@ -161,11 +162,15 @@
 
 <div class="space-y-3">
   <SubpageHeader
-    title="Pending Receipts"
+    title="Transactions"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  />
+  >
+    {#snippet actions()}
+      <AdminTransactionsHeaderActions active="receipts" />
+    {/snippet}
+  </SubpageHeader>
 
   {#if isLoading && queue.length === 0}
     <LoadingView />

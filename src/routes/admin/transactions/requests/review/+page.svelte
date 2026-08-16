@@ -128,7 +128,7 @@
       payments = payments.filter((p) => p.id !== paymentId);
 
       if (payments.length === 0) {
-        goto("/admin/payment-requests");
+        goto("/admin/transactions/requests");
       } else {
         // Adjust index if we were at the end
         if (currentIndex >= payments.length) {
@@ -172,7 +172,7 @@
       payments = payments.filter((_, i) => i !== oldIndex);
 
       if (payments.length === 0) {
-        goto("/admin/payment-requests");
+        goto("/admin/transactions/requests");
       } else {
         currentIndex = Math.min(currentIndex, payments.length - 1);
       }
@@ -247,7 +247,7 @@
   {:else if error}
     <ErrorView {error}>
       <Button
-        onclick={() => goto("/admin/payment-requests")}
+        onclick={() => goto("/admin/transactions/requests")}
         variant="outline"
         class="mt-4"
         icon={ArrowLeft}>Back to List</Button
@@ -370,7 +370,7 @@
             initialData={stagedForms[currentPayment.id]}
             isSubmitting={isProcessing}
             onSave={handleSaveReview}
-            onCancel={() => goto("/admin/payment-requests")}
+            onCancel={() => goto("/admin/transactions/requests")}
             onStateChange={handleStateChange}
           />
         {/key}

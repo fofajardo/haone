@@ -8,6 +8,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
+  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
   import { columns } from "./columns";
   import { fetchAdminPaymentRequests } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
@@ -67,9 +68,11 @@
   });
 
   function handleReviewSelected() {
-    if (selectedIndices.size === 0) return;
+    if (selectedIndices.size === 0) {
+      return;
+    }
     const ids = Array.from(selectedIndices).join(",");
-    goto(`/admin/payment-requests/review?ids=${ids}`);
+    goto(`/admin/transactions/requests/review?ids=${ids}`);
   }
 
   onMount(loadData);
@@ -77,11 +80,15 @@
 
 <div class="space-y-3">
   <SubpageHeader
-    title="Payment Requests"
+    title="Transactions"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  />
+  >
+    {#snippet actions()}
+      <AdminTransactionsHeaderActions active="requests" />
+    {/snippet}
+  </SubpageHeader>
 
   {#if isLoading && payments.length === 0}
     <LoadingView />

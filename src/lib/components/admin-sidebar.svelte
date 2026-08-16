@@ -37,11 +37,6 @@
       icon: LayoutDashboard
     },
     {
-      title: "Pending Receipts",
-      url: "/admin/pending",
-      icon: Receipt
-    },
-    {
       title: "Transactions",
       url: "/admin/transactions",
       icon: RotateCcwClock
@@ -105,11 +100,6 @@
       title: "Laundry",
       url: "/admin/laundry",
       icon: WashingMachine
-    },
-    {
-      title: "Payment Requests",
-      url: "/admin/payment-requests",
-      icon: Banknote
     },
     {
       title: "Announcements",

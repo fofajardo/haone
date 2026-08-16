@@ -24,6 +24,7 @@
   import ErrorView from "$components/ErrorView.svelte";
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
+  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
 
   let journal = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
@@ -136,7 +137,7 @@
     isRefreshing={isLoading}
   >
     {#snippet actions()}
-      <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
+      <AdminTransactionsHeaderActions active="all" />
     {/snippet}
   </SubpageHeader>
 

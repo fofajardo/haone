@@ -43,7 +43,7 @@
     {
       title: "Pending Receipts",
       description: "Review pending payments and generate secure receipts.",
-      href: "/admin/pending",
+      href: "/admin/transactions/pending",
       icon: Receipt,
       color: "text-brand",
       bg: "bg-brand/10",
