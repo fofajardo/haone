@@ -154,16 +154,6 @@ export const POST: RequestHandler = async ({ request }) => {
       (r: any) => r.status !== "CANCELLED_BY_ADMIN" && r.status !== "CANCELLED_BY_USER"
     );
 
-    const activeUserCount = activeReservations.filter(
-      (r: any) => r.residentId === residentId
-    ).length;
-    if (activeUserCount >= 2) {
-      return json(
-        { error: "Limit Exceeded: You can only have 2 active reservations at a time" },
-        { status: 400 }
-      );
-    }
-
     const dateClashes = activeReservations.filter((r: any) => r.date === date);
     for (const res of dateClashes) {
       const exStart = parseTimeMinutes(res.timeStart);

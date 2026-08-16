@@ -161,12 +161,6 @@ export const supabaseLaundryService: LaundryServiceInterface = {
       }
 
       const activeReservations = existingRows || [];
-      const activeUserCount = activeReservations.filter(
-        (r: any) => r.resident_id === residentUuid
-      ).length;
-      if (activeUserCount >= 2) {
-        throw new Error("Limit Exceeded: You can only have 2 active reservations at a time");
-      }
 
       // NOTE: under RLS a resident only sees their own rows, so cross-resident
       // slot clashes cannot be detected client-side. The check below still
