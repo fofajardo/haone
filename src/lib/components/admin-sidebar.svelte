@@ -8,20 +8,16 @@
     LogOut,
     ChartPie,
     Mail,
-    FileSpreadsheet,
     HandCoins,
-    X,
-    History,
+    RotateCcwClock,
     CircleUser,
     GraduationCap,
     Contact,
-    Bed,
     WashingMachine,
     Banknote,
     Megaphone,
     Trophy,
     ListOrdered,
-    BookUser,
     Network,
     Database
   } from "@lucide/svelte";
@@ -48,7 +44,7 @@
     {
       title: "Transactions",
       url: "/admin/transactions",
-      icon: History
+      icon: RotateCcwClock
     },
     {
       title: "Residents",
@@ -61,16 +57,6 @@
       icon: Contact
     },
     {
-      title: "Academic Terms",
-      url: "/admin/academic-terms",
-      icon: GraduationCap
-    },
-    {
-      title: "Officers",
-      url: "/admin/officers",
-      icon: BookUser
-    },
-    {
       title: "Financial Report",
       url: "/admin/financial-report",
       icon: HandCoins
@@ -79,6 +65,11 @@
       title: "Demographics",
       url: "/admin/demographics",
       icon: ChartPie
+    },
+    {
+      title: "Academic Terms",
+      url: "/admin/academic-terms",
+      icon: GraduationCap
     }
   ];
 
