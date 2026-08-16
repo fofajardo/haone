@@ -1,5 +1,4 @@
-import type { ColumnDef } from "@tanstack/table-core";
-import { renderSnippet } from "$ui/data-table/index.js";
+import { renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
 import { formatDate, formatCurrency } from "$utils/formatters";
 import { translateMop, translateType } from "$utils/translators";
 import { type JournalRecord } from "$lib/types";

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { ColumnDef } from "@tanstack/table-core";
-  import { renderComponent, renderSnippet } from "$ui/data-table/index.js";
+  import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
   import { createRawSnippet } from "svelte";
   import { type ResidentRecord as Account } from "$lib/types";
   import * as Card from "$ui/card";

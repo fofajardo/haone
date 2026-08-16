@@ -49,7 +49,7 @@
   let roomMap = $state(new Map<string, string>());
   let accountToResidentMap = $state(new Map<string, string>());
   let activeResidentIds = $state(new Set<string>());
-  let statusFilter = $state<LaundryStatus>(LaundryStatus.ACTIVE);
+  let statusFilter = $state<LaundryStatus | "">(LaundryStatus.ACTIVE);
 
   let cancelData = $state<{ id: string; reason: string } | null>(null);
 

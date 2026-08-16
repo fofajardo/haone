@@ -1,5 +1,4 @@
-import { renderComponent } from "$ui/data-table";
-import type { ColumnDef } from "@tanstack/table-core";
+import { renderComponent, type ColumnDef } from "$ui/data-table/index.js";
 import type { OfficerRecord } from "$lib/types";
 import OfficerNameCell from "./OfficerNameCell.svelte";
 import OfficerStatusCell from "./OfficerStatusCell.svelte";
@@ -10,7 +9,7 @@ export const createColumns = (onSuccess: () => void): ColumnDef<OfficerRecord>[]
   {
     accessorKey: "position",
     header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Position" }),
-    sortingFn: (rowA, rowB) => {
+    sortFn: (rowA: any, rowB: any) => {
       const positions = (brandingState.profile.officerPositions as { title: string }[]).map(
         (p) => p.title
       );

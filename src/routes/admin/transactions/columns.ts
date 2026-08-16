@@ -1,5 +1,4 @@
-import type { ColumnDef } from "@tanstack/table-core";
-import { renderComponent, renderSnippet } from "$ui/data-table/index.js";
+import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
 import { formatDate, formatAccounting } from "$utils/formatters";
 import { translateMop, translateType } from "$utils/translators";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";

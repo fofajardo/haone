@@ -1,29 +1,33 @@
-<script lang="ts" generics="TData, TValue">
-  import type { Snippet } from "svelte";
+<script lang="ts" generics="TData extends RowData, TValue">
+  import { type Snippet, untrack } from "svelte";
   import {
     type ColumnDef,
     type ColumnFiltersState,
     type PaginationState,
     type RowSelectionState,
     type SortingState,
-    type VisibilityState,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel
-  } from "@tanstack/table-core";
+    type ColumnVisibilityState,
+    type RowData,
+    type StockFeatures,
+    createTable,
+    tableFeatures,
+    stockFeatures,
+    createFilteredRowModel,
+    createPaginatedRowModel,
+    createSortedRowModel
+  } from "@tanstack/svelte-table";
   import * as Table from "$ui/table/index.js";
   import { Button } from "$ui/button/index.js";
   import { Input } from "$ui/input/index.js";
-  import { FlexRender, createSvelteTable } from "$ui/data-table/index.js";
+  import { FlexRender } from "$ui/data-table/index.js";
   import { cn } from "$lib/utils";
   import * as NativeSelect from "$ui/native-select/index.js";
   import { pluralize } from "$utils/formatters";
   import { X } from "@lucide/svelte";
   import { fly } from "svelte/transition";
 
-  type DataTableProps<TData, TValue> = {
-    columns: ColumnDef<TData, TValue>[];
+  type DataTableProps<TData extends RowData, TValue> = {
+    columns: ColumnDef<StockFeatures, TData, TValue>[];
     data: TData[];
     onRowClick?: (row: TData) => void;
     class?: string;
@@ -38,6 +42,7 @@
     enableSelection?: boolean;
     actions?: Snippet;
     sorting?: SortingState;
+    defaultSorting?: SortingState;
     onSortingChange?: (sorting: SortingState) => void;
   };
 
@@ -56,15 +61,33 @@
     rowId,
     enableSelection = false,
     actions,
-    sorting = $bindable([]),
+    sorting: sortingProp,
+    defaultSorting = [],
     onSortingChange: onSortingChangeProp
   }: DataTableProps<TData, TValue> & { meta?: any } = $props();
 
+  let internalSorting = $state<SortingState>(untrack(() => sortingProp ?? defaultSorting));
+
+  $effect(() => {
+    if (sortingProp !== undefined) {
+      internalSorting = sortingProp;
+    }
+  });
+
   let columnFilters = $state<ColumnFiltersState>([]);
   let rowSelection = $state<RowSelectionState>({});
-  let columnVisibility = $state<VisibilityState>({});
+  let columnVisibility = $state<ColumnVisibilityState>({});
 
-  const table = createSvelteTable({
+  const features = tableFeatures({
+    ...stockFeatures,
+    filteredRowModel: createFilteredRowModel(),
+    sortedRowModel: createSortedRowModel(),
+    paginatedRowModel: createPaginatedRowModel()
+  });
+
+  const table = createTable<typeof features, TData>({
+    features,
+    autoResetPageIndex: false,
     get data() {
       return data;
     },
@@ -79,7 +102,7 @@
         return pagination;
       },
       get sorting() {
-        return sorting;
+        return internalSorting;
       },
       get columnVisibility() {
         return columnVisibility;
@@ -91,11 +114,7 @@
         return columnFilters;
       }
     },
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getRowId: (row) => {
+    getRowId: (row: any) => {
       if (typeof rowId === "function") {
         const id = rowId(row);
         if (!id) {
@@ -112,7 +131,7 @@
       }
       throw new Error("DataTable: No rowId prop provided. Explicit row IDs are required.");
     },
-    onPaginationChange: (updater) => {
+    onPaginationChange: (updater: any) => {
       if (typeof updater === "function") {
         pagination = updater(pagination);
       } else {
@@ -120,36 +139,36 @@
       }
       onPaginationChangeProp?.(pagination);
     },
-    onSortingChange: (updater) => {
+    onSortingChange: (updater: any) => {
       if (typeof updater === "function") {
-        sorting = updater(sorting);
+        internalSorting = updater(internalSorting);
       } else {
-        sorting = updater;
+        internalSorting = updater;
       }
-      onSortingChangeProp?.(sorting);
+      onSortingChangeProp?.(internalSorting);
     },
-    onColumnFiltersChange: (updater) => {
+    onColumnFiltersChange: (updater: any) => {
       if (typeof updater === "function") {
         columnFilters = updater(columnFilters);
       } else {
         columnFilters = updater;
       }
     },
-    onColumnVisibilityChange: (updater) => {
+    onColumnVisibilityChange: (updater: any) => {
       if (typeof updater === "function") {
         columnVisibility = updater(columnVisibility);
       } else {
         columnVisibility = updater;
       }
     },
-    onRowSelectionChange: (updater) => {
+    onRowSelectionChange: (updater: any) => {
       if (typeof updater === "function") {
         rowSelection = updater(rowSelection);
       } else {
         rowSelection = updater;
       }
     }
-  });
+  } as any);
 
   // Sync external search with internal table filters
   $effect(() => {
@@ -164,18 +183,21 @@
   // Sync selection back to parent if requested
   $effect(() => {
     if (onSelectionChange) {
-      const selected = new Set(table.getFilteredSelectedRowModel().rows.map((row) => row.id));
+      const selected = new Set<string>(
+        table.getFilteredSelectedRowModel().rows.map((row: any) => String(row.id))
+      );
       onSelectionChange(selected);
     }
   });
 
   const hasSelection = $derived(enableSelection);
+  const currentPagination = $derived(table.atoms.pagination.get());
 </script>
 
 <div class={cn("w-full", className)}>
   {#if hasSelection && table.getFilteredSelectedRowModel().rows.length > 0}
     {@const selectedCount = table.getFilteredSelectedRowModel().rows.length}
-    {@const pageCount = table.getPaginationRowModel().rows.length}
+    {@const pageCount = table.getPaginatedRowModel().rows.length}
     {@const totalFilteredCount = table.getFilteredRowModel().rows.length}
     {@const isAllPageSelected = table.getIsAllPageRowsSelected()}
     {@const isAllMatchSelected = table.getIsAllRowsSelected()}
@@ -225,19 +247,13 @@
                   class="[&:has([role=checkbox])]:text-center"
                   rowspan={table.getHeaderGroups().length - i}
                 >
-                  <FlexRender
-                    content={header.column.columnDef.header}
-                    context={header.getContext()}
-                  />
+                  <FlexRender {header} />
                 </Table.Head>
               {:else if !header.column.parent && i > 0}
                 <!-- Omit to respect rowspan from above -->
               {:else}
                 <Table.Head class="[&:has([role=checkbox])]:text-center" colspan={header.colSpan}>
-                  <FlexRender
-                    content={header.column.columnDef.header}
-                    context={header.getContext()}
-                  />
+                  <FlexRender {header} />
                 </Table.Head>
               {/if}
             {/each}
@@ -248,12 +264,12 @@
         {#each table.getRowModel().rows as row (row.id)}
           <Table.Row
             data-state={row.getIsSelected() && "selected"}
-            onclick={() => onRowClick?.(row.original)}
+            onclick={() => onRowClick?.(row.original as TData)}
             class={cn(onRowClick && "cursor-pointer")}
           >
             {#each row.getVisibleCells() as cell (cell.id)}
               <Table.Cell class="[&:has([role=checkbox])]:text-center">
-                <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+                <FlexRender {cell} />
               </Table.Cell>
             {/each}
           </Table.Row>
@@ -276,9 +292,9 @@
       <div class="flex items-center gap-2 text-sm font-medium">
         <span>Rows per page</span>
         <NativeSelect.Root
-          value={table.getState().pagination.pageSize >= 1000000
+          value={currentPagination.pageSize >= 1000000
             ? "all"
-            : table.getState().pagination.pageSize.toString()}
+            : currentPagination.pageSize.toString()}
           onchange={(e) => {
             const val = e.currentTarget.value;
             table.setPageSize(val === "all" ? Number.MAX_SAFE_INTEGER : Number(val));
@@ -296,10 +312,12 @@
         <Input
           type="number"
           class="h-8 w-12 [appearance:textfield] px-1 text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          value={table.getState().pagination.pageIndex + 1}
+          value={currentPagination.pageIndex + 1}
           onchange={(e) => {
             const val = Number(e.currentTarget.value);
-            if (isNaN(val)) return;
+            if (isNaN(val)) {
+              return;
+            }
             const page = Math.max(0, Math.min(val - 1, table.getPageCount() - 1));
             table.setPageIndex(page);
           }}

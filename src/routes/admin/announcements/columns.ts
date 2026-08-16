@@ -1,5 +1,4 @@
-import { type ColumnDef } from "@tanstack/table-core";
-import { renderComponent } from "$ui/data-table/index.js";
+import { renderComponent, type ColumnDef } from "$ui/data-table/index.js";
 import type { AnnouncementRecord } from "$lib/types";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { formatDate } from "$utils/formatters";

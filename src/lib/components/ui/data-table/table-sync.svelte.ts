@@ -149,16 +149,20 @@ export class TableSync<T extends Record<string, any>> {
         }
 
         if (url.searchParams.toString() !== oldQuery) {
-          // If filters changed, reset page to 1
+          // If non-pagination filters changed, reset page to 1
           const oldParams = new URL(page.url).searchParams;
-          oldParams.delete("page");
-          oldParams.delete("size");
+          const oldFilterString = Array.from(oldParams.entries())
+            .filter(([k]) => k !== "page" && k !== "size")
+            .sort()
+            .join("&");
 
           const newParams = new URL(url).searchParams;
-          newParams.delete("page");
-          newParams.delete("size");
+          const newFilterString = Array.from(newParams.entries())
+            .filter(([k]) => k !== "page" && k !== "size")
+            .sort()
+            .join("&");
 
-          if (oldParams.toString() !== newParams.toString()) {
+          if (oldFilterString !== newFilterString) {
             url.searchParams.delete("page");
             this.pagination.pageIndex = 0;
           }

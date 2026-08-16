@@ -1,8 +1,16 @@
 <script lang="ts">
   import { Checkbox } from "$ui/checkbox/index.js";
-  import type { Table } from "@tanstack/table-core";
 
-  let { table }: { table: Table<any> } = $props();
+  let {
+    table
+  }: {
+    table: {
+      getIsAllPageRowsSelected: () => boolean;
+      getIsSomePageRowsSelected: () => boolean;
+      toggleAllPageRowsSelected: (value: boolean) => void;
+      [key: string]: any;
+    };
+  } = $props();
 
   function handleClick(e: MouseEvent) {
     e.stopPropagation();

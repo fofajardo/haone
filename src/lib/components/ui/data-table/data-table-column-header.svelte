@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { type Column } from "@tanstack/table-core";
   import { ArrowUpDown } from "@lucide/svelte";
   import { Button } from "$ui/button/index.js";
   import { cn } from "$lib/utils";
@@ -9,7 +8,12 @@
     title,
     class: className
   }: {
-    column: Column<any, any>;
+    column: {
+      getCanSort: () => boolean;
+      getIsSorted: () => false | "asc" | "desc";
+      toggleSorting: (desc?: boolean, isMulti?: boolean) => void;
+      [key: string]: any;
+    };
     title: string;
     class?: string;
   } = $props();

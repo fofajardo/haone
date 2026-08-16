@@ -1,8 +1,15 @@
 <script lang="ts">
   import { Checkbox } from "$ui/checkbox/index.js";
-  import type { Row } from "@tanstack/table-core";
 
-  let { row }: { row: Row<any> } = $props();
+  let {
+    row
+  }: {
+    row: {
+      getIsSelected: () => boolean;
+      toggleSelected: (value: boolean) => void;
+      [key: string]: any;
+    };
+  } = $props();
 
   function handleClick(e: MouseEvent) {
     e.stopPropagation();
