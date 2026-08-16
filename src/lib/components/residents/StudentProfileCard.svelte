@@ -216,12 +216,7 @@
   </Card.Content>
   <Card.Footer class="flex flex-col gap-2">
     {#if onDelist}
-      <Button
-        variant="destructive"
-        size="sm"
-        class="w-full"
-        onclick={onDelist}
-      >
+      <Button variant="destructive" size="sm" class="w-full" onclick={onDelist}>
         Delist Resident
       </Button>
     {/if}

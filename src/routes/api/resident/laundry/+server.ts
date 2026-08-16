@@ -62,35 +62,33 @@ export const GET: RequestHandler = async ({ request }) => {
       }
     });
 
-    const reservations = resRows
-      .slice(1)
-      .map((row: any) => {
-        const resId = (row[LAUNDRY_COL.RESIDENT_ID] || "").trim();
-        const user = userMap.get(resId);
-        let name = "Resident";
-        if (user) {
-          name =
-            (user[USER_COL.DISPLAY_NAME] || "").trim() ||
-            `${user[USER_COL.FIRST_NAME] || ""} ${user[USER_COL.LAST_NAME] || ""}`.trim();
-        }
+    const reservations = resRows.slice(1).map((row: any) => {
+      const resId = (row[LAUNDRY_COL.RESIDENT_ID] || "").trim();
+      const user = userMap.get(resId);
+      let name = "Resident";
+      if (user) {
+        name =
+          (user[USER_COL.DISPLAY_NAME] || "").trim() ||
+          `${user[USER_COL.FIRST_NAME] || ""} ${user[USER_COL.LAST_NAME] || ""}`.trim();
+      }
 
-        const isSelf = resId === currentResidentId;
-        const displayName = isSelf ? name : maskNames ? "Resident" : name;
+      const isSelf = resId === currentResidentId;
+      const displayName = isSelf ? name : maskNames ? "Resident" : name;
 
-        return {
-          id: (row[LAUNDRY_COL.ID] || "").trim(),
-          residentId: resId,
-          date: (row[LAUNDRY_COL.DATE] || "").trim(),
-          timeStart: (row[LAUNDRY_COL.TIME_START] || "").trim(),
-          timeEnd: (row[LAUNDRY_COL.TIME_END] || "").trim(),
-          status: (row[LAUNDRY_COL.STATUS] || "ACTIVE").trim(),
-          cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
-          creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
-          cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim(),
-          displayName,
-          room: resIdToRoomMap.get(resId) || ""
-        };
-      });
+      return {
+        id: (row[LAUNDRY_COL.ID] || "").trim(),
+        residentId: resId,
+        date: (row[LAUNDRY_COL.DATE] || "").trim(),
+        timeStart: (row[LAUNDRY_COL.TIME_START] || "").trim(),
+        timeEnd: (row[LAUNDRY_COL.TIME_END] || "").trim(),
+        status: (row[LAUNDRY_COL.STATUS] || "ACTIVE").trim(),
+        cancelReason: (row[LAUNDRY_COL.CANCEL_REASON] || "").trim(),
+        creationTimestamp: (row[LAUNDRY_COL.CREATION_TIMESTAMP] || "").trim(),
+        cancelTimestamp: (row[LAUNDRY_COL.CANCEL_TIMESTAMP] || "").trim(),
+        displayName,
+        room: resIdToRoomMap.get(resId) || ""
+      };
+    });
 
     return json({ reservations, currentResidentId });
   } catch (e: any) {
