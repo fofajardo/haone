@@ -22,6 +22,7 @@
   import { TagsInput } from "$ui/tags-input";
   import { Combobox } from "$ui/combobox";
   import SubpageHeader from "$components/SubpageHeader.svelte";
+  import EmptyView from "$components/EmptyView.svelte";
 
   let {
     formData = $bindable({}),
@@ -179,55 +180,60 @@
           </Card.Title>
         </Card.Header>
         <Card.Content class="pb-6">
-          <div
-            class="relative space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
-          >
-            {#each academicItems as item, i}
-              <div class="relative flex items-start gap-4 pl-8">
-                <div
-                  class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-muted shadow-sm ring-1 ring-border"
-                >
-                  <AwardIcon class="h-2.5 w-2.5 text-muted-foreground" />
-                </div>
-                <div class="flex flex-1 items-start justify-between gap-4">
-                  <div class="flex flex-col gap-0.5">
-                    <span
-                      class="text-xs font-bold tracking-widest text-primary uppercase opacity-80"
-                    >
-                      {translateCollege(item.college)[0] || item.college || "No College"}
-                    </span>
-                    <p class="text-sm leading-tight font-bold text-foreground">
-                      {translateProgram(item.program)[0] || item.program || "No Program"}
-                    </p>
+          {#if academicItems.length === 0}
+            <EmptyView
+              title="No academic records."
+              description="Click 'Add Academic Record' above to add college and degree program entries."
+            >
+              {#snippet icon()}
+                <GraduationCap class="h-8 w-8 text-muted-foreground/40" />
+              {/snippet}
+            </EmptyView>
+          {:else}
+            <div
+              class="relative space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
+            >
+              {#each academicItems as item, i}
+                <div class="relative flex items-start gap-4 pl-8">
+                  <div
+                    class="absolute left-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-muted shadow-sm ring-1 ring-border"
+                  >
+                    <AwardIcon class="h-2.5 w-2.5 text-muted-foreground" />
                   </div>
-                  <div class="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="h-7 w-7 text-muted-foreground hover:text-primary"
-                      onclick={() => openEditDialog(i)}
-                    >
-                      <UserCog class="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="h-7 w-7 text-muted-foreground hover:text-destructive"
-                      onclick={() => removeAcademicItem(i)}
-                    >
-                      <Trash2 class="h-3.5 w-3.5" />
-                    </Button>
+                  <div class="flex flex-1 items-start justify-between gap-4">
+                    <div class="flex flex-col gap-0.5">
+                      <span
+                        class="text-xs font-bold tracking-widest text-primary uppercase opacity-80"
+                      >
+                        {translateCollege(item.college)[0] || item.college || "No College"}
+                      </span>
+                      <p class="text-sm leading-tight font-bold text-foreground">
+                        {translateProgram(item.program)[0] || item.program || "No Program"}
+                      </p>
+                    </div>
+                    <div class="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 text-muted-foreground hover:text-primary"
+                        onclick={() => openEditDialog(i)}
+                      >
+                        <UserCog class="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 text-muted-foreground hover:text-destructive"
+                        onclick={() => removeAcademicItem(i)}
+                      >
+                        <Trash2 class="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            {/each}
-            {#if academicItems.length === 0}
-              <div class="flex flex-col items-center justify-center py-6 pl-8 opacity-40">
-                <GraduationCap class="mb-2 h-8 w-8" />
-                <p class="text-xs font-bold tracking-widest uppercase">No academic records</p>
-              </div>
-            {/if}
-          </div>
+              {/each}
+            </div>
+          {/if}
         </Card.Content>
       </Card.Root>
     </div>
