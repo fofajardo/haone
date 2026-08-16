@@ -282,14 +282,6 @@
       <div class="lg:col-span-3">
         <TermFilter bind:value={localTerm} onSelect={loadResidentProfile} />
       </div>
-
-      {#if (!account.ceIssued || account.ceIssued === "" || account.ceIssued === "#N/A") && account.bal <= 0 && account.totalBase > 0}
-        <div class="flex items-center lg:col-span-9">
-          <Button variant="outline" size="sm" onclick={handleClear} icon={ShieldCheck}>
-            Mark as Cleared
-          </Button>
-        </div>
-      {/if}
     </div>
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Student Profile -->
@@ -334,7 +326,7 @@
           </Card.Root>
         {/if}
       </div>
-      <ClearanceCard {account} />
+      <ClearanceCard {account} onClear={handleClear} />
     </div>
 
     <TransactionHistoryCard

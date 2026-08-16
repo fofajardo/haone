@@ -9,9 +9,16 @@
   interface Props {
     account: ResidentRecord;
     class?: string;
+    onClear?: () => void;
   }
 
-  let { account, class: className }: Props = $props();
+  let { account, class: className, onClear }: Props = $props();
+
+  const canClear = $derived(
+    (!account.ceIssued || account.ceIssued === "" || account.ceIssued === "#N/A") &&
+      account.bal <= 0 &&
+      account.totalBase > 0
+  );
 </script>
 
 <Card.Root class="flex h-full flex-col {className}">
@@ -68,16 +75,30 @@
       </div>
     {/if}
   </Card.Content>
-  {#if account.ceIssued && account.ceLink && account.ceLink !== "N/A" && account.ceLink !== ""}
+  {#if (account.ceIssued && account.ceLink && account.ceLink !== "N/A" && account.ceLink !== "") || (canClear && onClear)}
     <Card.Footer class="flex flex-col gap-2">
-      <Button variant="secondary" size="sm" class="w-full" href={account.ceLink} target="_blank">
-        View Certificate <ArrowUpRight class="ml-2 h-4 w-4" />
-      </Button>
-      {#if account.ceLink.includes("drive.google.com")}
-        <p class="mt-2 text-center text-xs">
-          The certificate is hosted on Google Drive. The password is either your student number or
-          your full UP email address.
-        </p>
+      {#if canClear && onClear}
+        <Button variant="secondary" size="sm" class="w-full" onclick={onClear} icon={ShieldCheck}>
+          Mark as Cleared
+        </Button>
+      {/if}
+      {#if account.ceIssued && account.ceLink && account.ceLink !== "N/A" && account.ceLink !== ""}
+        <Button
+          variant="secondary"
+          size="sm"
+          class="w-full"
+          href={account.ceLink}
+          target="_blank"
+          icon={ArrowUpRight}
+        >
+          View Certificate
+        </Button>
+        {#if account.ceLink.includes("drive.google.com")}
+          <p class="mt-2 text-center text-xs">
+            The certificate is hosted on Google Drive. The password is either your student number or
+            your full UP email address.
+          </p>
+        {/if}
       {/if}
     </Card.Footer>
   {/if}
