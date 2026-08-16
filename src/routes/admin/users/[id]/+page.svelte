@@ -526,7 +526,6 @@
             <EmptyView
               title="No notes available."
               description="No notes have been recorded for this user."
-              class="h-48 border-none bg-transparent"
             >
               {#snippet icon()}
                 <StickyNote class="h-8 w-8 text-muted-foreground/40" />
