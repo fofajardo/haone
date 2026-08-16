@@ -10,13 +10,9 @@
       [key: string]: any;
     };
   } = $props();
-
-  function handleClick(e: MouseEvent) {
-    e.stopPropagation();
-  }
 </script>
 
-<div onclick={handleClick} role="presentation">
+<div onclick={(e) => e.stopPropagation()} role="presentation">
   <Checkbox
     checked={row.getIsSelected()}
     onCheckedChange={(value) => row.toggleSelected(!!value)}

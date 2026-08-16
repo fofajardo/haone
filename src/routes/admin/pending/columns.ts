@@ -1,28 +1,21 @@
-import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
+import {
+  renderComponent,
+  renderSnippet,
+  DataTableSelectHeader,
+  DataTableSelectCell,
+  DataTableColumnHeader,
+  type ColumnDef
+} from "$ui/data-table/index.js";
 import { formatDate, formatAccounting } from "$utils/formatters";
 import CompositionCell from "$components/CompositionCell.svelte";
 import type { JournalRecord } from "$lib/types";
-import DataTableCheckbox from "$ui/data-table/data-table-checkbox.svelte";
-import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<JournalRecord>[] = [
   {
     id: "select",
-    header: ({ table }) =>
-      renderComponent(DataTableCheckbox, {
-        checked: table.getIsAllPageRowsSelected(),
-        indeterminate: table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
-        onCheckedChange: (value: boolean) => table.toggleAllPageRowsSelected(!!value),
-        "aria-label": "Select all"
-      }),
-    cell: ({ row }) =>
-      renderComponent(DataTableCheckbox, {
-        checked: row.getIsSelected(),
-        onCheckedChange: (value: boolean) => row.toggleSelected(!!value),
-        "aria-label": "Select row",
-        onclick: (e: MouseEvent) => e.stopPropagation()
-      }),
+    header: ({ table }) => renderComponent(DataTableSelectHeader, { table }),
+    cell: ({ row }) => renderComponent(DataTableSelectCell, { row }),
     enableSorting: false,
     enableHiding: false
   },

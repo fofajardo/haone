@@ -1,20 +1,22 @@
-import { renderComponent, type ColumnDef } from "$ui/data-table/index.js";
+import {
+  renderComponent,
+  DataTableSelectHeader,
+  DataTableSelectCell,
+  DataTableColumnHeader,
+  type ColumnDef
+} from "$ui/data-table/index.js";
 import type { AnnouncementRecord } from "$lib/types";
-import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { formatDate } from "$utils/formatters";
 
 import AnnouncementStatusCell from "./AnnouncementStatusCell.svelte";
 import AnnouncementTagsCell from "./AnnouncementTagsCell.svelte";
 import AnnouncementTitleCell from "./AnnouncementTitleCell.svelte";
 
-import SelectionCell from "./SelectionCell.svelte";
-import SelectionHeader from "./SelectionHeader.svelte";
-
 export const columns: ColumnDef<AnnouncementRecord>[] = [
   {
     id: "select",
-    header: ({ table }) => renderComponent(SelectionHeader, { table }),
-    cell: ({ row }) => renderComponent(SelectionCell, { row }),
+    header: ({ table }) => renderComponent(DataTableSelectHeader, { table }),
+    cell: ({ row }) => renderComponent(DataTableSelectCell, { row }),
     enableSorting: false,
     enableHiding: false
   },

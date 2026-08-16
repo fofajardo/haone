@@ -3,7 +3,7 @@ import { formatDate, formatAccounting } from "$utils/formatters";
 import { translateMop } from "$utils/translators";
 import type { PaymentRequestRecord } from "$lib/types";
 import { PAYMENT_REQUEST_STATUS_COLORS } from "$lib/types";
-import DataTableCheckbox from "$ui/data-table/data-table-checkbox.svelte";
+import { DataTableSelectHeader, DataTableSelectCell } from "$ui/data-table/index.js";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { createRawSnippet } from "svelte";
 import CompositionCell from "$components/CompositionCell.svelte";
@@ -11,20 +11,8 @@ import CompositionCell from "$components/CompositionCell.svelte";
 export const columns: ColumnDef<PaymentRequestRecord>[] = [
   {
     id: "select",
-    header: ({ table }) =>
-      renderComponent(DataTableCheckbox, {
-        checked: table.getIsAllPageRowsSelected(),
-        indeterminate: table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected(),
-        onCheckedChange: (value: boolean) => table.toggleAllPageRowsSelected(!!value),
-        "aria-label": "Select all"
-      }),
-    cell: ({ row }) =>
-      renderComponent(DataTableCheckbox, {
-        checked: row.getIsSelected(),
-        onCheckedChange: (value: boolean) => row.toggleSelected(!!value),
-        "aria-label": "Select row",
-        onclick: (e: MouseEvent) => e.stopPropagation()
-      }),
+    header: ({ table }) => renderComponent(DataTableSelectHeader, { table }),
+    cell: ({ row }) => renderComponent(DataTableSelectCell, { row }),
     enableSorting: false,
     enableHiding: false
   },
