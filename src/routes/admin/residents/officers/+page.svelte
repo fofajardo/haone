@@ -15,6 +15,7 @@
   import { Label } from "$ui/label";
   import { Input } from "$ui/input";
   import TermFilter from "$components/TermFilter.svelte";
+  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
   import { goto } from "$app/navigation";
   import { pageState } from "$state/page-info.svelte";
 
@@ -72,7 +73,7 @@
 
 <div class="space-y-3">
   <SubpageHeader
-    title="Officers"
+    title="Residents"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
@@ -133,7 +134,7 @@
       {columns}
       data={filteredOfficers}
       rowId="id"
-      onRowClick={(o) => goto(`/admin/officers/${o.id}`)}
+      onRowClick={(o) => goto(`/admin/residents/officers/${o.id}`)}
       sorting={[{ id: "position", desc: false }]}
     />
   {/if}

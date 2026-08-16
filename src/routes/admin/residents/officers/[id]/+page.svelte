@@ -49,7 +49,7 @@
       const found = officers.find((o) => o.id === id);
       if (!found) {
         toast.error("Officer not found");
-        goto("/admin/officers");
+        goto("/admin/residents/officers");
         return;
       }
       officer = found;
@@ -107,7 +107,7 @@
         birthday: editData.birthday
       });
       toast.success("Officer record updated");
-      goto("/admin/officers");
+      goto("/admin/residents/officers");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -121,7 +121,7 @@
     try {
       await transitionOfficerPosition(officer.id, newPosition);
       toast.success("Position changed and new record created");
-      goto("/admin/officers");
+      goto("/admin/residents/officers");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -136,7 +136,7 @@
     try {
       await deleteOfficer(officer.id);
       toast.success("Officer removed");
-      goto("/admin/officers");
+      goto("/admin/residents/officers");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -259,7 +259,7 @@
         </div>
       </Card.Content>
       <Card.Footer class="justify-end gap-2 border-t pt-6">
-        <Button variant="ghost" onclick={() => goto("/admin/officers")}>Cancel</Button>
+        <Button variant="ghost" onclick={() => goto("/admin/residents/officers")}>Cancel</Button>
         <Button onclick={handleUpdate} isLoading={isSaving} icon={Save} disabled={isImmutable}>
           Save Changes
         </Button>

@@ -122,7 +122,7 @@
         status: OfficerStatus.ACTIVE
       });
       toast.success("Officer added successfully");
-      goto("/admin/officers");
+      goto("/admin/residents/officers");
     } catch (e: any) {
       toast.error(e.message);
     } finally {

@@ -36,7 +36,7 @@
     {/snippet}
   </DropdownMenu.Trigger>
   <DropdownMenu.Content align="end">
-    <DropdownMenu.Item onSelect={() => goto(`/admin/officers/${officer.id}`)}>
+    <DropdownMenu.Item onSelect={() => goto(`/admin/residents/officers/${officer.id}`)}>
       <FilePen class="mr-2 h-4 w-4" />
       Edit Record
     </DropdownMenu.Item>
