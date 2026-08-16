@@ -87,9 +87,7 @@
   <LoadingView />
 {:else if error}
   <ErrorView {error}>
-    <Button variant="outline" class="mt-4" onclick={() => goto("/admin/users")}>
-      Return to Directory
-    </Button>
+    <Button variant="outline" class="mt-4" href="/admin/users">Return to Directory</Button>
   </ErrorView>
 {:else if user}
   <UserForm

@@ -108,9 +108,7 @@
     isRefreshing={isLoading}
   >
     {#snippet actions()}
-      <Button size="sm" onclick={() => goto("/resident/payment-requests/add")} icon={Plus}>
-        Add
-      </Button>
+      <Button size="sm" href="/resident/payment-requests/add" icon={Plus}>Add</Button>
     {/snippet}
   </SubpageHeader>
 

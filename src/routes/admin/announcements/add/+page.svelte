@@ -172,11 +172,6 @@
       </div>
 
       <div class="flex justify-end gap-3 border-t pt-6">
-        <Button
-          variant="outline"
-          onclick={() => goto("/admin/announcements")}
-          disabled={isSubmitting}>Cancel</Button
-        >
         <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-[140px]">
           Save
         </Button>

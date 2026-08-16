@@ -188,7 +188,6 @@
         </div>
       </Card.Content>
       <Card.Footer class="justify-end gap-2 border-t pt-6">
-        <Button variant="ghost" onclick={() => goto("/admin/officers")}>Cancel</Button>
         <Button onclick={handleAddOfficer} isLoading={isSaving} icon={Save}>Assign</Button>
       </Card.Footer>
     </Card.Root>

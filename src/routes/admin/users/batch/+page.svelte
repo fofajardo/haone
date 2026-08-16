@@ -167,7 +167,6 @@ maria.clara@up.edu.ph,Clara,Maria,S.,2018-54321,CAL,BA EL,ALUMNUS`;
             </Card.Description>
           </div>
           <div class="flex gap-2">
-            <Button variant="outline" size="sm" onclick={() => goto("/admin/users")}>Cancel</Button>
             <Button
               size="sm"
               onclick={handleImport}

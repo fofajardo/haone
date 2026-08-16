@@ -78,7 +78,7 @@
     isRefreshing={isLoading}
   >
     {#snippet actions()}
-      <Button size="sm" onclick={() => goto("/admin/officers/add")} icon={Plus}>Add</Button>
+      <Button size="sm" href="/admin/officers/add" icon={Plus}>Add</Button>
     {/snippet}
   </SubpageHeader>
 
