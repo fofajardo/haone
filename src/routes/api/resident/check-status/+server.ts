@@ -197,6 +197,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
             period: (residentAccount[ACCOUNT_COL.PERIOD] || "").trim(),
             room: (residentAccount[ACCOUNT_COL.ROOM] || "").trim(),
             bed: (residentAccount[ACCOUNT_COL.BED] || "").trim(),
+            checkInDate: (residentAccount[ACCOUNT_COL.CHECK_IN_DATE] || "").trim(),
             name: (userRow?.[USER_COL.DISPLAY_NAME] || "").trim(),
             stno: (userRow?.[USER_COL.STUDENT_NO] || "").trim(),
             waterBase,

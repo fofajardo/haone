@@ -14,6 +14,7 @@
   import { Input } from "$ui/input";
   import { Combobox } from "$ui/combobox";
   import { goto } from "$app/navigation";
+  import { page } from "$app/state";
   import { pageState } from "$state/page-info.svelte";
   import * as Card from "$ui/card";
 
@@ -26,8 +27,8 @@
   let isSaving = $state(false);
 
   let newOfficerData = $state({
-    residentId: "",
-    position: "",
+    residentId: page.url.searchParams.get("residentId") || "",
+    position: page.url.searchParams.get("position") || "",
     nickname: "",
     committee: "",
     fbLink: "",

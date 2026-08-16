@@ -2,13 +2,18 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
+  import { brandingState } from "$state/branding.svelte";
+  import { uiSettings } from "$state/settings.svelte";
   import { translateCollege, translateProgram } from "$utils/translators";
   import { pluralize } from "$utils/formatters";
+  import { parseDateWeight } from "$utils/parsers";
   import * as Card from "$ui/card";
+  import * as Tabs from "$ui/tabs";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Label } from "$ui/label";
   import * as AlertDialog from "$ui/alert-dialog";
+  import * as DropdownMenu from "$ui/dropdown-menu";
   import {
     RefreshCcw,
     User as UserIcon,
@@ -21,32 +26,85 @@
     Contact,
     UserCog,
     StickyNote,
-    Trash2
+    Trash2,
+    Info,
+    ArrowUpRight,
+    ChevronDown,
+    FileCheck,
+    Plus,
+    Banknote,
+    Bed,
+    BookUser
   } from "@lucide/svelte";
   import {
     type UserRecord,
     USER_TAG_COLORS,
     type ResidentRecord as Account,
-    UserTag
+    type ResidentRecord,
+    type JournalRecord,
+    type OfficerRecord,
+    UserTag,
+    AccountType,
+    ACCOUNT_TYPE_LABELS
   } from "$lib/types";
   import {
     fetchUserById,
     fetchAccountsByUserId,
-    deleteUser
+    fetchResidents,
+    deleteUser,
+    stageStatusEmail,
+    stageClearanceEmail,
+    changeAccountType as changeAccountTypeController
   } from "$api/controllers/resident-controller";
+  import { fetchJournalEntries } from "$api/controllers/journal-controller";
+  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
+  import { fetchOfficers } from "$api/controllers/officer-controller";
   import { pageState } from "$state/page-info.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
+  import TermFilter from "$components/TermFilter.svelte";
+  import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
+  import ClearanceCard from "$components/residents/ClearanceCard.svelte";
+  import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
+  import AccountCard from "$components/residents/AccountCard.svelte";
   import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
+  import OfficerHistoryCard from "$components/residents/OfficerHistoryCard.svelte";
+  import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
+  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
 
   const userId = $derived(page.params.id);
 
   let user = $state<UserRecord | null>(null);
   let accounts = $state<Account[]>([]);
+  let userOfficers = $state<OfficerRecord[]>([]);
+  let history = $state<JournalRecord[]>([]);
+  let transactionTypes = $state<{ value: string; label: string }[]>([]);
+  let allResidents = $state<ResidentRecord[]>([]);
   let isLoading = $state(true);
   let isDeleteAlertOpen = $state(false);
   let error = $state<string | null>(null);
+  let localTerm = $state(page.url.searchParams.get("term") || uiSettings.currentTerm);
+
+  let isClearDialogOpen = $state(false);
+  let isDelistOpen = $state(false);
+  let residentsToClear = $state<ResidentRecord[]>([]);
+  let isChangingType = $state(false);
+
+  let alertDialog = $state({
+    open: false,
+    title: "",
+    description: "",
+    type: "info" as "info" | "error"
+  });
+
+  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
+    alertDialog = { open: true, title, description, type };
+  }
+
+  const currentAccount = $derived(
+    accounts.find((a) => !localTerm || a.period === localTerm) || accounts[0] || null
+  );
 
   const qualifications = $derived(
     user
@@ -68,13 +126,49 @@
     error = null;
 
     try {
-      user = await fetchUserById(userId, bypassCache);
-      if (!user) {
+      const currTerm = await uiSettings.ensureCurrentTerm();
+      if (!localTerm) {
+        localTerm = currTerm;
+      }
+
+      const [userData, accountData, allOfficers, entries, types, allRes] = await Promise.all([
+        fetchUserById(userId, bypassCache),
+        fetchAccountsByUserId(userId, bypassCache),
+        fetchOfficers(bypassCache),
+        fetchJournalEntries(undefined, undefined),
+        fetchTransactionTypes(bypassCache),
+        fetchResidents(bypassCache)
+      ]);
+
+      if (!userData) {
         error = `User with ID ${userId} not found.`;
         return;
       }
+      user = userData;
       pageState.title = user.displayName;
-      accounts = await fetchAccountsByUserId(userId, bypassCache);
+      accounts = accountData;
+      allResidents = allRes;
+      transactionTypes = types;
+
+      userOfficers = allOfficers.filter(
+        (o) =>
+          //o.residentId === userId || // FIXME: officer records do not yet store proper UUIDs
+          user?.email && o.email?.toLowerCase() === user.email.toLowerCase()
+      );
+
+      const journalList = Array.isArray(entries) ? entries : entries.items;
+      history = journalList
+        .filter(
+          (r) =>
+            (user?.email && r.account.trim().toLowerCase() === user.email.toLowerCase()) ||
+            (user?.studentNo && r.stno.trim() === user.studentNo)
+        )
+        .filter((r) => !localTerm || r.period === localTerm)
+        .map((journal) => ({
+          ...journal,
+          dateWeight: parseDateWeight(journal.date)
+        }))
+        .sort((a, b) => b.dateWeight - a.dateWeight || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0));
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -95,13 +189,114 @@
     }
   }
 
+  async function handleChangeAccountType(newType: string) {
+    if (!currentAccount) {
+      return;
+    }
+    isChangingType = true;
+    try {
+      await changeAccountTypeController(currentAccount.residentId, currentAccount.period, newType);
+      showAlert("Account Type Updated", `Account type changed to ${newType}.`);
+      await loadUserProfile(true);
+    } catch (e: any) {
+      showAlert("Update Failed", e.message, "error");
+    } finally {
+      isChangingType = false;
+    }
+  }
+
+  function sendStatusEmail() {
+    if (!currentAccount) return;
+    stageStatusEmail(currentAccount, brandingState.profile, {
+      clearQueue: true,
+      redirect: true
+    });
+  }
+
+  function sendClearanceEmail() {
+    if (!currentAccount) return;
+    if (!currentAccount.ceLink) {
+      showAlert(
+        "Dispatch Blocked",
+        "No clearance certificate generated for this resident yet.",
+        "error"
+      );
+      return;
+    }
+    stageClearanceEmail(currentAccount, brandingState.profile, {
+      clearQueue: true,
+      redirect: true
+    });
+  }
+
+  async function handleClear() {
+    if (!currentAccount) {
+      return;
+    }
+    residentsToClear = [currentAccount];
+    isClearDialogOpen = true;
+  }
+
   onMount(loadUserProfile);
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="View User" onRefresh={() => loadUserProfile(true)} isRefreshing={isLoading}>
+  <SubpageHeader
+    title={user?.displayName || "View User"}
+    onRefresh={() => loadUserProfile(true)}
+    isRefreshing={isLoading}
+  >
+    {#snippet titleExtra()}
+      {#if currentAccount}
+        <div class="flex flex-wrap gap-2">
+          {#if currentAccount.bal < 0}
+            <Badge
+              variant="outline"
+              class="border-primary/20 bg-primary/5 text-xs font-black tracking-tighter text-primary uppercase"
+              >Overpaid</Badge
+            >
+          {/if}
+          {#if currentAccount.bal === 0 && (currentAccount.waterBal < 0 || currentAccount.assocBal < 0)}
+            <Badge
+              variant="outline"
+              class="border-amber-200 bg-amber-100 text-xs font-black tracking-tighter text-amber-700 uppercase"
+              >Potential Misassignment</Badge
+            >
+          {/if}
+        </div>
+      {/if}
+    {/snippet}
+
     {#snippet actions()}
-      <div class="flex gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        {#if currentAccount}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              {#snippet child({ props })}
+                <Button size="sm" {...props} icon={Mail} variant="outline">
+                  Send
+                  <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
+                </Button>
+              {/snippet}
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end" class="w-56">
+              <DropdownMenu.Item onclick={sendStatusEmail}>
+                <Mail class="mr-2 h-4 w-4" />
+                <span>Send Payment Status</span>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item
+                onclick={sendClearanceEmail}
+                disabled={!currentAccount.ceLink ||
+                  currentAccount.ceLink === "N/A" ||
+                  currentAccount.ceLink === ""}
+              >
+                <FileCheck class="mr-2 h-4 w-4" />
+                <span>Send Clearance Certificate</span>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        {/if}
+
         <Button size="sm" href="/admin/users/{userId}/edit" icon={UserCog}>Edit</Button>
         {#if accounts.length === 0}
           <Button
@@ -147,6 +342,7 @@
       <Button variant="outline" class="mt-4" href="/admin/users">Return to Directory</Button>
     </ErrorView>
   {:else if user}
+    <!-- Personal, Academic, and Notes -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- User Profile Card -->
       <Card.Root class="flex h-full flex-col">
@@ -335,10 +531,137 @@
       </Card.Root>
     </div>
 
-    <!-- Active Semesters History -->
-    <OccupancyHistoryCard
-      {accounts}
-      onRowClick={(r) => goto(`/admin/residents/${r.stno}?term=${r.period}`)}
-    />
+    <Tabs.Root value="finance" class="space-y-4 pt-2">
+      <Tabs.List class="grid w-full max-w-md grid-cols-3">
+        <Tabs.Trigger value="finance" class="flex items-center gap-1.5">
+          <Banknote class="h-4 w-4" />
+          Finance
+        </Tabs.Trigger>
+        <Tabs.Trigger value="occupancy" class="flex items-center gap-1.5">
+          <Bed class="h-4 w-4" />
+          Occupancy
+        </Tabs.Trigger>
+        <Tabs.Trigger value="officership" class="flex items-center gap-1.5">
+          <BookUser class="h-4 w-4" />
+          Officership
+        </Tabs.Trigger>
+      </Tabs.List>
+
+      <!-- (1) Finance Tab -->
+      <Tabs.Content value="finance" class="space-y-6">
+        <div class="grid gap-4 lg:grid-cols-12">
+          <div class="lg:col-span-3">
+            <TermFilter bind:value={localTerm} onSelect={loadUserProfile} />
+          </div>
+        </div>
+
+        {#if currentAccount}
+          <!-- Occupancy, Financial & Clearance Info for selected term -->
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <AccountCard
+              account={currentAccount}
+              {isChangingType}
+              onChangeAccountType={handleChangeAccountType}
+              onDelist={() => {
+                isDelistOpen = true;
+              }}
+            />
+
+            <div class="flex h-full flex-col gap-6">
+              <FinancialStandingCard account={currentAccount}>
+                {#snippet actions()}
+                  {#if currentAccount}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      class="w-full"
+                      href="/admin/transactions/add?account={currentAccount.stno}"
+                      icon={ArrowUpRight}
+                    >
+                      Add Transaction
+                    </Button>
+                  {/if}
+                {/snippet}
+              </FinancialStandingCard>
+
+              {#if currentAccount.notes?.trim()}
+                <Card.Root class="border-amber-200 bg-amber-50/30">
+                  <Card.Header>
+                    <Card.Title class="flex items-center gap-2 text-sm text-amber-900">
+                      <Info class="h-4 w-4" /> Account Notes
+                    </Card.Title>
+                  </Card.Header>
+                  <Card.Content>
+                    <p class="text-xs leading-relaxed font-medium text-amber-800">
+                      {@html currentAccount.notes}
+                    </p>
+                  </Card.Content>
+                </Card.Root>
+              {/if}
+            </div>
+
+            <ClearanceCard account={currentAccount} onClear={handleClear} />
+          </div>
+        {/if}
+
+        <!-- Transaction History -->
+        <TransactionHistoryCard
+          {history}
+          {transactionTypes}
+          onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+        />
+      </Tabs.Content>
+
+      <!-- (2) Occupancy Tab -->
+      <Tabs.Content value="occupancy" class="space-y-4">
+        <OccupancyHistoryCard {accounts} onRowClick={(r) => (localTerm = r.period)} />
+      </Tabs.Content>
+
+      <!-- (3) Officership Tab -->
+      <Tabs.Content value="officership" class="space-y-4">
+        <OfficerHistoryCard
+          officers={userOfficers}
+          residentId={userId}
+          onRowClick={(o) => goto(`/admin/residents/officers/${o.id}`)}
+        />
+      </Tabs.Content>
+    </Tabs.Root>
   {/if}
 </div>
+
+{#if currentAccount}
+  <AssignmentDialog
+    bind:open={isDelistOpen}
+    room={currentAccount.room}
+    bed={currentAccount.bed}
+    userId={currentAccount.residentId}
+    isOccupied={true}
+    activeTerm={localTerm}
+    userOptions={[]}
+    availableBedOptions={[]}
+    onSuccess={async () => {
+      await loadUserProfile(true);
+    }}
+  />
+{/if}
+
+<ClearanceDialog
+  bind:open={isClearDialogOpen}
+  residents={residentsToClear}
+  allAccounts={allResidents}
+  onSuccess={(count) => {
+    showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
+  }}
+/>
+
+<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
+      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>Continue</AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

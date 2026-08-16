@@ -1,5 +1,6 @@
 import collegeMapping from "$data/colleges.json";
 import programMapping from "$data/programs.json";
+import { ACCOUNT_TYPE_LABELS } from "$lib/types";
 
 export function translateMop(mop: string) {
   const val = mop?.trim().toUpperCase() || "";
@@ -58,7 +59,21 @@ export function translateProgram(program: string): string[] {
     .map((p) => (programMapping as Record<string, string>)[p] || p);
 }
 
-export function translateType(val: string, types: { value: string; label: string }[]) {
+export function translateAccountType(val: string | null | undefined): string {
+  if (!val) {
+    return "—";
+  }
+  const key = val.trim().toUpperCase() as keyof typeof ACCOUNT_TYPE_LABELS;
+  return (ACCOUNT_TYPE_LABELS as Record<string, string>)[key] || val;
+}
+
+export function translateType(val: string, types?: { value: string; label: string }[]) {
+  if (!val) {
+    return "—";
+  }
+  if (!types || !Array.isArray(types)) {
+    return translateAccountType(val);
+  }
   const type = types.find((t) => t.value === val);
-  return type ? type.label : val;
+  return type ? type.label : translateAccountType(val);
 }

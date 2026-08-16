@@ -5,7 +5,7 @@
   import * as Card from "$ui/card";
   import { Badge } from "$ui/badge";
   import { translatePeriod } from "$utils/translators";
-  import { pluralize } from "$utils/formatters";
+  import { pluralize, formatDate } from "$utils/formatters";
   import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
   import StatusBadge from "./StatusBadge.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
@@ -37,6 +37,17 @@
     {
       accessorKey: "bed",
       header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Bed" })
+    },
+    {
+      accessorKey: "checkInDate",
+      header: ({ column }) =>
+        renderComponent(DataTableColumnHeader, { column, title: "Check-in Date" }),
+      cell: ({ row }) => {
+        const dateSnippet = createRawSnippet<[{ date?: string }]>((p) => ({
+          render: () => `<span>${p().date ? formatDate(p().date!) : "—"}</span>`
+        }));
+        return renderSnippet(dateSnippet, { date: row.original.checkInDate });
+      }
     },
     {
       accessorKey: "ceIssued",

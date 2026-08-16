@@ -42,6 +42,8 @@
   import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
 
   let transaction = $state<JournalRecord | null>(null);
+  let creatorResidentId = $state<string | null>(null);
+  let accountResidentId = $state<string | null>(null);
   let creatorStNo = $state<string | null>(null);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
@@ -91,9 +93,18 @@
           const creatorMatch = allResidents.find((r) => r.email === match.creator);
           if (creatorMatch) {
             creatorStNo = creatorMatch.stno;
+            creatorResidentId = creatorMatch.residentId;
+          }
+          const accountMatch = allResidents.find(
+            (r) =>
+              (match.stno && r.stno === match.stno) ||
+              (match.account && r.email.toLowerCase() === match.account.toLowerCase())
+          );
+          if (accountMatch) {
+            accountResidentId = accountMatch.residentId;
           }
         } catch (e) {
-          console.warn("Could not resolve creator student number:", e);
+          console.warn("Could not resolve resident info:", e);
         }
 
         transactionTypes = types;
@@ -293,9 +304,9 @@
       <Card.Content class="space-y-10 px-8 pb-8">
         <!-- TOP: Parties -->
         <div class="grid gap-8 md:grid-cols-2">
-          {#if transaction.creator && !transaction.creator.startsWith("_") && creatorStNo}
+          {#if transaction.creator && !transaction.creator.startsWith("_") && creatorResidentId}
             <a
-              href="/admin/residents/{creatorStNo}"
+              href="/admin/users/{creatorResidentId}"
               class="group block space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
             >
               <Label
@@ -310,9 +321,11 @@
                 <p class="text-xs font-medium text-muted-foreground">
                   {transaction.creator}
                 </p>
-                <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
-                  {creatorStNo}
-                </p>
+                {#if creatorStNo}
+                  <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
+                    {creatorStNo}
+                  </p>
+                {/if}
               </div>
             </a>
           {:else if transaction.creator && transaction.creator.startsWith("_")}
@@ -348,13 +361,18 @@
                 <p class="text-xs font-medium text-muted-foreground">
                   {transaction.creator}
                 </p>
+                {#if creatorStNo}
+                  <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
+                    {creatorStNo}
+                  </p>
+                {/if}
               </div>
             </div>
           {/if}
 
-          {#if !transaction.account?.startsWith("_")}
+          {#if !transaction.account?.startsWith("_") && accountResidentId}
             <a
-              href="/admin/residents/{transaction.stno}"
+              href="/admin/users/{accountResidentId}"
               class="group block space-y-4 rounded-xl border border-border bg-muted/20 p-5 transition-all hover:border-primary/50 hover:bg-muted/40"
             >
               <Label
@@ -369,9 +387,11 @@
                 <p class="text-xs font-medium text-muted-foreground">
                   {transaction.account}
                 </p>
-                <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
-                  {transaction.stno}
-                </p>
+                {#if transaction.stno}
+                  <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
+                    {transaction.stno}
+                  </p>
+                {/if}
               </div>
             </a>
           {:else if transaction.account?.startsWith("_")}
@@ -407,6 +427,11 @@
                 <p class="text-xs font-medium text-muted-foreground">
                   {transaction.account}
                 </p>
+                {#if transaction.stno}
+                  <p class="mt-1 font-mono text-xs font-bold text-muted-foreground/80">
+                    {transaction.stno}
+                  </p>
+                {/if}
               </div>
             </div>
           {/if}

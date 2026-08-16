@@ -20,7 +20,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
     // 2. Fetch All Data
     const [accRows, userRows, journalRows, constRows] = await fetchSheetsData(client, [
-      "accounts!A:I",
+      "accounts!A:L",
       "users!A:P",
       "journal_general!A:V",
       "constants!A:C"
@@ -97,6 +97,8 @@ export const GET: RequestHandler = async ({ request }) => {
           period,
           room: (r[ACCOUNT_COL.ROOM] || "").trim(),
           bed: (r[ACCOUNT_COL.BED] || "").trim(),
+          checkInDate: (r[ACCOUNT_COL.CHECK_IN_DATE] || "").trim(),
+          type: (r[ACCOUNT_COL.TYPE] || "").trim().toUpperCase(),
           ceRefNo: (r[ACCOUNT_COL.CE_REFNO] || "").trim(),
           ceIssued: (r[ACCOUNT_COL.CE_ISSUED] || "").trim(),
           ceLink: (r[ACCOUNT_COL.CE_LINK] || "").trim(),

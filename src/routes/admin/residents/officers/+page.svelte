@@ -79,7 +79,7 @@
     isRefreshing={isLoading}
   >
     {#snippet actions()}
-      <Button size="sm" href="/admin/officers/add" icon={Plus}>Add</Button>
+      <AdminResidentsHeaderActions active="officers" />
     {/snippet}
   </SubpageHeader>
 

@@ -393,6 +393,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
             period: targetAccount.period || "",
             room: targetAccount.room || "",
             bed: targetAccount.bed || "",
+            checkInDate: targetAccount.check_in_date || "",
             name: currentUser?.display_name || "",
             stno: currentUser?.student_no || "",
             waterBase,
