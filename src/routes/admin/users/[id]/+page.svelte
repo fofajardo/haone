@@ -103,9 +103,7 @@
     alertDialog = { open: true, title, description, type };
   }
 
-  const currentAccount = $derived(
-    accounts.find((a) => !localTerm || a.period === localTerm) || accounts[0] || null
-  );
+  const currentAccount = $derived(accounts.find((a) => a.period === localTerm) || null);
 
   const qualifications = $derived(
     user
@@ -607,14 +605,24 @@
 
             <ClearanceCard account={currentAccount} onClear={handleClear} />
           </div>
-        {/if}
 
-        <!-- Transaction History -->
-        <TransactionHistoryCard
-          {history}
-          {transactionTypes}
-          onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
-        />
+          <!-- Transaction History -->
+          <TransactionHistoryCard
+            {history}
+            {transactionTypes}
+            onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
+          />
+        {:else}
+          <EmptyView
+            title="No account record found for this term."
+            description="This user has no registered account or occupancy record for the selected academic term."
+            class="h-60"
+          >
+            {#snippet icon()}
+              <Bed class="h-8 w-8 text-muted-foreground/40" />
+            {/snippet}
+          </EmptyView>
+        {/if}
       </Tabs.Content>
 
       <!-- (2) Occupancy Tab -->
