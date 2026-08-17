@@ -22,7 +22,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
       "users!A:P",
       "journal_general!A:V",
       "accounts!A:L",
-      "CURR!A:O"
+      "CURR!A:P"
     ]);
 
     // 2. Resolve active term and user row
@@ -64,7 +64,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
     });
 
     // 5. Check CURR sheet for potential registration (filter by term)
-    const currEntry = currRows
+    const currEntry = [...currRows]
       .reverse()
       .find(
         (r: any) =>
@@ -233,6 +233,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
             accountType: (currEntry[CURR_COL.ACCOUNT_TYPE] || "").trim().toUpperCase(),
             suffix: currEntry[CURR_COL.SUFFIX] || "",
             overrideName: currEntry[CURR_COL.OVERRIDE_NAME] || "",
+            declineReason: currEntry[CURR_COL.DECLINE_REASON] || "",
             isEvaluated
           }
         : null,

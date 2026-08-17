@@ -12,14 +12,15 @@
     GraduationCap,
     Clock,
     Building,
-    ArrowRight,
-    RotateCcwClockIcon
+    RotateCcwClockIcon,
+    CircleAlert
   } from "@lucide/svelte";
-  import { Item, ItemGroup, ItemMedia, ItemContent, ItemTitle, ItemDescription } from "$ui/item";
+  import * as RadioGroup from "$ui/radio-group";
   import colleges from "$data/colleges.json";
   import programs from "$data/programs.json";
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
+  import { goto } from "$app/navigation";
   import { auth } from "$state/auth.svelte";
   import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/types";
   import { registerResident } from "$api/controllers/resident-controller";
@@ -28,8 +29,19 @@
   import { roomsState } from "$state/rooms.svelte";
   import { translatePeriod } from "$utils/translators";
   import * as Stepper from "$ui/stepper";
+  import * as AlertDialog from "$ui/alert-dialog";
 
   let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();
+
+  let alertDialog = $state({
+    open: false,
+    title: "",
+    description: ""
+  });
+
+  function showAlert(title: string, description: string) {
+    alertDialog = { open: true, title, description };
+  }
 
   let isSubmitting = $state(false);
   let step = $state(untrack(() => (status.waitingForConfirmation ? 4 : 1)));
@@ -41,6 +53,9 @@
   $effect(() => {
     if (status.waitingForConfirmation) {
       step = 4;
+    } else if (!status.hasActiveAccount) {
+      isSubmitting = false;
+      step = 1;
     }
   });
 
@@ -77,6 +92,12 @@
   );
 
   const isAccountTypeDisabled = $derived(allowedAccountTypes.length <= 1);
+
+  let selectedOption = $state<string>("1");
+
+  async function handleProceedStep1() {
+    await selectOption(Number(selectedOption));
+  }
 
   async function selectOption(optionId: number) {
     if (isSubmitting) return;
@@ -120,7 +141,10 @@
           residentState.forceOnboarding = false;
           await onSuccess();
         } catch (e: any) {
-          toast.error(e.message);
+          showAlert(
+            "Registration Failed",
+            e.message || "An error occurred while submitting your registration."
+          );
           isSubmitting = false;
           step = 1;
         }
@@ -128,6 +152,19 @@
         formData.college = "No College Information";
         formData.program = "No Degree Program Information";
         step = 2;
+      }
+    }
+  }
+
+  async function handleCheckStatus() {
+    isSubmitting = false;
+    await residentState.refresh();
+    if (residentState.status) {
+      if (residentState.status.hasActiveAccount) {
+        goto("/resident");
+      } else if (!residentState.status.waitingForConfirmation) {
+        isSubmitting = false;
+        step = 1;
       }
     }
   }
@@ -255,7 +292,10 @@
       residentState.forceOnboarding = false;
       await onSuccess();
     } catch (e: any) {
-      toast.error(e.message);
+      showAlert(
+        "Registration Failed",
+        e.message || "An error occurred while submitting your registration."
+      );
       isSubmitting = false;
     }
   }
@@ -359,72 +399,79 @@
     <div class="min-h-[300px]">
       {#if step === 1}
         <div class="space-y-6">
-          <ItemGroup>
-            <div role="listitem" class="w-full">
-              <Item variant="muted" onclick={() => selectOption(1)}>
-                <ItemMedia variant="icon">
-                  <GraduationCap class="size-5" />
-                </ItemMedia>
-                <ItemContent>
-                  <ItemTitle>I am a student or associate degree candidate</ItemTitle>
-                  <ItemDescription>
-                    Register your room and bed assignment for the semester.
-                  </ItemDescription>
-                </ItemContent>
-                <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
-              </Item>
-            </div>
-            <div role="listitem" class="w-full">
-              <Item variant="muted" onclick={() => selectOption(2)}>
-                <ItemMedia variant="icon">
-                  <Clock class="size-5" />
-                </ItemMedia>
-                <ItemContent>
-                  <ItemTitle>I am a transient resident</ItemTitle>
-                  <ItemDescription>Register for short-term residency.</ItemDescription>
-                </ItemContent>
-                <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
-              </Item>
-            </div>
-            <div role="listitem" class="w-full">
-              <Item variant="muted" onclick={() => selectOption(3)}>
-                <ItemMedia variant="icon">
-                  <Building class="size-5" />
-                </ItemMedia>
-                <ItemContent>
-                  <ItemTitle>I am a UHO Beneficiary</ItemTitle>
-                  <ItemDescription>Register as Faculty, Staff, or REPS.</ItemDescription>
-                </ItemContent>
-                <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
-              </Item>
-            </div>
-            {#if !residentState.forceOnboarding}
-              <div role="listitem" class="w-full">
-                <Item variant="muted" onclick={() => selectOption(4)}>
-                  <ItemMedia variant="icon">
-                    <RotateCcwClockIcon class="size-5" />
-                  </ItemMedia>
-                  <ItemContent>
-                    <ItemTitle>I am a former resident or alum</ItemTitle>
-                    <ItemDescription>Access clearances, history, and achievements.</ItemDescription>
-                  </ItemContent>
-                  <ArrowRight class="size-4 shrink-0 text-muted-foreground" />
-                </Item>
+          {#if status.currEntry?.declineReason}
+            <div
+              class="flex items-start gap-3 rounded-lg border-2 border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive"
+            >
+              <CircleAlert class="mt-0.5 h-5 w-5 shrink-0" />
+              <div class="space-y-1">
+                <p class="font-bold">Previous Registration Declined</p>
+                <p class="text-xs text-foreground">
+                  {status.currEntry.declineReason}
+                </p>
+                <p class="text-xs text-foreground">
+                  Please select your residency type below to submit a new registration.
+                </p>
               </div>
+            </div>
+          {/if}
+
+          <RadioGroup.Root bind:value={selectedOption} class="flex flex-col gap-3">
+            <RadioGroup.Card
+              value="1"
+              title="Student or Associate Degree Candidate"
+              description="Register your room and bed assignment for the semester."
+              icon={GraduationCap}
+              selected={selectedOption === "1"}
+            />
+            <RadioGroup.Card
+              value="2"
+              title="Transient Resident"
+              description="Register for short-term residency."
+              icon={Clock}
+              selected={selectedOption === "2"}
+            />
+            <RadioGroup.Card
+              value="3"
+              title="UHO Beneficiary"
+              description="Register as Faculty, Staff, or REPS."
+              icon={Building}
+              selected={selectedOption === "3"}
+            />
+            {#if !residentState.forceOnboarding}
+              <RadioGroup.Card
+                value="4"
+                title="Former Resident or Alum"
+                description="Access clearances, history, and achievements."
+                icon={RotateCcwClockIcon}
+                selected={selectedOption === "4"}
+              />
             {/if}
-          </ItemGroup>
-          {#if status.isRegistered && residentState.forceOnboarding}
-            <div class="flex justify-center pt-6">
+          </RadioGroup.Root>
+
+          <div class="flex items-center justify-between pt-6">
+            {#if status.isRegistered && residentState.forceOnboarding}
               <Button
                 variant="outline"
                 onclick={() => {
                   residentState.forceOnboarding = false;
+                  goto("/resident");
                 }}
               >
                 Cancel
               </Button>
-            </div>
-          {/if}
+            {:else}
+              <div></div>
+            {/if}
+            <Button
+              onclick={handleProceedStep1}
+              isLoading={isSubmitting}
+              icon={ChevronRight}
+              iconPosition="right"
+            >
+              {selectedOption === "4" && status.isRegistered ? "Submit" : "Next"}
+            </Button>
+          </div>
         </div>
       {:else if step === 2}
         <div class="space-y-6">
@@ -609,6 +656,7 @@
             {#if accountType === AccountType.ALUMNUS}
               <Button
                 variant="ghost"
+                disabled={isSubmitting}
                 onclick={() => {
                   step = 1;
                   allowedAccountTypes = [
@@ -634,7 +682,7 @@
                 {isSubmitting ? "Submitting…" : "Submit"}
               </Button>
             {:else}
-              <Stepper.Previous>
+              <Stepper.Previous disabled={isSubmitting}>
                 <ChevronLeft class="mr-2 h-4 w-4" />
                 Back
               </Stepper.Previous>
@@ -675,7 +723,7 @@
           </div>
 
           <div class="flex justify-between pt-6">
-            <Stepper.Previous>
+            <Stepper.Previous disabled={isSubmitting}>
               <ChevronLeft class="mr-2 h-4 w-4" />
               Back
             </Stepper.Previous>
@@ -709,7 +757,7 @@
           </div>
 
           <Button
-            onclick={() => residentState.refresh()}
+            onclick={handleCheckStatus}
             isLoading={residentState.isLoading}
             icon={RefreshCcw}
             class="w-full"
@@ -721,3 +769,15 @@
     </div>
   </div>
 </Stepper.Root>
+
+<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
+      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>

@@ -79,7 +79,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       return [];
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:O", bypassCache);
+    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:P", bypassCache);
     return rows.slice(1).map((r, idx) => ({
       timestamp: (r[CURR_COL.TIMESTAMP] || "").trim(),
       email: (r[CURR_COL.EMAIL] || "").trim().toLowerCase(),
@@ -96,6 +96,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       accountType: (r[CURR_COL.ACCOUNT_TYPE] || "").trim().toUpperCase(),
       suffix: (r[CURR_COL.SUFFIX] || "").trim().toUpperCase(),
       overrideName: (r[CURR_COL.OVERRIDE_NAME] || "").trim(),
+      declineReason: (r[CURR_COL.DECLINE_REASON] || "").trim(),
       rowIndex: idx + 2,
       raw: r
     }));
@@ -160,22 +161,76 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     );
   },
 
-  async markCurrEvaluated(entries: { email: string; term: string }[]): Promise<void> {
+  async markCurrEvaluated(
+    entries: { email: string; term: string; rowId?: string | number }[]
+  ): Promise<void> {
     const { uiSettings } = await import("$state/settings.svelte");
     if (!uiSettings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:O");
     const batch: { range: string; values: any[][] }[] = [];
 
     for (const entry of entries) {
-      const targetEmail = entry.email.trim().toLowerCase();
+      if (entry.rowId !== undefined && typeof entry.rowId === "number") {
+        batch.push({ range: `CURR!K${entry.rowId}`, values: [["TRUE"]] });
+      } else {
+        const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:P");
+        const targetEmail = entry.email.trim().toLowerCase();
+        rows.forEach((r, idx) => {
+          const email = (r[CURR_COL.EMAIL] || "").trim().toLowerCase();
+          const term = (r[CURR_COL.TERM] || "").trim();
+          const isEvaluated = (r[CURR_COL.EVALUATED] || "").trim().toUpperCase() === "TRUE";
+          if (!isEvaluated && email === targetEmail && term === entry.term) {
+            batch.push({ range: `CURR!K${idx + 1}`, values: [["TRUE"]] });
+          }
+        });
+      }
+    }
+
+    if (batch.length > 0) {
+      await batchUpdateValues(uiSettings.residentRecordsId, batch);
+    }
+  },
+
+  async declineCurrRecord(
+    email: string,
+    term: string,
+    reason: string,
+    rowId?: string | number
+  ): Promise<void> {
+    const { uiSettings } = await import("$state/settings.svelte");
+    if (!uiSettings.residentRecordsId) {
+      throw new Error("Resident Records ID not configured");
+    }
+
+    const batch: { range: string; values: any[][] }[] = [];
+
+    if (rowId !== undefined && typeof rowId === "number") {
+      batch.push({
+        range: `CURR!K${rowId}`,
+        values: [["TRUE"]]
+      });
+      batch.push({
+        range: `CURR!P${rowId}`,
+        values: [[reason]]
+      });
+    } else {
+      const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:P");
+      const targetEmail = email.trim().toLowerCase();
       rows.forEach((r, idx) => {
-        const email = (r[CURR_COL.EMAIL] || "").trim().toLowerCase();
-        const term = (r[CURR_COL.TERM] || "").trim();
-        if (email === targetEmail && term === entry.term) {
-          batch.push({ range: `CURR!K${idx + 1}`, values: [["TRUE"]] });
+        const rowEmail = (r[CURR_COL.EMAIL] || "").trim().toLowerCase();
+        const rowTerm = (r[CURR_COL.TERM] || "").trim();
+        const isEvaluated = (r[CURR_COL.EVALUATED] || "").trim().toUpperCase() === "TRUE";
+        if (!isEvaluated && rowEmail === targetEmail && rowTerm === term) {
+          batch.push({
+            range: `CURR!K${idx + 1}`,
+            values: [["TRUE"]]
+          });
+          batch.push({
+            range: `CURR!P${idx + 1}`,
+            values: [[reason]]
+          });
         }
       });
     }

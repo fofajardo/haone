@@ -5,6 +5,7 @@
   import {
     getSyncPreview,
     applySync,
+    declineRegistration,
     type SyncPreviewAction
   } from "$api/controllers/rooms-controller.svelte";
   import { pluralize } from "$utils/formatters";
@@ -17,15 +18,36 @@
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Checkbox } from "$ui/checkbox";
+  import { Textarea } from "$ui/textarea";
   import * as AlertDialog from "$ui/alert-dialog";
-  import { RefreshCcw, CircleCheck, CircleAlert, MoveRight, CheckCheck } from "@lucide/svelte";
+  import {
+    RefreshCcw,
+    CircleCheck,
+    CircleAlert,
+    MoveRight,
+    Check,
+    X,
+    CheckCheck
+  } from "@lucide/svelte";
+  import { toast } from "svelte-sonner";
 
   let isLoading = $state(false);
   let isSyncing = $state(false);
+  let processingIndex = $state<number | null>(null);
   let error = $state<string | null>(null);
   let activeTerm = $state("");
   let previewActions = $state<SyncPreviewAction[]>([]);
   let selectedGroups = $state<Set<number>>(new Set());
+
+  // Decline Dialog State
+  let declineDialog = $state({
+    open: false,
+    email: "",
+    residentName: "",
+    currIndex: undefined as number | undefined,
+    reason: "",
+    isSubmitting: false
+  });
 
   let alertDialog = $state({
     open: false,
@@ -81,9 +103,9 @@
     }
   }
 
-  async function handleApplySync() {
+  async function handleApproveSelected() {
     if (selectedActions.length === 0) {
-      showAlert("No Selection", "Please select at least one item to sync.", "error");
+      showAlert("No Selection", "Please select at least one item to approve.", "error");
       return;
     }
     isSyncing = true;
@@ -98,6 +120,52 @@
       showAlert("Sync Failed", e.message || "An error occurred.", "error");
     } finally {
       isSyncing = false;
+    }
+  }
+
+  async function handleApproveSingle(group: { currIndex: number; actions: SyncPreviewAction[] }) {
+    processingIndex = group.currIndex;
+    try {
+      await applySync(group.actions, activeTerm);
+      toast.success(`Approved registration for ${group.actions[0]?.residentName || "resident"}`);
+      await loadPreview();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to approve registration.");
+    } finally {
+      processingIndex = null;
+    }
+  }
+
+  function openDeclineDialog(primaryAction: SyncPreviewAction) {
+    declineDialog = {
+      open: true,
+      email: primaryAction.email,
+      residentName: primaryAction.residentName,
+      currIndex: primaryAction.currIndex,
+      reason: "",
+      isSubmitting: false
+    };
+  }
+
+  async function handleConfirmDecline() {
+    if (!declineDialog.email || !declineDialog.reason.trim()) {
+      return;
+    }
+    declineDialog.isSubmitting = true;
+    try {
+      await declineRegistration(
+        declineDialog.email,
+        activeTerm,
+        declineDialog.reason.trim(),
+        declineDialog.currIndex
+      );
+      toast.success(`Declined registration for ${declineDialog.residentName}`);
+      declineDialog.open = false;
+      await loadPreview();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to decline registration.");
+    } finally {
+      declineDialog.isSubmitting = false;
     }
   }
 
@@ -159,12 +227,12 @@
         </div>
 
         <Button
-          onclick={handleApplySync}
+          onclick={handleApproveSelected}
           isLoading={isSyncing}
           disabled={selectedGroups.size === 0}
           icon={CheckCheck}
         >
-          Apply
+          Approve
         </Button>
       </div>
 
@@ -172,6 +240,7 @@
         {#each groupedPreview as group}
           {@const isChecked = selectedGroups.has(group.currIndex)}
           {@const primaryAction = group.actions[0]}
+          {@const isEntryProcessing = processingIndex === group.currIndex}
           <div
             class="rounded-xl border transition-colors {isChecked
               ? 'border-primary/40 bg-primary/5'
@@ -193,14 +262,39 @@
                 class="mt-0.5"
               />
               <div class="min-w-0 flex-1 space-y-3">
-                <!-- Header: Name + Account Type -->
-                <div class="flex flex-wrap items-center gap-2">
-                  <p class="text-sm font-bold text-foreground">{primaryAction.residentName}</p>
-                  {#if primaryAction.accountType}
-                    <Badge variant="outline" class="text-xs font-bold tracking-tighter uppercase">
-                      {primaryAction.accountType}
-                    </Badge>
-                  {/if}
+                <!-- Header: Name + Account Type + Action Buttons -->
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <p class="text-sm font-bold text-foreground">{primaryAction.residentName}</p>
+                    {#if primaryAction.accountType}
+                      <Badge variant="outline" class="text-xs font-bold tracking-tighter uppercase">
+                        {primaryAction.accountType}
+                      </Badge>
+                    {/if}
+                  </div>
+
+                  <!-- Entry Action Buttons -->
+                  <div class="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onclick={() => handleApproveSingle(group)}
+                      isLoading={isEntryProcessing}
+                      disabled={isSyncing || processingIndex !== null}
+                      icon={Check}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onclick={() => openDeclineDialog(primaryAction)}
+                      disabled={isSyncing || processingIndex !== null}
+                      icon={X}
+                    >
+                      Decline
+                    </Button>
+                  </div>
                 </div>
 
                 <!-- Details grid -->
@@ -295,6 +389,47 @@
     </div>
   {/if}
 </div>
+
+<!-- Decline Dialog -->
+<AlertDialog.Root
+  open={declineDialog.open}
+  onOpenChange={(v) => {
+    if (!declineDialog.isSubmitting) {
+      declineDialog.open = v;
+    }
+  }}
+>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Decline Registration</AlertDialog.Title>
+      <AlertDialog.Description>
+        State the reason for declining the registration of <strong
+          >{declineDialog.residentName}</strong
+        >
+        ({declineDialog.email}). This reason will be shown on the resident's onboarding page.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <div class="py-2">
+      <Textarea
+        bind:value={declineDialog.reason}
+        placeholder="e.g., Selected room is full, please choose another room or transient residency."
+        rows={3}
+        class="w-full"
+      />
+    </div>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel disabled={declineDialog.isSubmitting}>Cancel</AlertDialog.Cancel>
+      <Button
+        variant="destructive"
+        onclick={handleConfirmDecline}
+        isLoading={declineDialog.isSubmitting}
+        disabled={!declineDialog.reason.trim()}
+      >
+        Decline
+      </Button>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
   <AlertDialog.Content>

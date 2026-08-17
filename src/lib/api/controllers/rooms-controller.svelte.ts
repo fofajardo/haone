@@ -468,16 +468,17 @@ export async function applySync(actions: SyncPreviewAction[], term: string) {
   }
 
   // 5. Mark CURR as Evaluated
-  const emails = [
-    ...new Set(
-      actions
-        .filter((a) => a.currIndex)
-        .map((a) => (a.email || "").toLowerCase())
-        .filter(Boolean)
-    )
-  ];
-  if (emails.length > 0) {
-    await roomsService.markCurrEvaluated(emails.map((email) => ({ email, term })));
+  const evaluatedEntries = actions
+    .filter((a) => a.currIndex !== undefined)
+    .map((a) => ({
+      email: (a.email || "").toLowerCase(),
+      term,
+      rowId: a.currIndex
+    }))
+    .filter((e, idx, arr) => arr.findIndex((x) => x.rowId === e.rowId) === idx);
+
+  if (evaluatedEntries.length > 0) {
+    await roomsService.markCurrEvaluated(evaluatedEntries);
   }
 
   return {
@@ -485,8 +486,17 @@ export async function applySync(actions: SyncPreviewAction[], term: string) {
     usersUpdated: userUpdates.length,
     accountsCreated: accountCreations.length,
     accountsUpdated: accountUpdates.length,
-    evaluated: emails.length
+    evaluated: evaluatedEntries.length
   };
+}
+
+export async function declineRegistration(
+  email: string,
+  term: string,
+  reason: string,
+  rowId?: string | number
+) {
+  await roomsService.declineCurrRecord(email, term, reason, rowId);
 }
 
 export async function manualAssignBed(residentId: string, room: string, bed: string, term: string) {

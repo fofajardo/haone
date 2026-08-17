@@ -14,6 +14,7 @@ export interface CurrRecord {
   accountType: string;
   suffix?: string;
   overrideName?: string;
+  declineReason?: string;
   /** 1-indexed position within the provider's fetch order (display/dedup only, NOT a write handle). */
   rowIndex: number;
   raw: any;
@@ -56,7 +57,15 @@ export interface RoomsServiceInterface {
   fetchAccounts(bypassCache?: boolean): Promise<AccountRow[]>;
   updateAccounts(updates: AccountUpdate[]): Promise<void>;
   appendAccounts(accounts: AccountRow[]): Promise<void>;
-  markCurrEvaluated(entries: { email: string; term: string }[]): Promise<void>;
+  markCurrEvaluated(
+    entries: { email: string; term: string; rowId?: string | number }[]
+  ): Promise<void>;
+  declineCurrRecord(
+    email: string,
+    term: string,
+    reason: string,
+    rowId?: string | number
+  ): Promise<void>;
   updateAccountRoomBed(
     residentId: string,
     period: string,

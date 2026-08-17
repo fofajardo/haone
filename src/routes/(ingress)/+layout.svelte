@@ -14,10 +14,12 @@
   const isOnboarding = $derived(page.url.pathname === "/onboarding");
 </script>
 
-<div class="relative flex min-h-screen flex-col bg-background md:flex-row">
+<div
+  class="relative flex min-h-screen flex-col bg-background md:h-screen md:flex-row md:overflow-hidden"
+>
   <!-- Panel: Hero -->
   <div
-    class="relative flex flex-col justify-between overflow-hidden border-r border-white/5 bg-zinc-950 p-4 text-white md:order-1 md:p-10 lg:w-1/2"
+    class="relative flex shrink-0 flex-col justify-between overflow-hidden border-r border-white/5 bg-zinc-950 p-4 text-white md:order-1 md:h-full md:p-10 lg:w-1/2"
   >
     <div class="relative z-20 flex items-center justify-between">
       <div class="flex items-center text-xl font-bold tracking-tight">
@@ -84,11 +86,13 @@
   </div>
 
   <!-- Panel: Main Content -->
-  <div class="relative order-1 flex flex-1 flex-col items-center justify-center p-6 md:p-8">
+  <div
+    class="relative order-1 flex flex-1 flex-col items-center overflow-y-auto p-6 md:h-full md:p-8"
+  >
     <div
-      class="mx-auto flex w-full {isOnboarding
-        ? 'max-w-xl'
-        : 'max-w-100'} flex-col justify-center space-y-8"
+      class="flex w-full {isOnboarding
+        ? 'my-auto max-w-xl'
+        : 'my-auto max-w-100'} flex-col justify-center space-y-8 py-8"
     >
       {@render children()}
     </div>

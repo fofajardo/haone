@@ -48,6 +48,7 @@ export interface OnboardingAccountEntry {
   checkInDate: string;
   suffix: string;
   overrideName: string;
+  declineReason?: string;
 }
 
 export interface OccupiedBed {

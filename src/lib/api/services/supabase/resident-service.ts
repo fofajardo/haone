@@ -429,6 +429,11 @@ export const supabaseResidentService: ResidentServiceInterface = {
             accountType: (currEntryData.account_type || "").trim().toUpperCase(),
             suffix: currEntryData.suffix || "",
             overrideName: currEntryData.override_name || "",
+            declineReason: (
+              currEntryData.decline_reason ||
+              currEntryData.declination_reason ||
+              ""
+            ).trim(),
             isEvaluated
           }
         : null,

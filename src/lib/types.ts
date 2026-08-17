@@ -161,7 +161,8 @@ export const CURR_COL = {
   TERM: 11,
   ACCOUNT_TYPE: 12,
   SUFFIX: 13,
-  OVERRIDE_NAME: 14
+  OVERRIDE_NAME: 14,
+  DECLINE_REASON: 15
 } as const;
 
 export const LAUNDRY_COL = {

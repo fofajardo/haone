@@ -59,6 +59,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
       accountType: (row.account_type || "").trim().toUpperCase(),
       suffix: (row.suffix || "").trim().toUpperCase(),
       overrideName: (row.override_name || "").trim(),
+      declineReason: (row.decline_reason || row.declination_reason || "").trim(),
       rowIndex: idx + 2,
       raw: row
     }));
@@ -133,19 +134,47 @@ export const supabaseRoomsService: RoomsServiceInterface = {
     }
   },
 
-  async markCurrEvaluated(entries: { email: string; term: string }[]): Promise<void> {
+  async markCurrEvaluated(
+    entries: { email: string; term: string; rowId?: string | number }[]
+  ): Promise<void> {
     if (!supabase) {
       return;
     }
     for (const entry of entries) {
-      const { error } = await supabase
-        .from("curr")
-        .update({ evaluated: true })
-        .ilike("email", entry.email.trim())
-        .eq("term", entry.term);
+      let query = supabase.from("curr").update({ evaluated: true });
+      if (entry.rowId !== undefined && typeof entry.rowId === "string") {
+        query = query.eq("id", entry.rowId);
+      } else {
+        query = query
+          .ilike("email", entry.email.trim())
+          .eq("term", entry.term)
+          .eq("evaluated", false);
+      }
+      const { error } = await query;
       if (error) {
         handleSupabaseError(error);
       }
+    }
+  },
+
+  async declineCurrRecord(
+    email: string,
+    term: string,
+    reason: string,
+    rowId?: string | number
+  ): Promise<void> {
+    if (!supabase) {
+      return;
+    }
+    let query = supabase.from("curr").update({ evaluated: true, decline_reason: reason });
+    if (rowId !== undefined && typeof rowId === "string") {
+      query = query.eq("id", rowId);
+    } else {
+      query = query.ilike("email", email.trim()).eq("term", term).eq("evaluated", false);
+    }
+    const { error } = await query;
+    if (error) {
+      handleSupabaseError(error);
     }
   },
 
