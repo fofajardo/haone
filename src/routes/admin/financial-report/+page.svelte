@@ -186,7 +186,7 @@
     <div class="mx-auto max-w-5xl space-y-6">
       <!-- Scope / Term filter -->
       <FilterDrawer>
-        <div class="max-w-xs">
+        <div class="w-full sm:max-w-xs">
           <TermFilter
             onSelect={() => {
               return loadData();
