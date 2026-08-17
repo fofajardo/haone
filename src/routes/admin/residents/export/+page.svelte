@@ -371,13 +371,13 @@
     return result;
   });
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     try {
       const [mapped, officerList, usersList, currentTerm] = await Promise.all([
-        fetchResidents(),
-        fetchOfficers(),
-        fetchUsers(),
+        fetchResidents(bypassCache),
+        fetchOfficers(bypassCache),
+        fetchUsers(bypassCache),
         uiSettings.ensureCurrentTerm()
       ]);
 
@@ -387,7 +387,7 @@
       rawUsers = usersList;
 
       // Auto-Period
-      const entries = await fetchJournalEntries({ term: currentTerm });
+      const entries = await fetchJournalEntries({ term: currentTerm }, undefined, bypassCache);
       const journalList = Array.isArray(entries) ? entries : entries.items;
       const dates = journalList
         .map((j) => j.date)
@@ -614,22 +614,18 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader title="Export Residents" />
+  <SubpageHeader
+    title="Export Residents"
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  />
 
-  {#if isLoading && allAccounts.length === 0}
+  {#if isLoading}
     <LoadingView />
   {:else if error}
     <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
       <CircleAlert class="mx-auto mb-2 h-8 w-8 text-destructive" />
       <p class="text-sm font-medium text-destructive">{error}</p>
-      <Button
-        variant="outline"
-        size="sm"
-        class="mt-4"
-        onclick={loadData}
-        {isLoading}
-        icon={RefreshCcw}>Retry</Button
-      >
     </div>
   {:else}
     <div

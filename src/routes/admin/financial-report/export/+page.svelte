@@ -61,13 +61,13 @@
     }
   });
 
-  async function loadData() {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
 
     try {
       await uiSettings.ensureCurrentTerm();
-      const data = await fetchFinancialReportData();
+      const data = await fetchFinancialReportData(bypassCache);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
       allAccountsForAutocomplete = data.allAccounts;
@@ -124,19 +124,11 @@
 </script>
 
 <div class="space-y-3 pb-20">
-  <SubpageHeader title="Export Financial Report">
-    {#snippet actions()}
-      <Button
-        variant="outline"
-        size="sm"
-        onclick={() => {
-          return loadData();
-        }}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    {/snippet}
-  </SubpageHeader>
+  <SubpageHeader
+    title="Export Financial Report"
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  />
 
   {#if isLoading}
     <LoadingView />
