@@ -1,29 +1,76 @@
 <script lang="ts">
   let { children } = $props();
   import HeroVisual from "$components/HeroVisual.svelte";
-</script>
+  import { Button } from "$ui/button";
+  import * as DropdownMenu from "$ui/dropdown-menu";
+  import { FileText, ShieldCheck, EllipsisVerticalIcon } from "@lucide/svelte";
 
-{#snippet legalNotice()}
-  By using this platform, you agree to our <a
-    href="/terms"
-    class="underline underline-offset-2 transition-colors">Terms of Service</a
-  >
-  and
-  <a href="/privacy" class="underline underline-offset-2 transition-colors">Privacy Policy</a>.
-{/snippet}
+  const LEGAL_LINKS = [
+    { label: "Terms of Service", shortLabel: "Terms", href: "/terms", icon: FileText },
+    { label: "Privacy Policy", shortLabel: "Privacy", href: "/privacy", icon: ShieldCheck }
+  ];
+</script>
 
 <div class="relative flex min-h-screen flex-col bg-background md:flex-row">
   <!-- Panel: Hero -->
   <div
-    class="relative order-2 flex flex-col justify-between overflow-hidden border-r border-white/5 bg-zinc-950 p-10 text-white md:order-1 lg:w-1/2"
+    class="relative flex flex-col justify-between overflow-hidden border-r border-white/5 bg-zinc-950 p-4 text-white md:order-1 md:p-10 lg:w-1/2"
   >
-    <div class="relative z-20 flex items-center text-xl font-bold tracking-tight">
-      <img src="/ha1_bw.svg" alt="HAOne" class="mr-3 h-8 w-8" />
-      HAOne
-      <div
-        class="ml-2 inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-bold tracking-wider text-white uppercase"
-      >
-        Beta
+    <div class="relative z-20 flex items-center justify-between">
+      <div class="flex items-center text-xl font-bold tracking-tight">
+        <img src="/ha1_bw.svg" alt="HAOne" class="mr-3 h-8 w-8" />
+        HAOne
+        <div
+          class="ml-2 inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-bold tracking-wider text-white uppercase"
+        >
+          Beta
+        </div>
+      </div>
+
+      <!-- Desktop Links -->
+      <div class="hidden items-center gap-1 md:flex">
+        {#each LEGAL_LINKS as link}
+          <Button
+            variant="ghost"
+            size="sm"
+            href={link.href}
+            class="h-8 text-xs text-white/80 hover:bg-white/10 hover:text-white"
+            icon={link.icon}
+          >
+            {link.shortLabel}
+          </Button>
+        {/each}
+      </div>
+
+      <!-- Mobile Dropdown Menu -->
+      <div class="md:hidden">
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            {#snippet child({ props })}
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 text-white/80 hover:bg-white/10 hover:text-white"
+                {...props}
+              >
+                <EllipsisVerticalIcon class="h-4 w-4" />
+              </Button>
+            {/snippet}
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content align="end" class="w-44">
+            {#each LEGAL_LINKS as link}
+              <DropdownMenu.Item>
+                {#snippet child({ props })}
+                  {@const Icon = link.icon}
+                  <a href={link.href} class="flex w-full items-center gap-2" {...props}>
+                    <Icon class="h-4 w-4" />
+                    <span>{link.label}</span>
+                  </a>
+                {/snippet}
+              </DropdownMenu.Item>
+            {/each}
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       </div>
     </div>
     <div class="mesh-gradient"></div>
@@ -31,9 +78,6 @@
       <HeroVisual />
     </div>
     <div class="vignette"></div>
-    <p class="relative z-10 mt-5 text-xs">
-      {@render legalNotice()}
-    </p>
   </div>
 
   <!-- Panel: Main Content -->
