@@ -205,7 +205,7 @@
     </Card.Root>
   {/if}
 
-  <div class="mx-auto max-w-5xl space-y-2">
+  <div class="space-y-2">
     {#each rest as row, index}
       <Card.Root class="border-brand/20">
         <Card.Content class="flex items-center gap-3 px-3">

@@ -23,7 +23,7 @@
   let isLoading = $derived(!data.announcement && !data.error);
 </script>
 
-<div class="space-y-8">
+<div class="mx-auto max-w-7xl space-y-8">
   <div class="flex items-center gap-2">
     <Button variant="ghost" size="sm" href="/resident/announcements" icon={ChevronLeft}>
       Back to Feed

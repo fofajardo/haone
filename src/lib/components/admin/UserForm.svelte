@@ -113,7 +113,8 @@
   }
 </script>
 
-<div class="space-y-6">
+<!-- FIXME: Subpage header should not be handled by this component -->
+<div class="mx-auto max-w-7xl space-y-3">
   <SubpageHeader {title}>
     {#snippet actions()}
       <Button size="sm" onclick={onSave} isLoading={isSaving} icon={Save}>Save</Button>

@@ -139,7 +139,7 @@
   onMount(loadData);
 </script>
 
-<div class="space-y-3">
+<div class="mx-auto max-w-7xl space-y-3">
   <SubpageHeader
     title="Achievements"
     isTopLevel={true}
@@ -181,35 +181,33 @@
       </FilterDrawer>
     {/if}
 
-    <div class="mx-auto max-w-5xl">
-      <div class="flex flex-col gap-2.5">
-        {#each filteredAchievements as a}
-          {@const uniqueEarnersCount = new Set(
-            logs.filter((l) => l.achievementId === a.id).map((l) => l.accountId)
-          ).size}
-          <div>
-            <AchievementCard
-              achievement={a}
-              alwaysShowPercentage={true}
-              percentage={calculateAchievementPercentage(
-                uniqueEarnersCount,
-                a.totalEligibleCount || 0
-              )}
-              href="/admin/achievements/{a.id}"
-            />
-          </div>
-        {:else}
-          <EmptyView
-            title="No achievements defined."
-            description="Achievements created by admins will appear here."
-            class="col-span-full py-8"
-          >
-            {#snippet icon()}
-              <Trophy class="h-8 w-8 text-muted-foreground" />
-            {/snippet}
-          </EmptyView>
-        {/each}
-      </div>
+    <div class="flex flex-col gap-2.5">
+      {#each filteredAchievements as a}
+        {@const uniqueEarnersCount = new Set(
+          logs.filter((l) => l.achievementId === a.id).map((l) => l.accountId)
+        ).size}
+        <div>
+          <AchievementCard
+            achievement={a}
+            alwaysShowPercentage={true}
+            percentage={calculateAchievementPercentage(
+              uniqueEarnersCount,
+              a.totalEligibleCount || 0
+            )}
+            href="/admin/achievements/{a.id}"
+          />
+        </div>
+      {:else}
+        <EmptyView
+          title="No achievements defined."
+          description="Achievements created by admins will appear here."
+          class="col-span-full py-8"
+        >
+          {#snippet icon()}
+            <Trophy class="h-8 w-8 text-muted-foreground" />
+          {/snippet}
+        </EmptyView>
+      {/each}
     </div>
   {/if}
 </div>

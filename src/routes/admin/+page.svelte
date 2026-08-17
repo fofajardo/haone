@@ -184,7 +184,7 @@
   onMount(loadDashboardData);
 </script>
 
-<div class="space-y-6 pb-12">
+<div class="mx-auto max-w-7xl space-y-3">
   <!-- Header Section -->
   <div
     class="relative overflow-hidden rounded-3xl bg-brand/10 px-4 py-8 text-brand sm:px-8 sm:py-12"

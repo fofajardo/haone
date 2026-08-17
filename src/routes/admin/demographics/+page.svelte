@@ -257,7 +257,7 @@
 </script>
 
 <Tabs.Root bind:value={activeTab} class="space-y-4">
-  <div class="space-y-3">
+  <div class="mx-auto max-w-7xl space-y-3">
     <SubpageHeader
       title="Demographics"
       isTopLevel={true}

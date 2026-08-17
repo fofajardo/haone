@@ -92,7 +92,7 @@ juan.delacruz@up.edu.ph,Dela Cruz,Juan,M.,2020-12345,CS,BS CS,STUDENT
 maria.clara@up.edu.ph,Clara,Maria,S.,2018-54321,CAL,BA EL,ALUMNUS`;
 </script>
 
-<div class="space-y-3">
+<div class="mx-auto max-w-7xl space-y-3">
   <SubpageHeader title="Batch Import Users" />
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">

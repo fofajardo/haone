@@ -279,7 +279,7 @@
   onMount(loadData);
 </script>
 
-<div class="space-y-3">
+<div class="mx-auto max-w-7xl space-y-3">
   <SubpageHeader
     title="Financial Report"
     isTopLevel={true}
@@ -319,7 +319,7 @@
       >
     </ErrorView>
   {:else}
-    <div class="mx-auto max-w-5xl space-y-6">
+    <div class="space-y-6">
       <!-- Scope / Term filter -->
       <FilterDrawer>
         <div class="max-w-xs">

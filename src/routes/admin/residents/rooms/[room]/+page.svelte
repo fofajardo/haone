@@ -99,7 +99,7 @@
   }
 </script>
 
-<div class="space-y-4">
+<div class="mx-auto max-w-7xl space-y-3">
   <SubpageHeader
     title="Room {roomNumber}"
     href="/admin/residents/rooms"

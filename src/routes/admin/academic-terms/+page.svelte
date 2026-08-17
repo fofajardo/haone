@@ -209,7 +209,7 @@
   }
 </script>
 
-<div class="space-y-3">
+<div class="mx-auto max-w-7xl space-y-3">
   <SubpageHeader
     title="Academic Terms"
     isTopLevel={true}
@@ -221,71 +221,68 @@
     {/snippet}
   </SubpageHeader>
 
-  <div class="mx-auto max-w-4xl">
-    <div class="space-y-4">
-      {#if isLoading}
-        <LoadingView />
-      {:else if errorMessage && terms.length === 0}
-        <ErrorView error={errorMessage} />
-      {:else if terms.length === 0}
-        <EmptyView title="No terms defined." description="Add an academic term to get started.">
-          {#snippet icon()}
-            <GraduationCap class="h-8 w-8 text-muted-foreground" />
-          {/snippet}
-        </EmptyView>
-      {:else}
-        <div class="space-y-3">
-          {#each terms as term}
-            <div
-              class="group flex items-center gap-3 rounded-xl border bg-muted/30 p-3 transition-all hover:bg-muted/50"
-            >
-              <div class="rounded-lg bg-muted p-2 text-muted-foreground">
-                <GraduationCap class="h-5 w-5" />
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-3">
-                  <p class="text-base font-bold text-foreground">
-                    {translatePeriod(term.value)}
-                  </p>
-                  {#if activeTermCode === term.value}
-                    <Badge
-                      variant="outline"
-                      class="gap-1 border-emerald-500/20 bg-emerald-500/10 text-xs font-bold text-emerald-600 uppercase"
-                    >
-                      <CircleCheck class="h-3 w-3" />
-                      Active
-                    </Badge>
-                  {/if}
-                </div>
-              </div>
-
-              <div class="flex items-center gap-1">
-                {#if activeTermCode !== term.value}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="h-8 gap-2 text-xs font-bold tracking-wider uppercase"
-                    onclick={() => (confirmActiveCode = term.value)}
-                    disabled={isSaving}
+  <div class="space-y-4">
+    {#if isLoading}
+      <LoadingView />
+    {:else if errorMessage && terms.length === 0}
+      <ErrorView error={errorMessage} />
+    {:else if terms.length === 0}
+      <EmptyView title="No terms defined." description="Add an academic term to get started.">
+        {#snippet icon()}
+          <GraduationCap class="h-8 w-8 text-muted-foreground" />
+        {/snippet}
+      </EmptyView>
+    {:else}
+      <div class="space-y-3">
+        {#each terms as term}
+          <div
+            class="group flex items-center gap-3 rounded-xl border bg-muted/30 p-3 transition-all hover:bg-muted/50"
+          >
+            <div class="rounded-lg bg-muted p-2 text-muted-foreground">
+              <GraduationCap class="h-5 w-5" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-3">
+                <p class="text-base font-bold text-foreground">
+                  {translatePeriod(term.value)}
+                </p>
+                {#if activeTermCode === term.value}
+                  <Badge
+                    variant="outline"
+                    class="gap-1 border-emerald-500/20 bg-emerald-500/10 text-xs font-bold text-emerald-600 uppercase"
                   >
-                    Set Active
-                  </Button>
+                    <CircleCheck class="h-3 w-3" />
+                    Active
+                  </Badge>
                 {/if}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="h-8 w-8 rounded-lg"
-                  onclick={() =>
-                    openFees({ value: term.value, label: translatePeriod(term.value) })}
-                  title="Edit Fees"
-                  icon={Coins}
-                />
               </div>
             </div>
-          {/each}
-        </div>
-      {/if}
-    </div>
+
+            <div class="flex items-center gap-1">
+              {#if activeTermCode !== term.value}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="h-8 gap-2 text-xs font-bold tracking-wider uppercase"
+                  onclick={() => (confirmActiveCode = term.value)}
+                  disabled={isSaving}
+                >
+                  Set Active
+                </Button>
+              {/if}
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-8 w-8 rounded-lg"
+                onclick={() => openFees({ value: term.value, label: translatePeriod(term.value) })}
+                title="Edit Fees"
+                icon={Coins}
+              />
+            </div>
+          </div>
+        {/each}
+      </div>
+    {/if}
   </div>
 </div>
 

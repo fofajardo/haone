@@ -209,7 +209,7 @@
 </script>
 
 <Tooltip.Provider>
-  <div class="space-y-3">
+  <div class="mx-auto max-w-7xl space-y-3">
     <SubpageHeader
       title="Residents"
       isTopLevel={true}

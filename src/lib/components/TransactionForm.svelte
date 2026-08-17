@@ -716,7 +716,8 @@
   }
 </script>
 
-<div class="space-y-6">
+<!-- FIXME: Subpage header should not be handled by this component -->
+<div class="mx-auto max-w-7xl space-y-3">
   {#if !hideHeader}
     <SubpageHeader title={mode === "add" ? "Add Transaction" : "Edit Transaction"} />
   {/if}
