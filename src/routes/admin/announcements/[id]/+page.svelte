@@ -14,7 +14,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import {
-    fetchAnnouncements,
+    fetchAdminAnnouncements,
     updateAnnouncement,
     expireAnnouncement,
     deleteAnnouncement,
@@ -57,7 +57,7 @@
     const id = page.params.id;
     isLoading = true;
     try {
-      const announcements = await fetchAnnouncements();
+      const announcements = await fetchAdminAnnouncements();
       const a = announcements.find((item) => item.id === id);
       if (!a) {
         error = "Announcement not found";
