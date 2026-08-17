@@ -2,7 +2,6 @@
   import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw } from "@lucide/svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
@@ -15,7 +14,6 @@
   import { replaceState } from "$app/navigation";
   import { page } from "$app/state";
   import { pageState } from "$state/page-info.svelte";
-  import { fetchServer } from "$utils/api-client";
   import { fetchResidentStatus } from "$api/controllers/resident-controller";
 
   let status = $state<any>(null);
@@ -82,18 +80,6 @@
     isRefreshing={isLoading}
   />
 
-  <FilterDrawer>
-    <div class="grid gap-4 lg:grid-cols-12">
-      <div class="lg:col-span-3">
-        <ResidentTermFilter
-          bind:value={localTerm}
-          options={status?.allTerms}
-          onSelect={() => loadData(localTerm)}
-        />
-      </div>
-    </div>
-  </FilterDrawer>
-
   {#if isLoading}
     <LoadingView />
   {:else if error}
@@ -101,6 +87,17 @@
       <Button onclick={() => loadData()} class="mt-4">Retry</Button>
     </ErrorView>
   {:else if status}
+    <FilterDrawer>
+      <div class="grid gap-4 lg:grid-cols-12">
+        <div class="lg:col-span-3">
+          <ResidentTermFilter
+            bind:value={localTerm}
+            options={status?.allTerms}
+            onSelect={() => loadData(localTerm)}
+          />
+        </div>
+      </div>
+    </FilterDrawer>
     {#if status.account}
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <FinancialStandingCard account={status.account} />
