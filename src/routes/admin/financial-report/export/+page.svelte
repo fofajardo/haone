@@ -250,7 +250,7 @@
         disabled={journal.length === 0}
         icon={HandCoins}
       >
-        Generate Financial Report
+        Generate PDF
       </Button>
     </div>
   {/if}

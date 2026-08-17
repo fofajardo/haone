@@ -287,7 +287,7 @@
     isRefreshing={isLoading}
   >
     {#snippet actions()}
-      <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export PDF</Button>
+      <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export</Button>
       <Tabs.Root bind:value={activeTab}>
         <Tabs.List>
           <Tabs.Trigger value="summary" class="flex items-center gap-1.5">
