@@ -12,8 +12,8 @@
     GraduationCap,
     Clock,
     Building,
-    History,
-    ArrowRight
+    ArrowRight,
+    RotateCcwClockIcon
   } from "@lucide/svelte";
   import { Item, ItemGroup, ItemMedia, ItemContent, ItemTitle, ItemDescription } from "$ui/item";
   import colleges from "$data/colleges.json";
@@ -26,7 +26,6 @@
 
   import { residentState, type ResidentStatus } from "$state/resident-state.svelte";
   import { roomsState } from "$state/rooms.svelte";
-  import { fetchServer } from "$utils/api-client";
   import { translatePeriod } from "$utils/translators";
   import * as Stepper from "$ui/stepper";
 
@@ -403,7 +402,7 @@
               <div role="listitem" class="w-full">
                 <Item variant="muted" onclick={() => selectOption(4)}>
                   <ItemMedia variant="icon">
-                    <History class="size-5" />
+                    <RotateCcwClockIcon class="size-5" />
                   </ItemMedia>
                   <ItemContent>
                     <ItemTitle>I am a former resident or alum</ItemTitle>
@@ -709,16 +708,14 @@
             </p>
           </div>
 
-          <div class="flex justify-center pt-6">
-            <Button
-              variant="outline"
-              onclick={() => residentState.refresh()}
-              isLoading={residentState.isLoading}
-              icon={RefreshCcw}
-            >
-              Check Status
-            </Button>
-          </div>
+          <Button
+            onclick={() => residentState.refresh()}
+            isLoading={residentState.isLoading}
+            icon={RefreshCcw}
+            class="w-full"
+          >
+            Check Status
+          </Button>
         </div>
       {/if}
     </div>

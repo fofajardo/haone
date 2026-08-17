@@ -4,11 +4,14 @@
   import { Button } from "$ui/button";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import { FileText, ShieldCheck, EllipsisVerticalIcon } from "@lucide/svelte";
+  import { page } from "$app/state";
 
   const LEGAL_LINKS = [
     { label: "Terms of Service", shortLabel: "Terms", href: "/terms", icon: FileText },
     { label: "Privacy Policy", shortLabel: "Privacy", href: "/privacy", icon: ShieldCheck }
   ];
+
+  const isOnboarding = $derived(page.url.pathname === "/onboarding");
 </script>
 
 <div class="relative flex min-h-screen flex-col bg-background md:flex-row">
@@ -81,8 +84,12 @@
   </div>
 
   <!-- Panel: Main Content -->
-  <div class="relative order-1 flex flex-1 flex-col items-center justify-center p-8">
-    <div class="mx-auto flex w-full max-w-100 flex-col justify-center space-y-8">
+  <div class="relative order-1 flex flex-1 flex-col items-center justify-center p-6 md:p-8">
+    <div
+      class="mx-auto flex w-full {isOnboarding
+        ? 'max-w-xl'
+        : 'max-w-100'} flex-col justify-center space-y-8"
+    >
       {@render children()}
     </div>
   </div>

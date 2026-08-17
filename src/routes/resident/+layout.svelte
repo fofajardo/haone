@@ -50,7 +50,6 @@
   $effect(() => {
     const pathname = page.url.pathname as string;
     const isSignInPage = pathname === "/sign-in";
-    const isOnboardingPage = pathname === "/resident/onboarding";
 
     if (!auth.accessToken && !isSignInPage) {
       auth.redirectTo = page.url.pathname + page.url.search;
@@ -65,18 +64,15 @@
       }
 
       if (residentState.status) {
-        if (residentState.needsOnboarding && !isOnboardingPage) {
-          goto("/resident/onboarding");
-          return;
-        } else if (!residentState.needsOnboarding && isOnboardingPage) {
-          goto("/resident");
+        if (residentState.needsOnboarding) {
+          goto("/onboarding");
           return;
         }
 
         const accountType =
           residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
         const room = residentState.status?.account?.room || "";
-        if (!isOnboardingPage && !isResidentRouteAllowed(pathname, accountType, room)) {
+        if (!isResidentRouteAllowed(pathname, accountType, room)) {
           goto("/resident");
           return;
         }
@@ -91,16 +87,14 @@
   </div>
 {:else}
   <Sidebar.Provider>
-    {#if !residentState.needsOnboarding}
-      <ResidentSidebar />
-    {/if}
+    <ResidentSidebar />
     <Sidebar.Inset class="relative flex flex-col overflow-hidden">
       <div
         class="transition-transform duration-300 md:hidden {scrollState.headerHidden
           ? '-translate-y-full'
           : 'translate-y-0'} z-10 shrink-0"
       >
-        <AdminHeader hideToggle={residentState.needsOnboarding} />
+        <AdminHeader />
       </div>
       {#key page.url.pathname}
         <div
@@ -108,19 +102,17 @@
           out:fly={{ duration: 120, y: -6, opacity: 0 }}
           class="absolute right-0 left-0 overflow-y-auto transition-[top] duration-300 md:top-0 {scrollState.headerHidden
             ? 'top-0'
-            : 'top-16'} {residentState.needsOnboarding ? 'bottom-0' : 'bottom-20 md:bottom-0'}"
+            : 'top-16'} bottom-20 md:bottom-0"
           onscroll={scrollState.handleScroll}
         >
-          <main class={residentState.needsOnboarding ? "p-4 pb-12 md:p-6 md:pb-6" : "p-4 md:p-8"}>
+          <main class="p-4 md:p-8">
             {@render children()}
           </main>
         </div>
       {/key}
       <!-- Flex spacer pushes nav to bottom of screen flow -->
       <div class="flex-1"></div>
-      {#if !residentState.needsOnboarding}
-        <MobileNav />
-      {/if}
+      <MobileNav />
     </Sidebar.Inset>
   </Sidebar.Provider>
 {/if}
