@@ -288,6 +288,18 @@
   >
     {#snippet actions()}
       <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export PDF</Button>
+      <Tabs.Root bind:value={activeTab}>
+        <Tabs.List>
+          <Tabs.Trigger value="summary" class="flex items-center gap-1.5">
+            <FileSpreadsheet class="h-3.5 w-3.5" />
+            Summary
+          </Tabs.Trigger>
+          <Tabs.Trigger value="graphs" class="flex items-center gap-1.5">
+            <ChartLine class="h-3.5 w-3.5" />
+            Graphs
+          </Tabs.Trigger>
+        </Tabs.List>
+      </Tabs.Root>
     {/snippet}
   </SubpageHeader>
 
@@ -319,42 +331,30 @@
         </div>
       </FilterDrawer>
 
-      <!-- KPI Grid -->
-      <div class="grid gap-4 sm:grid-cols-3">
-        <StatisticCard title="Incoming" value={`₱${formatAccounting(totalIncoming)}`}>
-          {#snippet icon()}<TrendingUp />{/snippet}
-        </StatisticCard>
+      <!-- (a) SUMMARY TAB -->
+      {#if activeTab === "summary"}
+        <div class="space-y-6">
+          <!-- KPI Grid -->
+          <div class="grid gap-4 sm:grid-cols-3">
+            <StatisticCard title="Incoming" value={`₱${formatAccounting(totalIncoming)}`}>
+              {#snippet icon()}<TrendingUp />{/snippet}
+            </StatisticCard>
 
-        <StatisticCard title="Outgoing" value={`₱${formatAccounting(totalOutgoing)}`}>
-          {#snippet icon()}<Wallet />{/snippet}
-        </StatisticCard>
+            <StatisticCard title="Outgoing" value={`₱${formatAccounting(totalOutgoing)}`}>
+              {#snippet icon()}<Wallet />{/snippet}
+            </StatisticCard>
 
-        <StatisticCard title="Balance" value={`₱${formatAccounting(netBalance)}`}>
-          {#snippet icon()}
-            {#if netBalance >= 0}
-              <TrendingUp />
-            {:else}
-              <TrendingDown />
-            {/if}
-          {/snippet}
-        </StatisticCard>
-      </div>
+            <StatisticCard title="Balance" value={`₱${formatAccounting(netBalance)}`}>
+              {#snippet icon()}
+                {#if netBalance >= 0}
+                  <TrendingUp />
+                {:else}
+                  <TrendingDown />
+                {/if}
+              {/snippet}
+            </StatisticCard>
+          </div>
 
-      <!-- Tabs for Summary & Graphs -->
-      <Tabs.Root bind:value={activeTab} class="space-y-4 pt-2">
-        <Tabs.List class="grid w-full max-w-xs grid-cols-2">
-          <Tabs.Trigger value="summary" class="flex items-center gap-1.5">
-            <FileSpreadsheet class="h-4 w-4" />
-            Summary
-          </Tabs.Trigger>
-          <Tabs.Trigger value="graphs" class="flex items-center gap-1.5">
-            <ChartLine class="h-4 w-4" />
-            Graphs
-          </Tabs.Trigger>
-        </Tabs.List>
-
-        <!-- (a) SUMMARY TAB -->
-        <Tabs.Content value="summary" class="space-y-6">
           <!-- ACCOUNT SUMMARY (Summary of Funds) -->
           <div class="space-y-3">
             <h3 class="text-base font-bold text-foreground uppercase">Account Summary</h3>
@@ -650,10 +650,9 @@
             </p>
             <p>³ Period covered: {periodCovered} (excluding transaction fees).</p>
           </div>
-        </Tabs.Content>
-
-        <!-- (b) GRAPHS TAB -->
-        <Tabs.Content value="graphs" class="space-y-6">
+        </div>
+      {:else if activeTab === "graphs"}
+        <div class="space-y-6">
           <!-- BALANCE TREND LINE CHART -->
           {#if balanceTrendData.length > 0}
             <Card.Root>
@@ -808,8 +807,8 @@
               </Card.Content>
             </Card.Root>
           {/if}
-        </Tabs.Content>
-      </Tabs.Root>
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
