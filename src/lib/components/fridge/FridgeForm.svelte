@@ -95,7 +95,7 @@
       }
 
       if (itemId) {
-        const res = await fetchFridgeItems(true);
+        const res = await fetchFridgeItems();
         const item = res.items.find((i) => i.id === itemId);
         if (!item) {
           error = "Fridge item not found.";

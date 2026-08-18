@@ -119,7 +119,7 @@
     try {
       await checkOutFridgeItem(item.id, currentResidentId);
       toast.success(`Took out ${item.name}!`);
-      await loadData(true);
+      await loadData();
     } catch (e: any) {
       toast.error(e.message || "Failed to check out item.");
     } finally {
@@ -132,7 +132,7 @@
     try {
       await restoreFridgeItem(item, currentResidentId);
       toast.success(`Returned ${item.name} back to fridge!`);
-      await loadData(true);
+      await loadData();
     } catch (e: any) {
       toast.error(e.message || "Failed to return item to fridge.");
     } finally {
@@ -150,7 +150,7 @@
         try {
           await discardFridgeItem(item.id, currentResidentId);
           toast.success("Item marked as discarded.");
-          await loadData(true);
+          await loadData();
         } catch (e: any) {
           toast.error(e.message || "Failed to discard item.");
         } finally {
@@ -176,9 +176,7 @@
   {#if isLoading}
     <LoadingView />
   {:else if error}
-    <ErrorView {error}>
-      <Button onclick={() => loadData(true)} class="mt-4">Retry</Button>
-    </ErrorView>
+    <ErrorView {error} />
   {:else}
     <FilterDrawer
       activeCount={Number(searchQuery !== "") +
