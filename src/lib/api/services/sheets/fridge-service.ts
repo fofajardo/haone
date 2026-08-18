@@ -153,7 +153,7 @@ export const sheetsFridgeService: FridgeServiceInterface = {
       await fetchServer("/api/resident/fridge", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, actionBy })
+        body: JSON.stringify({ id, status: FridgeItemStatus.DISCARDED, actionBy })
       });
       return;
     }
