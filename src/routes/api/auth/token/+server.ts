@@ -47,50 +47,71 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const isInstanceAdmin = email === (INSTANCE_ADMIN || "").trim().toLowerCase();
 
-    // Enforce domain check here too
-    if (!isInstanceAdmin && !email.endsWith("@up.edu.ph")) {
-      try {
-        const { USER_COL, UserTag } = await import("$lib/types");
+    let userId = "";
+    try {
+      const { USER_COL, UserTag } = await import("$lib/types");
+      const { PUBLIC_DB_PROVIDER, PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } =
+        await import("$env/static/public");
+
+      let isStudent = true;
+
+      if (PUBLIC_DB_PROVIDER === "supabase") {
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+        const { data: dbUser } = await supabase
+          .from("users")
+          .select("id, tags")
+          .ilike("email", email)
+          .maybeSingle();
+
+        if (dbUser) {
+          userId = dbUser.id;
+          const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
+          if (!tags.includes(UserTag.STUDENT)) {
+            isStudent = false;
+          }
+        } else {
+          isStudent = false;
+        }
+      } else {
         const { getSheetsClient, fetchSheetsData } = await import("$lib/server/api-helper");
         const saClient = await getSheetsClient();
         const [userRows] = await fetchSheetsData(saClient, ["users!A:P"]);
         const user = userRows.find((r: any) => {
           return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
         });
-        let isStudent = true;
         if (user) {
+          userId = user[USER_COL.ID] || "";
           const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
-          const tags = tagsStr.split(":").map((t: string) => {
-            return t.trim();
-          });
+          const tags = tagsStr.split(":").map((t: string) => t.trim());
           if (!tags.includes(UserTag.STUDENT)) {
             isStudent = false;
           }
         } else {
-          // New user signup is allowed to proceed to onboarding
           isStudent = false;
         }
+      }
 
-        if (isStudent) {
-          return json(
-            {
-              error: "forbidden_domain",
-              error_description: "Only @up.edu.ph emails allowed for students."
-            },
-            { status: 403 }
-          );
-        }
-      } catch (e) {
+      // Enforce domain check
+      if (!isInstanceAdmin && !email.endsWith("@up.edu.ph") && isStudent) {
         return json(
-          { error: "forbidden_domain", error_description: "Only @up.edu.ph emails allowed." },
+          {
+            error: "forbidden_domain",
+            error_description: "Only @up.edu.ph emails allowed for students."
+          },
           { status: 403 }
         );
       }
+    } catch (e: any) {
+      console.warn("User lookup in token endpoint failed:", e);
     }
 
     return json({
       ...data,
-      user: userData,
+      user: {
+        ...userData,
+        id: userId
+      },
       isInstanceAdmin
     });
   } catch (e: any) {

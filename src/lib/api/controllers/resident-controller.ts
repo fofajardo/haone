@@ -19,6 +19,10 @@ import { brandingState } from "$state/branding.svelte";
  * Resolves the primary identifier (UUID) of the currently signed-in resident.
  */
 export async function getCurrentResidentId(): Promise<string> {
+  const { auth } = await import("$state/auth.svelte");
+  if (auth.userId) {
+    return auth.userId;
+  }
   const { residentState } = await import("$state/resident-state.svelte");
   return residentState.status?.profile?.id || "";
 }

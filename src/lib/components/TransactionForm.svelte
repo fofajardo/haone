@@ -418,9 +418,8 @@
         // Resolve creator student number and id
         const creatorAcc = accounts.find(
           (a) =>
-            (initialData!.creatorId &&
-              (a.residentId === initialData!.creatorId || a.id === initialData!.creatorId)) ||
-            a.email.toLowerCase() === initialData!.creator.toLowerCase()
+            initialData!.creatorId &&
+            (a.residentId === initialData!.creatorId || a.id === initialData!.creatorId)
         );
         if (creatorAcc) {
           formData.creatorStNo = creatorAcc.stno;
@@ -432,14 +431,14 @@
           }
         }
       } else {
-        const userMail = auth.user?.email;
-        if (userMail) {
-          const myAcc = accounts.find((a) => a.email.toLowerCase() === userMail.toLowerCase());
+        const uid = auth.userId;
+        if (uid) {
+          const myAcc = accounts.find((a) => a.residentId === uid || a.id === uid);
           if (myAcc) {
             formData.creatorStNo = myAcc.stno;
             formData.creatorName = myAcc.name;
             formData.creatorId = myAcc.residentId || myAcc.id;
-            creatorSearch = myAcc.email;
+            creatorSearch = myAcc.name;
           }
         }
       }

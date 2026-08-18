@@ -2,6 +2,7 @@ import { browser } from "$app/environment";
 import { LS_KEYS } from "$lib/constants";
 
 export interface UserInfo {
+  id?: string;
   name: string;
   email: string;
   picture: string;
@@ -19,6 +20,10 @@ class AuthState {
   cachedPicture = $state<string | null>(null);
   authType = $state<"admin" | "resident" | null>(null);
   isInstanceAdmin = $state(false);
+
+  get userId(): string {
+    return this.user?.id || "";
+  }
 
   get displayName(): string {
     return this.adminDisplayName || this.user?.name || "";

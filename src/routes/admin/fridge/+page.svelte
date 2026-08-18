@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { goto } from "$app/navigation";
   import { auth } from "$state/auth.svelte";
   import {
     fetchFridgeItems,
@@ -8,7 +7,6 @@
     restoreFridgeItem,
     discardFridgeItem
   } from "$api/controllers/fridge-controller";
-  import { fetchUsers } from "$api/controllers/resident-controller";
   import {
     type FridgeItemRecord,
     FridgeItemStatus,
@@ -60,15 +58,9 @@
     isLoading = true;
     error = null;
     try {
-      const [res, users] = await Promise.all([
-        fetchFridgeItems(bypassCache),
-        fetchUsers(bypassCache)
-      ]);
+      const res = await fetchFridgeItems(bypassCache);
       items = res.items;
-      if (auth.user?.email) {
-        const u = users.find((user) => user.email.toLowerCase() === auth.user!.email.toLowerCase());
-        currentResidentId = u?.id || "";
-      }
+      currentResidentId = res.currentResidentId || auth.userId;
     } catch (e: any) {
       error = e.message || "Failed to load fridge items.";
     } finally {
