@@ -18,7 +18,8 @@
     Settings,
     BookUser,
     HandCoins,
-    ChartPie
+    ChartPie,
+    Refrigerator
   } from "@lucide/svelte";
   import { page } from "$app/state";
   import { uiSettings } from "$state/settings.svelte";
@@ -32,6 +33,7 @@
     finance: { label: "Finance", href: "/resident/finance", icon: Wallet },
     occupancy: { label: "Occupancy", href: "/resident/occupancy", icon: House },
     laundry: { label: "Laundry", href: "/resident/laundry", icon: WashingMachine },
+    fridge: { label: "Fridge", href: "/resident/fridge", icon: Refrigerator },
     payments: { label: "Payments", href: "/resident/payment-requests", icon: Banknote },
     news: { label: "News", href: "/resident/announcements", icon: Megaphone },
     achievements: { label: "Trophy", href: "/resident/achievements", icon: Trophy },

@@ -15,7 +15,8 @@
     ListOrdered,
     BookUser,
     CirclePlus,
-    Network
+    Network,
+    Refrigerator
   } from "@lucide/svelte";
   import { Button } from "$ui/button/index.js";
   import { auth } from "$state/auth.svelte";
@@ -52,6 +53,11 @@
       title: "Laundry",
       url: "/resident/laundry",
       icon: WashingMachine
+    },
+    {
+      title: "Fridge",
+      url: "/resident/fridge",
+      icon: Refrigerator
     },
     {
       title: "Payment Requests",

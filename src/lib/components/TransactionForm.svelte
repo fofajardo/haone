@@ -584,7 +584,8 @@
         toRow[JOR.STNO] = "";
         toRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
         toRow[JOR.WAS_AUDITED] = "FALSE";
-        toRow[JOR.ID] = crypto.randomUUID();const row = new Array(22).fill("");
+        toRow[JOR.ID] = crypto.randomUUID();
+        const row = new Array(22).fill("");
         toRow[JOR.CREATOR_ID] = formData.creatorId || "";
         toRow[JOR.ACCOUNT_ID] = formData.accountId || "";
 

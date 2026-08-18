@@ -259,6 +259,22 @@ export const CONSTANT_COL = {
   DESCRIPTION: 2
 } as const;
 
+export const FRIDGE_ITEM_COL = {
+  ID: 0,
+  RESIDENT_ID: 1,
+  NAME: 2,
+  COMPARTMENT: 3,
+  LOCATION_DETAILS: 4,
+  DATE_STORED: 5,
+  EXPIRY_DATE: 6,
+  PHOTO_URL: 7,
+  STATUS: 8,
+  NOTES: 9,
+  CHECK_OUT_DATE: 10,
+  TAGS: 11,
+  ACTION_BY: 12
+} as const;
+
 /* ==========================================
  * Data Record Interfaces
  * ========================================== */
@@ -475,6 +491,27 @@ export interface ConstantRecord {
   raw: string[];
 }
 
+export interface FridgeItemRecord {
+  id: string;
+  residentId: string;
+  name: string;
+  compartment: FridgeCompartment | string;
+  locationDetails: string;
+  dateStored: string;
+  expiryDate?: string;
+  photoUrl?: string;
+  status: FridgeItemStatus | string;
+  notes?: string;
+  checkOutDate?: string;
+  tags?: string[];
+  actionBy?: string;
+  // Joined / enriched display fields
+  residentName?: string;
+  actionByName?: string;
+  room?: string;
+  raw?: string[];
+}
+
 /* ==========================================
  * Enums & Associated Constants
  * ========================================== */
@@ -614,6 +651,121 @@ export const ANNOUNCEMENT_TAG_COLORS: Record<string, string> = {
   [AnnouncementTag.NEWS]: "bg-emerald-100 text-emerald-700 border-emerald-200",
   [AnnouncementTag.REGISTRATION]: "bg-cyan-100 text-cyan-700 border-cyan-200",
   [AnnouncementTag.CLEANING]: "bg-slate-100 text-slate-700 border-slate-200",
+  DEFAULT: "bg-muted text-muted-foreground border-border"
+};
+
+export enum FridgeTag {
+  PRIVATE = "PRIVATE",
+  FOR_SHARING = "FOR_SHARING",
+  HALAL = "HALAL",
+  VEGETARIAN = "VEGETARIAN",
+  VEGAN = "VEGAN",
+  DAIRY_FREE = "DAIRY_FREE",
+  GLUTEN_FREE = "GLUTEN_FREE",
+  CONTAINS_NUTS = "CONTAINS_NUTS",
+  CONTAINS_SEAFOOD = "CONTAINS_SEAFOOD",
+  CONTAINS_PORK = "CONTAINS_PORK",
+  LEFTOVER = "LEFTOVER",
+  MEAL_PREP = "MEAL_PREP",
+  SNACK = "SNACK",
+  DESSERT = "DESSERT",
+  BAKERY = "BAKERY",
+  CONDIMENT = "CONDIMENT",
+  BEVERAGE = "BEVERAGE",
+  DAIRY_MILK = "DAIRY_MILK",
+  PRODUCE_FRUIT = "PRODUCE_FRUIT",
+  PRODUCE_VEGGIE = "PRODUCE_VEGGIE",
+  MEAT_POULTRY = "MEAT_POULTRY",
+  SEAFOOD = "SEAFOOD",
+  FROZEN_MEAL = "FROZEN_MEAL",
+  ICE_CREAM = "ICE_CREAM",
+  MEDICINE = "MEDICINE",
+  EXPIRING_SOON = "EXPIRING_SOON"
+}
+
+export const FRIDGE_TAG_LABELS: Record<string, string> = {
+  [FridgeTag.PRIVATE]: "Private/Do Not Touch",
+  [FridgeTag.FOR_SHARING]: "For Sharing/Free to Eat",
+  [FridgeTag.HALAL]: "Halal",
+  [FridgeTag.VEGETARIAN]: "Vegetarian",
+  [FridgeTag.VEGAN]: "Vegan",
+  [FridgeTag.DAIRY_FREE]: "Dairy-Free",
+  [FridgeTag.GLUTEN_FREE]: "Gluten-Free",
+  [FridgeTag.CONTAINS_NUTS]: "Contains Nuts",
+  [FridgeTag.CONTAINS_SEAFOOD]: "Contains Seafood",
+  [FridgeTag.CONTAINS_PORK]: "Contains Pork",
+  [FridgeTag.LEFTOVER]: "Leftovers",
+  [FridgeTag.MEAL_PREP]: "Meal Prep",
+  [FridgeTag.SNACK]: "Snacks/Finger Food",
+  [FridgeTag.DESSERT]: "Dessert/Sweet",
+  [FridgeTag.BAKERY]: "Bakery/Bread",
+  [FridgeTag.CONDIMENT]: "Condiment/Sauce/Spread",
+  [FridgeTag.BEVERAGE]: "Beverage/Drink",
+  [FridgeTag.DAIRY_MILK]: "Milk/Dairy/Cheese",
+  [FridgeTag.PRODUCE_FRUIT]: "Fresh Fruit",
+  [FridgeTag.PRODUCE_VEGGIE]: "Vegetables/Salad",
+  [FridgeTag.MEAT_POULTRY]: "Meat/Poultry",
+  [FridgeTag.SEAFOOD]: "Seafood/Fish",
+  [FridgeTag.FROZEN_MEAL]: "Frozen Meal",
+  [FridgeTag.ICE_CREAM]: "Ice Cream/Popsicle",
+  [FridgeTag.MEDICINE]: "Medicine/Insulin",
+  [FridgeTag.EXPIRING_SOON]: "Expiring Soon"
+};
+
+export const FRIDGE_TAG_COLORS: Record<string, string> = {
+  [FridgeTag.PRIVATE]: "bg-rose-100 text-rose-700 border-rose-200",
+  [FridgeTag.FOR_SHARING]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [FridgeTag.HALAL]: "bg-teal-100 text-teal-700 border-teal-200",
+  [FridgeTag.VEGETARIAN]: "bg-green-100 text-green-700 border-green-200",
+  [FridgeTag.VEGAN]: "bg-emerald-100 text-emerald-800 border-emerald-300",
+  [FridgeTag.DAIRY_FREE]: "bg-sky-100 text-sky-700 border-sky-200",
+  [FridgeTag.GLUTEN_FREE]: "bg-amber-100 text-amber-800 border-amber-300",
+  [FridgeTag.CONTAINS_NUTS]: "bg-orange-100 text-orange-800 border-orange-200",
+  [FridgeTag.CONTAINS_SEAFOOD]: "bg-cyan-100 text-cyan-800 border-cyan-200",
+  [FridgeTag.CONTAINS_PORK]: "bg-pink-100 text-pink-700 border-pink-200",
+  [FridgeTag.LEFTOVER]: "bg-amber-100 text-amber-700 border-amber-200",
+  [FridgeTag.MEAL_PREP]: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  [FridgeTag.SNACK]: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  [FridgeTag.DESSERT]: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
+  [FridgeTag.BAKERY]: "bg-amber-100 text-amber-700 border-amber-200",
+  [FridgeTag.CONDIMENT]: "bg-purple-100 text-purple-700 border-purple-200",
+  [FridgeTag.BEVERAGE]: "bg-blue-100 text-blue-700 border-blue-200",
+  [FridgeTag.DAIRY_MILK]: "bg-blue-100 text-blue-800 border-blue-200",
+  [FridgeTag.PRODUCE_FRUIT]: "bg-lime-100 text-lime-800 border-lime-200",
+  [FridgeTag.PRODUCE_VEGGIE]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [FridgeTag.MEAT_POULTRY]: "bg-red-100 text-red-700 border-red-200",
+  [FridgeTag.SEAFOOD]: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  [FridgeTag.FROZEN_MEAL]: "bg-sky-100 text-sky-800 border-sky-300",
+  [FridgeTag.ICE_CREAM]: "bg-pink-100 text-pink-700 border-pink-200",
+  [FridgeTag.MEDICINE]: "bg-violet-100 text-violet-700 border-violet-200",
+  [FridgeTag.EXPIRING_SOON]: "bg-orange-100 text-orange-700 border-orange-200",
+  DEFAULT: "bg-muted text-muted-foreground border-border"
+};
+
+export const FRIDGE_TAG_LIST = Object.values(FridgeTag);
+
+export enum FridgeCompartment {
+  FREEZER = "FREEZER",
+  REFRIGERATOR = "REFRIGERATOR"
+}
+
+export const FRIDGE_COMPARTMENT_LABELS: Record<string, string> = {
+  [FridgeCompartment.FREEZER]: "Freezer",
+  [FridgeCompartment.REFRIGERATOR]: "Refrigerator (Lower)"
+};
+
+export enum FridgeItemStatus {
+  STORED = "STORED",
+  CHECKED_OUT = "CHECKED_OUT",
+  CHECKED_OUT_HISTORY = "CHECKED_OUT_HISTORY",
+  DISCARDED = "DISCARDED"
+}
+
+export const FRIDGE_ITEM_STATUS_COLORS: Record<string, string> = {
+  [FridgeItemStatus.STORED]: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  [FridgeItemStatus.CHECKED_OUT]: "bg-slate-100 text-slate-700 border-slate-200",
+  [FridgeItemStatus.CHECKED_OUT_HISTORY]: "bg-zinc-100 text-zinc-500 border-zinc-200",
+  [FridgeItemStatus.DISCARDED]: "bg-rose-100 text-rose-700 border-rose-200",
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };
 

@@ -19,7 +19,8 @@
     Settings,
     Megaphone,
     BookUser,
-    Network
+    Network,
+    Refrigerator
   } from "@lucide/svelte";
   import AnnouncementsSection from "$components/residents/AnnouncementsSection.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -68,6 +69,15 @@
       description: "Book and manage your laundry reservations.",
       href: "/resident/laundry",
       icon: WashingMachine,
+      color: "text-brand",
+      bg: "bg-brand/10",
+      border: "hover:border-brand/50"
+    },
+    {
+      title: "Fridge",
+      description: "Browse inventory and store items in the shared fridge.",
+      href: "/resident/fridge",
+      icon: Refrigerator,
       color: "text-brand",
       bg: "bg-brand/10",
       border: "hover:border-brand/50"

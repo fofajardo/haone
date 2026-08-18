@@ -19,7 +19,8 @@
     Trophy,
     ListOrdered,
     Network,
-    Database
+    Database,
+    Refrigerator
   } from "@lucide/svelte";
   import { dev } from "$app/environment";
   import { Button } from "$ui/button";
@@ -100,6 +101,11 @@
       title: "Laundry",
       url: "/admin/laundry",
       icon: WashingMachine
+    },
+    {
+      title: "Fridge",
+      url: "/admin/fridge",
+      icon: Refrigerator
     },
     {
       title: "Announcements",

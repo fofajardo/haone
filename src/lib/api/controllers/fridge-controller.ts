@@ -1,0 +1,90 @@
+import { fridgeService } from "$api/services/fridge-service";
+import { roomsService } from "$api/services/rooms-service";
+import { getCurrentResidentId, fetchUsers } from "./resident-controller";
+import { type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
+
+export async function fetchFridgeItems(
+  bypassCache = false
+): Promise<{ items: FridgeItemRecord[]; currentResidentId: string }> {
+  const currentResidentId = await getCurrentResidentId();
+  const res = await fridgeService.fetchFridgeItems(undefined, undefined, bypassCache);
+  const items = Array.isArray(res) ? res : res.items;
+
+  // Enrich with user names and rooms if not already provided (e.g. Supabase or direct fetch)
+  if (items.length > 0) {
+    const [users, accounts] = await Promise.all([
+      fetchUsers(bypassCache),
+      roomsService.fetchAccounts(bypassCache)
+    ]);
+    const userMap = new Map(
+      users.map((u) => [u.id, u.displayName || `${u.firstName} ${u.lastName}`.trim()])
+    );
+    const roomMap = new Map(accounts.map((a) => [a.residentId, a.room]));
+
+    items.forEach((item) => {
+      if (!item.residentName) {
+        item.residentName = userMap.get(item.residentId) || "Resident";
+      }
+      if (!item.room) {
+        item.room = roomMap.get(item.residentId) || "";
+      }
+      if (item.actionBy) {
+        item.actionByName = userMap.get(item.actionBy) || item.actionBy;
+      }
+    });
+  }
+
+  return { items, currentResidentId };
+}
+
+export async function addFridgeItem(data: Partial<FridgeItemRecord>): Promise<void> {
+  return await fridgeService.addFridgeItem(data);
+}
+
+export async function updateFridgeItem(
+  id: string,
+  updates: Partial<FridgeItemRecord>
+): Promise<void> {
+  return fridgeService.updateFridgeItem(id, updates);
+}
+
+export async function checkOutFridgeItem(id: string, actionBy?: string): Promise<void> {
+  const actorId = actionBy || (await getCurrentResidentId());
+  return fridgeService.updateFridgeItem(id, {
+    status: FridgeItemStatus.CHECKED_OUT,
+    checkOutDate: new Date().toISOString(),
+    actionBy: actorId
+  });
+}
+
+export async function restoreFridgeItem(item: FridgeItemRecord, actionBy?: string): Promise<void> {
+  const actorId = actionBy || (await getCurrentResidentId());
+  // 1. Mark existing checkout record as history
+  await fridgeService.updateFridgeItem(item.id, {
+    status: FridgeItemStatus.CHECKED_OUT_HISTORY,
+    actionBy: actorId
+  });
+
+  // 2. Create fresh stored entry with today's date
+  const newItem: Partial<FridgeItemRecord> = {
+    id: crypto.randomUUID(),
+    residentId: item.residentId,
+    name: item.name,
+    compartment: item.compartment,
+    locationDetails: item.locationDetails,
+    dateStored: new Date().toISOString().split("T")[0],
+    expiryDate: item.expiryDate || "",
+    photoUrl: item.photoUrl || "",
+    status: FridgeItemStatus.STORED,
+    notes: item.notes || "",
+    checkOutDate: "",
+    tags: item.tags || [],
+    actionBy: ""
+  };
+  return fridgeService.addFridgeItem(newItem);
+}
+
+export async function discardFridgeItem(id: string, actionBy?: string): Promise<void> {
+  const actorId = actionBy || (await getCurrentResidentId());
+  return fridgeService.deleteFridgeItem(id, actorId);
+}

@@ -370,6 +370,7 @@ export async function getSpreadsheetIdForSheet(sheetName: string): Promise<strin
     case "payment_requests":
     case "announcements":
     case "static_ip":
+    case "fridge_items":
       return PUBLIC_GS_SR_ID;
     case "constants":
     case "accounts":
