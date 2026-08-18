@@ -59,14 +59,17 @@ export const GET: RequestHandler = async ({ request }) => {
       const user = userMap.get(resId);
       let name = "Resident";
       if (user) {
-        name =
-          (user[USER_COL.DISPLAY_NAME] || "").trim() ||
-          `${user[USER_COL.FIRST_NAME] || ""} ${user[USER_COL.LAST_NAME] || ""}`.trim();
+        name = (user[USER_COL.DISPLAY_NAME] || "").trim();
+      }
+      const actionUser = userMap.get((row[FRIDGE_ITEM_COL.ACTION_BY] || "").trim());
+      let actionName = (row[FRIDGE_ITEM_COL.ACTION_BY] || "").trim();
+      if (actionUser) {
+        actionName = (actionUser[USER_COL.DISPLAY_NAME] || "").trim();
       }
 
       return {
         id: (row[FRIDGE_ITEM_COL.ID] || "").trim(),
-        residentId: resId,
+        residentId: resId == residentId ? resId : "ID_REDACTED",
         name: (row[FRIDGE_ITEM_COL.NAME] || "").trim(),
         compartment: (row[FRIDGE_ITEM_COL.COMPARTMENT] || FridgeCompartment.REFRIGERATOR).trim(),
         locationDetails: (row[FRIDGE_ITEM_COL.LOCATION_DETAILS] || "").trim(),
@@ -80,7 +83,7 @@ export const GET: RequestHandler = async ({ request }) => {
           .split(",")
           .map((t: string) => t.trim())
           .filter(Boolean),
-        actionBy: (row[FRIDGE_ITEM_COL.ACTION_BY] || "").trim(),
+        actionBy: actionName ? actionName : "",
         residentName: name,
         room: resIdToRoomMap.get(resId) || ""
       };

@@ -52,9 +52,6 @@ export const sheetsFridgeService: FridgeServiceInterface = {
       actionBy: (row[FRIDGE_ITEM_COL.ACTION_BY] || "").trim(),
       raw: row
     }));
-    if (residentId) {
-      items = items.filter((r) => r.residentId === residentId);
-    }
     return items;
   },
 
