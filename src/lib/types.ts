@@ -516,6 +516,23 @@ export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   [AccountType.REPS]: "UHO Beneficiary: Research, Extension, and Professional Staff"
 };
 
+export const USER_TAG_LABELS: Record<string, string> = {
+  [UserTag.STUDENT]: "Student",
+  [UserTag.BOOTCAMP]: "Bootcamp/Associate Degree Candidate",
+  [UserTag.ALUMNUS]: "Former Resident/Alum",
+  [UserTag.FACULTY]: "UHO Beneficiary: Faculty",
+  [UserTag.STAFF]: "UHO Beneficiary: Staff",
+  [UserTag.REPS]: "UHO Beneficiary: Research, Extension, and Professional Staff",
+  [UserTag.INTERNAL]: "Internal (Do Not Use)",
+  [UserTag.DECEASED]: "Deceased",
+  [UserTag.BACKED_OUT]: "Backed-out",
+  [UserTag.RETURNING]: "Returning",
+  [UserTag.GUEST]: "Guest",
+  [UserTag.TRANSFERRED_DORM]: "Transferred to another UP residence hall",
+  [UserTag.TRANSFERRED_OUTSIDE]: "Transferred to an outside housing facility",
+  [UserTag.UNKNOWN]: "Unknown"
+};
+
 export const USER_TAG_COLORS: Record<string, string> = {
   [UserTag.STUDENT]: "bg-emerald-100 text-emerald-700 border-emerald-200",
   [UserTag.BOOTCAMP]: "bg-emerald-100 text-emerald-700 border-emerald-200",

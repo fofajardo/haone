@@ -15,7 +15,7 @@
     Trash2,
     AwardIcon
   } from "@lucide/svelte";
-  import { type UserRecord, UserTag } from "$lib/types";
+  import { type UserRecord, UserTag, USER_TAG_LABELS } from "$lib/types";
   import { translateCollege, translateProgram } from "$utils/translators";
   import collegesJson from "$data/colleges.json";
   import programsJson from "$data/programs.json";
@@ -287,6 +287,14 @@
               bind:value={userTypes}
               suggestions={allUserTags}
               validate={validateTag}
+              formatLabel={(tag) => USER_TAG_LABELS[tag] || tag}
+              filterSuggestions={(input, suggestions) => {
+                const lower = input.toLowerCase();
+                return suggestions.filter((s) => {
+                  const label = (USER_TAG_LABELS[s] || s).toLowerCase();
+                  return s.toLowerCase().includes(lower) || label.includes(lower);
+                });
+              }}
               placeholder="Add tags…"
             />
             <p class="text-xs text-muted-foreground italic">Press enter to add custom tags.</p>
