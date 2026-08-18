@@ -11,6 +11,7 @@ import {
   authenticateResident,
   getSheetsClient,
   appendSheetValue,
+  updateSheetValue,
   serverError,
   fetchSheetsData
 } from "$lib/server/api-helper";
@@ -194,17 +195,12 @@ export const PATCH: RequestHandler = async ({ request }) => {
     }
     if (updates.actionBy !== undefined) updatedRow[FRIDGE_ITEM_COL.ACTION_BY] = updates.actionBy;
 
-    const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/fridge_items!A${actualRow}:M${actualRow}?valueInputOption=USER_ENTERED`;
-    const res = await client.fetch(updateUrl, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ values: [updatedRow] })
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      return json({ error: `Sheet update failed: ${errText}` }, { status: 500 });
-    }
+    await updateSheetValue(
+      client,
+      PUBLIC_GS_SR_ID,
+      `fridge_items!A${actualRow}:M${actualRow}`,
+      [updatedRow]
+    );
 
     return json({ success: true });
   } catch (err: any) {
@@ -261,28 +257,21 @@ export const DELETE: RequestHandler = async ({ request }) => {
 
     const newPhotoUrl = targetStatus === FridgeItemStatus.DISCARDED ? "" : photoUrl;
 
-    const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/fridge_items!H${actualRow}:M${actualRow}?valueInputOption=USER_ENTERED`;
-    const res = await client.fetch(updateUrl, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        values: [
-          [
-            newPhotoUrl,
-            targetStatus,
-            rows[rowIndex][FRIDGE_ITEM_COL.NOTES] || "",
-            nowStr,
-            rows[rowIndex][FRIDGE_ITEM_COL.TAGS] || "",
-            actorId
-          ]
+    await updateSheetValue(
+      client,
+      PUBLIC_GS_SR_ID,
+      `fridge_items!H${actualRow}:M${actualRow}`,
+      [
+        [
+          newPhotoUrl,
+          targetStatus,
+          rows[rowIndex][FRIDGE_ITEM_COL.NOTES] || "",
+          nowStr,
+          rows[rowIndex][FRIDGE_ITEM_COL.TAGS] || "",
+          actorId
         ]
-      })
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      return json({ error: `Sheet update failed: ${errText}` }, { status: 500 });
-    }
+      ]
+    );
 
     return json({ success: true });
   } catch (err: any) {
