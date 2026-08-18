@@ -2,11 +2,12 @@
   type Props = {
     id: string;
     value: string;
+    label?: string;
     active: boolean;
     onSelect: (value: string) => void;
   };
 
-  let { id, value, active, onSelect }: Props = $props();
+  let { id, value, label, active, onSelect }: Props = $props();
 </script>
 
 <button
@@ -20,5 +21,5 @@
     onSelect(value);
   }}
 >
-  {value}
+  {label || value}
 </button>

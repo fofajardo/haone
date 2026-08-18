@@ -7,6 +7,7 @@ export type TagsInputPropsWithoutHTML = {
   suggestions?: string[];
   filterSuggestions?: (inputValue: string, suggestions: string[]) => string[];
   restrictToSuggestions?: boolean;
+  formatLabel?: (val: string) => string;
 };
 
 export type TagsInputProps = TagsInputPropsWithoutHTML & Omit<HTMLInputAttributes, "value">;

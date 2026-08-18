@@ -35,6 +35,7 @@
     suggestions,
     filterSuggestions = defaultFilter,
     restrictToSuggestions = false,
+    formatLabel,
     ...rest
   }: TagsInputProps = $props();
 
@@ -320,7 +321,13 @@
   aria-disabled={disabled}
 >
   {#each value as tag, i (tag)}
-    <TagsInputTag value={tag} {disabled} onDelete={deleteValue} active={i === tagIndex} />
+    <TagsInputTag
+      value={tag}
+      label={formatLabel ? formatLabel(tag) : undefined}
+      {disabled}
+      onDelete={deleteValue}
+      active={i === tagIndex}
+    />
   {/each}
   <input
     {...rest}
@@ -353,6 +360,7 @@
         <TagsInputSuggestion
           id="{listboxId}-{i}"
           value={suggestion}
+          label={formatLabel ? formatLabel(suggestion) : undefined}
           active={i === suggestionIndex}
           onSelect={selectSuggestion}
         />
