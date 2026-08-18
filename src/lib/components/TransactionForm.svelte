@@ -267,7 +267,7 @@
     if (isFundsOnly && formData.accountEmail !== "_funds") {
       formData.accountEmail = "_funds";
       formData.accountName = (brandingState.profile.issuerName || "").toUpperCase();
-      formData.accountStNo = "SYSTEM";
+      formData.accountId = SYSTEM_IDS.FUNDS;
       accountSearch = (brandingState.profile.issuerName || "").toUpperCase();
       selectedResident = accounts.find((a) => a.email === "_funds") || null;
     }
@@ -584,7 +584,7 @@
         toRow[JOR.STNO] = "";
         toRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
         toRow[JOR.WAS_AUDITED] = "FALSE";
-        toRow[JOR.ID] = crypto.randomUUID();
+        toRow[JOR.ID] = crypto.randomUUID();const row = new Array(22).fill("");
         toRow[JOR.CREATOR_ID] = formData.creatorId || "";
         toRow[JOR.ACCOUNT_ID] = formData.accountId || "";
 
