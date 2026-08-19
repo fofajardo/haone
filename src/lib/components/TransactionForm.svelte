@@ -1144,25 +1144,25 @@
 <AlertDialog.Root bind:open={isTermWarningOpen}>
   <AlertDialog.Content>
     <AlertDialog.Header>
-      <AlertDialog.Title>Non-Active Term Warning</AlertDialog.Title>
+      <AlertDialog.Title>Inactive Term Warning</AlertDialog.Title>
       <AlertDialog.Description>
-        You are recording a transaction for <span class="font-bold text-foreground"
+        You are recording a transaction for <span class="font-semibold text-foreground"
           >{translatePeriod(formData.period)}</span
-        >, which is not the currently active term (<span class="font-bold text-foreground"
+        >, which is not the currently active term (<span class="font-semibold text-foreground"
           >{translatePeriod(uiSettings.currentTerm)}</span
-        >). Are you sure you want to proceed?
+        >).
+        <p class="mt-2">Are you sure you want to proceed?</p>
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel>Review Entry</AlertDialog.Cancel>
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
       <AlertDialog.Action
         onclick={() => {
           hasConfirmedTerm = true;
           handleSubmit();
         }}
-        class="bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600"
       >
-        Yes, Proceed
+        Confirm
       </AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>
