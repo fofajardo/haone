@@ -8,7 +8,7 @@ import {
   type VapidKeys
 } from "@block65/webcrypto-web-push";
 import { getFirebaseToken, fetchGoogleAPI } from "$lib/server/api-helper";
-import branding from "$data/branding.json";
+import branding from "$dataPrivate/branding.json";
 
 const brandingProfile = (branding as any)[PUBLIC_BRANDING];
 

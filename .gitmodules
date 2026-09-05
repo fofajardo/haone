@@ -1,0 +1,3 @@
+[submodule "src/lib/data-private"]
+	path = src/lib/data-private
+	url = git@github.com:fofajardo/haone-data-ati.git
