@@ -7,9 +7,4 @@ export const roomsService: RoomsServiceInterface = isSupabase
   ? supabaseRoomsService
   : sheetsRoomsService;
 
-export type {
-  CurrRecord,
-  AccountRow,
-  StaticIpRow,
-  AccountUpdate
-} from "./interfaces/rooms-service.interface";
+export type { CurrRecord, AccountRow, AccountUpdate } from "./interfaces/rooms-service.interface";

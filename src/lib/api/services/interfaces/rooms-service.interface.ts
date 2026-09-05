@@ -35,16 +35,6 @@ export interface AccountRow {
   type: string;
 }
 
-export interface StaticIpRow {
-  id: string;
-  recorderId: string;
-  residentId: string;
-  period: string;
-  type: string;
-  ip: string;
-  notes: string;
-}
-
 export interface AccountUpdate {
   id: string;
   room?: string;
@@ -76,6 +66,4 @@ export interface RoomsServiceInterface {
   deleteAccountRow(residentId: string, period: string): Promise<void>;
   /** Writes the BED field (used by the delist flow to annotate e.g. "101 (Early checkout)"). */
   updateAccountBed(residentId: string, period: string, bed: string): Promise<void>;
-  fetchStaticIpRows(bypassCache?: boolean): Promise<StaticIpRow[]>;
-  appendStaticIpRows(rows: StaticIpRow[]): Promise<void>;
 }

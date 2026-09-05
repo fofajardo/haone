@@ -2,10 +2,9 @@ import type {
   RoomsServiceInterface,
   CurrRecord,
   AccountRow,
-  AccountUpdate,
-  StaticIpRow
+  AccountUpdate
 } from "../interfaces/rooms-service.interface";
-import { CURR_COL, ACCOUNT_COL, STATIC_IP_COL } from "$lib/types";
+import { CURR_COL, ACCOUNT_COL } from "$lib/types";
 import {
   fetchSheetRowsRaw,
   updateSheetValue,
@@ -310,41 +309,5 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     }
     const actualRow = rowIndex + 1;
     await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!E${actualRow}`, [[bed]]);
-  },
-
-  async fetchStaticIpRows(bypassCache = false): Promise<StaticIpRow[]> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
-      return [];
-    }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "static_ip!A:G", bypassCache);
-    return rows.slice(1).map((r) => ({
-      id: (r[STATIC_IP_COL.ID] || "").trim(),
-      recorderId: (r[STATIC_IP_COL.RECORDER_ID] || "").trim(),
-      residentId: (r[STATIC_IP_COL.RESIDENT_ID] || "").trim(),
-      period: (r[STATIC_IP_COL.PERIOD] || "").trim(),
-      type: (r[STATIC_IP_COL.TYPE] || "").trim(),
-      ip: (r[STATIC_IP_COL.IP] || "").trim(),
-      notes: (r[STATIC_IP_COL.NOTES] || "").trim()
-    }));
-  },
-
-  async appendStaticIpRows(rows: StaticIpRow[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
-      return;
-    }
-    const values = rows.map((r) => {
-      const row = new Array(7).fill("");
-      row[STATIC_IP_COL.ID] = r.id;
-      row[STATIC_IP_COL.RECORDER_ID] = r.recorderId;
-      row[STATIC_IP_COL.RESIDENT_ID] = r.residentId;
-      row[STATIC_IP_COL.PERIOD] = r.period;
-      row[STATIC_IP_COL.TYPE] = r.type;
-      row[STATIC_IP_COL.IP] = r.ip;
-      row[STATIC_IP_COL.NOTES] = r.notes;
-      return row;
-    });
-    await appendSheetRow(uiSettings.sharedRecordsId, "static_ip!A:G", values);
   }
 };

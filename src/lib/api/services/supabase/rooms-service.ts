@@ -2,8 +2,7 @@ import type {
   RoomsServiceInterface,
   CurrRecord,
   AccountRow,
-  AccountUpdate,
-  StaticIpRow
+  AccountUpdate
 } from "../interfaces/rooms-service.interface";
 import {
   supabase,
@@ -252,47 +251,5 @@ export const supabaseRoomsService: RoomsServiceInterface = {
       handleSupabaseError(error);
     }
     assertSupabaseFound(data, "Account record not found.");
-  },
-
-  async fetchStaticIpRows(): Promise<StaticIpRow[]> {
-    if (!supabase) {
-      return [];
-    }
-    const sb = supabase;
-    const data = await fetchAllSupabaseRows(() =>
-      sb
-        .from("static_ip")
-        .select("*")
-        .order("created_at", { ascending: true })
-        .order("id", { ascending: true })
-    );
-    return data.map((row: any) => ({
-      id: row.id || "",
-      recorderId: row.recorder_id || "",
-      residentId: row.resident_id || "",
-      period: row.period || "",
-      type: row.type || "",
-      ip: row.ip || "",
-      notes: row.notes || ""
-    }));
-  },
-
-  async appendStaticIpRows(rows: StaticIpRow[]): Promise<void> {
-    if (!supabase) {
-      return;
-    }
-    const formatted = rows.map((r) => ({
-      id: r.id || crypto.randomUUID(),
-      recorder_id: parseDbUuid(r.recorderId),
-      resident_id: parseDbUuid(r.residentId),
-      period: r.period,
-      type: r.type,
-      ip: r.ip,
-      notes: r.notes
-    }));
-    const { error } = await supabase.from("static_ip").insert(formatted);
-    if (error) {
-      handleSupabaseError(error);
-    }
   }
 };

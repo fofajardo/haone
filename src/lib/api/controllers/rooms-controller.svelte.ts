@@ -1,10 +1,4 @@
-import { uiSettings } from "$state/settings.svelte";
-import {
-  roomsService,
-  type CurrRecord,
-  type AccountRow,
-  type StaticIpRow
-} from "$api/services/rooms-service";
+import { roomsService, type CurrRecord, type AccountRow } from "$api/services/rooms-service";
 import { addJournalEntries } from "$api/controllers/journal-controller";
 import { fetchConstantByKey } from "$api/controllers/constants-controller";
 import { AccountType, UserTag, type UserRecord } from "$lib/types";
@@ -365,52 +359,6 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
   return actions;
 }
 
-/**
- * Carries forward the most recent prior-term static IP entries for newly
- * assigned residents. Failures are logged but never abort the sync.
- */
-async function carryForwardStaticIps(
-  assignments: { residentId: string; period: string }[]
-): Promise<void> {
-  try {
-    const staticIpRows = await roomsService.fetchStaticIpRows();
-    const carryForwardRows: StaticIpRow[] = [];
-
-    for (const { residentId, period } of assignments) {
-      const priorRows = staticIpRows.filter(
-        (r) => r.residentId === residentId && r.period !== period
-      );
-      if (priorRows.length === 0) {
-        continue;
-      }
-
-      const sortedPeriods = [...new Set(priorRows.map((r) => r.period))].sort((p1, p2) => {
-        return p2.localeCompare(p1);
-      });
-      const latestPeriod = sortedPeriods[0];
-      const latestEntries = priorRows.filter((r) => r.period === latestPeriod);
-
-      for (const entry of latestEntries) {
-        carryForwardRows.push({
-          id: crypto.randomUUID(),
-          recorderId: entry.recorderId || auth.user?.email || "",
-          residentId,
-          period,
-          type: entry.type || "",
-          ip: entry.ip || "",
-          notes: entry.notes || ""
-        });
-      }
-    }
-
-    if (carryForwardRows.length > 0) {
-      await roomsService.appendStaticIpRows(carryForwardRows);
-    }
-  } catch (e) {
-    console.error("Failed to carry forward static IPs:", e);
-  }
-}
-
 export async function applySync(actions: SyncPreviewAction[], term: string) {
   const userCreations = actions.filter((a) => a.type === "CREATE_USER");
   const userUpdates = actions.filter((a) => a.type === "UPDATE_USER");
@@ -457,14 +405,6 @@ export async function applySync(actions: SyncPreviewAction[], term: string) {
       type: a.payload.accountType || AccountType.STUDENT
     }));
     await roomsService.appendAccounts(rows);
-
-    // Carry forward any prior term static IP addresses
-    await carryForwardStaticIps(
-      accountCreations.map((a) => ({
-        residentId: a.payload.residentId,
-        period: a.payload.period
-      }))
-    );
   }
 
   // 5. Mark CURR as Evaluated
@@ -520,9 +460,6 @@ export async function manualAssignBed(residentId: string, room: string, bed: str
       checkInDate: "",
       type: AccountType.STUDENT
     });
-
-    // Carry forward any prior term static IP addresses
-    await carryForwardStaticIps([{ residentId, period: term }]);
   }
 }
 

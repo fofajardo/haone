@@ -117,16 +117,6 @@ export const ACCOUNT_COL = {
   TYPE: 11
 } as const;
 
-export const STATIC_IP_COL = {
-  ID: 0,
-  RECORDER_ID: 1,
-  RESIDENT_ID: 2,
-  PERIOD: 3,
-  TYPE: 4,
-  IP: 5,
-  NOTES: 6
-} as const;
-
 export const USER_COL = {
   EMAIL: 0,
   LAST_NAME: 1,
@@ -464,23 +454,6 @@ export interface UserSettingsRecord {
   theme: string;
   isReducedMotion: boolean;
   clockFormat: string;
-  raw: string[];
-}
-
-export interface StaticIpRecord {
-  id: string;
-  recorderId: string;
-  residentId: string;
-  period: string;
-  type: string;
-  ip: string;
-  notes: string;
-  // Enriched fields (joined)
-  name?: string;
-  email?: string;
-  stno?: string;
-  room?: string;
-  bed?: string;
   raw: string[];
 }
 
