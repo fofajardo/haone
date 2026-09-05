@@ -17,9 +17,7 @@ export async function fetchFridgeItems(
       fetchUsers(bypassCache),
       roomsService.fetchAccounts(bypassCache)
     ]);
-    const userMap = new Map(
-      users.map((u) => [u.id, u.displayName])
-    );
+    const userMap = new Map(users.map((u) => [u.id, u.displayName]));
     const roomMap = new Map(accounts.map((a) => [a.residentId, a.room]));
 
     items.forEach((item) => {

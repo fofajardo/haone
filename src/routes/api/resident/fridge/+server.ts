@@ -195,12 +195,9 @@ export const PATCH: RequestHandler = async ({ request }) => {
     }
     if (updates.actionBy !== undefined) updatedRow[FRIDGE_ITEM_COL.ACTION_BY] = updates.actionBy;
 
-    await updateSheetValue(
-      client,
-      PUBLIC_GS_SR_ID,
-      `fridge_items!A${actualRow}:M${actualRow}`,
-      [updatedRow]
-    );
+    await updateSheetValue(client, PUBLIC_GS_SR_ID, `fridge_items!A${actualRow}:M${actualRow}`, [
+      updatedRow
+    ]);
 
     return json({ success: true });
   } catch (err: any) {
@@ -257,21 +254,16 @@ export const DELETE: RequestHandler = async ({ request }) => {
 
     const newPhotoUrl = targetStatus === FridgeItemStatus.DISCARDED ? "" : photoUrl;
 
-    await updateSheetValue(
-      client,
-      PUBLIC_GS_SR_ID,
-      `fridge_items!H${actualRow}:M${actualRow}`,
+    await updateSheetValue(client, PUBLIC_GS_SR_ID, `fridge_items!H${actualRow}:M${actualRow}`, [
       [
-        [
-          newPhotoUrl,
-          targetStatus,
-          rows[rowIndex][FRIDGE_ITEM_COL.NOTES] || "",
-          nowStr,
-          rows[rowIndex][FRIDGE_ITEM_COL.TAGS] || "",
-          actorId
-        ]
+        newPhotoUrl,
+        targetStatus,
+        rows[rowIndex][FRIDGE_ITEM_COL.NOTES] || "",
+        nowStr,
+        rows[rowIndex][FRIDGE_ITEM_COL.TAGS] || "",
+        actorId
       ]
-    );
+    ]);
 
     return json({ success: true });
   } catch (err: any) {
