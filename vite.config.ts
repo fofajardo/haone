@@ -2,10 +2,10 @@ import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 import { execSync } from "child_process";
-import { readFileSync } from "fs";
+import pkg from "./package.json" with { type: "json" };
 
 const commitSha = execSync("git rev-parse --short HEAD").toString().trim();
-const appVersion = readFileSync("./VERSION", "utf-8").trim();
+const appVersion = pkg.version;
 
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
