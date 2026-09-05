@@ -36,8 +36,8 @@ HAOne is a residence hall management system designed to handle day-to-day dormit
 
 - [pnpm](https://pnpm.io/) (Mandatory)
 - Google Cloud Project and OAuth clients for:
-   * Admin with Sheets and Gmail APIs enabled
-   * Resident for auth only
+  - Admin with Sheets and Gmail APIs enabled
+  - Resident for auth only
 - Cloudflare Account
 
 ### Installation
