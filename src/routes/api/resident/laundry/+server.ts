@@ -11,7 +11,7 @@ import {
 } from "$lib/server/api-helper";
 import { parseTimeMinutes } from "$utils/parsers";
 import { formatTime } from "$utils/formatters";
-import { canAccessLaundry, canSeeLaundryNames } from "$api/controllers/resident-controller";
+import { canAccessLaundryOrFridge, canSeeLaundryNames } from "$api/controllers/resident-controller";
 import type { RequestHandler } from "./$types";
 
 /**
@@ -35,7 +35,7 @@ export const GET: RequestHandler = async ({ request }) => {
 
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundry(accountType || "")) {
+    if (!canAccessLaundryOrFridge(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
     }
 
@@ -111,7 +111,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundry(accountType || "")) {
+    if (!canAccessLaundryOrFridge(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot book laundry" }, { status: 403 });
     }
 

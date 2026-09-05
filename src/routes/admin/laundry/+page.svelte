@@ -18,7 +18,7 @@
     computeDisplayNames,
     fetchResidents,
     fetchUsers,
-    canAccessLaundry
+    canAccessLaundryOrFridge
   } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
   import { LaundryStatus } from "$lib/types";
@@ -76,7 +76,11 @@
       const newActiveResIds = new Set<string>();
 
       allResidents.forEach((res) => {
-        if (res.residentId && res.period === currentTerm && canAccessLaundry(res.type || "")) {
+        if (
+          res.residentId &&
+          res.period === currentTerm &&
+          canAccessLaundryOrFridge(res.type || "")
+        ) {
           newActiveResIds.add(res.residentId);
         }
 

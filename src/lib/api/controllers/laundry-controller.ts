@@ -6,7 +6,7 @@ import {
 } from "$lib/types";
 import { parseTime, parseTimeMinutes } from "$utils/parsers";
 import { laundryService } from "$api/services/laundry-service";
-import { getCurrentResidentId, canAccessLaundry } from "./resident-controller";
+import { getCurrentResidentId, canAccessLaundryOrFridge } from "./resident-controller";
 import { residentState } from "$state/resident-state.svelte";
 
 export interface ValidateLaundryOptions {
@@ -144,7 +144,7 @@ export async function addLaundryReservation(
   if (!isAdmin) {
     const accountType =
       residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
-    if (!canAccessLaundry(accountType)) {
+    if (!canAccessLaundryOrFridge(accountType)) {
       throw new Error("Access Denied: Account type cannot book laundry");
     }
   }

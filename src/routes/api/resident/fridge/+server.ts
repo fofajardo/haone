@@ -13,9 +13,11 @@ import {
   appendSheetValue,
   updateSheetValue,
   serverError,
-  fetchSheetsData
+  fetchSheetsData,
+  resolveResidentAccountType
 } from "$lib/server/api-helper";
 import type { RequestHandler } from "./$types";
+import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
 
 /**
  * GET: Fetch all fridge items + user/room mapping (Public to all logged-in residents)
@@ -35,6 +37,12 @@ export const GET: RequestHandler = async ({ request }) => {
       "users!A:P",
       "TERM_CURR"
     ]);
+
+    const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
+
+    if (!canAccessLaundryOrFridge(accountType || "")) {
+      return json({ error: "Access Denied: Account type cannot access fridge" }, { status: 403 });
+    }
 
     // Build user map
     const userMap = new Map();

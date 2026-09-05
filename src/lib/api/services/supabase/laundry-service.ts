@@ -10,7 +10,7 @@ import {
 import { isUuid, parseDbUuid, parseTimeMinutes } from "$utils/parsers";
 import { formatTime } from "$utils/formatters";
 import { auth } from "$state/auth.svelte";
-import { canAccessLaundry } from "$api/controllers/resident-controller";
+import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
 
 const INACTIVE_STATUSES = [LaundryStatus.CANCELLED_BY_ADMIN, LaundryStatus.CANCELLED_BY_USER];
 
@@ -134,7 +134,7 @@ export const supabaseLaundryService: LaundryServiceInterface = {
         .maybeSingle();
       const accountType = (account?.type || "").trim().toUpperCase();
 
-      if (!canAccessLaundry(accountType)) {
+      if (!canAccessLaundryOrFridge(accountType)) {
         throw new Error("Access Denied: Account type cannot book laundry");
       }
 

@@ -404,7 +404,10 @@ export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean 
   }
 }
 
-export function canAccessLaundry(accountType: string): boolean {
+// FIXME: This should be replaced with a less hacky RBAC system in the future.
+//        The CASL.js pattern is already being followed here, however.
+
+export function canAccessLaundryOrFridge(accountType: string): boolean {
   const type = (accountType || "").trim().toUpperCase();
   if (
     type === AccountType.STUDENT ||
@@ -442,8 +445,8 @@ export function isResidentRouteAllowed(
 ): boolean {
   const type = (accountType || "").trim().toUpperCase();
 
-  if (urlOrHref.includes("/laundry")) {
-    return canAccessLaundry(type);
+  if (urlOrHref.includes("/laundry") || urlOrHref.includes("/fridge")) {
+    return canAccessLaundryOrFridge(type);
   }
 
   if (urlOrHref.includes("/achievements") || urlOrHref.includes("/leaderboards")) {
@@ -453,7 +456,7 @@ export function isResidentRouteAllowed(
   if (urlOrHref.includes("/static-ip")) {
     const brandKey =
       brandingState.selectedKey || brandingState.profile?.shortName?.toLowerCase() || "default";
-    return !!(room && isStaticIpEnabled(room, brandKey) && canAccessLaundry(type));
+    return !!(room && isStaticIpEnabled(room, brandKey) && canAccessLaundryOrFridge(type));
   }
 
   return true;
