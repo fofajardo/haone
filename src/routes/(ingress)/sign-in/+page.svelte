@@ -128,8 +128,7 @@
       "profile",
       "email",
       "https://www.googleapis.com/auth/gmail.send",
-      "https://www.googleapis.com/auth/spreadsheets",
-      "https://www.googleapis.com/auth/drive.readonly"
+      "https://www.googleapis.com/auth/spreadsheets"
     ];
 
     const residentScopes = ["openid", "profile", "email"];
