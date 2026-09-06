@@ -76,5 +76,12 @@ export const supabaseSettingsService: SettingsServiceInterface = {
     if (error) {
       handleSupabaseError(error);
     }
+  },
+
+  async verifyAccess(): Promise<void> {
+    if (!supabase) {
+      return;
+    }
+    // No-op on client side for Supabase. Session auth is checked via signInWithIdToken.
   }
 };

@@ -1,11 +1,14 @@
 import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
-import { fetchSheetRowsRaw, appendSheetRow, batchUpdateValues } from "../common";
+import {
+  fetchSheetRowsRaw,
+  appendSheetRow,
+  batchUpdateValues,
+  verifySpreadsheetAccess
+} from "../common";
 import { USER_SETTINGS_COL, type UserSettingsRecord } from "$lib/types";
 
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
-
-import { browser } from "$app/environment";
 
 let _residentSettingsFetch: Promise<any> | null = null;
 
@@ -152,5 +155,15 @@ export const sheetsSettingsService: SettingsServiceInterface = {
     ];
 
     await appendSheetRow(uiSettings.sharedRecordsId, "settings!A:I", [finalValues]);
+  },
+
+  async verifyAccess(explicitToken?: string): Promise<void> {
+    const { uiSettings } = await import("$state/settings.svelte");
+    const targetSheetId =
+      uiSettings.residentRecordsId || uiSettings.accountingWorkbookId || uiSettings.sharedRecordsId;
+
+    if (targetSheetId) {
+      await verifySpreadsheetAccess(targetSheetId, explicitToken);
+    }
   }
 };

@@ -54,7 +54,7 @@ export async function fetchAllSupabaseRows<T = any>(buildQuery: () => any): Prom
   }
   const all: T[] = [];
   let from = 0;
-  for (;;) {
+  for (; ;) {
     const { data, error } = await buildQuery().range(from, from + SUPABASE_PAGE_SIZE - 1);
     if (error) {
       handleSupabaseError(error);
@@ -72,22 +72,22 @@ export async function fetchAllSupabaseRows<T = any>(buildQuery: () => any): Prom
 export const supabase =
   PUBLIC_SUPABASE_URL && PUBLIC_SUPABASE_PUBLISHABLE_KEY
     ? createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
-        global: {
-          fetch: async (url, options) => {
-            const response = await fetch(url, options);
-            // Only a 401 means the Supabase session/JWT is invalid. A 403 is an
-            // RLS denial for the current action and must NOT end the session.
-            if (response.status === 401) {
-              auth.lastError = {
-                title: "Session Expired",
-                description: "Please sign in again."
-              };
-              auth.logout();
-            }
-            return response;
+      global: {
+        fetch: async (url, options) => {
+          const response = await fetch(url, options);
+          // Only a 401 means the Supabase session/JWT is invalid. A 403 is an
+          // RLS denial for the current action and must NOT end the session.
+          if (response.status === 401) {
+            auth.lastError = {
+              title: "Session Expired",
+              description: "Please sign in again."
+            };
+            auth.logout();
           }
+          return response;
         }
-      })
+      }
+    })
     : null;
 
 // ── GSheets API Client ───────────────────────────────────────────────────────
@@ -285,6 +285,17 @@ export async function fetchWithAuth(
   }
 
   return resp;
+}
+
+/**
+ * Probe checking read access on a spreadsheet metadata endpoint without parsing rows.
+ */
+export async function verifySpreadsheetAccess(
+  spreadsheetId: string,
+  explicitToken?: string
+): Promise<void> {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=spreadsheetId`;
+  await fetchWithAuth(url, "Spreadsheet access verification failed", {}, explicitToken);
 }
 
 /**

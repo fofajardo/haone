@@ -94,6 +94,11 @@
           }
         }
 
+        if (savedType === "admin") {
+          const { settingsService } = await import("$api/services/settings-service");
+          await settingsService.verifyAccess(accessToken);
+        }
+
         sessionStorage.removeItem("pkce_verifier");
         sessionStorage.removeItem("pkce_auth_type");
 
