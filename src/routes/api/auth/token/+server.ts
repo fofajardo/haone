@@ -1,6 +1,6 @@
 import { json } from "@sveltejs/kit";
-import { GI_CLIENT_SECRET, RESIDENT_GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
-import { PUBLIC_GI_CLIENT_ID, PUBLIC_RESIDENT_GI_CLIENT_ID } from "$env/static/public";
+import { GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
+import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -8,9 +8,6 @@ export const POST: RequestHandler = async ({ request }) => {
     const { code, code_verifier, redirect_uri, client_id } = await request.json();
 
     let clientSecret = GI_CLIENT_SECRET;
-    if (client_id === PUBLIC_RESIDENT_GI_CLIENT_ID) {
-      clientSecret = RESIDENT_GI_CLIENT_SECRET;
-    }
 
     const tokenResp = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",

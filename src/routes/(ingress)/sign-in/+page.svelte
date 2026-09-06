@@ -7,11 +7,7 @@
   import { goto, replaceState } from "$app/navigation";
   import { brandingState } from "$state/branding.svelte";
   import { globalDialog } from "$state/dialog.svelte";
-  import {
-    PUBLIC_GI_CLIENT_ID,
-    PUBLIC_RESIDENT_GI_CLIENT_ID,
-    PUBLIC_DB_PROVIDER
-  } from "$env/static/public";
+  import { PUBLIC_GI_CLIENT_ID, PUBLIC_DB_PROVIDER } from "$env/static/public";
   import { supabase } from "$api/services/common";
 
   let isSigningIn = $state(false);
@@ -40,8 +36,6 @@
           throw new Error("Missing PKCE verifier");
         }
 
-        const clientId = savedType === "admin" ? PUBLIC_GI_CLIENT_ID : PUBLIC_RESIDENT_GI_CLIENT_ID;
-
         // Exchange code for token
         const tokenResp = await fetch("/api/auth/token", {
           method: "POST",
@@ -50,7 +44,7 @@
             code,
             code_verifier: verifier,
             redirect_uri: window.location.origin + "/sign-in",
-            client_id: clientId
+            client_id: PUBLIC_GI_CLIENT_ID
           })
         });
 
@@ -128,7 +122,6 @@
 
   async function handleLogin(type: "admin" | "resident" = "resident") {
     isSigningIn = true;
-    const clientId = type === "admin" ? PUBLIC_GI_CLIENT_ID : PUBLIC_RESIDENT_GI_CLIENT_ID;
 
     const adminScopes = [
       "openid",
@@ -150,7 +143,7 @@
     const challenge = await generatePKCEChallenge(verifier);
 
     const params = new URLSearchParams({
-      client_id: clientId,
+      client_id: PUBLIC_GI_CLIENT_ID,
       redirect_uri: window.location.origin + "/sign-in",
       response_type: "code",
       scope: scopes,
