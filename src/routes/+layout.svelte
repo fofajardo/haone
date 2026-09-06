@@ -11,6 +11,7 @@
   import { uiSettings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
   import UIProvider from "$components/UIProvider.svelte";
+  import GlobalAlertDialog from "$components/GlobalAlertDialog.svelte";
 
   let { children } = $props();
 
@@ -59,4 +60,5 @@
 
 <UIProvider class="flex min-h-screen flex-col">
   {@render children()}
+  <GlobalAlertDialog />
 </UIProvider>

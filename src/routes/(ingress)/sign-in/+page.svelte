@@ -1,12 +1,12 @@
 <script lang="ts">
   import { auth } from "$state/auth.svelte";
-  import { onMount, untrack } from "svelte";
+  import { onMount } from "svelte";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$utils/crypto";
   import { Button } from "$ui/button";
   import { LoaderIcon } from "@lucide/svelte";
   import { goto, replaceState } from "$app/navigation";
   import { brandingState } from "$state/branding.svelte";
-  import * as AlertDialog from "$ui/alert-dialog";
+  import { globalDialog } from "$state/dialog.svelte";
   import {
     PUBLIC_GI_CLIENT_ID,
     PUBLIC_RESIDENT_GI_CLIENT_ID,
@@ -17,14 +17,6 @@
   let isSigningIn = $state(false);
   let isLoadingAuth = $state(true);
   let rememberMe = $state(true);
-
-  let alertState = $state({ open: false, title: "", description: "" });
-
-  function showError(title: string, description: string) {
-    alertState.title = title;
-    alertState.description = description;
-    alertState.open = true;
-  }
 
   onMount(async () => {
     // If already logged in, go to appropriate dashboard
@@ -111,12 +103,7 @@
         auth.redirectTo = null;
         return;
       } catch (e: any) {
-        if (!auth.lastError) {
-          auth.lastError = {
-            title: "Sign-in Failed",
-            description: e.message || "An unexpected error occurred."
-          };
-        }
+        globalDialog.show("Sign-in Failed", e.message || "An unexpected error occurred.");
       } finally {
         if (!redirecting) {
           isSigningIn = false;
@@ -136,16 +123,6 @@
       }
       goto(target);
       auth.redirectTo = null;
-    }
-  });
-
-  $effect(() => {
-    if (auth.lastError) {
-      const err = auth.lastError;
-      untrack(() => {
-        showError(err.title, err.description);
-        auth.lastError = null;
-      });
     }
   });
 
@@ -228,21 +205,6 @@
     </div>
   </div>
 </div>
-
-<!-- Global Error Alert -->
-<AlertDialog.Root bind:open={alertState.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertState.title}</AlertDialog.Title>
-      <AlertDialog.Description>
-        {@html alertState.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertState.open = false)}>Close</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
 
 <style>
   :global(body) {

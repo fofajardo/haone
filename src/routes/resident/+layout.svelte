@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as Sidebar from "$ui/sidebar";
-  import * as AlertDialog from "$ui/alert-dialog";
   import ResidentSidebar from "$components/resident-sidebar.svelte";
   import AdminHeader from "$components/admin-header.svelte";
   import MobileNav from "$components/mobile-nav.svelte";
@@ -17,32 +16,13 @@
 
   let { children } = $props();
   let isLoadingAuth = $state(true);
-  let alertState = $state({ open: false, title: "", description: "" });
 
   const scrollState = createHeaderScrollState();
-
-  function showError(title: string, description: string) {
-    alertState.title = title;
-    alertState.description = description;
-    alertState.open = true;
-  }
 
   onMount(async () => {
     isLoadingAuth = false;
     if (auth.accessToken) {
       await residentState.refresh();
-    }
-  });
-
-  // Handle errors from anywhere (e.g., session expired)
-  $effect(() => {
-    if (auth.lastError) {
-      // If we're about to redirect to sign-in due to auth error,
-      // don't clear it here; let sign-in page handle it.
-      if (!auth.accessToken) return;
-
-      showError(auth.lastError.title, auth.lastError.description);
-      auth.lastError = null;
     }
   });
 
@@ -116,18 +96,3 @@
     </Sidebar.Inset>
   </Sidebar.Provider>
 {/if}
-
-<!-- Global Error Alert -->
-<AlertDialog.Root bind:open={alertState.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertState.title}</AlertDialog.Title>
-      <AlertDialog.Description>
-        {@html alertState.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertState.open = false)}>Close</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

@@ -14,7 +14,6 @@ class AuthState {
   user = $state<UserInfo | null>(null);
   adminDisplayName = $state<string | null>(null);
   isRemembered = $state(false);
-  lastError = $state<{ title: string; description: string } | null>(null);
   redirectTo = $state<string | null>(null);
   initialized = $state(false);
   cachedPicture = $state<string | null>(null);

@@ -21,12 +21,8 @@ export function handleSupabaseError(error: any) {
     msg.includes("jwt expired") ||
     msg.includes("invalid token")
   ) {
-    auth.lastError = {
-      title: "Session Expired",
-      description: "Your session or authorization is invalid. Please sign in again."
-    };
     auth.logout();
-    throw new Error("Session expired or unauthorized");
+    throw new Error("Your session or authorization is invalid. Please sign in again.");
   }
   throw error;
 }
@@ -54,7 +50,7 @@ export async function fetchAllSupabaseRows<T = any>(buildQuery: () => any): Prom
   }
   const all: T[] = [];
   let from = 0;
-  for (; ;) {
+  for (;;) {
     const { data, error } = await buildQuery().range(from, from + SUPABASE_PAGE_SIZE - 1);
     if (error) {
       handleSupabaseError(error);
@@ -72,22 +68,18 @@ export async function fetchAllSupabaseRows<T = any>(buildQuery: () => any): Prom
 export const supabase =
   PUBLIC_SUPABASE_URL && PUBLIC_SUPABASE_PUBLISHABLE_KEY
     ? createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY, {
-      global: {
-        fetch: async (url, options) => {
-          const response = await fetch(url, options);
-          // Only a 401 means the Supabase session/JWT is invalid. A 403 is an
-          // RLS denial for the current action and must NOT end the session.
-          if (response.status === 401) {
-            auth.lastError = {
-              title: "Session Expired",
-              description: "Please sign in again."
-            };
-            auth.logout();
+        global: {
+          fetch: async (url, options) => {
+            const response = await fetch(url, options);
+            // Only a 401 means the Supabase session/JWT is invalid. A 403 is an
+            // RLS denial for the current action and must NOT end the session.
+            if (response.status === 401) {
+              auth.logout();
+            }
+            return response;
           }
-          return response;
         }
-      }
-    })
+      })
     : null;
 
 // ── GSheets API Client ───────────────────────────────────────────────────────
@@ -229,21 +221,15 @@ export function patchCacheRange(spreadsheetId: string, range: string, values: an
  */
 async function handleResponseError(resp: Response, defaultMessage: string) {
   if (resp.status === 401) {
-    auth.lastError = {
-      title: "Session Expired",
-      description: "Please sign in again."
-    };
     auth.logout();
-    throw new Error("Session expired (401)");
+    throw new Error("Your session has expired. Please sign in again.");
   }
   if (resp.status === 403) {
     const replyTo = brandingState.profile.replyTo || "";
-    auth.lastError = {
-      title: "Not Authorized",
-      description: `You do not have permission to use this platform. Please contact the administrator via <a href="mailto:${replyTo}">email</a>.`
-    };
     auth.logout();
-    throw new Error("Not authorized (403)");
+    throw new Error(
+      `You do not have permission to use this platform. Please contact the administrator via <a href="mailto:${replyTo}">email</a>.`
+    );
   }
   if (resp.status === 429) {
     throw new Error("Too many requests. Please wait a moment before trying again.");
