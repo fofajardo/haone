@@ -11,7 +11,8 @@ export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
   define: {
     __COMMIT_SHA__: JSON.stringify(commitSha),
-    __APP_VERSION__: JSON.stringify(appVersion)
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString())
   },
   ssr: {
     noExternal: ["layerchart", "svelte-sonner"]
