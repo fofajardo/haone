@@ -12,7 +12,13 @@ declare global {
       pageInfo: PageInfo;
     }
     // interface PageState {}
-    // interface Platform {}
+    interface Platform {
+      env?: {
+        CONFIG_KV?: {
+          get(key: string): Promise<string | null>;
+        };
+      };
+    }
   }
 }
 
