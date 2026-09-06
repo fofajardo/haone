@@ -36,17 +36,20 @@
 
   // Redirect logic
   $effect(() => {
-    const isSignInPage = page.url.pathname === "/sign-in";
-
-    if (!auth.accessToken && !isSignInPage) {
-      // Save path for restoration
-      auth.redirectTo = page.url.pathname + page.url.search;
-      goto("/sign-in");
+    if (auth.accessToken) {
+      if (auth.authType !== "admin") {
+        goto("/resident");
+      }
+      return;
     }
+
+    // Save path for restoration
+    auth.redirectTo = page.url.pathname + page.url.search;
+    goto("/sign-in");
   });
 </script>
 
-{#if isLoadingAuth || (!auth.accessToken && page.url.pathname !== "/sign-in")}
+{#if isLoadingAuth || (!auth.accessToken && page.url.pathname !== "/sign-in") || auth.authType !== "admin"}
   <div class="flex min-h-screen items-center justify-center">
     <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
   </div>
