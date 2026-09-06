@@ -1,4 +1,4 @@
-import { PUBLIC_GA_ID } from "$env/static/public";
+import { env as publicEnv } from "$env/dynamic/public";
 import { env } from "$env/dynamic/private";
 import type { Handle, HandleServerError, RequestEvent } from "@sveltejs/kit";
 
@@ -41,6 +41,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return await resolve(event, {
     transformPageChunk: ({ html }) => {
+      const PUBLIC_GA_ID = publicEnv.PUBLIC_GA_ID;
       if (PUBLIC_GA_ID) {
         const gaScript = `
     <!-- Google tag (gtag.js) -->
