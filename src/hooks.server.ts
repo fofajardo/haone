@@ -41,6 +41,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return await resolve(event, {
     transformPageChunk: ({ html }) => {
+      let transformedHtml = html;
+
+      const PUBLIC_GSV_ID = publicEnv.PUBLIC_GSV_ID;
+      if (PUBLIC_GSV_ID) {
+        const metaTag = `<meta name="google-site-verification" content="${PUBLIC_GSV_ID}" />`;
+        transformedHtml = transformedHtml.replace("%google_site_verification%", metaTag);
+      } else {
+        transformedHtml = transformedHtml.replace("%google_site_verification%", "");
+      }
+
       const PUBLIC_GA_ID = publicEnv.PUBLIC_GA_ID;
       if (PUBLIC_GA_ID) {
         const gaScript = `
@@ -55,9 +65,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 
       gtag("config", "${PUBLIC_GA_ID}");
     </script>`;
-        return html.replace("%google_analytics%", gaScript);
+        transformedHtml = transformedHtml.replace("%google_analytics%", gaScript);
+      } else {
+        transformedHtml = transformedHtml.replace("%google_analytics%", "");
       }
-      return html.replace("%google_analytics%", "");
+
+      return transformedHtml;
     }
   });
 };
