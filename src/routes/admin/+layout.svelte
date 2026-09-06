@@ -10,6 +10,7 @@
   import { goto } from "$app/navigation";
   import { fly } from "svelte/transition";
   import { createHeaderScrollState } from "$utils/scroll.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let { children } = $props();
   let isLoadingAuth = $state(true);
@@ -38,6 +39,16 @@
   $effect(() => {
     if (auth.accessToken) {
       if (auth.authType !== "admin") {
+        if (auth.isInstanceAdmin) {
+          auth.logout();
+          auth.redirectTo = page.url.pathname + page.url.search;
+          globalDialog.show(
+            "Access Denied",
+            "Instance administrator accounts must sign in as a House Council Officer."
+          );
+          goto("/sign-in");
+          return;
+        }
         goto("/resident");
       }
       return;
