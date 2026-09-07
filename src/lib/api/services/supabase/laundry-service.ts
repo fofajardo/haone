@@ -1,16 +1,16 @@
-import type { LaundryServiceInterface } from "../interfaces/laundry-service.interface";
-import type { LaundryRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
-import { LaundryStatus } from "$lib/types";
-import {
-  supabase,
-  handleSupabaseError,
-  assertSupabaseFound,
-  fetchAllSupabaseRows
-} from "../common";
-import { isUuid, parseDbUuid, parseTimeMinutes } from "$utils/parsers";
-import { formatTime } from "$utils/formatters";
-import { auth } from "$state/auth.svelte";
 import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
+import type { LaundryRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
+import { LaundryStatus } from "$lib/types";
+import { auth } from "$state/auth.svelte";
+import { formatTime } from "$utils/formatters";
+import { isUuid, parseDbUuid, parseTimeMinutes } from "$utils/parsers";
+import {
+  assertSupabaseFound,
+  fetchAllSupabaseRows,
+  handleSupabaseError,
+  supabase
+} from "../common";
+import type { LaundryServiceInterface } from "../interfaces/laundry-service.interface";
 
 const INACTIVE_STATUSES = [LaundryStatus.CANCELLED_BY_ADMIN, LaundryStatus.CANCELLED_BY_USER];
 

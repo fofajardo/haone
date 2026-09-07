@@ -1,15 +1,15 @@
-import { roomsService, type CurrRecord, type AccountRow } from "$api/services/rooms-service";
-import { addJournalEntries } from "$api/controllers/journal-controller";
 import { fetchConstantByKey } from "$api/controllers/constants-controller";
-import { AccountType, UserTag, type UserRecord } from "$lib/types";
+import { addJournalEntries } from "$api/controllers/journal-controller";
 import {
-  fetchUsers,
   addUser,
-  updateUser,
-  fetchResidents
+  fetchResidents,
+  fetchUsers,
+  updateUser
 } from "$api/controllers/resident-controller";
-import { roomsState } from "$state/rooms.svelte";
+import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
+import { AccountType, UserTag, type UserRecord } from "$lib/types";
 import { auth } from "$state/auth.svelte";
+import { roomsState } from "$state/rooms.svelte";
 import { getLocalDateString } from "$utils/parsers";
 
 export type { CurrRecord };

@@ -1,16 +1,16 @@
-import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 import type { ResidentRecord, UserRecord } from "$lib/types";
 import { AccountType } from "$lib/types";
-import {
-  supabase,
-  handleSupabaseError,
-  assertSupabaseFound,
-  fetchAllSupabaseRows
-} from "../common";
-import { supabaseConstantsService } from "./constants-service";
-import { parseCSVAmount } from "$utils/math";
-import { parseDbDate, parseDbUuid, parseDateWeight } from "$utils/parsers";
 import { auth } from "$state/auth.svelte";
+import { parseCSVAmount } from "$utils/math";
+import { parseDateWeight, parseDbDate, parseDbUuid } from "$utils/parsers";
+import {
+  assertSupabaseFound,
+  fetchAllSupabaseRows,
+  handleSupabaseError,
+  supabase
+} from "../common";
+import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
+import { supabaseConstantsService } from "./constants-service";
 
 function mapDbUserToUserRecord(u: any): UserRecord {
   if (!u) {

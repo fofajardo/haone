@@ -1,15 +1,15 @@
+import type { ResidentRecord } from "$lib/types";
 import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
-import { imgToDataUrl, getPdfMake } from "./pdf-utils";
-import type { ResidentRecord } from "$lib/types";
 import type {
-  TDocumentDefinitions,
-  Content,
   Alignment,
+  Content,
   Margins,
+  Size,
   TableCell,
-  Size
+  TDocumentDefinitions
 } from "pdfmake/interfaces";
+import { getPdfMake, imgToDataUrl } from "./pdf-utils";
 
 export interface PDFReportOptions {
   residents: (ResidentRecord & { position?: string })[];

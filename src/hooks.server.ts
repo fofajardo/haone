@@ -1,5 +1,5 @@
-import { env as publicEnv } from "$env/dynamic/public";
 import { env } from "$env/dynamic/private";
+import { env as publicEnv } from "$env/dynamic/public";
 import type { Handle, HandleServerError, RequestEvent } from "@sveltejs/kit";
 
 async function checkMaintenanceRedirect(event: RequestEvent): Promise<Response | null> {

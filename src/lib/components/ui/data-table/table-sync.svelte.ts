@@ -1,7 +1,7 @@
-import { page } from "$app/state";
-import { goto } from "$app/navigation";
-import type { PaginationState } from "@tanstack/table-core";
 import { browser } from "$app/environment";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
+import type { PaginationState } from "@tanstack/table-core";
 import { untrack } from "svelte";
 
 /**

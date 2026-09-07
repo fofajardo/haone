@@ -1,6 +1,6 @@
-import { json } from "@sveltejs/kit";
+import { deleteImageFromFirestore, getImageFromFirestore } from "$api/services/firestore-service";
 import { authenticateResident, serverError } from "$lib/server/api-helper";
-import { getImageFromFirestore, deleteImageFromFirestore } from "$api/services/firestore-service";
+import { json } from "@sveltejs/kit";
 
 export async function GET({ params }) {
   const { id } = params;

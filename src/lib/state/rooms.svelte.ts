@@ -1,5 +1,5 @@
-import { brandingState } from "$state/branding.svelte";
 import roomsData from "$dataPrivate/rooms.json";
+import { brandingState } from "$state/branding.svelte";
 import { getAllRooms } from "$utils/rooms-utils";
 
 export interface RoomSlot {

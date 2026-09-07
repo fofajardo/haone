@@ -1,7 +1,7 @@
-import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
 import type { UserSettingsRecord } from "$lib/types";
-import { supabase, handleSupabaseError } from "../common";
 import { isUuid } from "$utils/parsers";
+import { handleSupabaseError, supabase } from "../common";
+import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
 
 export const supabaseSettingsService: SettingsServiceInterface = {
   async fetchUserSettings(residentId: string): Promise<UserSettingsRecord | null> {

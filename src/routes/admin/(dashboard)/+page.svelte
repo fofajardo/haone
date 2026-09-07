@@ -1,16 +1,11 @@
 <script lang="ts">
-  import * as Card from "$ui/card";
-  import { Button } from "$ui/button";
   import {
     Mail,
-    ArrowRight,
     Users,
     Receipt,
     ChartPie,
     Settings,
-    History,
     TrendingUp,
-    TrendingDown,
     Clock,
     ListFilter,
     CircleCheck,
@@ -19,11 +14,11 @@
   } from "@lucide/svelte";
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchJournalEntries, mapRowToJournal } from "$api/controllers/journal-controller";
+  import { fetchJournalEntries } from "$api/controllers/journal-controller";
   import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { fetchResidents } from "$api/controllers/resident-controller";
-  import { formatCurrency, formatDate } from "$utils/formatters";
-  import { translatePeriod, translateType } from "$utils/translators";
+  import { formatCurrency } from "$utils/formatters";
+  import { translatePeriod } from "$utils/translators";
   import DashboardActionCard from "$components/DashboardActionCard.svelte";
   import StatisticCard from "$components/StatisticCard.svelte";
   import { onMount } from "svelte";

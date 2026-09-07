@@ -1,4 +1,4 @@
-import type { AnnouncementRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
+import type { AnnouncementRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
 
 export interface AnnouncementServiceInterface {
   fetchAnnouncements(

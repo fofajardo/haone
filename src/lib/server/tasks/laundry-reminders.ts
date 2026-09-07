@@ -1,7 +1,7 @@
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { LAUNDRY_COL } from "$lib/types";
 import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
 import { notifyResident } from "$lib/server/notifications";
+import { LAUNDRY_COL } from "$lib/types";
 
 /**
  * Task to check for upcoming laundry slots and send reminders.

@@ -1,7 +1,7 @@
 import { fridgeService } from "$api/services/fridge-service";
 import { roomsService } from "$api/services/rooms-service";
-import { getCurrentResidentId, fetchUsers } from "./resident-controller";
 import { type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
+import { fetchUsers, getCurrentResidentId } from "./resident-controller";
 
 export async function fetchFridgeItems(
   bypassCache = false

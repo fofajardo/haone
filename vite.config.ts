@@ -1,7 +1,7 @@
-import tailwindcss from "@tailwindcss/vite";
 import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 import { execSync } from "child_process";
+import { defineConfig } from "vite";
 import pkg from "./package.json" with { type: "json" };
 
 const commitSha = execSync("git rev-parse --short HEAD").toString().trim();

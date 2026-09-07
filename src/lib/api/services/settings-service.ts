@@ -1,7 +1,7 @@
 import { isSupabase } from "./common";
+import type { SettingsServiceInterface } from "./interfaces/settings-service.interface";
 import { sheetsSettingsService } from "./sheets/settings-service";
 import { supabaseSettingsService } from "./supabase/settings-service";
-import type { SettingsServiceInterface } from "./interfaces/settings-service.interface";
 
 export const settingsService: SettingsServiceInterface = isSupabase
   ? supabaseSettingsService

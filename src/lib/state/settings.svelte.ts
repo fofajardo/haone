@@ -1,12 +1,12 @@
 import { browser, dev } from "$app/environment";
-import { LS_KEYS } from "$lib/constants";
 import {
+  PUBLIC_APP_ENV,
+  PUBLIC_APP_FIREBASE_ENABLED,
   PUBLIC_GS_AW_ID,
   PUBLIC_GS_RR_ID,
-  PUBLIC_GS_SR_ID,
-  PUBLIC_APP_ENV,
-  PUBLIC_APP_FIREBASE_ENABLED
+  PUBLIC_GS_SR_ID
 } from "$env/static/public";
+import { LS_KEYS } from "$lib/constants";
 
 export type UIFont = "default" | "archivo" | "shantell";
 export type DisplayDensity = "default" | "compact" | "comfortable";

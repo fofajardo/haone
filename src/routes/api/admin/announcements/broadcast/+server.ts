@@ -1,6 +1,6 @@
-import { json } from "@sveltejs/kit";
-import { runAnnouncementNotifications } from "$lib/server/tasks/announcements";
 import { authenticateAdmin } from "$lib/server/api-helper";
+import { runAnnouncementNotifications } from "$lib/server/tasks/announcements";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 /**

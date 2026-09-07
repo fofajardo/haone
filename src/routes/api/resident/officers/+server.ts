@@ -1,11 +1,11 @@
-import { json } from "@sveltejs/kit";
-import { OFFICER_COL, USER_COL, ACCOUNT_COL } from "$lib/types";
 import {
   authenticateResident,
+  fetchSheetsData,
   getSheetsClient,
-  serverError,
-  fetchSheetsData
+  serverError
 } from "$lib/server/api-helper";
+import { ACCOUNT_COL, OFFICER_COL, USER_COL } from "$lib/types";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {

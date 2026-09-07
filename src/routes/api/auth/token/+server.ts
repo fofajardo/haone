@@ -1,6 +1,6 @@
-import { json } from "@sveltejs/kit";
 import { GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
 import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request }) => {

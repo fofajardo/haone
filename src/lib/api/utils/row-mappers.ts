@@ -1,9 +1,9 @@
 import {
-  USER_COL,
   ACCOUNT_COL,
   JOURNAL_COL,
-  type ResidentRecord,
+  USER_COL,
   type JournalRecord,
+  type ResidentRecord,
   type UserRecord
 } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";

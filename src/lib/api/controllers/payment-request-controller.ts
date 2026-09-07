@@ -1,5 +1,5 @@
-import type { PaymentRequestRecord } from "$lib/types";
 import { paymentRequestService } from "$api/services/payment-request-service";
+import type { PaymentRequestRecord } from "$lib/types";
 import { getCurrentResidentId } from "./resident-controller";
 
 export async function fetchPaymentRequests(bypassCache = false): Promise<{

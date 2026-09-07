@@ -1,7 +1,6 @@
-import { auth } from "$state/auth.svelte";
-import { fetchServer } from "$utils/api-client";
-import type { UserSettingsRecord } from "$lib/types";
 import { settingsService } from "$api/services/settings-service";
+import type { UserSettingsRecord } from "$lib/types";
+import { fetchServer } from "$utils/api-client";
 
 export async function fetchUserSettings(_bypassCache = false): Promise<UserSettingsRecord[]> {
   const { auth } = await import("$state/auth.svelte");

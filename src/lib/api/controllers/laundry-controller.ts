@@ -1,13 +1,13 @@
+import { laundryService } from "$api/services/laundry-service";
 import {
   type LaundryRecord,
-  type PaginationOptions,
   type PaginatedResponse,
+  type PaginationOptions,
   LaundryStatus
 } from "$lib/types";
-import { parseTime, parseTimeMinutes } from "$utils/parsers";
-import { laundryService } from "$api/services/laundry-service";
-import { getCurrentResidentId, canAccessLaundryOrFridge } from "./resident-controller";
 import { residentState } from "$state/resident-state.svelte";
+import { parseTimeMinutes } from "$utils/parsers";
+import { canAccessLaundryOrFridge, getCurrentResidentId } from "./resident-controller";
 
 export interface ValidateLaundryOptions {
   date: string;

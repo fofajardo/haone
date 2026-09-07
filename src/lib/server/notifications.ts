@@ -1,14 +1,13 @@
-import { PUBLIC_VAPID_PUBLIC_KEY, PUBLIC_BRANDING } from "$env/static/public";
-import { VAPID_PRIVATE_KEY } from "$env/static/private";
-import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
+import branding from "$dataPrivate/branding.json";
+import { GOOGLE_SERVICE_ACCOUNT_JSON, VAPID_PRIVATE_KEY } from "$env/static/private";
+import { PUBLIC_BRANDING, PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";
+import { fetchGoogleAPI, getFirebaseToken } from "$lib/server/api-helper";
 import {
   buildPushPayload,
-  type PushSubscription,
   type PushMessage,
+  type PushSubscription,
   type VapidKeys
 } from "@block65/webcrypto-web-push";
-import { getFirebaseToken, fetchGoogleAPI } from "$lib/server/api-helper";
-import branding from "$dataPrivate/branding.json";
 
 const brandingProfile = (branding as any)[PUBLIC_BRANDING];
 

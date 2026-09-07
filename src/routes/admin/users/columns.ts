@@ -1,8 +1,8 @@
-import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
-import { type UserRecord as User, USER_TAG_COLORS, UserTag } from "$lib/types";
+import { USER_TAG_COLORS, UserTag, type UserRecord as User } from "$lib/types";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
-import { createRawSnippet } from "svelte";
+import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
 import { translateCollege, translateProgram } from "$utils/translators";
+import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<User>[] = [
   {

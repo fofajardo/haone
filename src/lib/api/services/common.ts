@@ -1,11 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
 import {
-  PUBLIC_SUPABASE_URL,
+  PUBLIC_DB_PROVIDER,
   PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  PUBLIC_DB_PROVIDER
+  PUBLIC_SUPABASE_URL
 } from "$env/static/public";
 import { auth } from "$state/auth.svelte";
 import { brandingState } from "$state/branding.svelte";
+import { createClient } from "@supabase/supabase-js";
 
 export const isSupabase = PUBLIC_DB_PROVIDER === "supabase";
 

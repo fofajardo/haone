@@ -1,11 +1,11 @@
-import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
+import { USER_SETTINGS_COL, type UserSettingsRecord } from "$lib/types";
 import {
-  fetchSheetRowsRaw,
   appendSheetRow,
   batchUpdateValues,
+  fetchSheetRowsRaw,
   verifySpreadsheetAccess
 } from "../common";
-import { USER_SETTINGS_COL, type UserSettingsRecord } from "$lib/types";
+import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
 
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";

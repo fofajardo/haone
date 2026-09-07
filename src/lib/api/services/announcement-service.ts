@@ -1,7 +1,7 @@
 import { isSupabase } from "./common";
+import type { AnnouncementServiceInterface } from "./interfaces/announcement-service.interface";
 import { sheetsAnnouncementService } from "./sheets/announcement-service";
 import { supabaseAnnouncementService } from "./supabase/announcement-service";
-import type { AnnouncementServiceInterface } from "./interfaces/announcement-service.interface";
 
 export const announcementService: AnnouncementServiceInterface = isSupabase
   ? supabaseAnnouncementService

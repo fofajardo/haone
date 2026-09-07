@@ -1,19 +1,19 @@
+import { fetchMopTypes, fetchTransactionTypes } from "$api/controllers/constants-controller";
+import { fetchJournalEntries } from "$api/controllers/journal-controller";
+import { fetchResidents } from "$api/controllers/resident-controller";
+import type { JournalRecord, ResidentRecord } from "$lib/types";
 import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
-import { translateMop } from "$utils/translators";
 import { parseDateWeight } from "$utils/parsers";
-import { fetchResidents } from "$api/controllers/resident-controller";
-import { fetchJournalEntries } from "$api/controllers/journal-controller";
-import { fetchTransactionTypes, fetchMopTypes } from "$api/controllers/constants-controller";
-import { imgToDataUrl, getPdfMake } from "./pdf-utils";
-import type { JournalRecord, ResidentRecord } from "$lib/types";
+import { translateMop } from "$utils/translators";
 import type {
-  TDocumentDefinitions,
-  Content,
   Alignment,
+  Content,
+  CustomTableLayout,
   TableCell,
-  CustomTableLayout
+  TDocumentDefinitions
 } from "pdfmake/interfaces";
+import { getPdfMake, imgToDataUrl } from "./pdf-utils";
 
 declare const __APP_VERSION__: string;
 declare const __COMMIT_SHA__: string;

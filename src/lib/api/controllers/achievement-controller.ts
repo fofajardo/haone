@@ -1,5 +1,5 @@
-import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
 import { achievementService } from "$api/services/achievement-service";
+import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
 import { getCurrentResidentId } from "./resident-controller";
 
 export async function fetchAchievements(bypassCache = false): Promise<{

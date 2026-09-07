@@ -1,13 +1,13 @@
-import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { USER_SETTINGS_COL, USER_COL } from "$lib/types";
+import { PUBLIC_GS_RR_ID, PUBLIC_GS_SR_ID } from "$env/static/public";
 import {
+  appendSheetValue,
   authenticateResident,
   getSheetsClient,
   getSheetValues,
-  appendSheetValue,
   serverError
 } from "$lib/server/api-helper";
+import { USER_COL, USER_SETTINGS_COL } from "$lib/types";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 /**

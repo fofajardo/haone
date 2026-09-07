@@ -1,6 +1,6 @@
-import { json } from "@sveltejs/kit";
 import { GOOGLE_SERVICE_ACCOUNT_JSON, INSTANCE_ADMIN } from "$env/static/private";
 import { ACCOUNT_COL } from "$lib/types";
+import { json } from "@sveltejs/kit";
 
 /**
  * Base64url encoding helper

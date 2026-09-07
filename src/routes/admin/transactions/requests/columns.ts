@@ -1,12 +1,17 @@
-import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
-import { formatDate, formatAccounting } from "$utils/formatters";
-import { translateMop } from "$utils/translators";
+import CompositionCell from "$components/CompositionCell.svelte";
 import type { PaymentRequestRecord } from "$lib/types";
 import { PAYMENT_REQUEST_STATUS_COLORS } from "$lib/types";
-import { DataTableSelectHeader, DataTableSelectCell } from "$ui/data-table/index.js";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
+import {
+  DataTableSelectCell,
+  DataTableSelectHeader,
+  renderComponent,
+  renderSnippet,
+  type ColumnDef
+} from "$ui/data-table/index.js";
+import { formatAccounting, formatDate } from "$utils/formatters";
+import { translateMop } from "$utils/translators";
 import { createRawSnippet } from "svelte";
-import CompositionCell from "$components/CompositionCell.svelte";
 
 export const columns: ColumnDef<PaymentRequestRecord>[] = [
   {

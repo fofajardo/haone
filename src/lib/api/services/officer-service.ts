@@ -1,7 +1,7 @@
 import { isSupabase } from "./common";
+import type { OfficerServiceInterface } from "./interfaces/officer-service.interface";
 import { sheetsOfficerService } from "./sheets/officer-service";
 import { supabaseOfficerService } from "./supabase/officer-service";
-import type { OfficerServiceInterface } from "./interfaces/officer-service.interface";
 
 export const officerService: OfficerServiceInterface = isSupabase
   ? supabaseOfficerService

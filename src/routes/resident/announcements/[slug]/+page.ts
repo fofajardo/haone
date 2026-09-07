@@ -1,5 +1,5 @@
-import type { PageLoad } from "./$types";
 import { fetchAnnouncementBySlug } from "$api/controllers/announcement-controller";
+import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ params }) => {
   try {

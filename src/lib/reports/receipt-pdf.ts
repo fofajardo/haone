@@ -1,20 +1,19 @@
+import type { ReceiptData } from "$lib/types";
 import { brandingState } from "$state/branding.svelte";
-import { calculateTotal } from "$utils/math";
 import { formatAmount, formatCurrency, formatDate } from "$utils/formatters";
+import { calculateTotal } from "$utils/math";
 import { parseRef } from "$utils/parsers";
 import { translateMop, translatePeriod } from "$utils/translators";
-import { imgToDataUrl, getPdfMake } from "./pdf-utils";
-import type { ReceiptData } from "$lib/types";
 import type {
-  TDocumentDefinitions,
-  ContextPageSize,
-  Content,
-  ContentTable,
   Alignment,
+  Content,
+  ContextPageSize,
+  Margins,
   Size,
   TableCell,
-  Margins
+  TDocumentDefinitions
 } from "pdfmake/interfaces";
+import { getPdfMake, imgToDataUrl } from "./pdf-utils";
 
 /**
  * Generates and downloads a branded, selectable PDF receipt.

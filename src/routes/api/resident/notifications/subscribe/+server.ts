@@ -1,11 +1,11 @@
-import { json } from "@sveltejs/kit";
 import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
 import {
   authenticateResident,
-  getFirebaseToken,
   fetchGoogleAPI,
+  getFirebaseToken,
   serverError
 } from "$lib/server/api-helper";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);

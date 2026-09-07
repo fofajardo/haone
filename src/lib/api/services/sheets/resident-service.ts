@@ -1,17 +1,17 @@
-import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 import type { ResidentRecord, UserRecord } from "$lib/types";
 import { ACCOUNT_COL, USER_COL } from "$lib/types";
-import {
-  fetchSheetRowsRaw,
-  updateSheetValue,
-  appendSheetRow,
-  deleteSheetRow,
-  batchUpdateValues
-} from "../common";
-import { parseCSVAmount } from "$utils/math";
-import { mapRowToJournal, mapRowToResident, computeDisplayNames } from "../../utils/row-mappers";
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
+import { parseCSVAmount } from "$utils/math";
+import { computeDisplayNames, mapRowToJournal, mapRowToResident } from "../../utils/row-mappers";
+import {
+  appendSheetRow,
+  batchUpdateValues,
+  deleteSheetRow,
+  fetchSheetRowsRaw,
+  updateSheetValue
+} from "../common";
+import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 
 export const sheetsResidentService: ResidentServiceInterface = {
   async fetchResidents(bypassCache = false, term?: string): Promise<ResidentRecord[]> {

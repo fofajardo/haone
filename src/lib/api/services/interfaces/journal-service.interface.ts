@@ -1,4 +1,4 @@
-import type { JournalRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
+import type { JournalRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
 
 export interface JournalFilters {
   term?: string;

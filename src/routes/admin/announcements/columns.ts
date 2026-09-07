@@ -1,11 +1,11 @@
+import type { AnnouncementRecord } from "$lib/types";
 import {
-  renderComponent,
-  DataTableSelectHeader,
-  DataTableSelectCell,
   DataTableColumnHeader,
+  DataTableSelectCell,
+  DataTableSelectHeader,
+  renderComponent,
   type ColumnDef
 } from "$ui/data-table/index.js";
-import type { AnnouncementRecord } from "$lib/types";
 import { formatDate } from "$utils/formatters";
 
 import AnnouncementStatusCell from "./AnnouncementStatusCell.svelte";

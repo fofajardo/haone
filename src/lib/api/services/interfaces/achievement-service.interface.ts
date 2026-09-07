@@ -1,8 +1,8 @@
 import type {
-  AchievementRecord,
   AchievementLogRecord,
-  PaginationOptions,
-  PaginatedResponse
+  AchievementRecord,
+  PaginatedResponse,
+  PaginationOptions
 } from "$lib/types";
 
 export interface AchievementServiceInterface {

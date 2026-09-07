@@ -1,21 +1,21 @@
-import { json } from "@sveltejs/kit";
-import {
-  ACHIEVEMENT_COL,
-  ACHIEVEMENT_RECORD_COL,
-  USER_COL,
-  USER_SETTINGS_COL,
-  AccountType,
-  CURR_COL,
-  ACCOUNT_COL
-} from "$lib/types";
+import { canAccessAchievements } from "$api/controllers/resident-controller";
 import {
   authenticateResident,
-  getSheetsClient,
-  serverError,
   fetchSheetsData,
-  resolveResidentAccountType
+  getSheetsClient,
+  resolveResidentAccountType,
+  serverError
 } from "$lib/server/api-helper";
-import { canAccessAchievements } from "$api/controllers/resident-controller";
+import {
+  ACCOUNT_COL,
+  AccountType,
+  ACHIEVEMENT_COL,
+  ACHIEVEMENT_RECORD_COL,
+  CURR_COL,
+  USER_COL,
+  USER_SETTINGS_COL
+} from "$lib/types";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {

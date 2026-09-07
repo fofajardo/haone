@@ -1,19 +1,19 @@
-import { emailDispatcher } from "$state/dispatcher.svelte";
-import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$templates/payment-status";
-import { ClearanceCertificateTemplate } from "$templates/clearance";
-import type { BrandingProfile } from "$lib/types";
 import { goto } from "$app/navigation";
+import type { BrandingProfile } from "$lib/types";
 import { type ResidentRecord, type UserRecord, AccountType } from "$lib/types";
+import { emailDispatcher } from "$state/dispatcher.svelte";
+import { ClearanceCertificateTemplate } from "$templates/clearance";
+import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$templates/payment-status";
 
 import { parseCSVAmount } from "$utils/math";
-import { mapRowToResident, mapRowToJournal, computeDisplayNames } from "../utils/row-mappers";
+import { computeDisplayNames, mapRowToJournal, mapRowToResident } from "../utils/row-mappers";
 
-export { mapRowToResident, mapRowToJournal, parseCSVAmount, computeDisplayNames };
+export { computeDisplayNames, mapRowToJournal, mapRowToResident, parseCSVAmount };
 
-import { residentService } from "$api/services/resident-service";
 import { constantsService } from "$api/services/constants-service";
-import { isStaticIpEnabled } from "$utils/rooms-utils";
+import { residentService } from "$api/services/resident-service";
 import { brandingState } from "$state/branding.svelte";
+import { isStaticIpEnabled } from "$utils/rooms-utils";
 
 /**
  * Resolves the primary identifier (UUID) of the currently signed-in resident.

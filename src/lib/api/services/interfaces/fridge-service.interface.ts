@@ -1,4 +1,4 @@
-import type { FridgeItemRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
+import type { FridgeItemRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
 
 export interface FridgeServiceInterface {
   fetchFridgeItems(

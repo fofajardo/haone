@@ -1,14 +1,14 @@
+import { type JournalRecord } from "$lib/types";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import {
+  DataTableSelectCell,
+  DataTableSelectHeader,
   renderComponent,
   renderSnippet,
-  DataTableSelectHeader,
-  DataTableSelectCell,
   type ColumnDef
 } from "$ui/data-table/index.js";
-import { formatDate, formatAccounting } from "$utils/formatters";
+import { formatAccounting, formatDate } from "$utils/formatters";
 import { translateMop, translateType } from "$utils/translators";
-import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
-import { type JournalRecord } from "$lib/types";
 import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<JournalRecord>[] = [

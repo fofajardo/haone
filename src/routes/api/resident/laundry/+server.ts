@@ -1,17 +1,17 @@
-import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { LAUNDRY_COL, ACCOUNT_COL, USER_COL, LaundryStatus } from "$lib/types";
-import {
-  authenticateResident,
-  getSheetsClient,
-  appendSheetValue,
-  serverError,
-  fetchSheetsData,
-  resolveResidentAccountType
-} from "$lib/server/api-helper";
-import { parseTimeMinutes } from "$utils/parsers";
-import { formatTime } from "$utils/formatters";
 import { canAccessLaundryOrFridge, canSeeLaundryNames } from "$api/controllers/resident-controller";
+import { PUBLIC_GS_SR_ID } from "$env/static/public";
+import {
+  appendSheetValue,
+  authenticateResident,
+  fetchSheetsData,
+  getSheetsClient,
+  resolveResidentAccountType,
+  serverError
+} from "$lib/server/api-helper";
+import { ACCOUNT_COL, LAUNDRY_COL, LaundryStatus, USER_COL } from "$lib/types";
+import { formatTime } from "$utils/formatters";
+import { parseTimeMinutes } from "$utils/parsers";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 /**

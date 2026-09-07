@@ -1,9 +1,9 @@
-import { renderComponent, type ColumnDef } from "$ui/data-table/index.js";
 import type { OfficerRecord } from "$lib/types";
+import { brandingState } from "$state/branding.svelte";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
+import { renderComponent, type ColumnDef } from "$ui/data-table/index.js";
 import OfficerNameCell from "./OfficerNameCell.svelte";
 import OfficerStatusCell from "./OfficerStatusCell.svelte";
-import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
-import { brandingState } from "$state/branding.svelte";
 
 export const createColumns = (onSuccess: () => void): ColumnDef<OfficerRecord>[] => [
   {
