@@ -15,7 +15,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="Settings" isTopLevel={true} />
+  <ContentHeader title="Settings" />
 
   <div class="flex flex-col gap-8 lg:flex-row">
     <div class="flex-1 space-y-8">
