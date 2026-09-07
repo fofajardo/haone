@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
@@ -104,7 +105,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Transactions";
+    loadData();
+  });
 
   const transactionOptions = $derived([{ value: "ALL", label: "All Types" }, ...transactionTypes]);
   const mopOptions = $derived([{ value: "ALL", label: "All Methods" }, ...mopTypes]);

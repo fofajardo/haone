@@ -10,7 +10,6 @@ export const load: PageServerLoad = async ({ params }) => {
   const id = params.id;
 
   return {
-    pageInfo: { title: "Verification Required" },
     receiptData: null,
     id
   };

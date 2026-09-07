@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -253,7 +254,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Demographics";
+    loadData();
+  });
 </script>
 
 <Tabs.Root bind:value={activeTab} class="space-y-4">

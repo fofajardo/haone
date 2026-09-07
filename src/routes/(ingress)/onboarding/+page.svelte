@@ -5,11 +5,13 @@
   import { auth } from "$state/auth.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
   import { LoaderIcon } from "@lucide/svelte";
 
   let isChecking = $state(true);
 
   onMount(async () => {
+    pageState.title = "Onboarding";
     if (!auth.accessToken) {
       goto("/sign-in");
       return;

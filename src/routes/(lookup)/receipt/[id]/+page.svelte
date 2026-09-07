@@ -63,6 +63,7 @@
   }
 
   onMount(async () => {
+    pageState.title = "Verification Required";
     // Load saved student number if "Remember Me" was checked
     const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
     if (savedId) {

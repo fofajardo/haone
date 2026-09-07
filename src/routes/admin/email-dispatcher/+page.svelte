@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
   import { emailDispatcher } from "$state/dispatcher.svelte";
   import { auth } from "$state/auth.svelte";
   import { createEmail, sendEmail } from "$api/services/gmail-service";
@@ -138,6 +140,10 @@
     emailDispatcher.clear();
     window.history.back();
   }
+
+  onMount(() => {
+    pageState.title = "Email Dispatcher";
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

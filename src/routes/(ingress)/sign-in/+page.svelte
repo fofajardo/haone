@@ -9,12 +9,14 @@
   import { globalDialog } from "$state/dialog.svelte";
   import { PUBLIC_GI_CLIENT_ID, PUBLIC_DB_PROVIDER } from "$env/static/public";
   import { supabase } from "$api/services/common";
+  import { pageState } from "$state/page-info.svelte";
 
   let isSigningIn = $state(false);
   let isLoadingAuth = $state(true);
   let rememberMe = $state(true);
 
   onMount(async () => {
+    pageState.title = "Sign In";
     // If already logged in, go to appropriate dashboard
     if (auth.accessToken && !window.location.search.includes("code=")) {
       await goto(auth.authType === "admin" ? "/admin" : "/resident");

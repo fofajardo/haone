@@ -5,18 +5,12 @@ export const load: PageLoad = async ({ params }) => {
   try {
     const announcement = await fetchAnnouncementBySlug(params.slug);
     return {
-      announcement,
-      pageInfo: {
-        title: announcement.title
-      }
+      announcement
     };
   } catch (e) {
     return {
       announcement: null,
-      error: e instanceof Error ? e.message : String(e),
-      pageInfo: {
-        title: "Announcement"
-      }
+      error: e instanceof Error ? e.message : String(e)
     };
   }
 };

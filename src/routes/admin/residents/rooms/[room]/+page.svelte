@@ -10,9 +10,15 @@
   import * as Card from "$ui/card";
   import * as AlertDialog from "$ui/alert-dialog";
   import { RefreshCcw, Users, Bed, Info } from "@lucide/svelte";
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
 
   let { data } = $props();
   const roomNumber = $derived(data.roomNumber);
+
+  onMount(() => {
+    pageState.title = `Room ${data.roomNumber}`;
+  });
 
   let residents = $state<ResidentRecord[]>([]);
   let users = $state<UserRecord[]>([]);

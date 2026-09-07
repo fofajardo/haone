@@ -148,7 +148,7 @@
   ];
 
   onMount(() => {
-    pageState.title = "Resident Dashboard";
+    pageState.title = "Dashboard";
     if (auth.accessToken && !status) {
       loadStatus();
     }

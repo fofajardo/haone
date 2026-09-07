@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
@@ -113,7 +114,10 @@
     formData.proofLink = "";
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Add Payment Request";
+    loadData();
+  });
 
   async function handleSubmit() {
     if (!resident) return;

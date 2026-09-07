@@ -27,6 +27,7 @@
   import DashboardActionCard from "$components/DashboardActionCard.svelte";
   import StatisticCard from "$components/StatisticCard.svelte";
   import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
 
   let stats = $state({
     activeResidents: 0,
@@ -181,7 +182,10 @@
     }
   }
 
-  onMount(loadDashboardData);
+  onMount(() => {
+    pageState.title = "Dashboard";
+    loadDashboardData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { roomsState } from "$state/rooms.svelte";
@@ -141,6 +142,10 @@
       isOccupied: !!currentRes
     };
   }
+
+  onMount(() => {
+    pageState.title = "Rooms";
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

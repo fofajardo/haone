@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { emailDispatcher } from "$state/dispatcher.svelte";
   import { AcknowledgmentTemplate } from "$templates/acknowledgment";
@@ -90,7 +91,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Pending Receipts";
+    loadData();
+  });
 
   async function prepareDispatch() {
     if (selectedIndices.size === 0) {

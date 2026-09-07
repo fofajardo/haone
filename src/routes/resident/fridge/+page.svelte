@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import {
     fetchFridgeItems,
@@ -68,6 +69,7 @@
   }
 
   onMount(() => {
+    pageState.title = "Fridge";
     loadData();
   });
 

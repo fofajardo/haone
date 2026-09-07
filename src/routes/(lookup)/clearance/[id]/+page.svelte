@@ -58,6 +58,7 @@
   }
 
   onMount(async () => {
+    pageState.title = "Clearance Verification";
     const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
     if (savedId) {
       studentNo = savedId;

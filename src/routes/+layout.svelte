@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { pageState } from "$state/page-info.svelte";
   import { Toaster } from "$ui/sonner";
   import { ModeWatcher } from "mode-watcher";
@@ -15,12 +14,6 @@
   import { brandingState } from "$state/branding.svelte";
 
   let { children } = $props();
-
-  $effect(() => {
-    if (page.data.pageInfo?.title) {
-      pageState.title = page.data.pageInfo.title;
-    }
-  });
 
   onMount(async () => {
     // Service Worker Registration

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import dayjs from "dayjs";
   import { onMount } from "svelte";
   import { page } from "$app/state";
@@ -90,7 +91,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Edit Announcement";
+    loadData();
+  });
 
   async function handleSave() {
     if (!formData.title.trim()) {

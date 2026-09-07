@@ -8,7 +8,6 @@ export const load: PageServerLoad = async ({ params }) => {
   const id = params.id;
 
   return {
-    pageInfo: { title: "Clearance Verification" },
     clearanceData: null,
     id
   };

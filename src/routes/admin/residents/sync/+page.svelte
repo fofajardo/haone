@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { fetchTermCurr } from "$api/controllers/constants-controller";
@@ -178,6 +179,7 @@
   }
 
   onMount(() => {
+    pageState.title = "Sync Registrations";
     loadPreview();
   });
 </script>

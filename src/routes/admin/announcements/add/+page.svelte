@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
   import dayjs from "dayjs";
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
@@ -81,6 +83,10 @@
       isSubmitting = false;
     }
   }
+
+  onMount(() => {
+    pageState.title = "Add Announcement";
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

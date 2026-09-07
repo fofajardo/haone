@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Megaphone, ArrowRight } from "@lucide/svelte";
@@ -29,7 +30,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Announcements";
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

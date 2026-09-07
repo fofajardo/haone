@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Search, Wallet, ListChecks, FunnelX } from "@lucide/svelte";
@@ -75,7 +76,10 @@
     goto(`/admin/transactions/requests/review?ids=${ids}`);
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Payment Requests";
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

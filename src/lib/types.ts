@@ -6,10 +6,6 @@
  * Page & General Types
  * ========================================== */
 
-export interface PageInfo {
-  title: string | null;
-}
-
 export interface UserInfo {
   name: string;
   email: string;

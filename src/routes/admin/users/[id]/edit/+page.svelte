@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
@@ -80,7 +81,10 @@
     }
   }
 
-  onMount(loadUser);
+  onMount(() => {
+    pageState.title = "Edit User";
+    loadUser();
+  });
 </script>
 
 {#if isLoading}

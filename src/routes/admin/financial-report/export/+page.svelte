@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
@@ -87,7 +88,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Export Financial Report";
+    loadData();
+  });
 
   async function handleGenerate() {
     isProcessing = true;

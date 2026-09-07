@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
@@ -41,7 +42,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Users";
+    loadData();
+  });
 
   const collegeOptions = $derived.by(() => {
     const set = new Set<string>();

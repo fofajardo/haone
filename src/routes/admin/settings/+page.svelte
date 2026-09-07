@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
   import * as Card from "$ui/card";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
@@ -14,6 +16,10 @@
   import NavSettings from "$components/residents/NavSettings.svelte";
   import PrivacySettings from "$components/residents/PrivacySettings.svelte";
   import SettingsActions from "$components/SettingsActions.svelte";
+
+  onMount(() => {
+    pageState.title = "Settings";
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

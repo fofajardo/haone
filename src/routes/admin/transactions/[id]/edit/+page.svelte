@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
@@ -41,7 +42,10 @@
     }
   }
 
-  onMount(loadTransaction);
+  onMount(() => {
+    pageState.title = "Edit Transaction";
+    loadTransaction();
+  });
 
   async function handleSave(row: any[]) {
     if (!initialData || !id) {

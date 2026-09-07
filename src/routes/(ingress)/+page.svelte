@@ -1,7 +1,13 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
+  import { pageState } from "$state/page-info.svelte";
   import { ArrowRight, LoaderIcon } from "@lucide/svelte";
   import { Button } from "$ui/button";
+
+  onMount(() => {
+    pageState.title = "Home";
+  });
 </script>
 
 <div class="flex flex-col space-y-4 text-center md:text-left">

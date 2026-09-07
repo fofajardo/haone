@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { Button } from "$ui/button";
@@ -208,7 +209,10 @@
     };
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Review Queue";
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">

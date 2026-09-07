@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Megaphone } from "@lucide/svelte";
@@ -131,7 +132,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Announcements";
+    loadData();
+  });
 
   const tagsOptions = $derived.by(() => {
     const set = new Set<string>();
