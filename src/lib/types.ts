@@ -49,6 +49,18 @@ export interface ClearanceData {
   signatoryTitle: string;
 }
 
+export interface FeaturedImageItem {
+  image: string;
+  author: string;
+  title: string;
+  award?: string;
+  description: string;
+  camera?: string;
+  cameraDetails?: string;
+  voteLink?: string;
+  hidden?: boolean;
+}
+
 export interface BrandingProfile {
   name: string;
   shortName: string;
@@ -66,6 +78,7 @@ export interface BrandingProfile {
   paymentInstructionsUrl?: string;
   defaultReminders?: string;
   laundryRules?: string[];
+  hero?: FeaturedImageItem[];
 }
 
 export interface EmailTemplate<T> {
