@@ -11,7 +11,9 @@
   let isExpanded = $state(false);
 
   onMount(() => {
-    const heroes: FeaturedImageItem[] = (brandingState.profile.hero || []).filter((h) => !h.hidden);
+    const heroes: FeaturedImageItem[] = (brandingState.profile?.hero || []).filter(
+      (h: FeaturedImageItem) => !h.hidden
+    );
     if (heroes.length > 0) {
       const randomIndex = Math.floor(Math.random() * heroes.length);
       heroItem = heroes[randomIndex];
