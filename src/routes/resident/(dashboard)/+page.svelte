@@ -134,6 +134,7 @@
 
   onMount(() => {
     pageState.title = "Dashboard";
+    pageState.isTopLevel = true;
     if (auth.accessToken && !status) {
       loadStatus();
     }
