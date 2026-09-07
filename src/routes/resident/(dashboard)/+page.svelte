@@ -59,91 +59,61 @@
       title: "Finance",
       description: "View your financial standing and history.",
       href: "/resident/finance",
-      icon: Wallet,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Wallet
     },
     {
       title: "Laundry",
       description: "Book and manage your laundry reservations.",
       href: "/resident/laundry",
-      icon: WashingMachine,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: WashingMachine
     },
     {
       title: "Fridge",
       description: "Browse inventory and store items in the shared fridge.",
       href: "/resident/fridge",
-      icon: Refrigerator,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Refrigerator
     },
     {
       title: "Payment Requests",
       description: "Upload your transaction entries for verification.",
       href: "/resident/payment-requests",
-      icon: Banknote,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Banknote
     },
     {
       title: "Announcements",
       description: "View updates and announcements from house council officers.",
       href: "/resident/announcements",
-      icon: Megaphone,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Megaphone
     },
     {
       title: "Static IP Address",
       description: "Request and manage your room network configuration.",
       href: "/resident/static-ip",
-      icon: Network,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Network
     },
     {
       title: "Achievements",
       description: "View your earned achievements and leaderboards.",
       href: "/resident/achievements",
-      icon: Trophy,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Trophy
     },
     {
       title: "Occupancy",
       description: "View your current room details and history.",
       href: "/resident/occupancy",
-      icon: House,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: House
     },
     {
       title: "Officers",
       description: "View profiles and contacts of house council officers.",
       href: "/resident/officers",
-      icon: BookUser,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: BookUser
     },
     {
       title: "Settings",
       description: "Customize your profile and application preferences.",
       href: "/resident/settings",
-      icon: Settings,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Settings
     }
   ];
 
@@ -156,33 +126,28 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <!-- Hero Section -->
-  <div
-    class="relative overflow-hidden rounded-3xl bg-brand/10 px-4 py-8 text-brand sm:px-8 sm:py-12"
-  >
-    <div class="relative z-10 space-y-4">
-      <div class="flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase"></div>
-      <h1 class="text-4xl font-black tracking-tight md:text-5xl lg:text-6xl">
+  <!-- Header Section -->
+  <div class="mb-5 flex items-start justify-between">
+    <div>
+      <h1 class="mb-2 text-4xl font-bold tracking-tight">
         Welcome back, {auth.user?.name?.split(" ")[0] || "Resident"}
       </h1>
-      <p class="text-lg text-brand md:text-xl">
+      <div>
         View your profile, track your financial standing, and manage your clearance for <span
-          class="font-semibold text-brand"
+          class="font-semibold"
           >{translatePeriod(status?.activeTerm || status?.systemActiveTerm) || "Active Term"}</span
         >.
-      </p>
+      </div>
     </div>
-
-    <div class="absolute top-4 right-4 z-20">
-      <Button
-        variant="ghost"
-        size="icon"
-        class="h-10 w-10 rounded-xl text-brand/50 transition-all hover:bg-brand/10 hover:text-brand"
-        onclick={() => loadStatus()}
-        {isLoading}
-        icon={RefreshCcw}
-      />
-    </div>
+    <Button
+      variant="ghost"
+      size="icon"
+      class="h-10 w-10 text-muted-foreground hover:text-foreground"
+      onclick={() => loadStatus()}
+      {isLoading}
+      icon={RefreshCcw}
+      title="Refresh"
+    />
   </div>
 
   {#if isLoading && !status}
@@ -286,16 +251,18 @@
       </div>
     </div>
 
-    <!-- Quick Access Section (3 cols) -->
-    <div class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold text-foreground">Quick Access</h2>
-      </div>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {#each actions as tool}
-          <DashboardActionCard {...tool} />
-        {/each}
-      </div>
-    </div>
+    <!-- Tools Section (3 cols) -->
+    <Card.Root class="mt-6 shadow-none">
+      <Card.Header>
+        <Card.Title>Tools</Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {#each actions as tool}
+            <DashboardActionCard {...tool} />
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
   {/if}
 </div>

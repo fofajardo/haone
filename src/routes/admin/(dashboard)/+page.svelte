@@ -23,6 +23,7 @@
   import StatisticCard from "$components/StatisticCard.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
+  import * as Card from "$ui/card";
 
   let stats = $state({
     activeResidents: 0,
@@ -40,82 +41,55 @@
       title: "Pending Receipts",
       description: "Review pending payments and generate secure receipts.",
       href: "/admin/transactions/pending",
-      icon: Receipt,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Receipt
     },
     {
       title: "Email Dispatcher",
       description: "Batch send receipts to residents via Gmail API.",
       href: "/admin/email-dispatcher",
-      icon: Mail,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Mail
     },
     {
       title: "Residents",
       description: "Manage resident profiles, rooms, and balances.",
       href: "/admin/residents",
-      icon: Users,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Users
     },
     {
       title: "Users",
       description: "Master directory of all residents across all terms.",
       href: "/admin/users",
-      icon: Users,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Users
     },
     {
       title: "Transactions",
       description: "Full transaction history and manual entry management.",
       href: "/admin/transactions",
-      icon: ListFilter,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: ListFilter
     },
     {
       title: "Demographics",
       description: "Analyze resident distribution and historical trends.",
       href: "/admin/demographics",
-      icon: ChartPie,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: ChartPie
     },
     {
       title: "Financial Report",
       description: "Generate collection summaries and financial statements.",
       href: "/admin/financial-report",
-      icon: FileSpreadsheet,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: FileSpreadsheet
     },
     {
       title: "Rooms",
       description: "Manage room inventory, bed assignments, and occupancy.",
       href: "/admin/residents/rooms",
-      icon: Bed,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Bed
     },
     {
       title: "Settings",
       description: "Personalize your interface, manage accessibility, and view system information.",
       href: "/admin/settings",
-      icon: Settings,
-      color: "text-brand",
-      bg: "bg-brand/10",
-      border: "hover:border-brand/50"
+      icon: Settings
     }
   ];
 
@@ -185,19 +159,14 @@
 
 <div class="mx-auto max-w-7xl space-y-3">
   <!-- Header Section -->
-  <div
-    class="relative overflow-hidden rounded-3xl bg-brand/10 px-4 py-8 text-brand sm:px-8 sm:py-12"
-  >
-    <div class="relative z-10 space-y-4">
-      <div class="flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase"></div>
-      <h1 class="text-4xl font-black tracking-tight md:text-5xl lg:text-6xl">
-        Welcome back, {auth.user?.name.split(" ")[0]}
-      </h1>
-      <p class="text-lg text-brand md:text-xl">
-        Manage residents, track collections, and automate communications for <span
-          class="font-semibold">{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
-        >.
-      </p>
+  <div class="mb-5">
+    <h1 class="mb-2 text-4xl font-bold tracking-tight">
+      Welcome back, {auth.user?.name.split(" ")[0]}
+    </h1>
+    <div>
+      Manage residents, track collections, and automate communications for <span
+        class="font-semibold">{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
+      >.
     </div>
   </div>
 
@@ -224,15 +193,17 @@
     </StatisticCard>
   </div>
 
-  <!-- Administrative Tools -->
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-bold text-foreground">Administrative Tools</h2>
-    </div>
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {#each actions as tool}
-        <DashboardActionCard {...tool} />
-      {/each}
-    </div>
-  </div>
+  <!-- Tools -->
+  <Card.Root class="mt-6 shadow-none">
+    <Card.Header>
+      <Card.Title>Tools</Card.Title>
+    </Card.Header>
+    <Card.Content>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {#each actions as tool}
+          <DashboardActionCard {...tool} />
+        {/each}
+      </div>
+    </Card.Content>
+  </Card.Root>
 </div>
