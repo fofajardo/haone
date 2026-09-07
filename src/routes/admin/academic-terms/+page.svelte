@@ -238,7 +238,7 @@
           <div
             class="group flex items-center gap-3 rounded-xl border bg-muted/30 p-3 transition-all hover:bg-muted/50"
           >
-            <div class="rounded-lg bg-muted p-2 text-muted-foreground">
+            <div class="rounded-lg bg-brand/10 p-2 text-brand">
               <GraduationCap class="h-5 w-5" />
             </div>
             <div class="min-w-0 flex-1">
