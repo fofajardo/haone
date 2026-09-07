@@ -4,8 +4,7 @@
   import {
     fetchConstants,
     addConstant,
-    updateConstant,
-    batchUpdateConstants
+    updateConstant
   } from "$api/controllers/constants-controller";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
@@ -14,15 +13,7 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
-  import {
-    Plus,
-    GraduationCap,
-    History,
-    Coins,
-    Save,
-    Calculator,
-    CircleCheck
-  } from "@lucide/svelte";
+  import { Plus, GraduationCap, Coins, Save, Calculator, CircleCheck } from "@lucide/svelte";
   import SubpageHeader from "$components/SubpageHeader.svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { Badge } from "$ui/badge";
@@ -236,7 +227,7 @@
       <div class="space-y-3">
         {#each terms as term}
           <div
-            class="group flex items-center gap-3 rounded-xl border bg-muted/30 p-3 transition-all hover:bg-muted/50"
+            class="group flex items-center gap-3 rounded-xl border bg-card p-3 transition-all hover:bg-muted/50"
           >
             <div class="rounded-lg bg-brand/10 p-2 text-brand">
               <GraduationCap class="h-5 w-5" />
