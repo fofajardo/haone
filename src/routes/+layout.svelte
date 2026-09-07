@@ -12,6 +12,7 @@
   import { setMode, resetMode } from "mode-watcher";
   import UIProvider from "$components/UIProvider.svelte";
   import GlobalAlertDialog from "$components/GlobalAlertDialog.svelte";
+  import { brandingState } from "$state/branding.svelte";
 
   let { children } = $props();
 
@@ -42,13 +43,22 @@
       }
     }
   });
+
+  function getEffectiveTitle(): string {
+    let title = pageState.title;
+    if (title !== "") {
+      title += " - ";
+    }
+    title += `HAOne for ${brandingState.profile.name}`;
+    return title;
+  }
 </script>
 
 <ModeWatcher />
 <Toaster mobileOffset="100px" />
 
 <svelte:head>
-  <title>{pageState.title ? pageState.title + " - HAOne" : "HAOne"}</title>
+  <title>{getEffectiveTitle()}</title>
   <link rel="icon" href={favicon} />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
