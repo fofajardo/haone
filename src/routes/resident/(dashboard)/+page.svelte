@@ -9,7 +9,6 @@
     ShieldCheck,
     MapPin,
     ArrowRight,
-    History,
     TrendingUp,
     TrendingDown,
     WashingMachine,
@@ -20,7 +19,8 @@
     Megaphone,
     BookUser,
     Refrigerator,
-    ListOrdered
+    ListOrdered,
+    RotateCcwClockIcon
   } from "@lucide/svelte";
   import AnnouncementsSection from "$components/residents/AnnouncementsSection.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -199,32 +199,31 @@
       {/if}
     </div>
 
-    <div class="grid min-w-0 gap-8 lg:grid-cols-3">
+    <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
       <!-- Announcements Section (2 cols) -->
       <div class="min-w-0 lg:col-span-2">
         <AnnouncementsSection />
       </div>
 
       <!-- Recent Transactions (1 col) -->
-      <div class="min-w-0 space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-bold text-foreground">Recent Activity</h2>
-          <Button variant="ghost" size="sm" href="/resident/finance" title="View All">
-            View All <ArrowRight class="ml-1 h-4 w-4" />
-          </Button>
-        </div>
+      <div class="min-w-0">
         <Card.Root class="overflow-hidden bg-card shadow-none">
-          <Card.Content class="divide-y p-6">
+          <Card.Header class="flex flex-row items-center justify-between pb-0">
+            <Card.Title>Recent Activity</Card.Title>
+            <Card.Action>
+              <Button variant="ghost" href="/resident/finance" title="View All" icon={ArrowRight} />
+            </Card.Action>
+          </Card.Header>
+          <Card.Content class="p-0">
             {#if status.transactions?.filter((t: any) => t.period === status?.activeTerm).length > 0}
               {#each status.transactions
                 .filter((t: any) => t.period === status?.activeTerm)
                 .slice(0, 5) as tx}
                 <div
-                  class="group flex items-start gap-3 px-0 py-3.5 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4"
+                  class="group flex items-start gap-3 px-5 py-3 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4"
                 >
                   <div
-                    class="shrink-0 rounded-full p-2.5 transition-colors group-hover:bg-card group-hover:shadow-sm {tx.amount >
-                    0
+                    class="shrink-0 rounded-full p-2.5 transition-colors {tx.amount > 0
                       ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                       : tx.amount < 0
                         ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -235,7 +234,7 @@
                     {:else if tx.amount < 0}
                       <TrendingDown class="h-4 w-4" />
                     {:else}
-                      <History class="h-4 w-4" />
+                      <RotateCcwClockIcon class="h-4 w-4" />
                     {/if}
                   </div>
 
@@ -258,7 +257,7 @@
               {/each}
             {:else}
               <div class="flex h-40 flex-col items-center justify-center p-8 text-center">
-                <History class="mb-2 h-8 w-8 text-muted-foreground/30" />
+                <RotateCcwClockIcon class="mb-2 h-8 w-8 text-muted-foreground/30" />
                 <p class="text-sm font-medium text-muted-foreground">No recent transactions</p>
               </div>
             {/if}
