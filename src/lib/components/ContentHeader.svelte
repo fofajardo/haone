@@ -33,8 +33,8 @@
   });
 </script>
 
-<header class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-  <div class="flex items-center gap-4">
+<header class="mb-4 flex flex-col gap-4 md:gap-2 sm:flex-row sm:items-center sm:justify-between">
+  <div class="flex items-center gap-2">
     {#if !isTopLevel}
       <BackButton {href} onclick={onBack} />
     {/if}
