@@ -179,61 +179,28 @@
       </Sidebar.Menu>
     </Sidebar.Group>
 
-    <Sidebar.Group class="mt-auto">
-      <Sidebar.Menu>
-        {#each secondaryItems as item}
-          <Sidebar.MenuItem>
-            <Sidebar.MenuButton
-              size={sidebar.isMobile ? "lg" : "default"}
-              isActive={page.url.pathname === item.url}
-              onclick={() => sidebar.setOpenMobile(false)}
-            >
-              {#snippet child({ props })}
-                <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              {/snippet}
-            </Sidebar.MenuButton>
-          </Sidebar.MenuItem>
-        {/each}
-      </Sidebar.Menu>
-    </Sidebar.Group>
+    {#if sidebar.isMobile}
+      <Sidebar.Group class="mt-auto">
+        <Sidebar.Menu>
+          {#each secondaryItems as item}
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton
+                size="lg"
+                isActive={page.url.pathname === item.url}
+                onclick={() => sidebar.setOpenMobile(false)}
+              >
+                {#snippet child({ props })}
+                  <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          {/each}
+        </Sidebar.Menu>
+      </Sidebar.Group>
+    {/if}
   </Sidebar.Content>
-
-  <Sidebar.Footer>
-    <Sidebar.Menu>
-      <Sidebar.MenuItem>
-        {#if auth.user}
-          {#if !sidebar.isMobile}
-            <div class="flex items-center gap-3 p-2 group-data-[collapsible=icon]:p-0">
-              {#if !imgError}
-                <img
-                  src={auth.cachedPicture || auth.user.picture}
-                  alt={auth.user.name}
-                  class="h-8 w-8 rounded-full border border-border"
-                  onerror={() => (imgError = true)}
-                />
-              {:else}
-                <CircleUser class="h-8 w-8 text-muted-foreground" />
-              {/if}
-              <div class="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
-                <span class="truncate text-xs font-semibold">{auth.user.name}</span>
-                <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onclick={() => auth.logout()}
-                class="ml-auto group-data-[collapsible=icon]:hidden"
-                icon={LogOut}
-                title="Logout"
-              />
-            </div>
-          {/if}
-        {/if}
-      </Sidebar.MenuItem>
-    </Sidebar.Menu>
-  </Sidebar.Footer>
   <Sidebar.Rail />
 </Sidebar.Root>

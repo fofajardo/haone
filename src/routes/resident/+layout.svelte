@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Sidebar from "$ui/sidebar";
   import ResidentSidebar from "$components/resident-sidebar.svelte";
-  import AdminHeader from "$components/admin-header.svelte";
+  import AppHeader from "$components/app-header.svelte";
   import MobileNav from "$components/mobile-nav.svelte";
   import { auth } from "$state/auth.svelte";
   import { residentState } from "$state/resident-state.svelte";
@@ -66,33 +66,37 @@
     <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
   </div>
 {:else}
-  <Sidebar.Provider>
-    <ResidentSidebar />
-    <Sidebar.Inset class="relative flex flex-col overflow-hidden">
-      <div
-        class="transition-transform duration-300 md:hidden {scrollState.headerHidden
-          ? '-translate-y-full'
-          : 'translate-y-0'} z-10 shrink-0"
-      >
-        <AdminHeader />
-      </div>
-      {#key page.url.pathname}
-        <div
-          in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
-          out:fly={{ duration: 120, y: -6, opacity: 0 }}
-          class="absolute right-0 left-0 overflow-y-auto transition-[top] duration-300 md:top-0 {scrollState.headerHidden
-            ? 'top-0'
-            : 'top-16'} bottom-20 md:bottom-0"
-          onscroll={scrollState.handleScroll}
-        >
-          <main class="p-4 md:p-8">
-            {@render children()}
-          </main>
-        </div>
-      {/key}
-      <!-- Flex spacer pushes nav to bottom of screen flow -->
-      <div class="flex-1"></div>
-      <MobileNav />
-    </Sidebar.Inset>
+  <Sidebar.Provider class="h-svh w-full overflow-hidden">
+    <div
+      class="fixed inset-x-0 top-0 z-20 h-16 transition-transform duration-300 ease-in-out {scrollState.headerHidden
+        ? '-translate-y-full'
+        : 'translate-y-0'}"
+    >
+      <AppHeader />
+    </div>
+    <div
+      class="absolute inset-x-0 bottom-0 flex overflow-hidden transition-[top] duration-300 ease-in-out {scrollState.headerHidden
+        ? 'top-0'
+        : 'top-16'}"
+    >
+      <ResidentSidebar />
+      <Sidebar.Inset class="relative flex flex-col overflow-hidden">
+        {#key page.url.pathname}
+          <div
+            in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
+            out:fly={{ duration: 120, y: -6, opacity: 0 }}
+            class="absolute inset-0 bottom-20 overflow-y-auto md:bottom-0"
+            onscroll={scrollState.handleScroll}
+          >
+            <main class="p-4 md:p-8">
+              {@render children()}
+            </main>
+          </div>
+        {/key}
+        <!-- Flex spacer pushes nav to bottom of screen flow -->
+        <div class="flex-1"></div>
+        <MobileNav />
+      </Sidebar.Inset>
+    </div>
   </Sidebar.Provider>
 {/if}
