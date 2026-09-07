@@ -5,7 +5,7 @@
   import { Button } from "$ui/button";
   import { LoaderIcon } from "@lucide/svelte";
   import { goto, replaceState } from "$app/navigation";
-  import { brandingState } from "$state/branding.svelte";
+  import BrandingLogo from "$components/BrandingLogo.svelte";
   import { globalDialog } from "$state/dialog.svelte";
   import { PUBLIC_GI_CLIENT_ID, PUBLIC_DB_PROVIDER } from "$env/static/public";
   import { supabase } from "$api/services/common";
@@ -159,16 +159,7 @@
 <div class="flex flex-col items-center justify-center">
   <div class="relative z-10 w-full max-w-sm space-y-6">
     <div class="flex flex-col items-center space-y-8 text-center">
-      <img
-        src={brandingState.profile.logoUrl}
-        alt={brandingState.profile.logoAlt}
-        class="h-28 w-auto object-contain transition-all duration-500 hover:scale-[1.02] dark:hidden"
-      />
-      <img
-        src={brandingState.profile.logoUrlDark || brandingState.profile.logoUrl}
-        alt={brandingState.profile.logoAlt}
-        class="hidden h-28 w-auto object-contain transition-all duration-500 hover:scale-[1.02] dark:block"
-      />
+      <BrandingLogo class="h-28 w-auto" />
     </div>
 
     <div class="animate-in space-y-3 pt-6 duration-1000 fade-in slide-in-from-bottom-4">
