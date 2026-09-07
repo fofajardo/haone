@@ -66,7 +66,7 @@
     <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
   </div>
 {:else}
-  <Sidebar.Provider class="h-svh w-full overflow-hidden">
+  <Sidebar.Provider class="h-svh w-full overflow-hidden bg-sidebar">
     <div
       class="fixed inset-x-0 top-0 z-20 h-16 transition-transform duration-300 ease-in-out {scrollState.headerHidden
         ? '-translate-y-full'
@@ -80,7 +80,7 @@
         : 'top-16'}"
     >
       <AppSidebar />
-      <Sidebar.Inset class="relative flex flex-col overflow-hidden">
+      <Sidebar.Inset class="relative flex flex-col overflow-hidden md:rounded-tl-4xl">
         {#key page.url.pathname}
           <div
             in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
