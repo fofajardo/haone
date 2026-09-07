@@ -1,3 +1,4 @@
 export const pageState = $state({
-  title: ""
+  title: "",
+  isTopLevel: true,
 });

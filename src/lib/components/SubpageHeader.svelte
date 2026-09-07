@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { onMount } from "svelte";
   import BackButton from "./BackButton.svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
+  import { pageState } from "$state/page-info.svelte";
 
   let {
     title = "",
@@ -25,6 +27,10 @@
     titleExtra?: Snippet;
     isTopLevel?: boolean;
   } = $props();
+
+  onMount(() => {
+    pageState.isTopLevel = isTopLevel;
+  });
 </script>
 
 <header class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

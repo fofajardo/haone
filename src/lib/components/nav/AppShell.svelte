@@ -8,6 +8,7 @@
   import { page } from "$app/state";
   import { fly, fade } from "svelte/transition";
   import { createHeaderScrollState } from "$utils/scroll.svelte";
+  import { pageState } from "$state/page-info.svelte";
 
   let {
     isLoading = false,
@@ -49,7 +50,7 @@
           <div
             in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
             out:fly={{ duration: 120, y: -6, opacity: 0 }}
-            class="absolute inset-0 bottom-20 overflow-y-auto md:bottom-0"
+            class={`absolute inset-0 ${pageState.isTopLevel ? "bottom-20" : "bottom-0"} overflow-y-auto md:bottom-0`}
             onscroll={scrollState.handleScroll}
           >
             <main class="p-4 md:p-8">
@@ -59,7 +60,9 @@
         {/key}
         <!-- Flex spacer pushes nav to bottom of screen flow -->
         <div class="flex-1"></div>
-        <MobileNav />
+        {#if pageState.isTopLevel}
+          <MobileNav />
+        {/if}
       </Sidebar.Inset>
     </div>
   </Sidebar.Provider>
