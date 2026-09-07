@@ -4,12 +4,13 @@
   import { auth } from "$state/auth.svelte";
   import {
     CircleUser,
-    Menu,
     LogOut,
     LayoutDashboard,
     Mail,
     Database,
-    Settings
+    Settings,
+    PanelLeftCloseIcon,
+    PanelLeftOpenIcon
   } from "@lucide/svelte";
   import { Button } from "$ui/button";
   import { dev } from "$app/environment";
@@ -69,17 +70,21 @@
 </script>
 
 <header
-  class="flex h-16 shrink-0 items-center justify-between gap-2 bg-background px-4 md:bg-sidebar"
+  class="flex h-16 shrink-0 items-center justify-between gap-2 bg-background px-4 md:bg-sidebar md:px-2"
 >
   <div class="flex items-center gap-2">
     <Button
       variant="ghost"
       size="icon"
-      class="hidden h-9 w-9 text-muted-foreground hover:text-foreground md:inline-flex"
+      class="hidden h-8 w-8 md:inline-flex"
       onclick={() => sidebar.toggle()}
       aria-label="Toggle sidebar"
     >
-      <Menu class="h-5 w-5" />
+      {#if sidebar.open}
+        <PanelLeftCloseIcon class="h-5 w-5 rotate-180" />
+      {:else}
+        <PanelLeftOpenIcon class="h-5 w-5" />
+      {/if}
     </Button>
     <div class="flex items-center gap-2 px-1">
       <BrandingLogo class="h-10 w-auto object-contain" />
