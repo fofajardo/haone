@@ -33,6 +33,7 @@
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
   import * as Card from "$ui/card";
+  import { getCustomServices } from "$lib/services";
 
   let stats = $state({
     activeResidents: 0,
@@ -142,6 +143,12 @@
       href: "/admin/leaderboards",
       icon: ListOrdered
     },
+    ...getCustomServices("admin").map((s) => ({
+      title: s.title,
+      description: s.description || "",
+      href: s.url,
+      icon: s.icon
+    })),
     {
       title: "Settings",
       description: "Personalize interface, manage accessibility, and system preferences.",

@@ -12,8 +12,7 @@ export { computeDisplayNames, mapRowToJournal, mapRowToResident, parseCSVAmount 
 
 import { constantsService } from "$api/services/constants-service";
 import { residentService } from "$api/services/resident-service";
-import { brandingState } from "$state/branding.svelte";
-import { isStaticIpEnabled } from "$utils/rooms-utils";
+import { getCustomServices } from "$lib/services";
 
 /**
  * Resolves the primary identifier (UUID) of the currently signed-in resident.
@@ -453,10 +452,10 @@ export function isResidentRouteAllowed(
     return canAccessAchievements(type);
   }
 
-  if (urlOrHref.includes("/static-ip")) {
-    const brandKey =
-      brandingState.selectedKey || brandingState.profile?.shortName?.toLowerCase() || "default";
-    return !!(room && isStaticIpEnabled(room, brandKey) && canAccessLaundryOrFridge(type));
+  const customItems = getCustomServices("resident");
+  const matched = customItems.find((item) => urlOrHref.startsWith(item.url));
+  if (matched && matched.isAllowed) {
+    return matched.isAllowed(type, room);
   }
 
   return true;

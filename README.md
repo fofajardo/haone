@@ -83,5 +83,6 @@ You have to create the following directories and leave an empty file, e.g., `.gi
 │   │   └── resident
 │   └── resident
 ├── server
+├── services.ts
 └── types
 ```

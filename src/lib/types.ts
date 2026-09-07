@@ -768,3 +768,12 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   totalPages: number;
 }
+
+export interface CustomServiceItem {
+  title: string;
+  url: string;
+  icon: any;
+  description?: string;
+  target: "admin" | "resident";
+  isAllowed?: (accountType: string, room?: string) => boolean;
+}

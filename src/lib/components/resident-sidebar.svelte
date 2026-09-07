@@ -15,7 +15,6 @@
     ListOrdered,
     BookUser,
     CirclePlus,
-    Network,
     Refrigerator
   } from "@lucide/svelte";
   import { Button } from "$ui/button/index.js";
@@ -23,6 +22,7 @@
   import { residentState } from "$state/resident-state.svelte";
   import { page } from "$app/state";
   import { isResidentRouteAllowed } from "$api/controllers/resident-controller";
+  import { getCustomServices } from "$lib/services";
   import { AccountType } from "$lib/types";
   import ProfileHeader from "$components/ProfileHeader.svelte";
   import MobileProfileCard from "$components/MobileProfileCard.svelte";
@@ -48,7 +48,7 @@
     }
   ];
 
-  const serviceItems = [
+  const serviceItems = $derived([
     {
       title: "Laundry",
       url: "/resident/laundry",
@@ -64,11 +64,7 @@
       url: "/resident/payment-requests",
       icon: Banknote
     },
-    {
-      title: "Static IP Address",
-      url: "/resident/static-ip",
-      icon: Network
-    },
+    ...getCustomServices("resident"),
     {
       title: "Announcements",
       url: "/resident/announcements",
@@ -89,7 +85,7 @@
       url: "/resident/officers",
       icon: BookUser
     }
-  ];
+  ]);
 
   const isAlum = $derived(residentState.status?.currEntry?.accountType === AccountType.ALUMNUS);
 

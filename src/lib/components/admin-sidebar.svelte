@@ -18,7 +18,6 @@
     Megaphone,
     Trophy,
     ListOrdered,
-    Network,
     Database,
     Refrigerator
   } from "@lucide/svelte";
@@ -28,6 +27,7 @@
   import { page } from "$app/state";
   import ProfileHeader from "$components/ProfileHeader.svelte";
   import MobileProfileCard from "$components/MobileProfileCard.svelte";
+  import { getCustomServices } from "$lib/services";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -96,7 +96,7 @@
     ].filter((i) => !i.hide)
   );
 
-  const serviceItems = [
+  const serviceItems = $derived([
     {
       title: "Laundry",
       url: "/admin/laundry",
@@ -122,12 +122,8 @@
       url: "/admin/leaderboards",
       icon: ListOrdered
     },
-    {
-      title: "Static IP Address",
-      url: "/admin/static-ip",
-      icon: Network
-    }
-  ];
+    ...getCustomServices("admin")
+  ]);
 </script>
 
 <Sidebar.Root collapsible="icon" class="data-[mobile=true]:w-full!">

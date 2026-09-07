@@ -19,7 +19,6 @@
     Settings,
     Megaphone,
     BookUser,
-    Network,
     Refrigerator,
     ListOrdered
   } from "@lucide/svelte";
@@ -38,6 +37,7 @@
     fetchResidentStatus,
     isResidentRouteAllowed
   } from "$api/controllers/resident-controller";
+  import { getCustomServices } from "$lib/services";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
@@ -88,12 +88,12 @@
       href: "/resident/payment-requests",
       icon: Banknote
     },
-    {
-      title: "Static IP Address",
-      description: "Request and manage your room network configuration.",
-      href: "/resident/static-ip",
-      icon: Network
-    },
+    ...getCustomServices("resident").map((s) => ({
+      title: s.title,
+      description: s.description || "",
+      href: s.url,
+      icon: s.icon
+    })),
     {
       title: "Announcements",
       description: "View updates and announcements from house council officers.",
