@@ -10,6 +10,7 @@
   import { PUBLIC_GI_CLIENT_ID, PUBLIC_DB_PROVIDER } from "$env/static/public";
   import { supabase } from "$api/services/common";
   import { pageState } from "$state/page-info.svelte";
+  import { fade, fly, scale } from "svelte/transition";
 
   let isSigningIn = $state(false);
   let isLoadingAuth = $state(true);
@@ -164,28 +165,31 @@
       <BrandingLogo class="h-28 w-auto" />
     </div>
 
-    <div class="animate-in space-y-3 pt-6 duration-1000 fade-in slide-in-from-bottom-4">
+    <div in:fly={{ y: 16, duration: 500 }} class="grid pt-6">
       {#if isSigningIn || isLoadingAuth}
         <div
-          class="flex h-30 animate-in items-center justify-center space-x-3 duration-500 zoom-in-95 fade-in"
+          transition:fade={{ duration: 250 }}
+          class="col-start-1 row-start-1 flex h-30 items-center justify-center"
         >
           <LoaderCircleIcon class="h-5 w-5 animate-spin text-foreground" />
         </div>
       {:else}
-        <Button
-          onclick={() => handleLogin("resident")}
-          class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
-        >
-          Sign In
-        </Button>
+        <div transition:fade={{ duration: 300 }} class="col-start-1 row-start-1 space-y-3">
+          <Button
+            onclick={() => handleLogin("resident")}
+            class="h-14 w-full rounded-xl bg-foreground text-base font-bold text-background transition-opacity hover:opacity-90"
+          >
+            Sign In
+          </Button>
 
-        <Button
-          variant="ghost"
-          onclick={() => handleLogin("admin")}
-          class="h-12 w-full rounded-xl text-sm font-bold transition-all hover:bg-muted active:scale-[0.98]"
-        >
-          Sign In as House Council Officer
-        </Button>
+          <Button
+            variant="ghost"
+            onclick={() => handleLogin("admin")}
+            class="h-12 w-full rounded-xl text-sm font-bold transition-colors hover:bg-muted"
+          >
+            Sign In as House Council Officer
+          </Button>
+        </div>
       {/if}
     </div>
   </div>
