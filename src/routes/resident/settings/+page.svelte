@@ -15,17 +15,18 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="Settings" />
+  <ContentHeader title="Settings">
+    {#snippet actions()}
+      <SettingsActions />
+    {/snippet}
+  </ContentHeader>
 
   <div class="flex flex-col gap-8 lg:flex-row">
     <div class="flex-1 space-y-8">
       <AppearanceSettings />
       <NavSettings />
       <PrivacySettings />
-      <SettingsActions />
-      <VersionCard />
     </div>
-
-    <SettingsPreview />
+    <VersionCard />
   </div>
 </div>

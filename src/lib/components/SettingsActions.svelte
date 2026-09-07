@@ -34,6 +34,4 @@
   });
 </script>
 
-<Button size="lg" onclick={save} isLoading={isSaving} icon={Save} class="w-full font-bold">
-  Save
-</Button>
+<Button onclick={save} isLoading={isSaving} icon={Save} class="w-full lg:w-auto">Save</Button>

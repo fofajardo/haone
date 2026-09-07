@@ -23,7 +23,11 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="Settings" />
+  <ContentHeader title="Settings">
+    {#snippet actions()}
+      <SettingsActions />
+    {/snippet}
+  </ContentHeader>
 
   <div class="flex flex-col gap-8 lg:flex-row">
     <!-- Left Column: Settings -->
@@ -32,7 +36,6 @@
       <AppearanceSettings />
       <NavSettings />
       <PrivacySettings />
-      <SettingsActions />
 
       {#if uiSettings.isDev}
         <!-- Development Configuration -->
@@ -146,10 +149,7 @@
           </Card.Content>
         </Card.Root>
       {/if}
-
-      <VersionCard />
     </div>
-
-    <SettingsPreview />
+    <VersionCard />
   </div>
 </div>

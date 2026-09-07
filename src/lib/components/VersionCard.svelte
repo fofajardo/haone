@@ -4,7 +4,7 @@
   import { GitFork, Zap, Bug } from "@lucide/svelte";
 </script>
 
-<Card.Root class="overflow-hidden">
+<Card.Root class="overflow-hidden lg:block lg:h-fit lg:w-100">
   <Card.Content>
     <div class="flex flex-col gap-4">
       <div class="flex items-center gap-2.5">
