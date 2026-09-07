@@ -127,7 +127,11 @@
           {/snippet}
         </Popover.Trigger>
 
-        <Popover.Content align="end" sideOffset={8} class="w-72 gap-0 p-0">
+        <Popover.Content
+          align="end"
+          sideOffset={8}
+          class="w-72 gap-0 overflow-hidden rounded-lg p-0"
+        >
           {#if auth.user}
             <div class="flex items-center gap-3 border-b border-border p-3">
               {#if !imgError}
@@ -146,31 +150,47 @@
               </div>
             </div>
 
-            <div class="flex flex-col p-1">
-              {#each desktopMenuItems as item}
-                <Button
-                  variant="ghost"
-                  href={item.url}
-                  icon={item.icon}
-                  class="justify-start gap-3"
-                  onclick={() => (isDesktopPopoverOpen = false)}
-                >
-                  {item.title}
-                </Button>
-              {/each}
-
-              <Button
-                variant="ghost"
-                icon={LogOut}
-                class="justify-start gap-3"
-                onclick={() => {
-                  isDesktopPopoverOpen = false;
-                  auth.logout();
-                }}
-              >
-                Sign out
-              </Button>
-            </div>
+            <Sidebar.Root collapsible="none" class="w-full bg-transparent">
+              <Sidebar.Content>
+                <Sidebar.Group class="p-1">
+                  <Sidebar.GroupContent class="gap-0">
+                    <Sidebar.Menu>
+                      {#each desktopMenuItems as item}
+                        <Sidebar.MenuItem>
+                          <Sidebar.MenuButton
+                            onclick={() => (isDesktopPopoverOpen = false)}
+                            class="hover:bg-accent hover:text-accent-foreground"
+                          >
+                            {#snippet child({ props })}
+                              <a
+                                href={item.url}
+                                {...props}
+                                onclick={() => (isDesktopPopoverOpen = false)}
+                              >
+                                <item.icon />
+                                <span>{item.title}</span>
+                              </a>
+                            {/snippet}
+                          </Sidebar.MenuButton>
+                        </Sidebar.MenuItem>
+                      {/each}
+                      <Sidebar.MenuItem>
+                        <Sidebar.MenuButton
+                          onclick={() => {
+                            isDesktopPopoverOpen = false;
+                            auth.logout();
+                          }}
+                          class="hover:bg-accent hover:text-accent-foreground"
+                        >
+                          <LogOut />
+                          <span>Sign out</span>
+                        </Sidebar.MenuButton>
+                      </Sidebar.MenuItem>
+                    </Sidebar.Menu>
+                  </Sidebar.GroupContent>
+                </Sidebar.Group>
+              </Sidebar.Content>
+            </Sidebar.Root>
           {/if}
         </Popover.Content>
       </Popover.Root>
