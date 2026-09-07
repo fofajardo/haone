@@ -20,7 +20,8 @@
     Megaphone,
     BookUser,
     Network,
-    Refrigerator
+    Refrigerator,
+    ListOrdered
   } from "@lucide/svelte";
   import AnnouncementsSection from "$components/residents/AnnouncementsSection.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -30,11 +31,13 @@
   import { pageState } from "$state/page-info.svelte";
   import StatusBadge from "$components/residents/StatusBadge.svelte";
   import DashboardActionCard from "$components/DashboardActionCard.svelte";
-  import { fetchServer } from "$utils/api-client";
   import type { ResidentStatus } from "$state/resident-state.svelte";
   import { AccountType } from "$lib/types";
   import StatisticCard from "$components/StatisticCard.svelte";
-  import { fetchResidentStatus } from "$api/controllers/resident-controller";
+  import {
+    fetchResidentStatus,
+    isResidentRouteAllowed
+  } from "$api/controllers/resident-controller";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
@@ -54,12 +57,18 @@
     }
   }
 
-  const actions: any[] = [
+  const allActions = [
     {
       title: "Finance",
       description: "View your financial standing and history.",
       href: "/resident/finance",
       icon: Wallet
+    },
+    {
+      title: "Occupancy",
+      description: "View your current room details and history.",
+      href: "/resident/occupancy",
+      icon: House
     },
     {
       title: "Laundry",
@@ -80,28 +89,28 @@
       icon: Banknote
     },
     {
-      title: "Announcements",
-      description: "View updates and announcements from house council officers.",
-      href: "/resident/announcements",
-      icon: Megaphone
-    },
-    {
       title: "Static IP Address",
       description: "Request and manage your room network configuration.",
       href: "/resident/static-ip",
       icon: Network
     },
     {
+      title: "Announcements",
+      description: "View updates and announcements from house council officers.",
+      href: "/resident/announcements",
+      icon: Megaphone
+    },
+    {
       title: "Achievements",
-      description: "View your earned achievements and leaderboards.",
+      description: "View your earned achievements and badges.",
       href: "/resident/achievements",
       icon: Trophy
     },
     {
-      title: "Occupancy",
-      description: "View your current room details and history.",
-      href: "/resident/occupancy",
-      icon: House
+      title: "Leaderboards",
+      description: "View achievement leaderboards and resident rankings.",
+      href: "/resident/leaderboards",
+      icon: ListOrdered
     },
     {
       title: "Officers",
@@ -116,6 +125,12 @@
       icon: Settings
     }
   ];
+
+  const actions = $derived.by(() => {
+    const type = status?.account?.type || "";
+    const room = status?.account?.room || "";
+    return allActions.filter((tool) => isResidentRouteAllowed(tool.href, type, room));
+  });
 
   onMount(() => {
     pageState.title = "Dashboard";

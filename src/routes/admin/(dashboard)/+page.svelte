@@ -1,16 +1,25 @@
 <script lang="ts">
   import {
-    Mail,
     Users,
     Receipt,
     ChartPie,
     Settings,
     TrendingUp,
     Clock,
-    ListFilter,
     CircleCheck,
-    FileSpreadsheet,
-    Bed
+    Bed,
+    HandCoins,
+    RotateCcwClock,
+    Contact,
+    GraduationCap,
+    BookUser,
+    ArrowRightLeft,
+    Banknote,
+    WashingMachine,
+    Refrigerator,
+    Megaphone,
+    Trophy,
+    ListOrdered
   } from "@lucide/svelte";
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
@@ -36,7 +45,19 @@
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
 
-  const actions: any[] = [
+  const actions = $derived([
+    {
+      title: "Financial Report",
+      description: "Generate collection summaries and financial statements.",
+      href: "/admin/financial-report",
+      icon: HandCoins
+    },
+    {
+      title: "Transactions",
+      description: "Full transaction history and manual entry management.",
+      href: "/admin/transactions",
+      icon: RotateCcwClock
+    },
     {
       title: "Pending Receipts",
       description: "Review pending payments and generate secure receipts.",
@@ -44,10 +65,10 @@
       icon: Receipt
     },
     {
-      title: "Email Dispatcher",
-      description: "Batch send receipts to residents via Gmail API.",
-      href: "/admin/email-dispatcher",
-      icon: Mail
+      title: "Payment Requests",
+      description: "Review and approve resident payment submissions.",
+      href: "/admin/transactions/requests",
+      icon: Banknote
     },
     {
       title: "Residents",
@@ -56,16 +77,28 @@
       icon: Users
     },
     {
+      title: "Rooms",
+      description: "Manage room inventory, bed assignments, and occupancy.",
+      href: "/admin/residents/rooms",
+      icon: Bed
+    },
+    {
+      title: "Officers",
+      description: "Manage house council directory and officer positions.",
+      href: "/admin/residents/officers",
+      icon: BookUser
+    },
+    {
+      title: "Resident Sync",
+      description: "Preview and sync resident accounts from registration queue.",
+      href: "/admin/residents/sync",
+      icon: ArrowRightLeft
+    },
+    {
       title: "Users",
       description: "Master directory of all residents across all terms.",
       href: "/admin/users",
-      icon: Users
-    },
-    {
-      title: "Transactions",
-      description: "Full transaction history and manual entry management.",
-      href: "/admin/transactions",
-      icon: ListFilter
+      icon: Contact
     },
     {
       title: "Demographics",
@@ -74,24 +107,48 @@
       icon: ChartPie
     },
     {
-      title: "Financial Report",
-      description: "Generate collection summaries and financial statements.",
-      href: "/admin/financial-report",
-      icon: FileSpreadsheet
+      title: "Academic Terms",
+      description: "Configure academic terms, fee schedules, and active periods.",
+      href: "/admin/academic-terms",
+      icon: GraduationCap
     },
     {
-      title: "Rooms",
-      description: "Manage room inventory, bed assignments, and occupancy.",
-      href: "/admin/residents/rooms",
-      icon: Bed
+      title: "Laundry",
+      description: "Monitor and manage laundry schedule reservations.",
+      href: "/admin/laundry",
+      icon: WashingMachine
+    },
+    {
+      title: "Fridge",
+      description: "Monitor and manage shared refrigerator storage items.",
+      href: "/admin/fridge",
+      icon: Refrigerator
+    },
+    {
+      title: "Announcements",
+      description: "Draft, publish, and manage house announcements.",
+      href: "/admin/announcements",
+      icon: Megaphone
+    },
+    {
+      title: "Achievements",
+      description: "Create and award achievements and badges to residents.",
+      href: "/admin/achievements",
+      icon: Trophy
+    },
+    {
+      title: "Leaderboards",
+      description: "View achievement leaderboards and resident rankings.",
+      href: "/admin/leaderboards",
+      icon: ListOrdered
     },
     {
       title: "Settings",
-      description: "Personalize your interface, manage accessibility, and view system information.",
+      description: "Personalize interface, manage accessibility, and system preferences.",
       href: "/admin/settings",
       icon: Settings
     }
-  ];
+  ]);
 
   async function loadDashboardData() {
     isLoading = true;
