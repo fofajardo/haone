@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { generatePKCEVerifier, generatePKCEChallenge } from "$utils/crypto";
   import { Button } from "$ui/button";
-  import { LoaderIcon } from "@lucide/svelte";
+  import { LoaderCircleIcon } from "@lucide/svelte";
   import { goto, replaceState } from "$app/navigation";
   import BrandingLogo from "$components/BrandingLogo.svelte";
   import { globalDialog } from "$state/dialog.svelte";
@@ -169,7 +169,7 @@
         <div
           class="flex h-30 animate-in items-center justify-center space-x-3 duration-500 zoom-in-95 fade-in"
         >
-          <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
+          <LoaderCircleIcon class="h-5 w-5 animate-spin text-foreground" />
         </div>
       {:else}
         <Button

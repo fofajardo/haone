@@ -5,7 +5,7 @@
   import MobileNav from "$components/nav/MobileNav.svelte";
   import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
-  import { LoaderIcon } from "@lucide/svelte";
+  import { LoaderCircleIcon } from "@lucide/svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { fly } from "svelte/transition";
@@ -62,7 +62,7 @@
 
 {#if isLoadingAuth || (!auth.accessToken && page.url.pathname !== "/sign-in") || auth.authType !== "admin"}
   <div class="flex min-h-screen items-center justify-center">
-    <LoaderIcon class="h-5 w-5 animate-spin text-foreground" />
+    <LoaderCircleIcon class="h-5 w-5 animate-spin text-foreground" />
   </div>
 {:else}
   <Sidebar.Provider class="h-svh w-full overflow-hidden bg-sidebar">

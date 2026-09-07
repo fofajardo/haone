@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { pageState } from "$state/page-info.svelte";
-  import { ArrowRight, LoaderIcon } from "@lucide/svelte";
+  import { ArrowRight, LoaderCircleIcon } from "@lucide/svelte";
   import { Button } from "$ui/button";
   import { brandingState } from "$state/branding.svelte";
 
@@ -28,7 +28,7 @@
 <div class="grid min-h-14 gap-4">
   {#if !auth.initialized}
     <div class="flex items-center justify-center py-4">
-      <LoaderIcon class="h-6 w-6 animate-spin text-muted-foreground" />
+      <LoaderCircleIcon class="h-6 w-6 animate-spin text-muted-foreground" />
     </div>
   {:else if !auth.accessToken}
     <Button
