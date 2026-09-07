@@ -39,6 +39,12 @@
   </Button>
 </div>
 
-<div class="flex items-center justify-center gap-2 pt-4 text-xs text-muted-foreground md:justify-start">
-  <code class="font-mono">v{__APP_VERSION__} ({__COMMIT_SHA__.slice(0, 7)} - {new Date(__BUILD_TIME__).toLocaleString()})</code>
+<div
+  class="flex items-center justify-center gap-2 pt-4 text-xs text-muted-foreground md:justify-start"
+>
+  <code class="font-mono"
+    >v{__APP_VERSION__} ({__COMMIT_SHA__.slice(0, 7)} - {new Date(
+      __BUILD_TIME__
+    ).toLocaleString()})</code
+  >
 </div>
