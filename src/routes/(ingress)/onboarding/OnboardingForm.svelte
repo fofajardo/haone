@@ -13,7 +13,8 @@
     Clock,
     Building,
     RotateCcwClockIcon,
-    CircleAlert
+    CircleAlert,
+    LogOut
   } from "@lucide/svelte";
   import * as RadioGroup from "$ui/radio-group";
   import colleges from "$data/colleges.json";
@@ -461,7 +462,16 @@
                 Cancel
               </Button>
             {:else}
-              <div></div>
+              <Button
+                variant="outline"
+                onclick={() => {
+                  auth.logout();
+                  goto("/sign-in");
+                }}
+                icon={LogOut}
+              >
+                Sign out
+              </Button>
             {/if}
             <Button
               onclick={handleProceedStep1}
