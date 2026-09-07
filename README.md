@@ -63,26 +63,5 @@ HAOne is a residence hall association management system designed to handle day-t
    pnpm dev
    ```
 
-#### Base structure for the `src-private` directory
+For custom configuration structure, private repository setup, and deployment instructions, see [`src-private-example/`](./src-private-example).
 
-You have to create the following directories and leave an empty file, e.g., `.gitignore`, in order to preserve them since `git` does not allow committing empty directories.
-
-```
-├── api
-│   ├── controllers
-│   └── services
-│       ├── interfaces
-│       ├── sheets
-│       └── supabase
-├── assets
-├── branding.json
-├── rooms.json
-├── routes
-│   ├── admin
-│   ├── api
-│   │   └── resident
-│   └── resident
-├── server
-├── services.ts
-└── types
-```
