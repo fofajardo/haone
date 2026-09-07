@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Sidebar from "$ui/sidebar";
-  import AdminSidebar from "$components/nav/AdminSidebar.svelte";
+  import AppSidebar from "$components/nav/AppSidebar.svelte";
   import AppHeader from "$components/nav/AppHeader.svelte";
   import MobileNav from "$components/nav/MobileNav.svelte";
   import { auth } from "$state/auth.svelte";
@@ -78,7 +78,7 @@
         ? 'top-0'
         : 'top-16'}"
     >
-      <AdminSidebar />
+      <AppSidebar />
       <Sidebar.Inset class="relative flex flex-col overflow-hidden">
         {#key page.url.pathname}
           <div
