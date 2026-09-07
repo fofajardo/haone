@@ -3,7 +3,7 @@
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Trophy } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -140,7 +140,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Achievements"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -152,7 +152,7 @@
         <ScopeSwitcher bind:value={scope} />
       </div>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

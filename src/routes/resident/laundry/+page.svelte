@@ -17,7 +17,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import {
     fetchLaundryReservations,
     addLaundryReservation,
@@ -260,7 +260,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Laundry"
     isTopLevel={true}
     onRefresh={() => loadData()}
@@ -269,7 +269,7 @@
     {#snippet actions()}
       <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   <Card.Root
     class="overflow-hidden border-blue-100 bg-blue-50/50 p-0 dark:border-blue-800 dark:bg-blue-900/10"

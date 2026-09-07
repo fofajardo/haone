@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
 
@@ -15,7 +15,7 @@
     <span class="text-xl font-bold tracking-tight">HAOne</span>
   </div>
 
-  <SubpageHeader title="Terms of Service" subtitle="Last Updated: April 2026" href="/" />
+  <ContentHeader title="Terms of Service" subtitle="Last Updated: April 2026" href="/" />
 
   <div class="mt-12 space-y-12 text-foreground">
     <div class="space-y-4">

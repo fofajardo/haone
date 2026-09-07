@@ -6,7 +6,7 @@
   import { auth } from "$state/auth.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
   import TermFilter from "$components/TermFilter.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
@@ -618,7 +618,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Export Residents"
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}

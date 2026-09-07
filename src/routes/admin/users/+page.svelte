@@ -11,7 +11,7 @@
   import { Combobox } from "$ui/combobox";
   import { Label } from "$ui/label";
   import { RefreshCcw, Plus, Search, FunnelX, UserPlus, FileUp, Users } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -111,7 +111,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Users"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -134,7 +134,7 @@
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

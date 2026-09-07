@@ -6,7 +6,7 @@
   import * as NativeSelect from "$ui/native-select";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import {
     fetchAdminLaundryReservations,
@@ -238,7 +238,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Laundry"
     isTopLevel={true}
     onRefresh={() => loadData()}
@@ -247,7 +247,7 @@
     {#snippet actions()}
       <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

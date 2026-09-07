@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { dev } from "$app/environment";
   import { error } from "@sveltejs/kit";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import { Button } from "$ui/button";
   import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "$ui/card";
@@ -116,7 +116,7 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Database Sync"
     isTopLevel={true}
     onRefresh={loadStatus}
@@ -139,7 +139,7 @@
         </Button>
       </div>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if loading && status.length === 0}
     <LoadingView />

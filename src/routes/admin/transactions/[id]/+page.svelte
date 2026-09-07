@@ -33,7 +33,7 @@
     Lock,
     TriangleAlert
   } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
 
@@ -174,7 +174,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="View Transaction">
+  <ContentHeader title="View Transaction">
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}
         <Badge>AUDITED</Badge>
@@ -263,7 +263,7 @@
         </Button>
       {/if}
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

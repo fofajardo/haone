@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Search, FunnelX } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -72,7 +72,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Residents"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -81,7 +81,7 @@
     {#snippet actions()}
       <AdminResidentsHeaderActions active="officers" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

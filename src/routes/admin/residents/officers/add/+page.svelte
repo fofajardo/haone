@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { ChevronLeft, Save } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import { addOfficer, fetchOfficers } from "$api/controllers/officer-controller";
   import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
@@ -133,7 +133,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Add Officer" />
+  <ContentHeader title="Add Officer" />
 
   {#if isLoading}
     <LoadingView />

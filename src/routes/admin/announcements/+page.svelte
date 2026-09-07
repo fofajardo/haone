@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Megaphone } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -173,7 +173,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Announcements"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -182,7 +182,7 @@
     {#snippet actions()}
       <Button size="sm" href="/admin/announcements/add" icon={Plus}>Add</Button>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

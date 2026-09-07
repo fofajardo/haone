@@ -11,7 +11,7 @@
     ChevronRight,
     TriangleAlert
   } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TransactionForm from "$components/TransactionForm.svelte";
@@ -216,7 +216,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Review Queue" isTopLevel={false}>
+  <ContentHeader title="Review Queue" isTopLevel={false}>
     {#snippet actions()}
       <div class="flex items-center gap-4">
         {#if payments.length > 0}
@@ -244,7 +244,7 @@
         {/if}
       </div>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

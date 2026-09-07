@@ -60,7 +60,7 @@
   import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { pageState } from "$state/page-info.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -240,7 +240,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title={user?.displayName || "View User"}
     onRefresh={() => loadUserProfile(true)}
     isRefreshing={isLoading}
@@ -332,7 +332,7 @@
         </AlertDialog.Content>
       </AlertDialog.Root>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

@@ -10,7 +10,7 @@
   import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { auth } from "$state/auth.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import RichEditor from "$components/RichEditor.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -162,7 +162,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Edit Announcement">
+  <ContentHeader title="Edit Announcement">
     {#snippet actions()}
       <div class="flex gap-2">
         {#if isActive}
@@ -187,7 +187,7 @@
         </Button>
       </div>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   <div class="mx-auto max-w-3xl">
     {#if isLoading}

@@ -4,7 +4,7 @@
   import { uiSettings } from "$state/settings.svelte";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { Button } from "$ui/button";
@@ -284,7 +284,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Financial Report"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -305,7 +305,7 @@
         </Tabs.List>
       </Tabs.Root>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

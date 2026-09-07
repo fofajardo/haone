@@ -19,7 +19,7 @@
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import * as AlertDialog from "$ui/alert-dialog";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FridgeItemCard from "$components/fridge/FridgeItemCard.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -165,7 +165,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-4 pb-16">
-  <SubpageHeader
+  <ContentHeader
     title="Fridge"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -174,7 +174,7 @@
     {#snippet actions()}
       <Button size="sm" href="/admin/fridge/add" icon={Plus}>Add</Button>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

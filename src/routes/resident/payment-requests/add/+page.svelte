@@ -29,7 +29,7 @@
   import { goto } from "$app/navigation";
   import * as Tooltip from "$ui/tooltip";
   import { Badge } from "$ui/badge";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
 
@@ -184,7 +184,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Add Payment Request" />
+  <ContentHeader title="Add Payment Request" />
   <div class="mx-auto max-w-3xl space-y-6">
     {#if isLoading}
       <LoadingView />

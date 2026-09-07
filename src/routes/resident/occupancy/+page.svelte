@@ -6,7 +6,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { goto } from "$app/navigation";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
   import StudentProfileCard from "$components/residents/StudentProfileCard.svelte";
   import { pageState } from "$state/page-info.svelte";
@@ -55,7 +55,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Occupancy"
     isTopLevel={true}
     onRefresh={() => loadData(true)}

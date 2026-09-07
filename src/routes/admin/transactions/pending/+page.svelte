@@ -19,7 +19,7 @@
   import { Button } from "$ui/button/index.js";
   import TermFilter from "$components/TermFilter.svelte";
   import { Search, RefreshCcw, FileCheck, CircleCheckBig, FunnelX } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -165,7 +165,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Transactions"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -174,7 +174,7 @@
     {#snippet actions()}
       <AdminTransactionsHeaderActions active="receipts" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading && queue.length === 0}
     <LoadingView />

@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Pencil } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import * as Dialog from "$ui/dialog";
@@ -155,7 +155,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Achievement Details"
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
@@ -168,7 +168,7 @@
         </div>
       {/if}
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

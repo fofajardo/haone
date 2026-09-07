@@ -27,7 +27,7 @@
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { TagsInput } from "$ui/tags-input";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -221,7 +221,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3 pb-16">
-  <SubpageHeader title={itemId ? "Edit Fridge Item" : "Store Item in Fridge"} href={returnUrl} />
+  <ContentHeader title={itemId ? "Edit Fridge Item" : "Store Item in Fridge"} href={returnUrl} />
 
   <div class="mx-auto max-w-3xl space-y-6">
     {#if isLoading}

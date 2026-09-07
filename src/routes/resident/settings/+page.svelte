@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import AppearanceSettings from "$components/AppearanceSettings.svelte";
   import VersionCard from "$components/VersionCard.svelte";
   import SettingsPreview from "$components/SettingsPreview.svelte";
@@ -15,7 +15,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Settings" isTopLevel={true} />
+  <ContentHeader title="Settings" isTopLevel={true} />
 
   <div class="flex flex-col gap-8 lg:flex-row">
     <div class="flex-1 space-y-8">

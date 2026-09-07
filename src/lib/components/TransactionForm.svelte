@@ -30,7 +30,7 @@
   } from "@lucide/svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { Checkbox } from "$ui/checkbox";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
@@ -719,7 +719,7 @@
 <!-- FIXME: Subpage header should not be handled by this component -->
 <div class="mx-auto max-w-7xl space-y-3">
   {#if !hideHeader}
-    <SubpageHeader title={mode === "add" ? "Add Transaction" : "Edit Transaction"} />
+    <ContentHeader title={mode === "add" ? "Add Transaction" : "Edit Transaction"} />
   {/if}
 
   <div class="mx-auto max-w-3xl space-y-6">

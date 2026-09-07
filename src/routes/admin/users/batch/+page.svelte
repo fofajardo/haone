@@ -7,7 +7,7 @@
   import { Save, FileUp, Info, CircleAlert } from "@lucide/svelte";
   import { type UserRecord } from "$lib/types";
   import { addUsersBatch } from "$api/controllers/resident-controller";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import Papa from "papaparse";
 
   let csvData = $state("");
@@ -93,7 +93,7 @@ maria.clara@up.edu.ph,Clara,Maria,S.,2018-54321,CAL,BA EL,ALUMNUS`;
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Batch Import Users" />
+  <ContentHeader title="Batch Import Users" />
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
     <!-- Input Section -->

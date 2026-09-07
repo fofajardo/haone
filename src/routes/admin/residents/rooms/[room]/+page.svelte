@@ -3,7 +3,7 @@
   import { fetchResidents, fetchUsers, fetchTermCurr } from "$api/controllers/resident-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
   import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { Button } from "$ui/button";
@@ -106,7 +106,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Room {roomNumber}"
     href="/admin/residents/rooms"
     onRefresh={() => loadData(true)}

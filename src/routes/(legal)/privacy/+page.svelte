@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import * as Table from "$ui/table/index.js";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
@@ -16,7 +16,7 @@
     <span class="text-xl font-bold tracking-tight">HAOne</span>
   </div>
 
-  <SubpageHeader
+  <ContentHeader
     title="Privacy Policy"
     subtitle="Last Updated: April 2026 • Effective Date: April 2026"
     href="/"

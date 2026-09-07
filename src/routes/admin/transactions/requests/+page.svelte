@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Search, Wallet, ListChecks, FunnelX } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -83,7 +83,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Transactions"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -92,7 +92,7 @@
     {#snippet actions()}
       <AdminTransactionsHeaderActions active="requests" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading && payments.length === 0}
     <LoadingView />

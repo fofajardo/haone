@@ -6,7 +6,7 @@
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import { fetchTermCurr } from "$api/controllers/constants-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -149,7 +149,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Residents"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
@@ -158,7 +158,7 @@
     {#snippet actions()}
       <AdminResidentsHeaderActions active="rooms" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   <FilterDrawer activeCount={Number(selectedUnit !== "ALL")}>
     <div class="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">

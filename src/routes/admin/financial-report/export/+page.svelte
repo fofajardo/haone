@@ -6,7 +6,7 @@
   import { auth } from "$state/auth.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
   import TermFilter from "$components/TermFilter.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { Button } from "$ui/button";
@@ -128,7 +128,7 @@
 </script>
 
 <div class="space-y-3 pb-20">
-  <SubpageHeader
+  <ContentHeader
     title="Export Financial Report"
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}

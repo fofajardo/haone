@@ -14,7 +14,7 @@
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import { Plus, GraduationCap, Coins, Save, Calculator, CircleCheck } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { Badge } from "$ui/badge";
   import LoadingView from "$components/LoadingView.svelte";
@@ -201,7 +201,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Academic Terms"
     isTopLevel={true}
     onRefresh={() => loadTerms(true)}
@@ -210,7 +210,7 @@
     {#snippet actions()}
       <Button size="sm" onclick={() => (showAddDialog = true)} icon={Plus}>Add</Button>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   <div class="space-y-4">
     {#if isLoading}

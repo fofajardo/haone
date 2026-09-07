@@ -4,7 +4,7 @@
   import { Button } from "$ui/button";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import ResidentTermFilter from "$components/residents/ResidentTermFilter.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
@@ -73,7 +73,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Finance"
     isTopLevel={true}
     onRefresh={() => loadData(undefined, true)}

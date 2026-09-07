@@ -35,7 +35,7 @@
   import * as Tooltip from "$ui/tooltip";
   import * as AlertDialog from "$ui/alert-dialog";
   import * as DropdownMenu from "$ui/dropdown-menu";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -214,7 +214,7 @@
 
 <Tooltip.Provider>
   <div class="mx-auto max-w-7xl space-y-3">
-    <SubpageHeader
+    <ContentHeader
       title="Residents"
       isTopLevel={true}
       onRefresh={() => loadData(true)}
@@ -223,7 +223,7 @@
       {#snippet actions()}
         <AdminResidentsHeaderActions active="list" />
       {/snippet}
-    </SubpageHeader>
+    </ContentHeader>
 
     {#if isLoading}
       <LoadingView />

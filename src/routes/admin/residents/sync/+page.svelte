@@ -11,7 +11,7 @@
   } from "$api/controllers/rooms-controller.svelte";
   import { pluralize } from "$utils/formatters";
   import { translateCollege, translateProgram } from "$utils/translators";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -185,7 +185,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Residents"
     isTopLevel={true}
     onRefresh={() => loadPreview()}
@@ -194,7 +194,7 @@
     {#snippet actions()}
       <AdminResidentsHeaderActions active="sync" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

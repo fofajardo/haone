@@ -7,7 +7,7 @@
   import * as Card from "$ui/card";
   import { Button } from "$ui/button";
   import { Progress } from "$ui/progress";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import RichEditor from "$components/RichEditor.svelte";
@@ -147,7 +147,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Email Dispatcher" isTopLevel={true}>
+  <ContentHeader title="Email Dispatcher" isTopLevel={true}>
     {#snippet actions()}
       <div class="flex gap-2">
         <Button
@@ -171,7 +171,7 @@
         </Button>
       </div>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if emailDispatcher.queue.length === 0 && !isSuccess}
     <EmptyView

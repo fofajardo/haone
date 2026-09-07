@@ -4,7 +4,7 @@
   import { RefreshCcw, BookUser, Mail } from "@lucide/svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import * as Card from "$ui/card";
   import { fetchOfficers } from "$api/controllers/officer-controller";
@@ -35,7 +35,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Officers"
     isTopLevel={true}
     onRefresh={() => loadData(true)}

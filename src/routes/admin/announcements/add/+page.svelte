@@ -8,7 +8,7 @@
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
   import { ChevronLeft, Save } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import RichEditor from "$components/RichEditor.svelte";
   import { addAnnouncement } from "$api/controllers/announcement-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
@@ -90,7 +90,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Add Announcement" />
+  <ContentHeader title="Add Announcement" />
 
   <div class="mx-auto max-w-3xl">
     <div class="space-y-6 rounded-xl border bg-card p-6">

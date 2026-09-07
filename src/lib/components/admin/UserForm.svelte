@@ -21,7 +21,7 @@
   import programsJson from "$data/programs.json";
   import { TagsInput } from "$ui/tags-input";
   import { Combobox } from "$ui/combobox";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
 
   let {
@@ -115,11 +115,11 @@
 
 <!-- FIXME: Subpage header should not be handled by this component -->
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader {title}>
+  <ContentHeader {title}>
     {#snippet actions()}
       <Button size="sm" onclick={onSave} isLoading={isSaving} icon={Save}>Save</Button>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Left Column -->
