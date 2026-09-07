@@ -14,7 +14,7 @@ const config = {
       $templates: "src/lib/templates",
       $logic: "src/lib/logic",
       $data: "src/lib/data",
-      $dataPrivate: "src/lib/data-private",
+      $dataPrivate: "src-private",
       $services: "src/lib/services",
       $api: "src/lib/api"
     }

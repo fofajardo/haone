@@ -9,7 +9,7 @@ node_modules
 /build
 
 # Private data
-src/lib/data-private
+src-private
 
 # OS
 .DS_Store

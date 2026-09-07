@@ -63,7 +63,7 @@ HAOne is a residence hall association management system designed to handle day-t
    pnpm dev
    ```
 
-#### Base structure for the `data-private` directory
+#### Base structure for the `src-private` directory
 
 You have to create the following directories and leave an empty file, e.g., `.gitignore`, in order to preserve them since `git` does not allow committing empty directories.
 
