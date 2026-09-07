@@ -41,4 +41,3 @@ When deploying to Cloudflare Pages, configure the build settings:
   ```
 - **Environment variables**:
   - `GH_TOKEN`: GitHub personal access token with read access to the private repository.
-

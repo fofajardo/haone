@@ -64,4 +64,3 @@ HAOne is a residence hall association management system designed to handle day-t
    ```
 
 For custom configuration structure, private repository setup, and deployment instructions, see [`src-private-example/`](./src-private-example).
-
