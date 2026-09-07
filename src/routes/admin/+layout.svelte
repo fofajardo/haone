@@ -1,8 +1,8 @@
 <script lang="ts">
   import * as Sidebar from "$ui/sidebar";
-  import AdminSidebar from "$components/admin-sidebar.svelte";
-  import AppHeader from "$components/app-header.svelte";
-  import MobileNav from "$components/mobile-nav.svelte";
+  import AdminSidebar from "$components/nav/AdminSidebar.svelte";
+  import AppHeader from "$components/nav/AppHeader.svelte";
+  import MobileNav from "$components/nav/MobileNav.svelte";
   import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
   import { LoaderIcon } from "@lucide/svelte";

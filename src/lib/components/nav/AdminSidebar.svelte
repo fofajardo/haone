@@ -25,8 +25,8 @@
   import { Button } from "$ui/button";
   import { auth } from "$state/auth.svelte";
   import { page } from "$app/state";
-  import ProfileHeader from "$components/ProfileHeader.svelte";
-  import MobileProfileCard from "$components/MobileProfileCard.svelte";
+  import ProfileHeader from "$components/nav/ProfileHeader.svelte";
+  import MobileProfileCard from "$components/nav/MobileProfileCard.svelte";
   import { getCustomServices } from "$lib/services";
 
   const sidebar = Sidebar.useSidebar();

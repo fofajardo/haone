@@ -1,8 +1,8 @@
 <script lang="ts">
   import * as Sidebar from "$ui/sidebar";
-  import ResidentSidebar from "$components/resident-sidebar.svelte";
-  import AppHeader from "$components/app-header.svelte";
-  import MobileNav from "$components/mobile-nav.svelte";
+  import ResidentSidebar from "$components/nav/ResidentSidebar.svelte";
+  import AppHeader from "$components/nav/AppHeader.svelte";
+  import MobileNav from "$components/nav/MobileNav.svelte";
   import { auth } from "$state/auth.svelte";
   import { residentState } from "$state/resident-state.svelte";
   import { onMount } from "svelte";

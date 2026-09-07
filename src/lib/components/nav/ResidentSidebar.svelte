@@ -24,8 +24,8 @@
   import { isResidentRouteAllowed } from "$api/controllers/resident-controller";
   import { getCustomServices } from "$lib/services";
   import { AccountType } from "$lib/types";
-  import ProfileHeader from "$components/ProfileHeader.svelte";
-  import MobileProfileCard from "$components/MobileProfileCard.svelte";
+  import ProfileHeader from "$components/nav/ProfileHeader.svelte";
+  import MobileProfileCard from "$components/nav/MobileProfileCard.svelte";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
