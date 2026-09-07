@@ -9,6 +9,7 @@
   import { fly, fade } from "svelte/transition";
   import { createHeaderScrollState } from "$utils/scroll.svelte";
   import { pageState } from "$state/page-info.svelte";
+  import { IsMobile } from "$lib/hooks/is-mobile.svelte.js";
 
   let {
     isLoading = false,
@@ -19,6 +20,11 @@
   } = $props();
 
   const scrollState = createHeaderScrollState();
+  const isMobile = new IsMobile();
+
+  const headerHidden = $derived(
+    scrollState.headerHidden || (isMobile.current && !pageState.isTopLevel)
+  );
 </script>
 
 {#if isLoading}
@@ -33,14 +39,14 @@
 {#if !isLoading}
   <Sidebar.Provider class="h-svh w-full overflow-hidden bg-sidebar">
     <div
-      class="fixed inset-x-0 top-0 z-20 h-16 transition-transform duration-300 ease-in-out {scrollState.headerHidden
+      class="fixed inset-x-0 top-0 z-20 h-16 transition-transform duration-300 ease-in-out {headerHidden
         ? '-translate-y-full'
         : 'translate-y-0'}"
     >
       <AppHeader />
     </div>
     <div
-      class="absolute inset-x-0 bottom-0 flex overflow-hidden transition-[top] duration-300 ease-in-out {scrollState.headerHidden
+      class="absolute inset-x-0 bottom-0 flex overflow-hidden transition-[top] duration-300 ease-in-out {headerHidden
         ? 'top-0'
         : 'top-16'}"
     >
@@ -50,7 +56,9 @@
           <div
             in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
             out:fly={{ duration: 120, y: -6, opacity: 0 }}
-            class={`absolute inset-0 ${pageState.isTopLevel ? "bottom-20" : "bottom-0"} overflow-y-auto md:bottom-0`}
+            class="absolute inset-0 {pageState.isTopLevel
+              ? 'bottom-20'
+              : 'bottom-0'} overflow-y-auto md:bottom-0"
             onscroll={scrollState.handleScroll}
           >
             <main class="p-4 md:p-8">
