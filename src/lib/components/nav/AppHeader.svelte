@@ -68,7 +68,9 @@
   });
 </script>
 
-<header class="flex h-16 shrink-0 items-center justify-between gap-2 bg-background md:bg-sidebar px-4">
+<header
+  class="flex h-16 shrink-0 items-center justify-between gap-2 bg-background px-4 md:bg-sidebar"
+>
   <div class="flex items-center gap-2">
     <Button
       variant="ghost"
