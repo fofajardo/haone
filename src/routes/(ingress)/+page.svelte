@@ -4,6 +4,7 @@
   import { pageState } from "$state/page-info.svelte";
   import { ArrowRight, LoaderIcon } from "@lucide/svelte";
   import { Button } from "$ui/button";
+  import { brandingState } from "$state/branding.svelte";
 
   onMount(() => {
     pageState.title = "Home";
@@ -18,7 +19,8 @@
       </h1>
     </div>
     <p class="text-lg leading-relaxed text-muted-foreground">
-      The comprehensive administrative suite for UPLB Residence Hall Associations.
+      The comprehensive administrative suite for the {brandingState.profile?.issuerName ||
+        "UPLB Residence Hall Association"}.
     </p>
   </div>
 </div>
