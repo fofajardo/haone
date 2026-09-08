@@ -5,6 +5,7 @@
   import AppearanceCard from "$components/settings/AppearanceCard.svelte";
   import NavSettingsCard from "$components/settings/NavSettingsCard.svelte";
   import PrivacySettingsCard from "$components/settings/PrivacySettingsCard.svelte";
+  import NotificationSettingsCard from "$components/settings/NotificationSettingsCard.svelte";
   import DevConfigCard from "$components/settings/DevConfigCard.svelte";
   import VersionCard from "$components/settings/VersionCard.svelte";
   import SettingsActions from "$components/SettingsActions.svelte";
@@ -28,6 +29,7 @@
       <AppearanceCard />
       <NavSettingsCard />
       <PrivacySettingsCard />
+      <NotificationSettingsCard />
       <DevConfigCard />
     </div>
     <VersionCard />
