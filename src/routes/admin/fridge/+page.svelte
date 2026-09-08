@@ -1,7 +1,6 @@
 <script lang="ts">
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
-  import { auth } from "$state/auth.svelte";
   import {
     fetchFridgeItems,
     checkOutFridgeItem,
@@ -61,7 +60,7 @@
     try {
       const res = await fetchFridgeItems(bypassCache);
       items = res.items;
-      currentResidentId = res.currentResidentId || auth.userId;
+      currentResidentId = res.currentResidentId;
     } catch (e: any) {
       error = e.message || "Failed to load fridge items.";
     } finally {

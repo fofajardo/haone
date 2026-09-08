@@ -431,15 +431,19 @@
           }
         }
       } else {
-        const uid = auth.userId;
-        if (uid) {
-          const myAcc = accounts.find((a) => a.residentId === uid || a.id === uid);
-          if (myAcc) {
-            formData.creatorStNo = myAcc.stno;
-            formData.creatorName = myAcc.name;
-            formData.creatorId = myAcc.residentId || myAcc.id;
-            creatorSearch = myAcc.name;
-          }
+        // TODO: user info should be cached instead of fetched every time.
+        const resId = auth.userId;
+        const email = auth.user?.email;
+        const myAcc = accounts.find(
+          (a) =>
+            (resId && (a.residentId === resId || a.id === resId)) ||
+            (email && a.email && a.email.toLowerCase() === email.toLowerCase())
+        );
+        if (myAcc) {
+          formData.creatorStNo = myAcc.stno;
+          formData.creatorName = myAcc.name;
+          formData.creatorId = myAcc.residentId || myAcc.id;
+          creatorSearch = myAcc.name;
         }
       }
 

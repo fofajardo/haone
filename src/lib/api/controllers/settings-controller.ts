@@ -4,9 +4,10 @@ import { fetchServer } from "$utils/api-client";
 
 export async function fetchUserSettings(_bypassCache = false): Promise<UserSettingsRecord[]> {
   const { auth } = await import("$state/auth.svelte");
-  const { residentState } = await import("$state/resident-state.svelte");
-  const residentId = residentState.status?.profile?.id || "";
-  if (!residentId) return [];
+  const residentId = auth.userId;
+  if (!residentId) {
+    throw new Error("Resident ID is unavailable.");
+  }
 
   const settings = await settingsService.fetchUserSettings(residentId);
   if (settings) {

@@ -105,10 +105,8 @@ export const POST: RequestHandler = async ({ request }) => {
 
     return json({
       ...data,
-      user: {
-        ...userData,
-        id: userId
-      },
+      user: userData,
+      userId,
       isInstanceAdmin
     });
   } catch (e: any) {

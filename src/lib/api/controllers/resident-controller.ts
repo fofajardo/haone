@@ -19,11 +19,10 @@ import { getCustomServices } from "$lib/services";
  */
 export async function getCurrentResidentId(): Promise<string> {
   const { auth } = await import("$state/auth.svelte");
-  if (auth.userId) {
-    return auth.userId;
+  if (!auth.userId) {
+    throw new Error("Resident ID is unavailable.");
   }
-  const { residentState } = await import("$state/resident-state.svelte");
-  return residentState.status?.profile?.id || "";
+  return auth.userId;
 }
 
 /**

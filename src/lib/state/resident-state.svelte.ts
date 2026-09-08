@@ -102,6 +102,9 @@ class ResidentState {
     this.error = null;
     try {
       this.status = await fetchResidentStatus(undefined, true);
+      if (this.status?.profile?.id) {
+        auth.setUserId(this.status.profile.id);
+      }
     } catch (e: any) {
       this.error = e.message;
     } finally {

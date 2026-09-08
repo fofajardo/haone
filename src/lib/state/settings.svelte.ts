@@ -1,4 +1,3 @@
-import { fetchUsers } from "$api/controllers/resident-controller";
 import { fetchUserSettings, updateUserSettings } from "$api/controllers/settings-controller";
 import { browser, dev } from "$app/environment";
 import {
@@ -10,7 +9,6 @@ import {
 } from "$env/static/public";
 import { LS_KEYS } from "$lib/constants";
 import { auth } from "$state/auth.svelte";
-import { residentState } from "$state/resident-state.svelte";
 
 export type UIFont = "default" | "archivo" | "shantell";
 export type DisplayDensity = "default" | "compact" | "comfortable";
@@ -234,6 +232,9 @@ class UISettings {
   async syncFromServer() {
     this.#isSyncing = true;
     try {
+      if (!auth.userId) {
+        return;
+      }
       const settings = await fetchUserSettings(true);
       const my = settings[0];
       if (my) {
@@ -274,42 +275,6 @@ class UISettings {
     }
   }
 
-  // FIXME: This should be stored in auth state.
-  async #resolveTargetId(): Promise<string> {
-    if (auth.isResident) {
-      if (residentState.status?.profile?.id) {
-        return residentState.status.profile.id;
-      }
-      if (!residentState.status && auth.accessToken) {
-        await residentState.refresh();
-        if (residentState.status?.profile?.id) {
-          return residentState.status.profile.id;
-        }
-      }
-    }
-
-    if (auth.userId) {
-      return auth.userId;
-    }
-
-    if (auth.user?.email) {
-      try {
-        const users = await fetchUsers();
-        const me = users.find(
-          (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
-        );
-        if (me?.id) {
-          return me.id;
-        }
-      } catch (e) {
-        console.error("[Settings] Failed to fetch users for ID resolution:", e);
-      }
-      return auth.user.email;
-    }
-
-    return "";
-  }
-
   scheduleAutoSave() {
     if (!browser || this.#isSyncing) {
       return;
@@ -319,17 +284,11 @@ class UISettings {
     }
     this.#saveTimeout = setTimeout(async () => {
       try {
-        if (!auth.accessToken) {
+        if (!auth.accessToken || !auth.userId) {
           return;
         }
 
-        const targetId = await this.#resolveTargetId();
-        if (!targetId) {
-          console.warn("[Settings] No target ID found for saving settings.");
-          return;
-        }
-
-        await this.save(targetId);
+        await this.save(auth.userId);
       } catch (e) {
         console.error("[Settings] Debounced auto-save failed:", e);
       }

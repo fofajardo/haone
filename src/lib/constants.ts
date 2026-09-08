@@ -4,6 +4,7 @@
 export const LS_KEYS = {
   ACCESS_TOKEN: "halsk.auth.access_token",
   USER: "halsk.auth.user",
+  USER_ID: "halsk.auth.user_id",
   REMEMBER: "halsk.auth.remember",
   STUDENT_NUMBER: "halsk.student_number",
   UI_FONT: "halsk.ui_font",
