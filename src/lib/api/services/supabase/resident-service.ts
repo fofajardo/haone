@@ -233,7 +233,9 @@ export const supabaseResidentService: ResidentServiceInterface = {
     }
 
     // Sheets always derives the identity from the auth token; mirror that.
-    const email = ((auth.isResident ? auth.googleUser?.email : emailArg) || "").toLowerCase().trim();
+    const email = ((auth.isResident ? auth.googleUser?.email : emailArg) || "")
+      .toLowerCase()
+      .trim();
     const sb = supabase;
 
     const { data: userRow, error: userErr } = await supabase

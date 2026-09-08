@@ -81,7 +81,12 @@ class AuthState {
   }
 
   async ensureCachedPicture() {
-    if (!browser || !this.googleUser || this.cachedPicture || this.googleUser.picture === undefined) {
+    if (
+      !browser ||
+      !this.googleUser ||
+      this.cachedPicture ||
+      this.googleUser.picture === undefined
+    ) {
       return;
     }
 
