@@ -1,12 +1,11 @@
 <script lang="ts">
   import * as Card from "$ui/card";
-  import { Label } from "$ui/label";
-  import { Switch } from "$ui/switch";
   import { Bell, BellOff, Info, Trophy } from "@lucide/svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { notifications } from "$state/notifications.svelte";
   import { PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";
   import { toast } from "svelte-sonner";
+  import SettingsSwitchItem from "$components/settings/SettingsSwitchItem.svelte";
 
   async function handleToggle(checked: boolean) {
     if (checked) {
@@ -35,22 +34,13 @@
   </Card.Header>
   <Card.Content class="space-y-6">
     <!-- Privacy Section -->
-    <div class="flex items-center justify-between space-x-4 rounded-lg border p-4">
-      <div class="flex items-center gap-4">
-        <div class="rounded-full bg-brand/10 p-2 text-brand">
-          <Trophy class="h-5 w-5" />
-        </div>
-        <div class="space-y-0.5">
-          <Label for="public-achievements" class="text-base font-bold"
-            >Public Achievements and Leaderboards</Label
-          >
-          <p class="text-sm text-muted-foreground">
-            Allow others to see your name in achievement earner lists and leaderboards.
-          </p>
-        </div>
-      </div>
-      <Switch id="public-achievements" bind:checked={uiSettings.isPublicAchievementList} />
-    </div>
+    <SettingsSwitchItem
+      id="public-achievements"
+      title="Public Achievements and Leaderboards"
+      description="Allow others to see your name in achievement earner lists and leaderboards."
+      icon={Trophy}
+      bind:checked={uiSettings.isPublicAchievementList}
+    />
 
     <!-- Notifications Section -->
     <div class="space-y-4">
@@ -68,24 +58,14 @@
         </div>
       {/if}
 
-      <div class="flex items-center justify-between space-x-4 rounded-lg border p-4">
-        <div class="flex items-center gap-4">
-          <div class="rounded-full bg-brand/10 p-2 text-brand">
-            <Bell class="h-5 w-5" />
-          </div>
-          <div class="space-y-0.5">
-            <Label class="text-base font-bold">Push Notifications</Label>
-            <p class="text-sm text-muted-foreground">
-              Receive real-time alerts for laundry and announcements.
-            </p>
-          </div>
-        </div>
-        <Switch
-          disabled={!notifications.isSupported}
-          checked={notifications.isSubscribed}
-          onCheckedChange={handleToggle}
-        />
-      </div>
+      <SettingsSwitchItem
+        title="Push Notifications"
+        description="Receive real-time alerts for laundry and announcements."
+        icon={Bell}
+        disabled={!notifications.isSupported}
+        checked={notifications.isSubscribed}
+        onCheckedChange={handleToggle}
+      />
 
       {#if notifications.permission === "denied"}
         <p
