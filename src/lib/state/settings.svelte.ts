@@ -35,24 +35,24 @@ class UISettings {
     if (browser) {
       this.#fontFamily = (localStorage.getItem(LS_KEYS.UI_FONT) as UIFont) || "default";
       this.#reducedMotion = localStorage.getItem(LS_KEYS.ACC_REDUCED_MOTION) === "true";
-      this.#currentTerm = localStorage.getItem("halsk.ui.current_term") || "";
-      const sga = localStorage.getItem("halsk.ui.show_all_time_achievements");
+      this.#currentTerm = localStorage.getItem(LS_KEYS.UI_CURRENT_TERM) || "";
+      const sga = localStorage.getItem(LS_KEYS.UI_SHOW_ALL_TIME_ACHIEVEMENTS);
       this.#showAllTimeAchievements = sga === null ? true : sga === "true";
       this.#displayDensity =
         (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
-      this.#theme = localStorage.getItem("halsk.ui.theme") || "system";
+      this.#theme = localStorage.getItem(LS_KEYS.UI_THEME) || "system";
       this.#accountingWorkbookId = localStorage.getItem(LS_KEYS.GS_AW_ID) || PUBLIC_GS_AW_ID || "";
       this.#residentRecordsId = localStorage.getItem(LS_KEYS.GS_RR_ID) || PUBLIC_GS_RR_ID || "";
       this.#sharedRecordsId = localStorage.getItem(LS_KEYS.GS_SR_ID) || PUBLIC_GS_SR_ID || "";
-      this.#clockFormat = (localStorage.getItem("halsk.ui.clock_format") as "12h" | "24h") || "12h";
+      this.#clockFormat = (localStorage.getItem(LS_KEYS.UI_CLOCK_FORMAT) as "12h" | "24h") || "12h";
 
-      const spa = localStorage.getItem("halsk.ui.is_public_achievements");
+      const spa = localStorage.getItem(LS_KEYS.UI_IS_PUBLIC_ACHIEVEMENTS);
       this.#isPublicAchievementList = spa === null ? true : spa === "true";
-      const sn = localStorage.getItem("halsk.ui.nav.res");
+      const sn = localStorage.getItem(LS_KEYS.UI_NAV_RESIDENT);
       if (sn) {
         this.#residentNavIds = JSON.parse(sn);
       }
-      const an = localStorage.getItem("halsk.ui.nav.adm");
+      const an = localStorage.getItem(LS_KEYS.UI_NAV_ADMIN);
       if (an) {
         this.#adminNavIds = JSON.parse(an);
       }
@@ -99,7 +99,7 @@ class UISettings {
   set theme(v: string) {
     this.#theme = v;
     if (browser) {
-      localStorage.setItem("halsk.ui.theme", v);
+      localStorage.setItem(LS_KEYS.UI_THEME, v);
     }
     this.scheduleAutoSave();
   }
@@ -110,7 +110,7 @@ class UISettings {
   set isPublicAchievementList(v: boolean) {
     this.#isPublicAchievementList = v;
     if (browser) {
-      localStorage.setItem("halsk.ui.is_public_achievements", String(v));
+      localStorage.setItem(LS_KEYS.UI_IS_PUBLIC_ACHIEVEMENTS, String(v));
     }
     this.scheduleAutoSave();
   }
@@ -121,7 +121,7 @@ class UISettings {
   set residentNavIds(v: string[]) {
     this.#residentNavIds = v;
     if (browser) {
-      localStorage.setItem("halsk.ui.nav.res", JSON.stringify(v));
+      localStorage.setItem(LS_KEYS.UI_NAV_RESIDENT, JSON.stringify(v));
     }
     this.scheduleAutoSave();
   }
@@ -132,7 +132,7 @@ class UISettings {
   set adminNavIds(v: string[]) {
     this.#adminNavIds = v;
     if (browser) {
-      localStorage.setItem("halsk.ui.nav.adm", JSON.stringify(v));
+      localStorage.setItem(LS_KEYS.UI_NAV_ADMIN, JSON.stringify(v));
     }
     this.scheduleAutoSave();
   }
@@ -143,7 +143,7 @@ class UISettings {
   set clockFormat(v: "12h" | "24h") {
     this.#clockFormat = v;
     if (browser) {
-      localStorage.setItem("halsk.ui.clock_format", v);
+      localStorage.setItem(LS_KEYS.UI_CLOCK_FORMAT, v);
     }
     this.scheduleAutoSave();
   }
@@ -154,7 +154,7 @@ class UISettings {
   set showAllTimeAchievements(v: boolean) {
     this.#showAllTimeAchievements = v;
     if (browser) {
-      localStorage.setItem("halsk.ui.show_all_time_achievements", String(v));
+      localStorage.setItem(LS_KEYS.UI_SHOW_ALL_TIME_ACHIEVEMENTS, String(v));
     }
   }
 
@@ -164,7 +164,7 @@ class UISettings {
   set currentTerm(v: string) {
     this.#currentTerm = v;
     if (browser) {
-      localStorage.setItem("halsk.ui.current_term", v);
+      localStorage.setItem(LS_KEYS.UI_CURRENT_TERM, v);
     }
   }
 

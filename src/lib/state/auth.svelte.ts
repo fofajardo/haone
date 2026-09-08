@@ -52,8 +52,8 @@ class AuthState {
         this.user = JSON.parse(savedUser);
         this.isRemembered = true;
         this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
-        this.authType = (localStorage.getItem("halsk.auth.type") as "admin" | "resident") || null;
-        this.isInstanceAdmin = localStorage.getItem("halsk.auth.is_admin") === "true";
+        this.authType = (localStorage.getItem(LS_KEYS.AUTH_TYPE) as "admin" | "resident") || null;
+        this.isInstanceAdmin = localStorage.getItem(LS_KEYS.IS_ADMIN) === "true";
         const savedDisplayName = localStorage.getItem(LS_KEYS.DISPLAY_NAME);
         if (savedDisplayName) {
           this.adminDisplayName = savedDisplayName;
@@ -138,8 +138,8 @@ class AuthState {
       localStorage.setItem(LS_KEYS.ACCESS_TOKEN, token);
       localStorage.setItem(LS_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(LS_KEYS.REMEMBER, "true");
-      localStorage.setItem("halsk.auth.type", type);
-      localStorage.setItem("halsk.auth.is_admin", String(isInstanceAdmin));
+      localStorage.setItem(LS_KEYS.AUTH_TYPE, type);
+      localStorage.setItem(LS_KEYS.IS_ADMIN, String(isInstanceAdmin));
       this.ensureCachedPicture();
     }
   }
@@ -165,8 +165,8 @@ class AuthState {
       localStorage.removeItem(LS_KEYS.REMEMBER);
       localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
       localStorage.removeItem(LS_KEYS.DISPLAY_NAME);
-      localStorage.removeItem("halsk.auth.type");
-      localStorage.removeItem("halsk.auth.is_admin");
+      localStorage.removeItem(LS_KEYS.AUTH_TYPE);
+      localStorage.removeItem(LS_KEYS.IS_ADMIN);
       this.cachedPicture = null;
       this.authType = null;
       this.isInstanceAdmin = false;
