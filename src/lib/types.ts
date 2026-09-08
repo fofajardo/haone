@@ -17,6 +17,21 @@ export interface GoogleUserInfo {
   hd?: string;
 }
 
+export interface GoogleAuthToken {
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  token_type: string;
+  id_token: string;
+}
+
+export interface TokenExchangeResponse {
+  tokenData: GoogleAuthToken;
+  userInfoData: GoogleUserInfo;
+  userId: string;
+  isInstanceAdmin: boolean;
+}
+
 export interface ReceiptItem {
   name: string;
   amount: number;

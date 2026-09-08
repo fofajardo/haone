@@ -4,7 +4,7 @@ import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 import { PUBLIC_DB_PROVIDER, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
 import { LS_KEYS } from "$lib/constants";
-import type { GoogleUserInfo } from "$lib/types";
+import type { GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
 import { generatePKCEChallenge, generatePKCEVerifier } from "$utils/crypto";
 
 class AuthState {
@@ -277,16 +277,11 @@ class AuthState {
       throw new Error(err.error_description || "Token exchange failed");
     }
 
-    const tokenData = await tokenResp.json();
-    const {
-      access_token: accessToken,
-      id_token: idToken,
-      user: userInfo,
-      residentId,
-      isInstanceAdmin
-    } = tokenData;
+    const { tokenData, userInfoData, userId, isInstanceAdmin } =
+      (await tokenResp.json()) as TokenExchangeResponse;
+    const { access_token: accessToken, id_token: idToken } = tokenData;
 
-    this.setSession(accessToken, userInfo, rememberMe, residentId, savedType, isInstanceAdmin);
+    this.setSession(accessToken, userInfoData, rememberMe, userId, savedType, isInstanceAdmin);
 
     if (PUBLIC_DB_PROVIDER === "supabase") {
       if (!supabase || !idToken) {
