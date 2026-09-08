@@ -15,12 +15,12 @@ import { residentService } from "$api/services/resident-service";
 import { getCustomServices } from "$lib/services";
 
 /**
- * Resolves the primary identifier (UUID) of the currently signed-in resident.
+ * Resolves the primary identifier (UUID) of the currently signed-in user.
  */
-export async function getCurrentResidentId(): Promise<string> {
+export async function getSignedInUserId(): Promise<string> {
   const { auth } = await import("$state/auth.svelte");
   if (!auth.userId) {
-    throw new Error("Resident ID is unavailable.");
+    throw new Error("User ID is unavailable.");
   }
   return auth.userId;
 }

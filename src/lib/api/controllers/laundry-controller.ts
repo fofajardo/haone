@@ -7,7 +7,7 @@ import {
 } from "$lib/types";
 import { residentState } from "$state/resident-state.svelte";
 import { parseTimeMinutes } from "$utils/parsers";
-import { canAccessLaundryOrFridge, getCurrentResidentId } from "./resident-controller";
+import { canAccessLaundryOrFridge, getSignedInUserId } from "./resident-controller";
 
 export interface ValidateLaundryOptions {
   date: string;
@@ -127,13 +127,13 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 
 export async function fetchLaundryReservations(
   bypassCache = false
-): Promise<{ reservations: LaundryRecord[]; currentResidentId: string }> {
-  const currentResidentId = await getCurrentResidentId();
-  const res = await laundryService.fetchReservations(currentResidentId, undefined, bypassCache);
+): Promise<{ reservations: LaundryRecord[]; ownerUserId: string }> {
+  const ownerUserId = await getSignedInUserId();
+  const res = await laundryService.fetchReservations(ownerUserId, undefined, bypassCache);
   const list = Array.isArray(res) ? res : res.items;
   return {
     reservations: list,
-    currentResidentId
+    ownerUserId
   };
 }
 
@@ -164,7 +164,7 @@ export async function addLaundryReservation(
     throw new Error("Reservations cannot exceed 2 hours");
   }
 
-  const currentResidentId = data.residentId || (await getCurrentResidentId());
+  const currentResidentId = data.residentId || (await getSignedInUserId());
   const res = await laundryService.fetchReservations();
   const list = Array.isArray(res) ? res : res.items;
   const active = list.filter(
