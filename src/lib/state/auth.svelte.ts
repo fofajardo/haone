@@ -113,9 +113,9 @@ class AuthState {
     token: string,
     googleUser: GoogleUserInfo,
     remember: boolean,
-    type: "admin" | "resident" = "admin",
-    isInstanceAdmin: boolean = false,
-    residentId?: string
+    residentId: string,
+    type: "admin" | "resident",
+    isInstanceAdmin: boolean = false
   ) {
     this.accessToken = token;
     if (residentId) {
@@ -282,7 +282,7 @@ class AuthState {
       isInstanceAdmin
     } = tokenData;
 
-    this.setSession(accessToken, userInfo, rememberMe, savedType, isInstanceAdmin, residentId);
+    this.setSession(accessToken, userInfo, rememberMe, residentId, savedType, isInstanceAdmin);
 
     if (PUBLIC_DB_PROVIDER === "supabase") {
       if (!supabase || !idToken) {
