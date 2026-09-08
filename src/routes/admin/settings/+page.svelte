@@ -8,7 +8,6 @@
   import NotificationSettingsCard from "$components/settings/NotificationSettingsCard.svelte";
   import DevConfigCard from "$components/settings/DevConfigCard.svelte";
   import VersionCard from "$components/settings/VersionCard.svelte";
-  import SettingsActions from "$components/SettingsActions.svelte";
 
   onMount(() => {
     pageState.title = "Settings";
@@ -16,11 +15,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="Settings">
-    {#snippet actions()}
-      <SettingsActions />
-    {/snippet}
-  </ContentHeader>
+  <ContentHeader title="Settings" />
 
   <div class="flex flex-col gap-8 lg:flex-row">
     <!-- Left Column: Settings -->

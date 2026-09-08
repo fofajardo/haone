@@ -2,10 +2,10 @@
   import * as Card from "$ui/card";
   import { Button } from "$ui/button";
   import { Label } from "$ui/label";
-  import { Switch } from "$ui/switch";
   import { Monitor, Sun, Moon } from "@lucide/svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
+  import SettingsSwitchItem from "$components/settings/SettingsSwitchItem.svelte";
 
   function updateTheme(mode: string) {
     uiSettings.theme = mode;
@@ -117,10 +117,11 @@
     <div class="h-px bg-border/50"></div>
 
     <!-- Motion -->
-    <div class="flex items-center justify-between">
-      <Label>Reduced Motion</Label>
-      <Switch bind:checked={uiSettings.reducedMotion} />
-    </div>
+    <SettingsSwitchItem
+      id="reduced-motion"
+      title="Reduced Motion"
+      bind:checked={uiSettings.reducedMotion}
+    />
 
     <div class="h-px bg-border/50"></div>
 

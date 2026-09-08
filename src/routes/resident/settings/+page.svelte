@@ -5,7 +5,6 @@
   import NavSettingsCard from "$components/settings/NavSettingsCard.svelte";
   import PrivacySettingsCard from "$components/settings/PrivacySettingsCard.svelte";
   import NotificationSettingsCard from "$components/settings/NotificationSettingsCard.svelte";
-  import SettingsActions from "$components/SettingsActions.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
 
@@ -15,11 +14,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="Settings">
-    {#snippet actions()}
-      <SettingsActions />
-    {/snippet}
-  </ContentHeader>
+  <ContentHeader title="Settings" />
 
   <div class="flex flex-col gap-8 lg:flex-row">
     <div class="flex-1 space-y-8">
