@@ -26,7 +26,7 @@
       </h2>
 
       <button
-        onclick={() => auth.logout()}
+        onclick={() => auth.signOut()}
         class="mt-1 flex items-center gap-2 rounded-full border border-border px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
       >
         <LogOut class="h-4 w-4" />

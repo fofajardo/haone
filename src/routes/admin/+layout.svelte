@@ -38,7 +38,7 @@
     if (auth.accessToken) {
       if (auth.authType !== "admin") {
         if (auth.isInstanceAdmin) {
-          auth.logout();
+          auth.signOut();
           auth.redirectTo = page.url.pathname + page.url.search;
           globalDialog.show(
             "Access Denied",

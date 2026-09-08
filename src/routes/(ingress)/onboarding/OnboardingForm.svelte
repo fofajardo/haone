@@ -465,7 +465,7 @@
               <Button
                 variant="outline"
                 onclick={() => {
-                  auth.logout();
+                  auth.signOut();
                   goto("/sign-in");
                 }}
                 icon={LogOut}

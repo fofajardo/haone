@@ -156,7 +156,7 @@ class AuthState {
     }
   }
 
-  logout() {
+  signOut() {
     this.accessToken = null;
     this.googleUser = null;
     this.adminDisplayName = null;
@@ -295,7 +295,7 @@ class AuthState {
         token: idToken
       });
       if (sbErr) {
-        this.logout();
+        this.signOut();
         throw new Error(`Supabase sign-in failed: ${sbErr.message}`);
       }
     }

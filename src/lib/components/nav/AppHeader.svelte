@@ -185,7 +185,7 @@
                         <Sidebar.MenuButton
                           onclick={() => {
                             isDesktopPopoverOpen = false;
-                            auth.logout();
+                            auth.signOut();
                           }}
                           class="hover:bg-accent hover:text-accent-foreground"
                         >
