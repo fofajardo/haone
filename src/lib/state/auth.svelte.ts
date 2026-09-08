@@ -4,12 +4,12 @@ import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 import { PUBLIC_DB_PROVIDER, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
 import { LS_KEYS } from "$lib/constants";
-import type { GoogleCredential } from "$lib/types";
+import type { GoogleUserInfo } from "$lib/types";
 import { generatePKCEChallenge, generatePKCEVerifier } from "$utils/crypto";
 
 class AuthState {
   accessToken = $state<string | null>(null);
-  user = $state<GoogleCredential | null>(null);
+  googleUser = $state<GoogleUserInfo | null>(null);
   adminDisplayName = $state<string | null>(null);
   isRemembered = $state(false);
   redirectTo = $state<string | null>(null);
@@ -20,7 +20,7 @@ class AuthState {
   userId = $state<string>("");
 
   get displayName(): string {
-    return this.adminDisplayName || this.user?.name || "";
+    return this.adminDisplayName || this.googleUser?.name || "";
   }
 
   get isResident(): boolean {
@@ -39,12 +39,12 @@ class AuthState {
   constructor() {
     if (browser) {
       const savedToken = localStorage.getItem(LS_KEYS.ACCESS_TOKEN);
-      const savedJwt = localStorage.getItem(LS_KEYS.USER);
+      const savedGoogleUser = localStorage.getItem(LS_KEYS.GOOGLE_USER);
       const remembered = localStorage.getItem(LS_KEYS.REMEMBER) === "true";
 
-      if (remembered && savedToken && savedJwt) {
+      if (remembered && savedToken && savedGoogleUser) {
         this.accessToken = savedToken;
-        this.user = JSON.parse(savedJwt);
+        this.googleUser = JSON.parse(savedGoogleUser);
         this.isRemembered = true;
         this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
         this.authType = (localStorage.getItem(LS_KEYS.AUTH_TYPE) as "admin" | "resident") || null;
@@ -81,12 +81,12 @@ class AuthState {
   }
 
   async ensureCachedPicture() {
-    if (!browser || !this.user || this.cachedPicture || this.user.picture === undefined) {
+    if (!browser || !this.googleUser || this.cachedPicture || this.googleUser.picture === undefined) {
       return;
     }
 
     try {
-      const response = await fetch(this.user.picture);
+      const response = await fetch(this.googleUser.picture);
       const blob = await response.blob();
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -111,7 +111,7 @@ class AuthState {
 
   setSession(
     token: string,
-    user: GoogleCredential,
+    googleUser: GoogleUserInfo,
     remember: boolean,
     type: "admin" | "resident" = "admin",
     isInstanceAdmin: boolean = false,
@@ -134,18 +134,18 @@ class AuthState {
     }
 
     // Normalize user photo URL to high resolution
-    if (user.picture) {
-      user.picture = this.getHighResPictureUrl(user.picture);
+    if (googleUser.picture) {
+      googleUser.picture = this.getHighResPictureUrl(googleUser.picture);
     }
 
-    this.user = user;
+    this.googleUser = googleUser;
     this.isRemembered = remember;
     this.authType = type;
     this.isInstanceAdmin = isInstanceAdmin;
 
     if (browser && remember) {
       localStorage.setItem(LS_KEYS.ACCESS_TOKEN, token);
-      localStorage.setItem(LS_KEYS.USER, JSON.stringify(user));
+      localStorage.setItem(LS_KEYS.GOOGLE_USER, JSON.stringify(googleUser));
       localStorage.setItem(LS_KEYS.REMEMBER, "true");
       localStorage.setItem(LS_KEYS.AUTH_TYPE, type);
       localStorage.setItem(LS_KEYS.IS_ADMIN, String(isInstanceAdmin));
@@ -158,7 +158,7 @@ class AuthState {
 
   logout() {
     this.accessToken = null;
-    this.user = null;
+    this.googleUser = null;
     this.adminDisplayName = null;
     this.isRemembered = false;
 
@@ -173,7 +173,7 @@ class AuthState {
         invalidateServerCache();
       });
       localStorage.removeItem(LS_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(LS_KEYS.USER);
+      localStorage.removeItem(LS_KEYS.GOOGLE_USER);
       localStorage.removeItem(LS_KEYS.REMEMBER);
       localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
       localStorage.removeItem(LS_KEYS.DISPLAY_NAME);

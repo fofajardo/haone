@@ -98,10 +98,10 @@
       class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-opacity hover:opacity-80 md:hidden"
       aria-label="Open menu"
     >
-      {#if auth.user?.picture && !imgError}
+      {#if auth.googleUser?.picture && !imgError}
         <img
-          src={auth.cachedPicture || auth.user.picture}
-          alt={auth.user.name}
+          src={auth.cachedPicture || auth.googleUser.picture}
+          alt={auth.googleUser.name}
           class="h-full w-full object-cover"
           onerror={() => (imgError = true)}
         />
@@ -120,10 +120,10 @@
               class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-opacity hover:opacity-80"
               aria-label="Open profile menu"
             >
-              {#if auth.user?.picture && !imgError}
+              {#if auth.googleUser?.picture && !imgError}
                 <img
-                  src={auth.cachedPicture || auth.user.picture}
-                  alt={auth.user.name}
+                  src={auth.cachedPicture || auth.googleUser.picture}
+                  alt={auth.googleUser.name}
                   class="h-full w-full object-cover"
                   onerror={() => (imgError = true)}
                 />
@@ -139,12 +139,12 @@
           sideOffset={8}
           class="w-72 gap-0 overflow-hidden rounded-lg p-0"
         >
-          {#if auth.user}
+          {#if auth.googleUser}
             <div class="flex items-center gap-3 border-b border-border p-3">
               {#if !imgError}
                 <img
-                  src={auth.cachedPicture || auth.user.picture}
-                  alt={auth.user.name}
+                  src={auth.cachedPicture || auth.googleUser.picture}
+                  alt={auth.googleUser.name}
                   class="h-10 w-10 rounded-full border border-border object-cover"
                   onerror={() => (imgError = true)}
                 />
@@ -152,8 +152,8 @@
                 <CircleUser class="h-10 w-10 text-muted-foreground" />
               {/if}
               <div class="flex min-w-0 flex-col">
-                <span class="truncate text-sm font-medium text-foreground">{auth.user.name}</span>
-                <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
+                <span class="truncate text-sm font-medium text-foreground">{auth.googleUser.name}</span>
+                <span class="truncate text-xs text-muted-foreground">{auth.googleUser.email}</span>
               </div>
             </div>
 

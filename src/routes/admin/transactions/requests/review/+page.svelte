@@ -65,11 +65,11 @@
         const resident = r.find((res) => res.residentId === p.residentId);
         const user = u.find((usr) => usr.id === p.residentId);
         const currentUser = u.find(
-          (usr) => (usr.email || "").toLowerCase() === (auth.user?.email || "").toLowerCase()
+          (usr) => (usr.email || "").toLowerCase() === (auth.googleUser?.email || "").toLowerCase()
         );
         stagedForms[p.id] = {
           date: p.date,
-          creator: auth.user?.email || "",
+          creator: auth.googleUser?.email || "",
           account: resident?.email || user?.email || p.residentId,
           water: p.waterFee,
           assoc: p.assocFee,

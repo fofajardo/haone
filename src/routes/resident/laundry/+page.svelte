@@ -108,9 +108,9 @@
       }
       users = userData;
 
-      if (!currentResidentId && auth.user?.email) {
+      if (!currentResidentId && auth.googleUser?.email) {
         const me = users.find(
-          (u) => (u.email || "").toLowerCase() === auth.user?.email.toLowerCase()
+          (u) => (u.email || "").toLowerCase() === auth.googleUser?.email.toLowerCase()
         );
         if (me) currentResidentId = me.id;
       }

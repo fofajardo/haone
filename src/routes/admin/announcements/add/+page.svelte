@@ -62,7 +62,7 @@
       }
       const allUsers = await fetchUsers();
       const me = allUsers.find(
-        (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
+        (u) => u.email.toLowerCase() === (auth.googleUser?.email || "").toLowerCase()
       );
       await addAnnouncement({
         id: crypto.randomUUID(),

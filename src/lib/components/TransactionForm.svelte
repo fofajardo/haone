@@ -78,7 +78,7 @@
   // Form State
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
-    creatorEmail: auth.user?.email || "",
+    creatorEmail: auth.googleUser?.email || "",
     creatorName: auth.displayName || "",
     creatorStNo: "",
     creatorId: "",
@@ -433,7 +433,7 @@
       } else {
         // TODO: user info should be cached instead of fetched every time.
         const resId = auth.userId;
-        const email = auth.user?.email;
+        const email = auth.googleUser?.email;
         const myAcc = accounts.find(
           (a) =>
             (resId && (a.residentId === resId || a.id === resId)) ||

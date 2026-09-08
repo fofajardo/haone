@@ -41,7 +41,7 @@
   let error = $state<string | null>(null);
 
   async function loadStatus(term?: string) {
-    if (!auth.user?.email) return;
+    if (!auth.googleUser?.email) return;
     isLoading = true;
     error = null;
     try {
@@ -143,7 +143,7 @@
   <div class="mb-5 flex items-start justify-between">
     <div>
       <h1 class="mb-2 text-4xl font-bold tracking-tight">
-        Welcome back, {auth.user?.name?.split(" ")[0] || "Resident"}
+        Welcome back, {auth.googleUser?.name?.split(" ")[0] || "Resident"}
       </h1>
       <div>
         View your profile, track your financial standing, and manage your clearance for <span

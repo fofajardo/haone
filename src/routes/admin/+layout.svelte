@@ -17,12 +17,12 @@
 
   onMount(async () => {
     isLoadingAuth = false;
-    if (auth.accessToken && auth.user?.email && !auth.adminDisplayName) {
+    if (auth.accessToken && auth.googleUser?.email && !auth.adminDisplayName) {
       try {
         const { fetchUsers } = await import("$api/controllers/resident-controller");
         const users = await fetchUsers();
         const found = users.find((u) => {
-          return u.email.toLowerCase() === auth.user!.email.toLowerCase();
+          return u.email.toLowerCase() === auth.googleUser!.email.toLowerCase();
         });
         if (found && found.displayName) {
           auth.setAdminDisplayName(found.displayName);

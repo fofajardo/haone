@@ -31,7 +31,7 @@
     isClearing = true;
     try {
       const issuer = allAccounts.find(
-        (a: ResidentRecord) => a.email.toLowerCase() === auth.user?.email?.toLowerCase()
+        (a: ResidentRecord) => a.email.toLowerCase() === auth.googleUser?.email?.toLowerCase()
       );
       const issuerId = issuer?.residentId || "";
 

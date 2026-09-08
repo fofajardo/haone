@@ -138,7 +138,7 @@
 
       const isMine =
         resId === currentUserId ||
-        (auth.user?.email && resId.toLowerCase() === auth.user.email.toLowerCase());
+        (auth.googleUser?.email && resId.toLowerCase() === auth.googleUser.email.toLowerCase());
       const rawName = (user as any)?.name || r.displayName || "Resident";
       const rawRoom = (user as any)?.room || r.room || "";
 
@@ -469,7 +469,7 @@
               {@const durationMin = res.duration * 60}
               {@const isMine =
                 res.residentId === currentUserId ||
-                (auth.user?.email && res.residentId === auth.user.email)}
+                (auth.googleUser?.email && res.residentId === auth.googleUser.email)}
               {@const resEndTime = day.getTime() + res.endHour * 3600000}
               {@const isPast = resEndTime <= now.getTime()}
               {#if durationMin > 0}
@@ -548,7 +548,7 @@
     {#if selectedReservation}
       {@const isMine =
         selectedReservation.residentId === currentUserId ||
-        (auth.user?.email && selectedReservation.residentId === auth.user.email)}
+        (auth.googleUser?.email && selectedReservation.residentId === auth.googleUser.email)}
       <Sheet.Header>
         <Sheet.Title class="flex items-center gap-2">
           <Info class="h-5 w-5 text-primary" />

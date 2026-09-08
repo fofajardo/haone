@@ -43,7 +43,7 @@
 
   // Form State
   let issuedBy = $state(auth.displayName || "");
-  let issuedByEmail = $state(auth.user?.email || "");
+  let issuedByEmail = $state(auth.googleUser?.email || "");
   let assessedBy = $state("");
   let assessedByEmail = $state("");
   let certifiedBy = $state("");

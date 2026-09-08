@@ -97,7 +97,7 @@
         newAchievement.term = currTerm;
       }
       const me = allU.find((u) => {
-        return u.email.toLowerCase() === (auth.user?.email || "").toLowerCase();
+        return u.email.toLowerCase() === (auth.googleUser?.email || "").toLowerCase();
       });
       currentUserId = me?.id || "";
     } catch (e: any) {

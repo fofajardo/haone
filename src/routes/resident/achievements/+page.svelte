@@ -61,12 +61,12 @@
     new Set(
       logs
         .filter((l) => {
-          if (!currentResidentId && !auth.user?.email) {
+          if (!currentResidentId && !auth.googleUser?.email) {
             return false;
           }
           return (
             (currentResidentId && l.accountId === currentResidentId) ||
-            (auth.user?.email && l.accountId === auth.user?.email)
+            (auth.googleUser?.email && l.accountId === auth.googleUser?.email)
           );
         })
         .map((l) => l.achievementId)
@@ -148,7 +148,7 @@
             (l) =>
               l.achievementId === a.id &&
               ((currentResidentId && l.accountId === currentResidentId) ||
-                (auth.user?.email && l.accountId === auth.user?.email))
+                (auth.googleUser?.email && l.accountId === auth.googleUser?.email))
           )}
           {@const uniqueEarnersCount = new Set(
             logs.filter((l) => l.achievementId === a.id).map((l) => l.accountId)

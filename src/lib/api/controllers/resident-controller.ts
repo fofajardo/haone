@@ -30,7 +30,7 @@ export async function getCurrentResidentId(): Promise<string> {
  */
 export async function fetchResidentStatus(term?: string, bypassCache = false): Promise<any> {
   const { auth } = await import("$state/auth.svelte");
-  const userEmail = auth.user?.email || "";
+  const userEmail = auth.googleUser?.email || "";
   if (!userEmail) return null;
   return residentService.fetchResidentStatus(userEmail, term, bypassCache);
 }

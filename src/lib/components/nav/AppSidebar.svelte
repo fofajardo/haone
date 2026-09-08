@@ -137,7 +137,7 @@
 </script>
 
 <Sidebar.Root collapsible="icon" class="data-[mobile=true]:w-full!">
-  {#if sidebar.isMobile && auth.user}
+  {#if sidebar.isMobile && auth.googleUser}
     <Sidebar.Header class="shrink-0 p-0">
       <div class="flex shrink-0 items-center justify-end px-4 py-3">
         <Button

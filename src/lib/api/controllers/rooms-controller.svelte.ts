@@ -548,7 +548,7 @@ export async function manualDelistResident(
         await addJournalEntries([
           {
             date: getLocalDateString(),
-            creator: auth.user?.email || "",
+            creator: auth.googleUser?.email || "",
             account: resRecord.email,
             water: waterWaiveAmt,
             assoc: assocWaiveAmt,

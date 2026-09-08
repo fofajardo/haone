@@ -27,7 +27,7 @@
   }
 
   async function loadStatus(targetTerm: string, bypassCache = false) {
-    if (!auth.user?.email) return;
+    if (!auth.googleUser?.email) return;
 
     const url = new URL(window.location.href);
     if (targetTerm) {

@@ -63,7 +63,7 @@
   // Export Options
   let exportFormat = $state("pdf");
   let issuedBy = $state(auth.displayName || "");
-  let issuedByEmail = $state(auth.user?.email || "");
+  let issuedByEmail = $state(auth.googleUser?.email || "");
   let assessedBy = $state("");
   let assessedByEmail = $state("");
   let certifiedBy = $state("");
@@ -400,12 +400,12 @@
         periodEnd = dates[dates.length - 1];
       }
 
-      if (auth.user) {
+      if (auth.googleUser) {
         if (!issuedBy) {
           issuedBy = auth.displayName;
         }
         if (!issuedByEmail) {
-          issuedByEmail = auth.user.email;
+          issuedByEmail = auth.googleUser.email;
         }
       }
     } catch (e: any) {

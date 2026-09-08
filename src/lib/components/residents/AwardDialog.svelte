@@ -36,7 +36,7 @@
       const [achList, userList] = await Promise.all([fetchAdminAchievements(true), fetchUsers()]);
       achievements = achList;
       const me = userList.find((u) => {
-        return u.email.toLowerCase() === (auth.user?.email || "").toLowerCase();
+        return u.email.toLowerCase() === (auth.googleUser?.email || "").toLowerCase();
       });
       currentUserId = me?.id || "";
     } catch (e: any) {

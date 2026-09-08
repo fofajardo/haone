@@ -6,25 +6,15 @@
  * Page & General Types
  * ========================================== */
 
-export interface GoogleCredential {
-  iss?: string;
-  nbf?: number;
-  aud?: string;
+export interface GoogleUserInfo {
   sub?: string;
-  hd?: string;
-  auth_time?: number;
-  amr?: string[];
-  email: string;
-  email_verified?: boolean;
-  azp?: string;
   name: string;
-  picture?: string;
   given_name?: string;
   family_name?: string;
-  iat?: number;
-  exp?: number;
-  jti?: string;
-  id?: string;
+  picture?: string;
+  email: string;
+  email_verified?: boolean;
+  hd?: string;
 }
 
 export interface ReceiptItem {

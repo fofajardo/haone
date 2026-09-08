@@ -116,8 +116,8 @@ export const supabaseResidentService: ResidentServiceInterface = {
     ]);
 
     let currentUserId: string | null = null;
-    if (auth.isResident && auth.user?.email) {
-      const emailLower = auth.user.email.toLowerCase().trim();
+    if (auth.isResident && auth.googleUser?.email) {
+      const emailLower = auth.googleUser.email.toLowerCase().trim();
       const currentUser = usersData.find(
         (u: any) => (u.email || "").toLowerCase().trim() === emailLower
       );
@@ -233,7 +233,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     }
 
     // Sheets always derives the identity from the auth token; mirror that.
-    const email = ((auth.isResident ? auth.user?.email : emailArg) || "").toLowerCase().trim();
+    const email = ((auth.isResident ? auth.googleUser?.email : emailArg) || "").toLowerCase().trim();
     const sb = supabase;
 
     const { data: userRow, error: userErr } = await supabase
