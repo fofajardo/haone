@@ -5,7 +5,7 @@ import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const { code, code_verifier, redirect_uri, client_id } = await request.json();
+    const { code, code_verifier, redirect_uri } = await request.json();
 
     let clientSecret = GI_CLIENT_SECRET;
 
@@ -13,7 +13,7 @@ export const POST: RequestHandler = async ({ request }) => {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        client_id: client_id || PUBLIC_GI_CLIENT_ID,
+        client_id: PUBLIC_GI_CLIENT_ID,
         client_secret: clientSecret,
         code,
         code_verifier,

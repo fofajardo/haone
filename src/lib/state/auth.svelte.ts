@@ -263,8 +263,7 @@ class AuthState {
       body: JSON.stringify({
         code,
         code_verifier: verifier,
-        redirect_uri: window.location.origin + "/sign-in",
-        client_id: PUBLIC_GI_CLIENT_ID
+        redirect_uri: window.location.origin + "/sign-in"
       })
     });
 
