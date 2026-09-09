@@ -661,7 +661,6 @@
 <ClearanceDialog
   bind:open={isClearDialogOpen}
   residents={residentsToClear}
-  allAccounts={allResidents}
   onSuccess={(count) => {
     showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
   }}

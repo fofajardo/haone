@@ -76,10 +76,11 @@
   let hasConfirmedTerm = $state(false);
 
   // Form State
+  // FIXME: also using legacy fields.
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
-    creatorEmail: auth.googleUser?.email || "",
-    creatorName: auth.displayName || "",
+    creatorEmail: auth.user?.email || "",
+    creatorName: auth.displayNameLastFirst || "",
     creatorStNo: "",
     creatorId: "",
     accountEmail: "",
@@ -433,7 +434,7 @@
       } else if (auth.user) {
         formData.creatorStNo = auth.user.studentNo;
         formData.creatorName = auth.user.displayName;
-        formData.creatorId = auth.user.id;
+        formData.creatorId = auth.userId;
         creatorSearch = auth.user.displayName;
       }
 

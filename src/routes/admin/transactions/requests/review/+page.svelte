@@ -64,13 +64,10 @@
       filtered.forEach((p) => {
         const resident = r.find((res) => res.residentId === p.residentId);
         const user = u.find((usr) => usr.id === p.residentId);
-        const currentUser = u.find(
-          (usr) => (usr.email || "").toLowerCase() === (auth.googleUser?.email || "").toLowerCase()
-        );
         stagedForms[p.id] = {
           date: p.date,
-          creator: auth.googleUser?.email || "",
-          account: resident?.email || user?.email || p.residentId,
+          creator: "", // deprecated
+          account: "", // deprecated
           water: p.waterFee,
           assoc: p.assocFee,
           misc: p.misc,
@@ -82,13 +79,13 @@
           mopRefNo: "",
           prDateIssued: "",
           prRefNo: "",
-          creatorName: auth.displayName || "",
+          creatorName: auth.displayNameLastFirst || "",
           name: resident?.name || user?.displayName || "",
           stno: resident?.stno || user?.studentNo || "",
           wasAudited: false,
           receiptUrl: "",
           id: "",
-          creatorId: currentUser?.id || "",
+          creatorId: auth.userId,
           accountId: p.residentId || user?.id || resident?.residentId || "",
           amount: p.waterFee + p.assocFee + p.misc,
           raw: []

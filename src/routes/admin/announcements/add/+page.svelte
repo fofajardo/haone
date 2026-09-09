@@ -60,13 +60,9 @@
       if (editorActions) {
         await editorActions.uploadImages();
       }
-      const allUsers = await fetchUsers();
-      const me = allUsers.find(
-        (u) => u.email.toLowerCase() === (auth.googleUser?.email || "").toLowerCase()
-      );
       await addAnnouncement({
         id: crypto.randomUUID(),
-        creatorId: me?.id || "",
+        creatorId: auth.userId,
         dateCreated: dayjs().toISOString(),
         ...formData,
         startDate: formData.startDate ? dayjs(formData.startDate).toISOString() : "",

@@ -101,7 +101,7 @@
       {#if auth.googleUser?.picture && !imgError}
         <img
           src={auth.cachedPicture || auth.googleUser.picture}
-          alt={auth.googleUser.name}
+          alt={auth.displayName}
           class="h-full w-full object-cover"
           onerror={() => (imgError = true)}
         />
@@ -123,7 +123,7 @@
               {#if auth.googleUser?.picture && !imgError}
                 <img
                   src={auth.cachedPicture || auth.googleUser.picture}
-                  alt={auth.googleUser.name}
+                  alt={auth.displayName || "User"}
                   class="h-full w-full object-cover"
                   onerror={() => (imgError = true)}
                 />
@@ -139,12 +139,12 @@
           sideOffset={8}
           class="w-72 gap-0 overflow-hidden rounded-lg p-0"
         >
-          {#if auth.googleUser}
+          {#if auth.user}
             <div class="flex items-center gap-3 border-b border-border p-3">
               {#if !imgError}
                 <img
-                  src={auth.cachedPicture || auth.googleUser.picture}
-                  alt={auth.googleUser.name}
+                  src={auth.cachedPicture || auth.googleUser?.picture}
+                  alt={auth.user.displayNameFormal}
                   class="h-10 w-10 rounded-full border border-border object-cover"
                   onerror={() => (imgError = true)}
                 />
@@ -153,9 +153,9 @@
               {/if}
               <div class="flex min-w-0 flex-col">
                 <span class="truncate text-sm font-medium text-foreground"
-                  >{auth.googleUser.name}</span
+                  >{auth.user.displayNameFormal}</span
                 >
-                <span class="truncate text-xs text-muted-foreground">{auth.googleUser.email}</span>
+                <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
               </div>
             </div>
 

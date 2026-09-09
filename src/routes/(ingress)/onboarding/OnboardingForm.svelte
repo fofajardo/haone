@@ -47,7 +47,7 @@
   let isSubmitting = $state(false);
   let step = $state(untrack(() => (status.waitingForConfirmation ? 4 : 1)));
   let isOutdated = $state(false);
-  const emailVal = $derived(status.profile?.email || auth.googleUser?.email || "");
+  const emailVal = $derived(status.profile?.email || auth.user?.email || "");
   const isUpMail = $derived(emailVal.endsWith("@up.edu.ph"));
   const blockStudentNoChange = $derived(!!status.profile?.studentNo);
 
@@ -136,7 +136,7 @@
             lastName: status.profile?.lastName || "",
             studentNo: status.profile?.studentNo || "",
             accountType: AccountType.ALUMNUS,
-            email: status.profile?.email || auth.googleUser?.email,
+            email: status.profile?.email || auth.user?.email,
             term: status.systemActiveTerm
           });
           residentState.forceOnboarding = false;
@@ -286,7 +286,7 @@
         ...formData,
         studentNo: isStudentNoRequired ? formData.studentNo : "",
         accountType,
-        email: status.profile?.email || auth.googleUser?.email,
+        email: status.profile?.email || auth.user?.email,
         term: status.systemActiveTerm
       });
 

@@ -96,10 +96,7 @@
       if (!newAchievement.term) {
         newAchievement.term = currTerm;
       }
-      const me = allU.find((u) => {
-        return u.email.toLowerCase() === (auth.googleUser?.email || "").toLowerCase();
-      });
-      currentUserId = me?.id || "";
+      currentUserId = auth.userId;
     } catch (e: any) {
       error = e.message;
     } finally {

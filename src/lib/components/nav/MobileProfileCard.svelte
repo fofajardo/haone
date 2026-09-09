@@ -7,13 +7,13 @@
   let imgError = $state(false);
 </script>
 
-{#if sidebar.isMobile && auth.googleUser}
+{#if sidebar.isMobile && auth.user}
   <div class="flex flex-col gap-6 px-4 pt-6">
     <div class="flex flex-col items-center justify-center gap-3 text-center">
       {#if !imgError}
         <img
-          src={auth.cachedPicture || auth.googleUser.picture}
-          alt={auth.googleUser.name}
+          src={auth.cachedPicture || auth.googleUser?.picture}
+          alt={auth.user.displayNameFormal}
           class="h-32 w-32 rounded-full object-cover"
           onerror={() => (imgError = true)}
         />
@@ -22,7 +22,7 @@
       {/if}
 
       <h2 class="mt-1 text-2xl font-normal tracking-normal text-foreground">
-        Hi, {auth.googleUser.given_name || auth.googleUser.name.split(" ")[0]}!
+        Hi, {auth.preferredName}!
       </h2>
 
       <button

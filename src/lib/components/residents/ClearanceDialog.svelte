@@ -12,12 +12,10 @@
   let {
     open = $bindable(false),
     residents = [],
-    allAccounts = [],
     onSuccess
   } = $props<{
     open: boolean;
     residents: ResidentRecord[];
-    allAccounts: ResidentRecord[];
     onSuccess?: (count: number) => void;
   }>();
 
@@ -30,13 +28,8 @@
 
     isClearing = true;
     try {
-      const issuer = allAccounts.find(
-        (a: ResidentRecord) => a.email.toLowerCase() === auth.googleUser?.email?.toLowerCase()
-      );
-      const issuerId = issuer?.residentId || "";
-
       for (const res of residents) {
-        const result = await clearResident(res, issuerId);
+        const result = await clearResident(res, auth.userId);
 
         // In-place update for reactivity
         res.ceRefNo = result.refNo;

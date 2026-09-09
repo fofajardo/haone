@@ -545,10 +545,11 @@ export async function manualDelistResident(
           noteLabel = `TRANSFERRED TO ANOTHER RESIDENCE HALL (${dateStr})`;
         }
 
+        // FIXME: this looks broken since it's still using the legacy email as ID behavior.
         await addJournalEntries([
           {
             date: getLocalDateString(),
-            creator: auth.googleUser?.email || "",
+            creator: auth.user?.email || "",
             account: resRecord.email,
             water: waterWaiveAmt,
             assoc: assocWaiveAmt,
@@ -561,7 +562,7 @@ export async function manualDelistResident(
             mopRefNo: "",
             prDateIssued: "",
             prRefNo: "",
-            creatorName: auth.displayName,
+            creatorName: auth.displayNameLastFirst,
             name: resRecord.name,
             stno: resRecord.stno,
             wasAudited: false,

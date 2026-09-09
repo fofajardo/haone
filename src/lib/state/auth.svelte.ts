@@ -8,7 +8,6 @@ class AuthState {
   credentialJwt = $state<string | null>(null);
   googleUser = $state<GoogleUserInfo | null>(null);
   user = $state<UserRecord | null>(null);
-  adminDisplayName = $state<string | null>(null);
   isRemembered = $state(false);
   redirectTo = $state<string | null>(null);
   initialized = $state(false);
@@ -20,8 +19,16 @@ class AuthState {
     return this.user?.id || "";
   }
 
+  get displayNameLastFirst(): string {
+    return this.user?.displayName || "";
+  }
+
   get displayName(): string {
-    return this.adminDisplayName || this.user?.displayName || this.googleUser?.name || "";
+    return this.user?.displayNameFormal || "";
+  }
+
+  get preferredName(): string {
+    return this.user?.overrideName || this.user?.firstName || "";
   }
 
   get isResident(): boolean {
@@ -60,19 +67,8 @@ class AuthState {
         this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
         this.authType = (localStorage.getItem(LS_KEYS.AUTH_TYPE) as "admin" | "resident") || null;
         this.isInstanceAdmin = localStorage.getItem(LS_KEYS.IS_ADMIN) === "true";
-        const savedDisplayName = localStorage.getItem(LS_KEYS.DISPLAY_NAME);
-        if (savedDisplayName) {
-          this.adminDisplayName = savedDisplayName;
-        }
       }
       this.initialized = true;
-    }
-  }
-
-  setAdminDisplayName(name: string) {
-    this.adminDisplayName = name;
-    if (browser) {
-      localStorage.setItem(LS_KEYS.DISPLAY_NAME, name);
     }
   }
 
@@ -161,7 +157,6 @@ class AuthState {
     this.credentialJwt = null;
     this.googleUser = null;
     this.user = null;
-    this.adminDisplayName = null;
     this.isRemembered = false;
 
     if (browser) {

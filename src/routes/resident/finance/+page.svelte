@@ -27,8 +27,6 @@
   }
 
   async function loadStatus(targetTerm: string, bypassCache = false) {
-    if (!auth.googleUser?.email) return;
-
     const url = new URL(window.location.href);
     if (targetTerm) {
       url.searchParams.set("term", targetTerm);

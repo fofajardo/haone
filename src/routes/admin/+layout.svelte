@@ -7,31 +7,10 @@
   import { globalDialog } from "$state/dialog.svelte";
 
   let { children } = $props();
-  let isLoadingAuth = $state(true);
 
   const isLoading = $derived(
-    isLoadingAuth ||
-      (!auth.accessToken && page.url.pathname !== "/sign-in") ||
-      auth.authType !== "admin"
+    (!auth.accessToken && page.url.pathname !== "/sign-in") || auth.authType !== "admin"
   );
-
-  onMount(async () => {
-    isLoadingAuth = false;
-    if (auth.accessToken && auth.googleUser?.email && !auth.adminDisplayName) {
-      try {
-        const { fetchUsers } = await import("$api/controllers/resident-controller");
-        const users = await fetchUsers();
-        const found = users.find((u) => {
-          return u.email.toLowerCase() === auth.googleUser!.email.toLowerCase();
-        });
-        if (found && found.displayName) {
-          auth.setAdminDisplayName(found.displayName);
-        }
-      } catch (err) {
-        console.error("Failed to fetch admin display name:", err);
-      }
-    }
-  });
 
   // Redirect logic
   $effect(() => {

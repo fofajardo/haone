@@ -61,13 +61,10 @@
     new Set(
       logs
         .filter((l) => {
-          if (!currentResidentId && !auth.googleUser?.email) {
+          if (!currentResidentId && !auth.userId) {
             return false;
           }
-          return (
-            (currentResidentId && l.accountId === currentResidentId) ||
-            (auth.googleUser?.email && l.accountId === auth.googleUser?.email)
-          );
+          return currentResidentId && l.accountId === currentResidentId;
         })
         .map((l) => l.achievementId)
     )
@@ -146,9 +143,7 @@
         {#each earnedAchievements as a}
           {@const userLog = logs.find(
             (l) =>
-              l.achievementId === a.id &&
-              ((currentResidentId && l.accountId === currentResidentId) ||
-                (auth.googleUser?.email && l.accountId === auth.googleUser?.email))
+              l.achievementId === a.id && currentResidentId && l.accountId === currentResidentId
           )}
           {@const uniqueEarnersCount = new Set(
             logs.filter((l) => l.achievementId === a.id).map((l) => l.accountId)

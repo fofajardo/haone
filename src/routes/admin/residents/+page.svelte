@@ -348,7 +348,6 @@
 <ClearanceDialog
   bind:open={isClearDialogOpen}
   residents={residentsToClear}
-  allAccounts={residents}
   onSuccess={(count) => {
     showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
     selectedIndices = new Set(); // Clear selection after success

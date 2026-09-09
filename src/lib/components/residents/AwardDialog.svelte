@@ -35,10 +35,7 @@
     try {
       const [achList, userList] = await Promise.all([fetchAdminAchievements(true), fetchUsers()]);
       achievements = achList;
-      const me = userList.find((u) => {
-        return u.email.toLowerCase() === (auth.googleUser?.email || "").toLowerCase();
-      });
-      currentUserId = me?.id || "";
+      currentUserId = auth.userId;
     } catch (e: any) {
       console.error("Failed to load achievements data:", e);
       toast.error("Failed to load achievements: " + e.message);

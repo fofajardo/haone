@@ -88,9 +88,6 @@
   import { fetchResidentStatus } from "$api/controllers/resident-controller";
 
   async function loadData() {
-    if (!auth.googleUser?.email) {
-      return;
-    }
     isLoading = true;
     error = null;
     try {

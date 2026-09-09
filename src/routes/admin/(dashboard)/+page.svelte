@@ -226,7 +226,7 @@
   <!-- Header Section -->
   <div class="mb-5">
     <h1 class="mb-2 text-4xl font-bold tracking-tight">
-      Welcome back, {auth.googleUser?.name.split(" ")[0]}
+      Welcome back, {auth.preferredName}
     </h1>
     <div>
       Manage residents, track collections, and automate communications for <span

@@ -260,7 +260,7 @@
       <LaundryCalendar
         {reservations}
         users={users as any[]}
-        currentUserId={auth.googleUser?.email}
+        currentUserId={auth.userId}
         isAdminView={true}
         bind:selectedReservation
         onCancelReservation={(id) => {

@@ -136,9 +136,7 @@
       // Lookup by ID (UUID) or email (legacy)
       const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
 
-      const isMine =
-        resId === currentUserId ||
-        (auth.googleUser?.email && resId.toLowerCase() === auth.googleUser.email.toLowerCase());
+      const isMine = resId === currentUserId;
       const rawName = (user as any)?.name || r.displayName || "Resident";
       const rawRoom = (user as any)?.room || r.room || "";
 
@@ -467,9 +465,7 @@
             {#each getActiveReservationsForDay(dateStr) as res}
               {@const startMin = (res.startHour - startHour) * 60}
               {@const durationMin = res.duration * 60}
-              {@const isMine =
-                res.residentId === currentUserId ||
-                (auth.googleUser?.email && res.residentId === auth.googleUser.email)}
+              {@const isMine = res.residentId === currentUserId}
               {@const resEndTime = day.getTime() + res.endHour * 3600000}
               {@const isPast = resEndTime <= now.getTime()}
               {#if durationMin > 0}
@@ -546,9 +542,7 @@
 <Sheet.Root open={!!selectedReservation} onOpenChange={(o) => !o && (selectedReservation = null)}>
   <Sheet.Content side="right" class="sm:max-w-md sm:rounded-l-xl">
     {#if selectedReservation}
-      {@const isMine =
-        selectedReservation.residentId === currentUserId ||
-        (auth.googleUser?.email && selectedReservation.residentId === auth.googleUser.email)}
+      {@const isMine = selectedReservation.residentId === currentUserId}
       <Sheet.Header>
         <Sheet.Title class="flex items-center gap-2">
           <Info class="h-5 w-5 text-primary" />
