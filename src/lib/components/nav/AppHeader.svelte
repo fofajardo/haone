@@ -152,9 +152,7 @@
                 <CircleUser class="h-10 w-10 text-muted-foreground" />
               {/if}
               <div class="flex min-w-0 flex-col">
-                <span class="truncate text-sm font-medium text-foreground"
-                  >{auth.displayName}</span
-                >
+                <span class="truncate text-sm font-medium text-foreground">{auth.displayName}</span>
                 <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
               </div>
             </div>
