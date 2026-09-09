@@ -259,9 +259,8 @@
         </div>
       </Card.Content>
       <Card.Footer class="justify-end gap-2 border-t pt-6">
-        <Button variant="ghost" onclick={() => goto("/admin/residents/officers")}>Cancel</Button>
         <Button onclick={handleUpdate} isLoading={isSaving} icon={Save} disabled={isImmutable}>
-          Save Changes
+          Save
         </Button>
       </Card.Footer>
     </Card.Root>
