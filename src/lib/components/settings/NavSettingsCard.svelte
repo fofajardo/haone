@@ -96,7 +96,7 @@
           >
         </div>
 
-        <div class="flex min-h-[52px] flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
+        <div class="flex min-h-13 flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
           {#each uiSettings.residentNavIds as itemId, i}
             {@const item = ALL_RESIDENT_ITEMS.find((it) => it.id === itemId)}
             {#if item}
@@ -169,7 +169,7 @@
           >
         </div>
 
-        <div class="flex min-h-[52px] flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
+        <div class="flex min-h-13 flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
           {#each uiSettings.adminNavIds as itemId, i}
             {@const item = ALL_ADMIN_ITEMS.find((it) => it.id === itemId)}
             {#if item}

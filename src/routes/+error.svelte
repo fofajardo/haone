@@ -63,7 +63,7 @@
 </script>
 
 <div
-  class="flex min-h-[100dvh] flex-col items-center justify-center bg-background p-4 text-foreground md:p-8"
+  class="flex min-h-dvh flex-col items-center justify-center bg-background p-4 text-foreground md:p-8"
 >
   <div class="w-full max-w-2xl" in:fade={{ duration: 300 }}>
     <Card.Root class="border shadow-none sm:shadow-sm">
@@ -100,7 +100,7 @@
                 transition:slide
                 class="overflow-hidden rounded-md border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground"
               >
-                <div class="max-h-[200px] overflow-auto font-mono whitespace-pre">
+                <div class="max-h-50 overflow-auto font-mono whitespace-pre">
                   {error.stack}
                 </div>
                 <Button

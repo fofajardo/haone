@@ -315,7 +315,7 @@
               <Card.Description>Distribution by Academic Unit</Card.Description>
             </Card.Header>
             <Card.Content class="space-y-6">
-              <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-[300px]">
+              <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-75">
                 <PieChart
                   data={reportData.colleges}
                   key="label"

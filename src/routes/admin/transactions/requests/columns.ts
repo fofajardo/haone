@@ -67,7 +67,7 @@ export const columns: ColumnDef<PaymentRequestRecord>[] = [
         render: () => `
           <div class="flex flex-col">
             <span class="text-sm font-medium uppercase">${translateMop(p().mop)}</span>
-            ${p().notes ? `<span class="text-sm text-muted-foreground italic truncate max-w-[300px] block">— ${p().notes}</span>` : ""}
+            ${p().notes ? `<span class="text-sm text-muted-foreground italic truncate max-w-75 block">— ${p().notes}</span>` : ""}
           </div>
         `
       }));

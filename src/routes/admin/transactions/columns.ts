@@ -78,7 +78,7 @@ export const columns: ColumnDef<JournalRecord>[] = [
                 <span class="text-sm uppercase">${translateType(r.type, transactionTypes)}</span>
                 <span class="text-sm text-muted-foreground">${translateMop(r.mop)}</span>
               </div>
-              ${r.notes ? `<span class="text-sm text-muted-foreground truncate max-w-[300px] block italic">— ${r.notes}</span>` : ""}
+              ${r.notes ? `<span class="text-sm text-muted-foreground truncate max-w-75 block italic">— ${r.notes}</span>` : ""}
             </div>
           `
         };

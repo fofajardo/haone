@@ -877,7 +877,7 @@
                             </Button>
                           {/snippet}
                         </Dialog.Trigger>
-                        <Dialog.Content class="sm:max-w-[425px]">
+                        <Dialog.Content class="sm:max-w-106.25">
                           <Dialog.Header>
                             <Dialog.Title>Financial Standing</Dialog.Title>
                             <Dialog.Description>
@@ -1113,7 +1113,7 @@
                 <Textarea
                   bind:value={formData.notes}
                   placeholder="Description for the resident…"
-                  class="h-[120px] text-xs"
+                  class="h-30 text-xs"
                 />
               </div>
               <div class="space-y-2">
@@ -1121,7 +1121,7 @@
                 <Textarea
                   bind:value={formData.notesPrivate}
                   placeholder="Internal context only (not visible to resident)…"
-                  class="h-[120px] text-xs"
+                  class="h-30 text-xs"
                 />
               </div>
             </div>
@@ -1134,7 +1134,7 @@
               disabled={!formData.accountEmail}
               isLoading={isSubmitting}
               icon={Save}
-              class="min-w-[120px]"
+              class="min-w-30"
             >
               Save
             </Button>

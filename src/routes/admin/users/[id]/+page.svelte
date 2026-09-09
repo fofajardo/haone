@@ -467,7 +467,7 @@
               Programs & Colleges
             </Label>
             <div
-              class="relative space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
+              class="relative space-y-6 before:absolute before:top-2 before:left-2.75 before:h-[calc(100%-16px)] before:w-px before:bg-border"
             >
               {#each qualifications as q}
                 <div class="relative flex items-start gap-4 pl-8">

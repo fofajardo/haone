@@ -192,7 +192,7 @@
             </EmptyView>
           {:else}
             <div
-              class="relative space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
+              class="relative space-y-6 before:absolute before:top-2 before:left-2.75 before:h-[calc(100%-16px)] before:w-px before:bg-border"
             >
               {#each academicItems as item, i}
                 <div class="relative flex items-start gap-4 pl-8">
@@ -317,7 +317,7 @@
 
 <!-- Academic Item Dialog -->
 <Dialog.Root bind:open={isDialogOpen}>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>{editingIndex !== null ? "Edit" : "Add"} Academic Record</Dialog.Title>
       <Dialog.Description>Configure college and degree program.</Dialog.Description>

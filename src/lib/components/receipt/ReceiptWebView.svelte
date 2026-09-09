@@ -181,7 +181,7 @@
         >
         <img src="/ha1.svg" alt="HA1 Logo" class="h-10 w-auto opacity-50 contrast-125 grayscale" />
       </div>
-      <p class="mt-4 max-w-[350px] text-xs leading-relaxed text-muted-foreground">
+      <p class="mt-4 max-w-87.5 text-xs leading-relaxed text-muted-foreground">
         This document is electronically generated, does not require a signature, and is not valid
         for claim of input tax.
       </p>

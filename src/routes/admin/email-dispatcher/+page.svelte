@@ -165,7 +165,7 @@
           disabled={isSuccess || emailDispatcher.queue.length === 0}
           icon={isSuccess ? CircleCheckBig : Play}
           size="sm"
-          class="min-w-[120px]"
+          class="min-w-30"
         >
           {isSuccess ? "Sent" : "Run Batch"}
         </Button>
@@ -359,7 +359,7 @@
             </Card.Title>
           </Card.Header>
           <Card.Content class="p-0">
-            <div class="max-h-[400px] divide-y overflow-auto">
+            <div class="max-h-100 divide-y overflow-auto">
               {#each emailDispatcher.queue as item, i}
                 <button
                   class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 {previewIndex ===
@@ -425,7 +425,7 @@
               </div>
 
               <div
-                class="max-h-[600px] overflow-auto rounded-lg border bg-background text-foreground shadow-inner"
+                class="max-h-150 overflow-auto rounded-lg border bg-background text-foreground shadow-inner"
               >
                 {@html emailPreview.body}
               </div>

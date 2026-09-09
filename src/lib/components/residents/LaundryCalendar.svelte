@@ -319,7 +319,7 @@
   </div>
 
   <div class="overflow-x-auto">
-    <div class={cn(viewMode === "week" ? "min-w-[800px]" : "w-full")}>
+    <div class={cn(viewMode === "week" ? "min-w-200" : "w-full")}>
       <!-- Unified Grid Container -->
       <div
         class={cn(

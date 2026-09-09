@@ -282,7 +282,7 @@
           <FilterDrawer activeCount={Number(statusFilter !== "")}>
             <div class="flex items-center gap-2">
               <Funnel class="h-4 w-4 text-muted-foreground" />
-              <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-[140px]">
+              <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-35">
                 <NativeSelect.Option value="">All Status</NativeSelect.Option>
                 <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
                 <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>

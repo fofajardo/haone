@@ -290,7 +290,7 @@
             title="Undo"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <!-- Basic Marks -->
           <Button
@@ -378,7 +378,7 @@
             title="Highlight"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <!-- Script -->
           <Button
@@ -404,7 +404,7 @@
             title="Superscript"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <!-- Alignment -->
           <Button
@@ -452,7 +452,7 @@
             title="Justify"
           />
 
-          <div class="flex-grow"></div>
+          <div class="grow"></div>
 
           <!-- Utilities -->
           <Button
@@ -502,7 +502,7 @@
             title="Task List"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <Button
             variant="ghost"
@@ -517,7 +517,7 @@
             title="Insert Table"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <Button
             variant="ghost"
@@ -581,7 +581,7 @@
               <Trash2 class="size-3" /> Del Col
             </Button>
 
-            <div class="mx-1 h-4 w-[1px] bg-border"></div>
+            <div class="mx-1 h-4 w-px bg-border"></div>
 
             <Button
               variant="ghost"
@@ -608,7 +608,7 @@
               <Trash2 class="size-3" /> Del Row
             </Button>
 
-            <div class="mx-1 h-4 w-[1px] bg-border"></div>
+            <div class="mx-1 h-4 w-px bg-border"></div>
 
             <Button
               variant="ghost"
@@ -627,13 +627,13 @@
   <!-- Editor Container -->
   <div
     bind:this={element}
-    class="tiptap-container border-0 {editable ? 'min-h-[400px]' : 'min-h-0'}"
+    class="tiptap-container border-0 {editable ? 'min-h-100' : 'min-h-0'}"
   ></div>
 </div>
 
 <!-- Link Dialog -->
 <Dialog.Root bind:open={linkDialogOpen}>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>Edit Link</Dialog.Title>
       <Dialog.Description>
@@ -659,7 +659,7 @@
 </Dialog.Root>
 
 <Dialog.Root bind:open={imageDialogOpen}>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>Insert Image</Dialog.Title>
       <Dialog.Description>Paste a direct link to an image.</Dialog.Description>

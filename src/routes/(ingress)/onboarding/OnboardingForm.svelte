@@ -397,7 +397,7 @@
       </Stepper.Item>
     </Stepper.Nav>
 
-    <div class="min-h-[300px]">
+    <div class="min-h-75">
       {#if step === 1}
         <div class="space-y-6">
           {#if status.currEntry?.declineReason}
