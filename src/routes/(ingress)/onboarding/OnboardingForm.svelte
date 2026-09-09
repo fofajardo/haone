@@ -17,8 +17,8 @@
     LogOut
   } from "@lucide/svelte";
   import * as RadioGroup from "$ui/radio-group";
-  import colleges from "$data/colleges.json";
-  import programs from "$data/programs.json";
+  import colleges from "$assets/colleges.json";
+  import programs from "$assets/programs.json";
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";

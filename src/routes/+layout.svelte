@@ -3,7 +3,7 @@
   import { Toaster } from "$ui/sonner";
   import { ModeWatcher } from "mode-watcher";
   import "./layout.css";
-  import favicon from "$lib/assets/favicon.svg";
+  import favicon from "$assets/favicon.svg";
 
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";

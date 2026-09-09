@@ -1,5 +1,5 @@
-import collegeMapping from "$data/colleges.json";
-import programMapping from "$data/programs.json";
+import collegeMapping from "$assets/colleges.json";
+import programMapping from "$assets/programs.json";
 import { ACCOUNT_TYPE_LABELS } from "$lib/types";
 
 export function translateMop(mop: string) {

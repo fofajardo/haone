@@ -17,8 +17,8 @@
   } from "@lucide/svelte";
   import { type UserRecord, UserTag, USER_TAG_LABELS } from "$lib/types";
   import { translateCollege, translateProgram } from "$utils/translators";
-  import collegesJson from "$data/colleges.json";
-  import programsJson from "$data/programs.json";
+  import collegesJson from "$assets/colleges.json";
+  import programsJson from "$assets/programs.json";
   import { TagsInput } from "$ui/tags-input";
   import { Combobox } from "$ui/combobox";
   import ContentHeader from "$components/ContentHeader.svelte";

@@ -13,7 +13,7 @@ const config = {
       $state: "src/lib/state",
       $templates: "src/lib/templates",
       $logic: "src/lib/logic",
-      $data: "src/lib/data",
+      $assets: "src/lib/assets",
       $srcPrivate: "src-private",
       $services: "src/lib/services",
       $api: "src/lib/api"
