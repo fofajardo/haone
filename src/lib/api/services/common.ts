@@ -21,7 +21,10 @@ export function handleSupabaseError(error: any) {
     msg.includes("jwt expired") ||
     msg.includes("invalid token")
   ) {
-    auth.signOut();
+    auth.signOutWithMessage(
+      "Session Expired",
+      "Your session or authorization is invalid. Please sign in again."
+    );
     throw new Error("Your session or authorization is invalid. Please sign in again.");
   }
   throw error;
@@ -74,7 +77,10 @@ export const supabase =
             // Only a 401 means the Supabase session/JWT is invalid. A 403 is an
             // RLS denial for the current action and must NOT end the session.
             if (response.status === 401) {
-              auth.signOut();
+              auth.signOutWithMessage(
+                "Session Expired",
+                "Your session has expired. Please sign in again."
+              );
             }
             return response;
           }
@@ -221,15 +227,15 @@ export function patchCacheRange(spreadsheetId: string, range: string, values: an
  */
 async function handleResponseError(resp: Response, defaultMessage: string) {
   if (resp.status === 401) {
-    auth.signOut();
-    throw new Error("Your session has expired. Please sign in again.");
+    const message = "Your session has expired. Please sign in again.";
+    auth.signOutWithMessage("Session Expired", message);
+    throw new Error(message);
   }
   if (resp.status === 403) {
     const replyTo = brandingState.profile.replyTo || "";
-    auth.signOut();
-    throw new Error(
-      `You do not have permission to use this platform. Please contact the administrator via <a href="mailto:${replyTo}">email</a>.`
-    );
+    const message = `You do not have permission to use this platform. Please contact the administrator via <a href="mailto:${replyTo}">email</a>.`;
+    auth.signOutWithMessage("Access Denied", message);
+    throw new Error(message);
   }
   if (resp.status === 429) {
     throw new Error("Too many requests. Please wait a moment before trying again.");

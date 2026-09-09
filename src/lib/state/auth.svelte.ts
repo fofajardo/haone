@@ -2,6 +2,7 @@ import { clientAuthService } from "$api/services/client-auth-service";
 import { browser } from "$app/environment";
 import { LS_KEYS } from "$lib/constants";
 import type { UserRecord } from "$lib/types";
+import { globalDialog } from "$state/dialog.svelte";
 
 class AuthState {
   accessToken = $state<string | null>(null);
@@ -148,6 +149,11 @@ class AuthState {
       this.authType = null;
       this.isInstanceAdmin = false;
     }
+  }
+
+  signOutWithMessage(title: string, description: string) {
+    this.signOut();
+    globalDialog.show(title, description);
   }
 
   async signIn(type: "admin" | "resident"): Promise<void> {
