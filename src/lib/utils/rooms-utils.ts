@@ -1,4 +1,4 @@
-import roomsData from "$dataPrivate/rooms.json";
+import roomsData from "$srcPrivate/rooms.json";
 
 export interface RoomEntry {
   room_number: string;

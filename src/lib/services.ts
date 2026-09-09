@@ -1,4 +1,4 @@
-import { privateServices } from "$dataPrivate/services";
+import { privateServices } from "$srcPrivate/services";
 import type { CustomServiceItem } from "$lib/types";
 
 export function getCustomServices(target: "admin" | "resident"): CustomServiceItem[] {

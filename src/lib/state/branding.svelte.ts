@@ -1,4 +1,4 @@
-import branding from "$dataPrivate/branding.json";
+import branding from "$srcPrivate/branding.json";
 import { PUBLIC_BRANDING, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
 
 export type BrandingKey = keyof typeof branding;
