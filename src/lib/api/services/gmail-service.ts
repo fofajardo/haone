@@ -1,3 +1,5 @@
+import { base64url } from "jose";
+
 /**
  * Gmail API utility functions using Google Identity Services (GIS).
  */
@@ -35,16 +37,6 @@ export function loadGapiScript() {
 }
 
 /**
- * Encodes a string to base64url format for Gmail API.
- */
-function encodeBase64Url(str: string) {
-  // Use TextEncoder to handle UTF-8 properly
-  const bytes = new TextEncoder().encode(str);
-  const binString = String.fromCodePoint(...bytes);
-  return btoa(binString).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-/**
  * Creates an RFC 2822 compliant email message.
  */
 export function createEmail(to: string, subject: string, body: string, replyTo?: string) {
@@ -58,7 +50,7 @@ export function createEmail(to: string, subject: string, body: string, replyTo?:
     parts.push(`Reply-To: ${replyTo}`);
   }
   parts.push("", body);
-  return encodeBase64Url(parts.join("\r\n"));
+  return base64url.encode(parts.join("\r\n"));
 }
 
 /**
