@@ -324,7 +324,7 @@
           "relative grid overflow-hidden rounded-xl border bg-background",
           viewMode === "week" ? "grid-cols-[60px_repeat(7,1fr)]" : "grid-cols-[60px_1fr]"
         )}
-        style="grid-template-rows: 80px repeat({hours.length}, 60px) 30px;"
+        style="grid-template-rows: 80px repeat({hours.length}, 60px);"
       >
         <!-- Header -->
         <div
@@ -361,28 +361,23 @@
 
         <!-- Grid Body -->
         {#each hours as hour, hourIdx}
+          {@const isLastRow = hourIdx === hours.length - 1}
           <!-- Time Label -->
           <div
-            class="relative flex justify-end border-b bg-muted/5 p-0 text-xs font-bold text-muted-foreground uppercase"
+            class={cn(
+              "relative flex justify-end bg-muted/5 p-0 text-xs font-bold text-muted-foreground uppercase",
+              !isLastRow && "border-b"
+            )}
             style="grid-row: {hourIdx + 2}; grid-column: 1;"
           >
-            <span
-              class="absolute inset-x-0 top-0 z-20 flex -translate-y-1/2 items-center justify-center"
-            >
-              <span class="bg-background px-1 text-muted-foreground">
-                {uiSettings.clockFormat === "12h"
-                  ? `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`
-                  : `${hour.toString().padStart(2, "0")}:00`}
-              </span>
-            </span>
-            {#if hourIdx === hours.length - 1}
+            {#if hour !== 0}
               <span
-                class="absolute inset-x-0 bottom-0 z-20 flex translate-y-1/2 items-center justify-center"
+                class="absolute inset-x-0 top-0 z-20 flex -translate-y-1/2 items-center justify-center"
               >
                 <span class="bg-background px-1 text-muted-foreground">
                   {uiSettings.clockFormat === "12h"
-                    ? `${(hour + 1) % 12 || 12} ${hour + 1 >= 12 ? "PM" : "AM"}`
-                    : `${(hour + 1).toString().padStart(2, "0")}:00`}
+                    ? `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`
+                    : `${hour.toString().padStart(2, "0")}:00`}
                 </span>
               </span>
             {/if}
@@ -396,7 +391,8 @@
             <button
               type="button"
               class={cn(
-                "h-15 w-full rounded-none border-b border-l p-0 transition-colors",
+                "h-15 w-full rounded-none border-l p-0 transition-colors",
+                !isLastRow && "border-b",
                 isBlocked
                   ? "cursor-not-allowed bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_6px,var(--color-border)_6px,var(--color-border)_7px)] opacity-50"
                   : isOutsideHours
@@ -424,15 +420,6 @@
               aria-label="Select slot for {dateStr} at {hour}:00"
             ></button>
           {/each}
-        {/each}
-
-        <!-- Bottom Spacer Row -->
-        <div class="bg-muted/5" style="grid-row: {hours.length + 2}; grid-column: 1;"></div>
-        {#each weekDays as { }, dayIdx}
-          <div
-            class="border-l bg-transparent"
-            style="grid-row: {hours.length + 2}; grid-column: {dayIdx + 2};"
-          ></div>
         {/each}
 
         {#each weekDays as day, dayIdx}
