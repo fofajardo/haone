@@ -143,14 +143,7 @@ class AuthState {
       import("$utils/api-client").then(({ invalidateServerCache }) => {
         invalidateServerCache();
       });
-      localStorage.removeItem(LS_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(LS_KEYS.CREDENTIAL_JWT);
-      localStorage.removeItem(LS_KEYS.USER);
-      localStorage.removeItem(LS_KEYS.REMEMBER);
-      localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
-      localStorage.removeItem(LS_KEYS.DISPLAY_NAME);
-      localStorage.removeItem(LS_KEYS.AUTH_TYPE);
-      localStorage.removeItem(LS_KEYS.IS_ADMIN);
+      localStorage.clear();
       this.avatarUrl = null;
       this.authType = null;
       this.isInstanceAdmin = false;
