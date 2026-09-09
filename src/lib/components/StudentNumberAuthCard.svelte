@@ -4,7 +4,9 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
-  import { Lock } from "@lucide/svelte";
+  import { Lock, LockOpen } from "@lucide/svelte";
+  import { Spinner } from "./ui/spinner";
+  import BrandingLogo from "./BrandingLogo.svelte";
 
   let {
     studentNo = $bindable(),
@@ -23,19 +25,25 @@
   }>();
 </script>
 
-<Card.Root class="w-full max-w-sm shadow-none ring-0 sm:shadow-sm sm:ring-1">
+<div class="mb-5 flex justify-center">
+  <BrandingLogo class="h-16 w-auto object-contain" />
+</div>
+
+<Card.Root class="w-full max-w-sm shadow-sm ring-0">
   <Card.Header class="text-center">
-    <div class="mx-auto mb-4 w-fit rounded-full bg-muted p-2.5">
-      <Lock class="h-5 w-5 text-muted-foreground" />
+    <div class="relative mb-4 flex items-center justify-center">
+      <div
+        class="flex h-16 w-16 items-center justify-center rounded-full bg-brand text-brand-foreground"
+      >
+        <Lock class="h-8 w-8 stroke-3" />
+      </div>
     </div>
-    <Card.Title>{title}</Card.Title>
+    <Card.Title class="text-2xl font-bold tracking-tight">{title}</Card.Title>
     <Card.Description>{description}</Card.Description>
   </Card.Header>
   <Card.Content class="space-y-4">
     <div class="space-y-2">
-      <Label for="stno" class="text-xs tracking-widest text-muted-foreground uppercase"
-        >Student Number</Label
-      >
+      <Label for="stno">Student Number</Label>
       <Input
         id="stno"
         name="stno"
@@ -48,10 +56,7 @@
     </div>
     <div class="flex items-center space-x-2">
       <Checkbox id="remember" name="remember" bind:checked={rememberMe} />
-      <Label
-        for="remember"
-        class="text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-      >
+      <Label for="remember" class="peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
         Remember student ID
       </Label>
     </div>
@@ -60,6 +65,7 @@
       onclick={onAuthenticate}
       class="w-full"
       disabled={isDecrypting || !studentNo}
+      icon={isDecrypting ? Spinner : LockOpen}
     >
       {isDecrypting ? "Verifying…" : "Unlock"}
     </Button>
