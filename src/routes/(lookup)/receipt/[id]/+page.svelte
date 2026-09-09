@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { decryptJSON } from "$utils/crypto";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
   import { brandingState } from "$state/branding.svelte";
@@ -81,8 +80,6 @@
       if (formEl) formEl.requestSubmit();
     }
   });
-
-  function noop() {}
 
   async function generateCanvas(element: HTMLElement) {
     const images = Array.from(element.querySelectorAll("img"));
