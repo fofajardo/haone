@@ -1,13 +1,12 @@
 <script lang="ts">
   import type { LaundryRecord, UserRecord } from "$lib/types";
-  import { auth } from "$state/auth.svelte";
   import { cn } from "$lib/utils";
   import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "@lucide/svelte";
   import * as DropdownMenu from "$ui/dropdown-menu";
+  import * as Tooltip from "$ui/tooltip";
   import { Button } from "$ui/button";
   import { parseTime } from "$utils/parsers";
   import * as Sheet from "$ui/sheet";
-  import * as AlertDialog from "$ui/alert-dialog";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import {
@@ -267,28 +266,61 @@
   }
 </script>
 
-<div class="flex flex-col gap-6">
-  <div class="flex items-center justify-between px-4 py-2">
-    <div class="flex items-center gap-4">
-      <Button
-        variant="outline"
-        size="sm"
-        class="h-9 rounded-full px-5 text-sm font-medium"
-        onclick={goToToday}
-      >
-        Today
-      </Button>
+<div class="flex flex-col gap-4">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            onclick={goToToday}
+            aria-label="Today"
+          >
+            <CalendarIconSmall class="h-4 w-4" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="bottom">
+          <p>Today</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
 
-      <div class="flex items-center gap-2">
-        <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full" onclick={prev}>
-          <ChevronLeft class="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full" onclick={next}>
-          <ChevronRight class="h-4 w-4" />
-        </Button>
-      </div>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            onclick={prev}
+            aria-label={viewMode === "week" ? "Previous week" : "Previous day"}
+          >
+            <ChevronLeft class="h-4 w-4" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="bottom">
+          <p>{viewMode === "week" ? "Previous week" : "Previous day"}</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
 
-      <h2 class="text-xl font-medium tracking-tight">
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            onclick={next}
+            aria-label={viewMode === "week" ? "Next week" : "Next day"}
+          >
+            <ChevronRight class="h-4 w-4" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="bottom">
+          <p>{viewMode === "week" ? "Next week" : "Next day"}</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+
+      <h2 class="ml-2 text-xl font-medium tracking-tight">
         {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
       </h2>
     </div>
@@ -298,13 +330,14 @@
         <DropdownMenu.Trigger>
           {#snippet child({ props })}
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
-              class="h-9 rounded-full bg-muted/50 px-4 text-xs font-medium"
+              class="h-9 rounded-full"
+              icon={ChevronDown}
+              iconPosition="right"
               {...props}
             >
               <span class="capitalize">{viewMode}</span>
-              <ChevronDown class="ml-1.5 h-3.5 w-3.5 opacity-50" />
             </Button>
           {/snippet}
         </DropdownMenu.Trigger>
@@ -498,6 +531,7 @@
       </div>
     </div>
   </div>
+
   <div
     class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
   >
