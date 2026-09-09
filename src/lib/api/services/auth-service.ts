@@ -123,15 +123,11 @@ export async function verifyCredentialJwt(token: string): Promise<CredentialPayl
   try {
     const secretKey = new TextEncoder().encode(JWT_SECRET);
 
-    const { payload } = await jwtVerify(token, secretKey, {
+    const { payload } = await jwtVerify<CredentialPayload>(token, secretKey, {
       algorithms: ["HS256"]
     });
 
-    return {
-      email: payload.email as string,
-      sub: payload.sub as string,
-      isInstanceAdmin: Boolean(payload.isInstanceAdmin)
-    };
+    return payload;
   } catch (e) {
     return null;
   }
