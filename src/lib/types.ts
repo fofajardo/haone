@@ -396,6 +396,7 @@ export interface UserRecord {
   displayNameFormal: string;
   studentNo: string;
   secondaryContact: string;
+  avatarUrl?: string;
   address?: string;
   college: string;
   program: string;

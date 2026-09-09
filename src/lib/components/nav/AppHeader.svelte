@@ -98,9 +98,9 @@
       class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-opacity hover:opacity-80 md:hidden"
       aria-label="Open menu"
     >
-      {#if auth.googleUser?.picture && !imgError}
+      {#if auth.avatarUrl && !imgError}
         <img
-          src={auth.cachedPicture || auth.googleUser.picture}
+          src={auth.avatarUrl}
           alt={auth.displayName}
           class="h-full w-full object-cover"
           onerror={() => (imgError = true)}
@@ -120,9 +120,9 @@
               class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-border transition-opacity hover:opacity-80"
               aria-label="Open profile menu"
             >
-              {#if auth.googleUser?.picture && !imgError}
+              {#if auth.avatarUrl && !imgError}
                 <img
-                  src={auth.cachedPicture || auth.googleUser.picture}
+                  src={auth.avatarUrl}
                   alt={auth.displayName || "User"}
                   class="h-full w-full object-cover"
                   onerror={() => (imgError = true)}
@@ -143,7 +143,7 @@
             <div class="flex items-center gap-3 border-b border-border p-3">
               {#if !imgError}
                 <img
-                  src={auth.cachedPicture || auth.googleUser?.picture}
+                  src={auth.avatarUrl}
                   alt={auth.user.displayNameFormal}
                   class="h-10 w-10 rounded-full border border-border object-cover"
                   onerror={() => (imgError = true)}

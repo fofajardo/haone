@@ -12,7 +12,7 @@
     <div class="flex flex-col items-center justify-center gap-3 text-center">
       {#if !imgError}
         <img
-          src={auth.cachedPicture || auth.googleUser?.picture}
+          src={auth.avatarUrl}
           alt={auth.user.displayNameFormal}
           class="h-32 w-32 rounded-full object-cover"
           onerror={() => (imgError = true)}

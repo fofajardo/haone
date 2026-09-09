@@ -11,7 +11,7 @@ class AuthState {
   isRemembered = $state(false);
   redirectTo = $state<string | null>(null);
   initialized = $state(false);
-  cachedPicture = $state<string | null>(null);
+  avatarUrl = $state<string | null>(null);
   authType = $state<"admin" | "resident" | null>(null);
   isInstanceAdmin = $state(false);
 
@@ -64,7 +64,7 @@ class AuthState {
           }
         }
         this.isRemembered = true;
-        this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
+        this.avatarUrl = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
         this.authType = (localStorage.getItem(LS_KEYS.AUTH_TYPE) as "admin" | "resident") || null;
         this.isInstanceAdmin = localStorage.getItem(LS_KEYS.IS_ADMIN) === "true";
       }
@@ -72,23 +72,18 @@ class AuthState {
     }
   }
 
-  async ensureCachedPicture() {
-    if (
-      !browser ||
-      !this.googleUser ||
-      this.cachedPicture ||
-      this.googleUser.picture === undefined
-    ) {
+  async fetchAvatarUrl() {
+    if (!browser || this.avatarUrl || this.user?.avatarUrl === undefined) {
       return;
     }
 
     try {
-      const response = await fetch(this.googleUser.picture);
+      const response = await fetch(this.user.avatarUrl);
       const blob = await response.blob();
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64data = reader.result as string;
-        this.cachedPicture = base64data;
+        this.avatarUrl = base64data;
         if (this.isRemembered) {
           localStorage.setItem(LS_KEYS.CACHED_PICTURE, base64data);
         }
@@ -97,13 +92,6 @@ class AuthState {
     } catch (e) {
       console.error("Failed to cache profile picture:", e);
     }
-  }
-
-  getHighResPictureUrl(url: string): string {
-    if (!url) return url;
-    // Google photo URLs standard pattern contains sizing parameters like =s96-c, =s64-c, /s96-c/, etc.
-    // Replace size parameters with =s384-c for high-quality rendering (e.g., 384x384 px)
-    return url.replace(/([=|\/])s\d+(-[c|p|o|g])?(\/|$)/, "$1s384-c$3");
   }
 
   setSession(
@@ -130,11 +118,6 @@ class AuthState {
       });
     }
 
-    // Normalize user photo URL to high resolution
-    if (googleUser.picture) {
-      googleUser.picture = this.getHighResPictureUrl(googleUser.picture);
-    }
-
     this.googleUser = googleUser;
     this.isRemembered = remember;
     this.authType = type;
@@ -148,7 +131,7 @@ class AuthState {
       localStorage.setItem(LS_KEYS.REMEMBER, "true");
       localStorage.setItem(LS_KEYS.AUTH_TYPE, type);
       localStorage.setItem(LS_KEYS.IS_ADMIN, String(isInstanceAdmin));
-      this.ensureCachedPicture();
+      this.fetchAvatarUrl();
     }
   }
 
@@ -178,7 +161,7 @@ class AuthState {
       localStorage.removeItem(LS_KEYS.DISPLAY_NAME);
       localStorage.removeItem(LS_KEYS.AUTH_TYPE);
       localStorage.removeItem(LS_KEYS.IS_ADMIN);
-      this.cachedPicture = null;
+      this.avatarUrl = null;
       this.authType = null;
       this.isInstanceAdmin = false;
     }

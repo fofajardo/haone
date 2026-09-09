@@ -21,6 +21,13 @@ import type { RequestHandler } from "./$types";
 const URL_TOKEN_EXCHANGE = "https://oauth2.googleapis.com/token";
 const URL_USERINFO = "https://www.googleapis.com/oauth2/v3/userinfo";
 
+function getHighResPictureUrl(url?: string): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+  return url.replace(/([=|\/])s\d+(-[c|p|o|g])?(\/|$)/, "$1s384-c$3");
+}
+
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const { code, code_verifier, redirect_uri } = await request.json();
@@ -106,6 +113,9 @@ export const POST: RequestHandler = async ({ request }) => {
         id: crypto.randomUUID()
       };
     }
+
+    // Normalize user photo URL to high resolution
+    user.avatarUrl = getHighResPictureUrl(userInfoData.picture);
 
     let credentialJwt = "";
     try {
