@@ -35,7 +35,9 @@
     } else if (data.clearanceData) {
       clearanceData = data.clearanceData;
     }
-    if (data.error) error = data.error;
+    if (data.error) {
+      error = data.error;
+    }
   });
 
   $effect(() => {
@@ -104,7 +106,9 @@
   }
 
   async function downloadPDF() {
-    if (!clearanceData) return;
+    if (!clearanceData) {
+      return;
+    }
     isExporting = true;
     try {
       await exportClearancePDF({
@@ -151,7 +155,9 @@
   }
 
   async function shareLink() {
-    if (!clearanceData) return;
+    if (!clearanceData) {
+      return;
+    }
     const shareData = {
       title: "Certificate of Full Payment",
       text: `Clearance for ${clearanceData.name}`,
@@ -162,7 +168,9 @@
       try {
         await navigator.share(shareData);
       } catch (err) {
-        if ((err as Error).name !== "AbortError") console.error("Share failed:", err);
+        if ((err as Error).name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
       }
     } else {
       try {
@@ -175,7 +183,9 @@
   }
 
   async function shareQRCode() {
-    if (!qrDataUrl || !clearanceData) return;
+    if (!qrDataUrl || !clearanceData) {
+      return;
+    }
     try {
       const response = await fetch(qrDataUrl);
       const blob = await response.blob();
@@ -208,7 +218,7 @@
 </script>
 
 <main
-  class="flex min-h-screen items-center justify-center bg-background p-4 text-foreground md:p-8"
+  class="flex min-h-screen flex-col items-center justify-center bg-sidebar p-4 text-foreground md:p-8"
 >
   {#if !clearanceData && !error}
     <form
