@@ -127,13 +127,13 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 
 export async function fetchLaundryReservations(
   bypassCache = false
-): Promise<{ reservations: LaundryRecord[]; ownerUserId: string }> {
-  const ownerUserId = await getSignedInUserId();
-  const res = await laundryService.fetchReservations(ownerUserId, undefined, bypassCache);
+): Promise<{ reservations: LaundryRecord[]; currentResidentId: string }> {
+  const currentResidentId = await getSignedInUserId();
+  const res = await laundryService.fetchReservations(currentResidentId, undefined, bypassCache);
   const list = Array.isArray(res) ? res : res.items;
   return {
     reservations: list,
-    ownerUserId
+    currentResidentId
   };
 }
 
