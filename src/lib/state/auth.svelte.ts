@@ -1,12 +1,11 @@
 import { clientAuthService } from "$api/services/client-auth-service";
 import { browser } from "$app/environment";
 import { LS_KEYS } from "$lib/constants";
-import type { GoogleUserInfo, UserRecord } from "$lib/types";
+import type { UserRecord } from "$lib/types";
 
 class AuthState {
   accessToken = $state<string | null>(null);
   credentialJwt = $state<string | null>(null);
-  googleUser = $state<GoogleUserInfo | null>(null);
   user = $state<UserRecord | null>(null);
   isRemembered = $state(false);
   redirectTo = $state<string | null>(null);
@@ -48,20 +47,16 @@ class AuthState {
     if (browser) {
       const savedToken = localStorage.getItem(LS_KEYS.ACCESS_TOKEN);
       const savedCredentialJwt = localStorage.getItem(LS_KEYS.CREDENTIAL_JWT);
-      const savedGoogleUser = localStorage.getItem(LS_KEYS.GOOGLE_USER);
       const savedUser = localStorage.getItem(LS_KEYS.USER);
       const remembered = localStorage.getItem(LS_KEYS.REMEMBER) === "true";
 
-      if (remembered && savedToken && savedCredentialJwt && savedGoogleUser) {
+      if (remembered && savedToken && savedCredentialJwt && savedUser) {
         this.accessToken = savedToken;
         this.credentialJwt = savedCredentialJwt;
-        this.googleUser = JSON.parse(savedGoogleUser);
-        if (savedUser) {
-          try {
-            this.user = JSON.parse(savedUser);
-          } catch {
-            this.user = null;
-          }
+        try {
+          this.user = JSON.parse(savedUser);
+        } catch {
+          this.user = null;
         }
         this.isRemembered = true;
         this.avatarUrl = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
@@ -96,7 +91,6 @@ class AuthState {
 
   setSession(
     token: string,
-    googleUser: GoogleUserInfo,
     remember: boolean,
     user: UserRecord,
     type: "admin" | "resident",
@@ -118,7 +112,6 @@ class AuthState {
       });
     }
 
-    this.googleUser = googleUser;
     this.isRemembered = remember;
     this.authType = type;
     this.isInstanceAdmin = isInstanceAdmin;
@@ -126,7 +119,6 @@ class AuthState {
     if (browser && remember) {
       localStorage.setItem(LS_KEYS.ACCESS_TOKEN, token);
       localStorage.setItem(LS_KEYS.CREDENTIAL_JWT, this.credentialJwt);
-      localStorage.setItem(LS_KEYS.GOOGLE_USER, JSON.stringify(googleUser));
       localStorage.setItem(LS_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(LS_KEYS.REMEMBER, "true");
       localStorage.setItem(LS_KEYS.AUTH_TYPE, type);
@@ -138,7 +130,6 @@ class AuthState {
   signOut() {
     this.accessToken = null;
     this.credentialJwt = null;
-    this.googleUser = null;
     this.user = null;
     this.isRemembered = false;
 
@@ -154,7 +145,6 @@ class AuthState {
       });
       localStorage.removeItem(LS_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(LS_KEYS.CREDENTIAL_JWT);
-      localStorage.removeItem(LS_KEYS.GOOGLE_USER);
       localStorage.removeItem(LS_KEYS.USER);
       localStorage.removeItem(LS_KEYS.REMEMBER);
       localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
@@ -177,8 +167,8 @@ class AuthState {
       authType: this.authType,
       redirectTo: this.redirectTo,
       rememberMe,
-      onSession: (token, userInfo, remember, user, type, isInstanceAdmin, credentialJwt) => {
-        this.setSession(token, userInfo, remember, user, type, isInstanceAdmin, credentialJwt);
+      onSession: (token, remember, user, type, isInstanceAdmin, credentialJwt) => {
+        this.setSession(token, remember, user, type, isInstanceAdmin, credentialJwt);
       },
       onSignOut: () => {
         this.signOut();

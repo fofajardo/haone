@@ -3,12 +3,7 @@ import { settingsService } from "$api/services/settings-service";
 import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 import { PUBLIC_DB_PROVIDER, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
-import type {
-  AuthExchangeResult,
-  GoogleUserInfo,
-  TokenExchangeResponse,
-  UserRecord
-} from "$lib/types";
+import type { AuthExchangeResult, TokenExchangeResponse, UserRecord } from "$lib/types";
 import { generatePKCEChallenge, generatePKCEVerifier } from "$utils/crypto";
 
 /**
@@ -89,7 +84,7 @@ async function exchangeAuthCode(): Promise<AuthExchangeResult | null> {
     throw new Error(err.error_description || "Token exchange failed");
   }
 
-  const { tokenData, userInfoData, user, isInstanceAdmin, credentialJwt } =
+  const { tokenData, user, isInstanceAdmin, credentialJwt } =
     (await tokenResp.json()) as TokenExchangeResponse;
 
   sessionStorage.removeItem("pkce_verifier");
@@ -102,7 +97,6 @@ async function exchangeAuthCode(): Promise<AuthExchangeResult | null> {
 
   return {
     tokenData,
-    userInfoData,
     user,
     isInstanceAdmin,
     credentialJwt,
@@ -118,7 +112,6 @@ export interface CallbackOptions {
   rememberMe?: boolean;
   onSession: (
     token: string,
-    userInfo: GoogleUserInfo,
     remember: boolean,
     user: UserRecord,
     type: "admin" | "resident",
@@ -166,7 +159,6 @@ export async function handleCallback(options: CallbackOptions): Promise<boolean>
 
   const {
     tokenData,
-    userInfoData,
     user,
     isInstanceAdmin,
     credentialJwt,
@@ -175,15 +167,7 @@ export async function handleCallback(options: CallbackOptions): Promise<boolean>
   } = exchangeResult;
   const { access_token: newAccessToken, id_token: idToken } = tokenData;
 
-  onSession(
-    newAccessToken,
-    userInfoData,
-    rememberMe,
-    user,
-    savedType,
-    isInstanceAdmin,
-    credentialJwt
-  );
+  onSession(newAccessToken, rememberMe, user, savedType, isInstanceAdmin, credentialJwt);
 
   if (PUBLIC_DB_PROVIDER === "supabase") {
     if (!supabase || !idToken) {

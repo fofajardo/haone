@@ -137,7 +137,6 @@ export const POST: RequestHandler = async ({ request }) => {
 
     return json({
       tokenData,
-      userInfoData,
       user,
       isInstanceAdmin,
       credentialJwt

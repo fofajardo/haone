@@ -27,7 +27,6 @@ export interface GoogleAuthToken {
 
 export interface TokenExchangeResponse {
   tokenData: GoogleAuthToken;
-  userInfoData: GoogleUserInfo;
   user: UserRecord;
   isInstanceAdmin: boolean;
   credentialJwt: string;
@@ -45,7 +44,6 @@ export interface AuthExchangeResult {
     access_token: string;
     id_token: string;
   };
-  userInfoData: GoogleUserInfo;
   user: UserRecord;
   isInstanceAdmin: boolean;
   credentialJwt: string;
