@@ -1,10 +1,6 @@
 import { isAnnouncementActive } from "$api/controllers/announcement-controller";
-import {
-  authenticateResident,
-  fetchSheetsData,
-  getSheetsClient,
-  serverError
-} from "$api/services/server-sheets-service";
+import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
+import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
 import { ANNOUNCEMENT_COL, USER_COL } from "$lib/types";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";

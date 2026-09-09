@@ -104,7 +104,8 @@ async function lookupUserSupabase(email: string): Promise<{ userId: string; isSt
 
 async function lookupUserSheets(email: string): Promise<{ userId: string; isStudent: boolean }> {
   const { USER_COL, UserTag } = await import("$lib/types");
-  const { getSheetsClient, fetchSheetsData } = await import("$api/services/server-sheets-service");
+  const { fetchSheetsData } = await import("$api/services/server-sheets-service");
+  const { getSheetsClient } = await import("$api/services/auth-service");
   const saClient = await getSheetsClient();
   const [userRows] = await fetchSheetsData(saClient, ["users!A:P"]);
   const user = userRows.find((r: any) => {

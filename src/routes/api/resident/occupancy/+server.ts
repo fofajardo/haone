@@ -1,9 +1,5 @@
-import {
-  authenticateResident,
-  fetchSheetsData,
-  getSheetsClient,
-  serverError
-} from "$api/services/server-sheets-service";
+import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
+import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
 import { ACCOUNT_COL, USER_COL } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
 import { json } from "@sveltejs/kit";

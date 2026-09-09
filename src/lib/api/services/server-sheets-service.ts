@@ -1,25 +1,4 @@
-import {
-  authenticateAdmin,
-  authenticateResident,
-  base64url,
-  getFirebaseToken,
-  getServiceAccountToken,
-  getSheetsClient,
-  resolveResidentAccountType,
-  sign
-} from "$api/services/auth-service";
 import { json } from "@sveltejs/kit";
-
-export {
-  authenticateAdmin,
-  authenticateResident,
-  base64url,
-  getFirebaseToken,
-  getServiceAccountToken,
-  getSheetsClient,
-  resolveResidentAccountType,
-  sign
-};
 
 /**
  * Generic fetch wrapper for Google APIs with Bearer auth and error handling.

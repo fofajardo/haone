@@ -1,10 +1,5 @@
-import {
-  appendSheetValue,
-  authenticateResident,
-  getSheetsClient,
-  getSheetValues,
-  serverError
-} from "$api/services/server-sheets-service";
+import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
+import { appendSheetValue, getSheetValues, serverError } from "$api/services/server-sheets-service";
 import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
 import { AccountType, CURR_COL, USER_COL } from "$lib/types";
 import { json } from "@sveltejs/kit";

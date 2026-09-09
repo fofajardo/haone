@@ -1,7 +1,6 @@
+import { getFirebaseToken, getSheetsClient } from "$api/services/auth-service";
 import {
   fetchGoogleAPI,
-  getFirebaseToken,
-  getSheetsClient,
   getSheetValues,
   updateSheetValue
 } from "$api/services/server-sheets-service";

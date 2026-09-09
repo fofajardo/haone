@@ -1,10 +1,12 @@
 import { canAccessLaundryOrFridge, canSeeLaundryNames } from "$api/controllers/resident-controller";
 import {
-  appendSheetValue,
   authenticateResident,
-  fetchSheetsData,
   getSheetsClient,
-  resolveResidentAccountType,
+  resolveResidentAccountType
+} from "$api/services/auth-service";
+import {
+  appendSheetValue,
+  fetchSheetsData,
   serverError
 } from "$api/services/server-sheets-service";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";

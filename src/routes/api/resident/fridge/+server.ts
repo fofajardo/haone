@@ -1,10 +1,12 @@
 import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
 import {
-  appendSheetValue,
   authenticateResident,
-  fetchSheetsData,
   getSheetsClient,
-  resolveResidentAccountType,
+  resolveResidentAccountType
+} from "$api/services/auth-service";
+import {
+  appendSheetValue,
+  fetchSheetsData,
   serverError,
   updateSheetValue
 } from "$api/services/server-sheets-service";

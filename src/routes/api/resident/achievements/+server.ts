@@ -1,11 +1,10 @@
 import { canAccessAchievements } from "$api/controllers/resident-controller";
 import {
   authenticateResident,
-  fetchSheetsData,
   getSheetsClient,
-  resolveResidentAccountType,
-  serverError
-} from "$api/services/server-sheets-service";
+  resolveResidentAccountType
+} from "$api/services/auth-service";
+import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
 import {
   ACCOUNT_COL,
   AccountType,

@@ -1,5 +1,5 @@
 import { runAnnouncementNotifications } from "$api/controllers/notifications-controller";
-import { authenticateAdmin } from "$api/services/server-sheets-service";
+import { authenticateAdmin } from "$api/services/auth-service";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 

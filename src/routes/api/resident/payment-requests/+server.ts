@@ -1,8 +1,7 @@
+import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
 import {
   appendSheetValue,
-  authenticateResident,
   fetchSheetsData,
-  getSheetsClient,
   serverError
 } from "$api/services/server-sheets-service";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
