@@ -81,7 +81,8 @@ export const POST: RequestHandler = async ({ request }) => {
 
 async function lookupUserSupabase(email: string): Promise<{ userId: string; isStudent: boolean }> {
   const { UserTag } = await import("$lib/types");
-  const { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } = await import("$env/static/public");
+  const { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } =
+    await import("$env/static/public");
   const { createClient } = await import("@supabase/supabase-js");
   const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
   const { data: dbUser } = await supabase
