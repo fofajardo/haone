@@ -7,7 +7,12 @@ import {
   PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   PUBLIC_SUPABASE_URL
 } from "$env/static/public";
-import type { GoogleAuthToken, GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
+import type {
+  GoogleAuthToken,
+  GoogleUserInfo,
+  TokenExchangeResponse,
+  UserRecord
+} from "$lib/types";
 import { USER_COL, UserTag } from "$lib/types";
 import { createClient } from "@supabase/supabase-js";
 import { json } from "@sveltejs/kit";
@@ -51,10 +56,10 @@ export const POST: RequestHandler = async ({ request }) => {
     const email = userInfoData.email.trim().toLowerCase();
     const isInstanceAdmin = email === (INSTANCE_ADMIN || "").trim().toLowerCase();
 
-    let userId = "";
+    let user: UserRecord | null = null;
     try {
       const result = await lookupUser(email);
-      userId = result.userId;
+      user = result.user;
 
       // Enforce domain check
       if (!isInstanceAdmin && !email.endsWith("@up.edu.ph") && result.isStudent) {
@@ -77,11 +82,36 @@ export const POST: RequestHandler = async ({ request }) => {
       );
     }
 
+    // Build a dummy user record since the signed-in user does not yet exist
+    // in the database. This allows the user to proceed to the app and create
+    // their account. The user will be prompted to fill in the missing details
+    // during the onboarding process.
+    if (!user) {
+      user = {
+        email,
+        lastName: (userInfoData.family_name || "").trim().toUpperCase(),
+        firstName: (userInfoData.given_name || "").trim().toUpperCase(),
+        middleName: "",
+        suffix: "",
+        overrideName: "",
+        displayName:
+          userInfoData.family_name && userInfoData.given_name
+            ? `${userInfoData.family_name.trim().toUpperCase()}, ${userInfoData.given_name.trim().toUpperCase()}`
+            : (userInfoData.name || "").trim(),
+        displayNameFormal: (userInfoData.name || "").trim(),
+        studentNo: "",
+        secondaryContact: "",
+        college: "",
+        program: "",
+        id: crypto.randomUUID()
+      };
+    }
+
     let credentialJwt = "";
     try {
       credentialJwt = await createCredentialJwt({
         email,
-        sub: userId,
+        sub: user.id,
         isInstanceAdmin
       });
     } catch (jwtErr: any) {
@@ -98,7 +128,7 @@ export const POST: RequestHandler = async ({ request }) => {
     return json({
       tokenData,
       userInfoData,
-      userId,
+      user,
       isInstanceAdmin,
       credentialJwt
     } satisfies TokenExchangeResponse);
@@ -107,45 +137,79 @@ export const POST: RequestHandler = async ({ request }) => {
   }
 };
 
-async function lookupUserSupabase(email: string): Promise<{ userId: string; isStudent: boolean }> {
+async function lookupUserSupabase(
+  email: string
+): Promise<{ user: UserRecord | null; isStudent: boolean }> {
   const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
   const { data: dbUser } = await supabase
     .from("users")
-    .select("id, tags")
+    .select("*")
     .ilike("email", email)
     .maybeSingle();
 
   if (dbUser) {
     const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
+    const user: UserRecord = {
+      id: dbUser.id,
+      email: dbUser.email,
+      lastName: dbUser.last_name || "",
+      firstName: dbUser.first_name || "",
+      middleName: dbUser.middle_name || "",
+      suffix: dbUser.suffix || "",
+      overrideName: dbUser.override_name || "",
+      displayName: dbUser.display_name || "",
+      displayNameFormal: dbUser.display_name_fl || "",
+      studentNo: dbUser.student_no || "",
+      secondaryContact: dbUser.secondary_contact || "",
+      college: dbUser.college || "",
+      program: dbUser.degree_program || ""
+    };
     return {
-      userId: dbUser.id,
+      user,
       isStudent: tags.includes(UserTag.STUDENT)
     };
   }
 
-  return { userId: "", isStudent: false };
+  return { user: null, isStudent: false };
 }
 
-async function lookupUserSheets(email: string): Promise<{ userId: string; isStudent: boolean }> {
+async function lookupUserSheets(
+  email: string
+): Promise<{ user: UserRecord | null; isStudent: boolean }> {
   const saClient = await getSheetsClient();
   const [userRows] = await fetchSheetsData(saClient, ["users!A:P"]);
-  const user = userRows.find((r: any) => {
+  const row = userRows.find((r: any) => {
     return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
   });
 
-  if (user) {
-    const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
+  if (row) {
+    const tagsStr = (row[USER_COL.TAGS] || "").trim().toUpperCase();
     const tags = tagsStr.split(":").map((t: string) => t.trim());
+    const user: UserRecord = {
+      email: (row[USER_COL.EMAIL] || "").trim(),
+      lastName: (row[USER_COL.LAST_NAME] || "").trim(),
+      firstName: (row[USER_COL.FIRST_NAME] || "").trim(),
+      middleName: (row[USER_COL.MIDDLE_NAME] || "").trim(),
+      suffix: (row[USER_COL.SUFFIX] || "").trim(),
+      overrideName: (row[USER_COL.OVERRIDE_NAME] || "").trim(),
+      displayName: (row[USER_COL.DISPLAY_NAME] || "").trim(),
+      displayNameFormal: (row[USER_COL.DISPLAY_NAME_FL] || "").trim(),
+      studentNo: (row[USER_COL.STUDENT_NO] || "").trim(),
+      secondaryContact: (row[USER_COL.SECONDARY_CONTACT] || "").trim(),
+      college: (row[USER_COL.COLLEGE] || "").trim(),
+      program: (row[USER_COL.DEGREE_PROGRAM] || "").trim(),
+      id: (row[USER_COL.ID] || "").trim()
+    };
     return {
-      userId: user[USER_COL.ID] || "",
+      user,
       isStudent: tags.includes(UserTag.STUDENT)
     };
   }
 
-  return { userId: "", isStudent: false };
+  return { user: null, isStudent: false };
 }
 
-async function lookupUser(email: string): Promise<{ userId: string; isStudent: boolean }> {
+async function lookupUser(email: string): Promise<{ user: UserRecord | null; isStudent: boolean }> {
   switch (PUBLIC_DB_PROVIDER) {
     case "supabase": {
       return await lookupUserSupabase(email);

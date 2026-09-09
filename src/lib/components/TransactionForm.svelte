@@ -430,21 +430,11 @@
             formData.creatorName = creatorAcc.name;
           }
         }
-      } else {
-        // TODO: user info should be cached instead of fetched every time.
-        const resId = auth.userId;
-        const email = auth.googleUser?.email;
-        const myAcc = accounts.find(
-          (a) =>
-            (resId && (a.residentId === resId || a.id === resId)) ||
-            (email && a.email && a.email.toLowerCase() === email.toLowerCase())
-        );
-        if (myAcc) {
-          formData.creatorStNo = myAcc.stno;
-          formData.creatorName = myAcc.name;
-          formData.creatorId = myAcc.residentId || myAcc.id;
-          creatorSearch = myAcc.name;
-        }
+      } else if (auth.user) {
+        formData.creatorStNo = auth.user.studentNo;
+        formData.creatorName = auth.user.displayName;
+        formData.creatorId = auth.user.id;
+        creatorSearch = auth.user.displayName;
       }
 
       // Pre-fill target account from query parameters if provided

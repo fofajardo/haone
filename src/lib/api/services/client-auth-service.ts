@@ -3,7 +3,12 @@ import { settingsService } from "$api/services/settings-service";
 import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 import { PUBLIC_DB_PROVIDER, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
-import type { AuthExchangeResult, GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
+import type {
+  AuthExchangeResult,
+  GoogleUserInfo,
+  TokenExchangeResponse,
+  UserRecord
+} from "$lib/types";
 import { generatePKCEChallenge, generatePKCEVerifier } from "$utils/crypto";
 
 /**
@@ -84,7 +89,7 @@ async function exchangeAuthCode(): Promise<AuthExchangeResult | null> {
     throw new Error(err.error_description || "Token exchange failed");
   }
 
-  const { tokenData, userInfoData, userId, isInstanceAdmin, credentialJwt } =
+  const { tokenData, userInfoData, user, isInstanceAdmin, credentialJwt } =
     (await tokenResp.json()) as TokenExchangeResponse;
 
   sessionStorage.removeItem("pkce_verifier");
@@ -98,7 +103,7 @@ async function exchangeAuthCode(): Promise<AuthExchangeResult | null> {
   return {
     tokenData,
     userInfoData,
-    userId,
+    user,
     isInstanceAdmin,
     credentialJwt,
     savedType,
@@ -115,7 +120,7 @@ export interface CallbackOptions {
     token: string,
     userInfo: GoogleUserInfo,
     remember: boolean,
-    userId: string,
+    user: UserRecord,
     type: "admin" | "resident",
     isInstanceAdmin: boolean,
     credentialJwt: string
@@ -162,7 +167,7 @@ export async function handleCallback(options: CallbackOptions): Promise<boolean>
   const {
     tokenData,
     userInfoData,
-    userId,
+    user,
     isInstanceAdmin,
     credentialJwt,
     savedType,
@@ -174,7 +179,7 @@ export async function handleCallback(options: CallbackOptions): Promise<boolean>
     newAccessToken,
     userInfoData,
     rememberMe,
-    userId,
+    user,
     savedType,
     isInstanceAdmin,
     credentialJwt

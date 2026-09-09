@@ -28,7 +28,7 @@ export interface GoogleAuthToken {
 export interface TokenExchangeResponse {
   tokenData: GoogleAuthToken;
   userInfoData: GoogleUserInfo;
-  userId: string;
+  user: UserRecord;
   isInstanceAdmin: boolean;
   credentialJwt: string;
 }
@@ -46,7 +46,7 @@ export interface AuthExchangeResult {
     id_token: string;
   };
   userInfoData: GoogleUserInfo;
-  userId: string;
+  user: UserRecord;
   isInstanceAdmin: boolean;
   credentialJwt: string;
   savedType: "admin" | "resident";
@@ -396,13 +396,13 @@ export interface UserRecord {
   displayNameFormal: string;
   studentNo: string;
   secondaryContact: string;
-  address: string;
+  address?: string;
   college: string;
   program: string;
-  tags: string;
-  notes: string;
+  tags?: string;
+  notes?: string;
   id: string;
-  raw: string[];
+  raw?: string[];
 }
 
 export interface LaundryRecord {

@@ -1,12 +1,13 @@
 import { clientAuthService } from "$api/services/client-auth-service";
 import { browser } from "$app/environment";
 import { LS_KEYS } from "$lib/constants";
-import type { GoogleUserInfo } from "$lib/types";
+import type { GoogleUserInfo, UserRecord } from "$lib/types";
 
 class AuthState {
   accessToken = $state<string | null>(null);
   credentialJwt = $state<string | null>(null);
   googleUser = $state<GoogleUserInfo | null>(null);
+  user = $state<UserRecord | null>(null);
   adminDisplayName = $state<string | null>(null);
   isRemembered = $state(false);
   redirectTo = $state<string | null>(null);
@@ -14,10 +15,13 @@ class AuthState {
   cachedPicture = $state<string | null>(null);
   authType = $state<"admin" | "resident" | null>(null);
   isInstanceAdmin = $state(false);
-  userId = $state<string>("");
+
+  get userId(): string {
+    return this.user?.id || "";
+  }
 
   get displayName(): string {
-    return this.adminDisplayName || this.googleUser?.name || "";
+    return this.adminDisplayName || this.user?.displayName || this.googleUser?.name || "";
   }
 
   get isResident(): boolean {
@@ -38,12 +42,20 @@ class AuthState {
       const savedToken = localStorage.getItem(LS_KEYS.ACCESS_TOKEN);
       const savedCredentialJwt = localStorage.getItem(LS_KEYS.CREDENTIAL_JWT);
       const savedGoogleUser = localStorage.getItem(LS_KEYS.GOOGLE_USER);
+      const savedUser = localStorage.getItem(LS_KEYS.USER);
       const remembered = localStorage.getItem(LS_KEYS.REMEMBER) === "true";
 
       if (remembered && savedToken && savedCredentialJwt && savedGoogleUser) {
         this.accessToken = savedToken;
         this.credentialJwt = savedCredentialJwt;
         this.googleUser = JSON.parse(savedGoogleUser);
+        if (savedUser) {
+          try {
+            this.user = JSON.parse(savedUser);
+          } catch {
+            this.user = null;
+          }
+        }
         this.isRemembered = true;
         this.cachedPicture = localStorage.getItem(LS_KEYS.CACHED_PICTURE);
         this.authType = (localStorage.getItem(LS_KEYS.AUTH_TYPE) as "admin" | "resident") || null;
@@ -52,23 +64,8 @@ class AuthState {
         if (savedDisplayName) {
           this.adminDisplayName = savedDisplayName;
         }
-        const savedUserId = localStorage.getItem(LS_KEYS.USER_ID);
-        if (savedUserId) {
-          this.userId = savedUserId;
-        }
       }
       this.initialized = true;
-    }
-  }
-
-  setUserId(id: string) {
-    this.userId = id;
-    if (browser && this.isRemembered) {
-      if (id) {
-        localStorage.setItem(LS_KEYS.USER_ID, id);
-      } else {
-        localStorage.removeItem(LS_KEYS.USER_ID);
-      }
     }
   }
 
@@ -117,16 +114,14 @@ class AuthState {
     token: string,
     googleUser: GoogleUserInfo,
     remember: boolean,
-    residentId: string,
+    user: UserRecord,
     type: "admin" | "resident",
     isInstanceAdmin: boolean = false,
     credentialJwt: string
   ) {
     this.accessToken = token;
     this.credentialJwt = credentialJwt;
-    if (residentId) {
-      this.userId = residentId;
-    }
+    this.user = user;
 
     // A new session means a different identity; drop cached sheet/server data
     // so the previous user's data is never served.
@@ -153,12 +148,10 @@ class AuthState {
       localStorage.setItem(LS_KEYS.ACCESS_TOKEN, token);
       localStorage.setItem(LS_KEYS.CREDENTIAL_JWT, this.credentialJwt);
       localStorage.setItem(LS_KEYS.GOOGLE_USER, JSON.stringify(googleUser));
+      localStorage.setItem(LS_KEYS.USER, JSON.stringify(user));
       localStorage.setItem(LS_KEYS.REMEMBER, "true");
       localStorage.setItem(LS_KEYS.AUTH_TYPE, type);
       localStorage.setItem(LS_KEYS.IS_ADMIN, String(isInstanceAdmin));
-      if (this.userId) {
-        localStorage.setItem(LS_KEYS.USER_ID, this.userId);
-      }
       this.ensureCachedPicture();
     }
   }
@@ -167,6 +160,7 @@ class AuthState {
     this.accessToken = null;
     this.credentialJwt = null;
     this.googleUser = null;
+    this.user = null;
     this.adminDisplayName = null;
     this.isRemembered = false;
 
@@ -183,16 +177,15 @@ class AuthState {
       localStorage.removeItem(LS_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(LS_KEYS.CREDENTIAL_JWT);
       localStorage.removeItem(LS_KEYS.GOOGLE_USER);
+      localStorage.removeItem(LS_KEYS.USER);
       localStorage.removeItem(LS_KEYS.REMEMBER);
       localStorage.removeItem(LS_KEYS.CACHED_PICTURE);
       localStorage.removeItem(LS_KEYS.DISPLAY_NAME);
       localStorage.removeItem(LS_KEYS.AUTH_TYPE);
       localStorage.removeItem(LS_KEYS.IS_ADMIN);
-      localStorage.removeItem(LS_KEYS.USER_ID);
       this.cachedPicture = null;
       this.authType = null;
       this.isInstanceAdmin = false;
-      this.userId = "";
     }
   }
 
@@ -206,8 +199,8 @@ class AuthState {
       authType: this.authType,
       redirectTo: this.redirectTo,
       rememberMe,
-      onSession: (token, userInfo, remember, userId, type, isInstanceAdmin, credentialJwt) => {
-        this.setSession(token, userInfo, remember, userId, type, isInstanceAdmin, credentialJwt);
+      onSession: (token, userInfo, remember, user, type, isInstanceAdmin, credentialJwt) => {
+        this.setSession(token, userInfo, remember, user, type, isInstanceAdmin, credentialJwt);
       },
       onSignOut: () => {
         this.signOut();
