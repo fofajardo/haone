@@ -3,6 +3,7 @@
  */
 export const LS_KEYS = {
   ACCESS_TOKEN: "halsk.auth.access_token",
+  CREDENTIAL_JWT: "halsk.auth.credential_jwt",
   GOOGLE_USER: "halsk.auth.google_user",
   USER_ID: "halsk.auth.user_id",
   REMEMBER: "halsk.auth.remember",

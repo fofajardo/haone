@@ -30,6 +30,14 @@ export interface TokenExchangeResponse {
   userInfoData: GoogleUserInfo;
   userId: string;
   isInstanceAdmin: boolean;
+  credentialJwt: string;
+}
+
+export interface CredentialPayload {
+  email: string;
+  sub: string;
+  isInstanceAdmin: boolean;
+  exp?: number;
 }
 
 export interface ReceiptItem {

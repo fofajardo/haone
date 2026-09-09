@@ -1,23 +1,11 @@
 import { browser } from "$app/environment";
 import { goto } from "$app/navigation";
 import { PUBLIC_DB_PROVIDER, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
-import type { GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
+import type { CredentialPayload, GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
 import { ACCOUNT_COL } from "$lib/types";
 import { generatePKCEChallenge, generatePKCEVerifier } from "$utils/crypto";
 import { json } from "@sveltejs/kit";
-
-/**
- * Base64url encoding helper
- */
-export function base64url(buffer: ArrayBuffer | string): string {
-  const bytes =
-    typeof buffer === "string" ? new TextEncoder().encode(buffer) : new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
+import { base64url } from "jose";
 
 /**
  * Signs a payload using RS256 with a private key.
@@ -48,7 +36,7 @@ export async function sign(input: string, pem: string): Promise<string> {
     new TextEncoder().encode(input)
   );
 
-  return base64url(signature);
+  return base64url.encode(new Uint8Array(signature));
 }
 
 /**
@@ -65,8 +53,8 @@ export async function getServiceAccountToken(email: string, privateKey: string, 
     iat: now
   };
 
-  const encodedHeader = base64url(JSON.stringify(header));
-  const encodedPayload = base64url(JSON.stringify(payload));
+  const encodedHeader = base64url.encode(JSON.stringify(header));
+  const encodedPayload = base64url.encode(JSON.stringify(payload));
   const input = `${encodedHeader}.${encodedPayload}`;
   const signature = await sign(input, privateKey);
   const jwt = `${input}.${signature}`;
@@ -116,8 +104,54 @@ export async function getFirebaseToken() {
 }
 
 /**
- * Standardized resident authentication for API routes.
- * Verifies the Bearer token with Google and returns the user's email.
+ * Creates a signed credential JWT valid for 1 hour.
+ */
+export async function createCredentialJwt(payload: CredentialPayload): Promise<string> {
+  const { SignJWT } = await import("jose");
+  const { JWT_SECRET } = await import("$env/static/private");
+  const secretKey = new TextEncoder().encode(JWT_SECRET);
+
+  return new SignJWT({
+    email: payload.email,
+    sub: payload.sub,
+    isInstanceAdmin: payload.isInstanceAdmin
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("1h")
+    .sign(secretKey);
+}
+
+/**
+ * Verifies a signed credential JWT using jose. Returns null if invalid or expired.
+ */
+export async function verifyCredentialJwt(token: string): Promise<CredentialPayload | null> {
+  try {
+    const { jwtVerify } = await import("jose");
+    const { JWT_SECRET } = await import("$env/static/private");
+    const secretKey = new TextEncoder().encode(JWT_SECRET);
+
+    const { payload } = await jwtVerify(token, secretKey, {
+      algorithms: ["HS256"]
+    });
+
+    return {
+      email: payload.email as string,
+      sub: payload.sub as string,
+      isInstanceAdmin: Boolean(payload.isInstanceAdmin)
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Validates the incoming HTTP Authorization header Bearer token against our
+ * HMAC-signed 1-hour session token using jose.
+ *
+ * Performs local cryptographic verification with zero external network calls.
+ * Extracts authenticated session claims (`email`, `residentId`, `isInstanceAdmin`)
+ * or returns a 401 Unauthorized JSON response on missing/invalid/expired token.
  */
 export async function authenticateResident(request: Request) {
   const authHeader = request.headers.get("Authorization");
@@ -128,91 +162,16 @@ export async function authenticateResident(request: Request) {
   const token = authHeader.split(" ")[1];
 
   try {
-    const userinfoResp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!userinfoResp.ok) {
-      return { error: json({ error: "Invalid token" }, { status: 401 }) };
+    const session = await verifyCredentialJwt(token);
+    if (!session) {
+      return { error: json({ error: "Invalid or expired session token" }, { status: 401 }) };
     }
 
-    const userData = await userinfoResp.json();
-    const email = userData.email.trim().toLowerCase();
-
-    const { INSTANCE_ADMIN } = await import("$env/static/private");
-    // Resolve instance admin to allow bypass
-    const isInstanceAdmin = email === (INSTANCE_ADMIN || "").trim().toLowerCase();
-
-    // Resolve residentId and check tags if needed
-    let residentId = "";
-    let isStudent = true;
-    if (email && !isInstanceAdmin) {
-      try {
-        const {
-          PUBLIC_DB_PROVIDER: dbProvider,
-          PUBLIC_SUPABASE_URL,
-          PUBLIC_SUPABASE_PUBLISHABLE_KEY
-        } = await import("$env/static/public");
-        if (dbProvider === "supabase") {
-          // Server-side client: created locally so the server never imports the
-          // client-side service module (which pulls in $state runes).
-          const { createClient } = await import("@supabase/supabase-js");
-          const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
-          const { data: dbUser } = await supabase
-            .from("users")
-            .select("id, tags")
-            .ilike("email", email)
-            .maybeSingle();
-          if (dbUser) {
-            residentId = dbUser.id;
-            const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
-            const { UserTag } = await import("$lib/types");
-            if (!tags.includes(UserTag.STUDENT)) {
-              isStudent = false;
-            }
-          } else {
-            isStudent = false;
-          }
-        } else {
-          const { USER_COL, UserTag } = await import("$lib/types");
-          const { fetchSheetsData } = await import("$api/services/server-sheets-service");
-          const saToken = await getSheetsClient();
-          const [users] = await fetchSheetsData(saToken, ["users!A:P"]);
-          const user = users.find((r: any) => {
-            return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
-          });
-          if (user) {
-            residentId = user[USER_COL.ID];
-            const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
-            const tags = tagsStr.split(":").map((t: string) => {
-              return t.trim();
-            });
-            if (!tags.includes(UserTag.STUDENT)) {
-              isStudent = false;
-            }
-          } else {
-            isStudent = false;
-          }
-        }
-      } catch (e) {
-        console.error("[auth-service] Resident user lookup failed:", e);
-      }
-    }
-
-    // Domain restriction: all sign-ins must be @up.edu.ph, UNLESS it's the instance admin or non-student
-    if (!isInstanceAdmin && !email.endsWith("@up.edu.ph") && isStudent) {
-      return {
-        error: json(
-          {
-            error: "forbidden_domain",
-            message: "Only @up.edu.ph emails are allowed for students."
-          },
-          { status: 403 }
-        )
-      };
-    }
-
-    return { email, residentId, isInstanceAdmin };
+    return {
+      email: session.email,
+      residentId: session.sub,
+      isInstanceAdmin: session.isInstanceAdmin
+    };
   } catch (e: any) {
     console.error("Auth validation failed:", e);
     return {
@@ -324,6 +283,7 @@ export interface AuthExchangeResult {
   userInfoData: GoogleUserInfo;
   userId: string;
   isInstanceAdmin: boolean;
+  credentialJwt: string;
   savedType: "admin" | "resident";
   target: string;
 }
@@ -366,7 +326,7 @@ export async function exchangeAuthCode(): Promise<AuthExchangeResult | null> {
     throw new Error(err.error_description || "Token exchange failed");
   }
 
-  const { tokenData, userInfoData, userId, isInstanceAdmin } =
+  const { tokenData, userInfoData, userId, isInstanceAdmin, credentialJwt } =
     (await tokenResp.json()) as TokenExchangeResponse;
 
   sessionStorage.removeItem("pkce_verifier");
@@ -382,6 +342,7 @@ export async function exchangeAuthCode(): Promise<AuthExchangeResult | null> {
     userInfoData,
     userId,
     isInstanceAdmin,
+    credentialJwt,
     savedType,
     target
   };
@@ -398,7 +359,8 @@ export interface CallbackOptions {
     remember: boolean,
     userId: string,
     type: "admin" | "resident",
-    isInstanceAdmin: boolean
+    isInstanceAdmin: boolean,
+    credentialJwt: string
   ) => void;
   onSignOut: () => void;
 }
@@ -444,12 +406,21 @@ export async function handleCallback(options: CallbackOptions): Promise<boolean>
     userInfoData,
     userId,
     isInstanceAdmin,
+    credentialJwt,
     savedType,
     target: exchangeTarget
   } = exchangeResult;
   const { access_token: newAccessToken, id_token: idToken } = tokenData;
 
-  onSession(newAccessToken, userInfoData, rememberMe, userId, savedType, isInstanceAdmin);
+  onSession(
+    newAccessToken,
+    userInfoData,
+    rememberMe,
+    userId,
+    savedType,
+    isInstanceAdmin,
+    credentialJwt
+  );
 
   if (PUBLIC_DB_PROVIDER === "supabase") {
     const { supabase } = await import("$api/services/common");
@@ -480,11 +451,12 @@ export async function handleCallback(options: CallbackOptions): Promise<boolean>
 }
 
 export const authService = {
-  base64url,
   sign,
   getServiceAccountToken,
   getSheetsClient,
   getFirebaseToken,
+  createCredentialJwt,
+  verifyCredentialJwt,
   authenticateResident,
   authenticateAdmin,
   resolveResidentAccountType,

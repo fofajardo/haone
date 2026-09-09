@@ -1,3 +1,4 @@
+import { createCredentialJwt } from "$api/services/auth-service";
 import { GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
 import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
 import type { GoogleAuthToken, GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
@@ -68,11 +69,30 @@ export const POST: RequestHandler = async ({ request }) => {
       );
     }
 
+    let credentialJwt = "";
+    try {
+      credentialJwt = await createCredentialJwt({
+        email,
+        sub: userId,
+        isInstanceAdmin
+      });
+    } catch (jwtErr: any) {
+      console.error("Failed to generate credential JWT:", jwtErr);
+      return json(
+        {
+          error: "server_error",
+          error_description: "Failed to generate credential token"
+        },
+        { status: 500 }
+      );
+    }
+
     return json({
       tokenData,
       userInfoData,
       userId,
-      isInstanceAdmin
+      isInstanceAdmin,
+      credentialJwt
     } satisfies TokenExchangeResponse);
   } catch (e: any) {
     return json({ error: "server_error", error_description: e.message }, { status: 500 });

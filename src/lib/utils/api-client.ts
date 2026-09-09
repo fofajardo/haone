@@ -27,8 +27,8 @@ export async function fetchServer<T = any>(
   }
 
   const headers = new Headers(options.headers || {});
-  if (auth.accessToken) {
-    headers.set("Authorization", `Bearer ${auth.accessToken}`);
+  if (auth.credentialJwt) {
+    headers.set("Authorization", `Bearer ${auth.credentialJwt}`);
   }
 
   const response = await fetch(url, { ...options, headers });
