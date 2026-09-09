@@ -1,11 +1,7 @@
-import { supabase } from "$api/services/common";
-import { settingsService } from "$api/services/settings-service";
+import { authService } from "$api/services/auth-service";
 import { browser } from "$app/environment";
-import { goto } from "$app/navigation";
-import { PUBLIC_DB_PROVIDER, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
 import { LS_KEYS } from "$lib/constants";
-import type { GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
-import { generatePKCEChallenge, generatePKCEVerifier } from "$utils/crypto";
+import type { GoogleUserInfo } from "$lib/types";
 
 class AuthState {
   accessToken = $state<string | null>(null);
@@ -193,126 +189,28 @@ class AuthState {
   }
 
   async signIn(type: "admin" | "resident"): Promise<void> {
-    if (!browser) {
-      return;
-    }
-
-    const residentScopes = ["openid", "profile", "email"];
-
-    const adminScopes = [
-      ...residentScopes,
-      "https://www.googleapis.com/auth/gmail.send",
-      "https://www.googleapis.com/auth/spreadsheets"
-    ];
-
-    const scopes = (type === "admin" ? adminScopes : residentScopes).join(" ");
-
-    const verifier = generatePKCEVerifier();
-    sessionStorage.setItem("pkce_verifier", verifier);
-    sessionStorage.setItem("pkce_auth_type", type);
-    const challenge = await generatePKCEChallenge(verifier);
-
-    const params = new URLSearchParams({
-      client_id: PUBLIC_GI_CLIENT_ID,
-      redirect_uri: window.location.origin + "/sign-in",
-      response_type: "code",
-      scope: scopes,
-      state: this.redirectTo || (type === "admin" ? "/admin" : "/resident"),
-      include_granted_scopes: "true",
-      code_challenge: challenge,
-      code_challenge_method: "S256"
-    });
-
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    return authService.signIn(type, this.redirectTo);
   }
 
   async handleCallback(rememberMe = true): Promise<boolean> {
-    if (!browser) {
-      return false;
-    }
-
-    if (this.accessToken && !window.location.search.includes("code=")) {
-      const target = this.redirectTo || (this.authType === "admin" ? "/admin" : "/resident");
-      await goto(target);
-      this.redirectTo = null;
-      return true;
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get("code");
-    const state = urlParams.get("state");
-    const savedType =
-      (sessionStorage.getItem("pkce_auth_type") as "admin" | "resident") || "resident";
-
-    if (!code) {
-      if (this.accessToken) {
-        let target = this.redirectTo || (this.authType === "admin" ? "/admin" : "/resident");
-        if (this.authType === "resident" && target.startsWith("/admin")) {
-          target = "/resident";
-        }
-        await goto(target);
-        this.redirectTo = null;
-        return true;
+    const success = await authService.handleCallback({
+      accessToken: this.accessToken,
+      authType: this.authType,
+      redirectTo: this.redirectTo,
+      rememberMe,
+      onSession: (token, userInfo, remember, userId, type, isInstanceAdmin) => {
+        this.setSession(token, userInfo, remember, userId, type, isInstanceAdmin);
+      },
+      onSignOut: () => {
+        this.signOut();
       }
-      return false;
-    }
-
-    const verifier = sessionStorage.getItem("pkce_verifier");
-    if (!verifier) {
-      throw new Error("Missing PKCE verifier");
-    }
-
-    const tokenResp = await fetch("/api/auth/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        code,
-        code_verifier: verifier,
-        redirect_uri: window.location.origin + "/sign-in"
-      })
     });
 
-    if (!tokenResp.ok) {
-      const err = await tokenResp.json();
-      throw new Error(err.error_description || "Token exchange failed");
+    if (success) {
+      this.redirectTo = null;
     }
 
-    const { tokenData, userInfoData, userId, isInstanceAdmin } =
-      (await tokenResp.json()) as TokenExchangeResponse;
-    const { access_token: accessToken, id_token: idToken } = tokenData;
-
-    this.setSession(accessToken, userInfoData, rememberMe, userId, savedType, isInstanceAdmin);
-
-    if (PUBLIC_DB_PROVIDER === "supabase") {
-      if (!supabase || !idToken) {
-        throw new Error(
-          "Supabase sign-in is not configured (missing Supabase client or ID token)."
-        );
-      }
-      const { error: sbErr } = await supabase.auth.signInWithIdToken({
-        provider: "google",
-        token: idToken
-      });
-      if (sbErr) {
-        this.signOut();
-        throw new Error(`Supabase sign-in failed: ${sbErr.message}`);
-      }
-    }
-
-    if (savedType === "admin") {
-      await settingsService.verifyAccess(accessToken);
-    }
-
-    sessionStorage.removeItem("pkce_verifier");
-    sessionStorage.removeItem("pkce_auth_type");
-
-    let target = state || this.redirectTo || (savedType === "admin" ? "/admin" : "/resident");
-    if (savedType === "resident" && target.startsWith("/admin")) {
-      target = "/resident";
-    }
-    await goto(target);
-    this.redirectTo = null;
-    return true;
+    return success;
   }
 }
 
