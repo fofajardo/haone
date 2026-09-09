@@ -26,9 +26,9 @@
   import * as Popover from "$ui/popover";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
-  import { transformGoogleDriveLink, compressImage } from "$utils/image-utils";
+  import ImageUpload from "$components/ImageUpload.svelte";
+  import { transformGoogleDriveLink } from "$utils/image-utils";
   import { fetchServer } from "$utils/api-client";
-  import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import {
     Bold,
@@ -79,34 +79,18 @@
   // Image Dialog State
   let imageDialogOpen = $state(false);
   let imageUrl = $state("");
+  let pendingImageFile = $state<File | Blob | null>(null);
+  let imagePreviewUrl = $state<string | null>(null);
 
   function openImageDialog() {
     imageUrl = "";
+    pendingImageFile = null;
+    imagePreviewUrl = null;
     imageDialogOpen = true;
   }
 
-  let fileInput: HTMLInputElement | undefined = $state();
   let isUploadingImage = $state(false);
   const pendingImages = new Map<string, Blob>();
-
-  async function handleFileUpload(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-      isUploadingImage = true;
-      try {
-        const processedBlob = await compressImage(file);
-        const blobUrl = URL.createObjectURL(processedBlob);
-        pendingImages.set(blobUrl, processedBlob);
-        editor?.chain().focus().setImage({ src: blobUrl }).run();
-        imageDialogOpen = false;
-      } catch (err: any) {
-        console.error(err);
-        toast.error("File processing failed: " + err.message);
-      } finally {
-        isUploadingImage = false;
-      }
-    }
-  }
 
   async function uploadImages() {
     if (!editor) return;
@@ -155,6 +139,12 @@
   });
 
   function applyImage() {
+    if (pendingImageFile && imagePreviewUrl) {
+      pendingImages.set(imagePreviewUrl, pendingImageFile);
+      editor?.chain().focus().setImage({ src: imagePreviewUrl }).run();
+      imageDialogOpen = false;
+      return;
+    }
     if (imageUrl) {
       const finalUrl = transformGoogleDriveLink(imageUrl);
       editor?.chain().focus().setImage({ src: finalUrl }).run();
@@ -666,52 +656,24 @@
   <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>Insert Image</Dialog.Title>
-      <Dialog.Description>Paste a direct link to an image.</Dialog.Description>
     </Dialog.Header>
-    <div class="grid gap-4 py-4">
-      <div class="grid gap-2">
-        <Label for="imageUrl">URL</Label>
-        <div class="flex gap-2">
-          <Input
-            id="imageUrl"
-            placeholder="https://..."
-            bind:value={imageUrl}
-            onkeydown={(e) => e.key === "Enter" && applyImage()}
-          />
-          {#if uiSettings.firebaseEnabled}
-            <Button
-              variant="outline"
-              onclick={() => fileInput?.click()}
-              disabled={isUploadingImage}
-              isLoading={isUploadingImage}
-            >
-              Upload
-            </Button>
-          {/if}
-        </div>
-        {#if uiSettings.firebaseEnabled}
-          <p class="text-xs text-muted-foreground">
-            Paste a link or upload an image. If using a Google Drive link, make sure it's shared
-            with 'Anyone with the link' permission.
-          </p>
-        {:else}
-          <p class="text-xs text-muted-foreground">
-            If using a Google Drive link, make sure it's shared with 'Anyone with the link'
-            permission.
-          </p>
-        {/if}
-      </div>
+    <div class="py-4">
+      <ImageUpload
+        bind:value={imageUrl}
+        bind:file={pendingImageFile}
+        bind:previewUrl={imagePreviewUrl}
+        allowUrl={true}
+      />
     </div>
-    <input
-      type="file"
-      bind:this={fileInput}
-      accept="image/*"
-      class="hidden"
-      onchange={handleFileUpload}
-    />
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (imageDialogOpen = false)}>Cancel</Button>
-      <Button type="submit" onclick={applyImage}>Insert</Button>
+      <Button
+        type="submit"
+        onclick={applyImage}
+        disabled={!imageUrl && !pendingImageFile && !imagePreviewUrl}
+      >
+        Insert
+      </Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

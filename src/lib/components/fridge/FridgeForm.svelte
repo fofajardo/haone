@@ -4,14 +4,11 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Textarea } from "$ui/textarea";
-  import { Badge } from "$ui/badge";
   import * as RadioGroup from "$ui/radio-group";
   import * as Card from "$ui/card";
   import {
     FridgeCompartment,
-    type FridgeItemRecord,
     type ResidentRecord,
-    FridgeTag,
     FRIDGE_TAG_LABELS,
     FRIDGE_TAG_LIST
   } from "$lib/types";
@@ -21,7 +18,6 @@
     fetchFridgeItems
   } from "$api/controllers/fridge-controller";
   import { fetchResidents } from "$api/controllers/resident-controller";
-  import { compressImage } from "$utils/image-utils";
   import { fetchServer } from "$utils/api-client";
   import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
@@ -34,14 +30,13 @@
   import {
     Snowflake,
     Refrigerator,
-    Upload,
-    Trash2,
     Save,
     Tag as TagIcon,
     Package,
     FileText,
     User
   } from "@lucide/svelte";
+  import ImageUpload from "$components/ImageUpload.svelte";
 
   let {
     itemId = null as string | null,
@@ -53,11 +48,9 @@
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);
-  let isUploading = $state(false);
   let error = $state<string | null>(null);
   let pendingFile = $state<File | Blob | null>(null);
   let previewUrl = $state<string | null>(null);
-  let fileInput = $state<HTMLInputElement>();
   let accounts = $state<ResidentRecord[]>([]);
   let residentSearch = $state("");
   let selectedResident = $state<ResidentRecord | null>(null);
@@ -142,35 +135,6 @@
       return undefined;
     }
     return transformed;
-  }
-
-  async function handleFileUpload(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-      isUploading = true;
-      try {
-        const processedFile = await compressImage(file);
-        pendingFile = processedFile;
-        if (previewUrl && !formData.photoUrl.startsWith("http")) {
-          URL.revokeObjectURL(previewUrl);
-        }
-        previewUrl = URL.createObjectURL(processedFile);
-        formData.photoUrl = "PENDING_UPLOAD";
-      } catch (err: any) {
-        toast.error("File processing failed: " + err.message);
-      } finally {
-        isUploading = false;
-      }
-    }
-  }
-
-  function handleRemoveImage() {
-    if (previewUrl && !formData.photoUrl.startsWith("http")) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    pendingFile = null;
-    previewUrl = null;
-    formData.photoUrl = "";
   }
 
   async function handleSubmit() {
@@ -376,55 +340,14 @@
             </Label>
 
             {#if uiSettings.firebaseEnabled}
-              <div class="space-y-2">
-                <Label>Item Photo</Label>
-                {#if previewUrl}
-                  <div
-                    class="relative mx-auto max-w-xs overflow-hidden rounded-xl border border-muted bg-muted/20"
-                  >
-                    <img
-                      src={previewUrl}
-                      alt="Item preview"
-                      class="aspect-video w-full object-cover"
-                    />
-                    <div
-                      class="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity hover:opacity-100"
-                    >
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onclick={handleRemoveImage}
-                        class="h-8 gap-2 px-3 shadow-lg"
-                      >
-                        <Trash2 class="h-4 w-4" />
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                {:else}
-                  <div
-                    role="button"
-                    tabindex="0"
-                    onclick={() => fileInput?.click()}
-                    onkeydown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") fileInput?.click();
-                    }}
-                    class="mx-auto flex max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted p-6 text-center transition-colors hover:border-border hover:bg-muted/30"
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      class="hidden"
-                      bind:this={fileInput}
-                      onchange={handleFileUpload}
-                    />
-                    <Upload class="h-6 w-6 text-muted-foreground" />
-                    <div class="text-xs text-muted-foreground">
-                      <span class="font-medium text-foreground">Click to upload photo</span> or take picture
-                    </div>
-                  </div>
-                {/if}
-              </div>
+              <ImageUpload
+                label="Item Photo"
+                bind:value={formData.photoUrl}
+                bind:file={pendingFile}
+                bind:previewUrl
+                allowUrl={false}
+                disabled={isSubmitting}
+              />
             {/if}
 
             <div class="space-y-2">
@@ -440,7 +363,7 @@
           </div>
 
           <div class="flex justify-end pt-2">
-            <Button onclick={handleSubmit} isLoading={isSubmitting || isUploading} icon={Save}>
+            <Button onclick={handleSubmit} isLoading={isSubmitting} icon={Save}>
               {itemId ? "Save Changes" : "Store in Fridge"}
             </Button>
           </div>
