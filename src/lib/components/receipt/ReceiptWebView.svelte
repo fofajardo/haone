@@ -89,7 +89,7 @@
       </div>
 
       <!-- Success Headline & Subtitle -->
-      <h2 class="text-2xl font-bold tracking-tight text-foreground">Acknowledgement Receipt</h2>
+      <h2 class="text-2xl font-bold tracking-tight">Acknowledgement Receipt</h2>
       <p class="mt-1 text-sm">
         Issued by the {activeBranding.issuerName}
       </p>
@@ -99,7 +99,7 @@
         <span class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Total Amount
         </span>
-        <span class="mt-1 font-sans text-4xl font-extrabold tracking-tight text-foreground">
+        <span class="mt-1 font-sans text-4xl font-extrabold tracking-tight">
           {formatCurrency(calculateTotal(receiptData.items))}
         </span>
       </div>
@@ -132,7 +132,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <span class="truncate text-sm font-semibold text-foreground">
+              <span class="truncate text-sm font-semibold">
                 {translateMop(receiptData.processor)}
               </span>
             </div>
@@ -154,14 +154,14 @@
         {#each receiptData.items as item}
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
-              <span class="text-foreground">{item.name}</span>
+              <span>{item.name}</span>
               {#if item.amount < 0}
                 <Badge variant="destructive" class="px-1.5 py-0 text-xs">
                   {receiptData.transactionType === "RECLASSIFY" ? "Reclassified" : "Refund"}
                 </Badge>
               {/if}
             </div>
-            <span class="font-semibold text-foreground">
+            <span class="font-semibold">
               {formatAccounting(item.amount)}
             </span>
           </div>
@@ -200,11 +200,7 @@
           class="flex flex-col justify-between border-b border-border/40 py-1.5 md:flex-row md:items-center"
         >
           <span class="text-muted-foreground">{detail.label}</span>
-          <span
-            class="font-medium text-foreground md:text-right {detail.mono
-              ? 'font-mono md:text-xs'
-              : ''}"
-          >
+          <span class="font-medium md:text-right {detail.mono ? 'font-mono md:text-xs' : ''}">
             {detail.value}
           </span>
         </div>

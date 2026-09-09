@@ -72,7 +72,7 @@
       </div>
 
       <!-- Title & Subtitle -->
-      <h2 class="text-2xl font-bold tracking-tight text-foreground">Certificate of Full Payment</h2>
+      <h2 class="text-2xl font-bold tracking-tight">Certificate of Full Payment</h2>
       <p class="mt-1 text-sm">
         Issued by the {activeBranding.issuerName}
       </p>
@@ -82,9 +82,7 @@
         <span class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
           Resident
         </span>
-        <span
-          class="mt-1 text-center font-sans text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl"
-        >
+        <span class="mt-1 text-center font-sans text-2xl font-extrabold tracking-tight sm:text-3xl">
           {clearanceData.name}
         </span>
       </div>
@@ -101,7 +99,7 @@
 {#snippet certificationStatement()}
   <div class="space-y-4 text-sm">
     <div class="space-y-3 rounded-2xl bg-muted p-4">
-      <p class="text-justify leading-relaxed text-foreground">
+      <p class="text-justify leading-relaxed">
         This certifies that <span class="font-bold">{clearanceData.name}</span>
         has been cleared of any liability regarding association and water fees for the
         <span class="font-bold">{translatePeriod(clearanceData.period)}</span>.
@@ -128,11 +126,7 @@
           class="flex flex-col justify-between border-b border-border/40 py-1.5 md:flex-row md:items-center"
         >
           <span class="text-muted-foreground">{detail.label}</span>
-          <span
-            class="font-medium text-foreground md:text-right {detail.mono
-              ? 'font-mono text-xs'
-              : ''}"
-          >
+          <span class="font-medium md:text-right {detail.mono ? 'font-mono text-xs' : ''}">
             {detail.value}
           </span>
         </div>
