@@ -31,7 +31,7 @@
           <span>Filter</span>
           {#if activeCount > 0}
             <span
-              class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground"
+              class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
             >
               {activeCount}
             </span>

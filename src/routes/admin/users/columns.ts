@@ -36,7 +36,7 @@ export const columns: ColumnDef<User>[] = [
       const latest = colleges[colleges.length - 1] || "—";
       const snippet = createRawSnippet<[{ val: string }]>((p) => ({
         render: () =>
-          `<span class="text-sm text-foreground leading-tight whitespace-normal break-words">${p().val}</span>`
+          `<span class="text-sm text-foreground leading-tight whitespace-normal wrap-break-word">${p().val}</span>`
       }));
       return renderSnippet(snippet, { val: latest });
     }
@@ -49,7 +49,7 @@ export const columns: ColumnDef<User>[] = [
       const latest = programs[programs.length - 1] || "—";
       const snippet = createRawSnippet<[{ val: string }]>((p) => ({
         render: () =>
-          `<span class="text-sm text-foreground leading-tight whitespace-normal break-words">${p().val}</span>`
+          `<span class="text-sm text-foreground leading-tight whitespace-normal wrap-break-word">${p().val}</span>`
       }));
       return renderSnippet(snippet, { val: latest });
     }

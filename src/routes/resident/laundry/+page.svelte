@@ -352,7 +352,7 @@
           </h3>
           <div class="flex items-center gap-2">
             <Funnel class="h-4 w-4 text-muted-foreground" />
-            <NativeSelect.Root bind:value={statusFilter} class="h-9 w-[140px] text-xs">
+            <NativeSelect.Root bind:value={statusFilter} class="h-9 w-35 text-xs">
               <NativeSelect.Option value="">All Status</NativeSelect.Option>
               <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
               <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>

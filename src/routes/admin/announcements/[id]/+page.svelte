@@ -217,9 +217,7 @@
             placeholder="announcement-slug"
             disabled={isSubmitting}
           />
-          <p class="text-[10px] text-muted-foreground italic">
-            This will be used for the announcement URL.
-          </p>
+          <p class="text-xs text-muted-foreground">This will be used for the announcement URL.</p>
         </div>
 
         <div class="space-y-2">

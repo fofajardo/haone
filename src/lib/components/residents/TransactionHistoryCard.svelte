@@ -5,8 +5,7 @@
   import { type JournalRecord } from "$lib/types";
   import { createRawSnippet } from "svelte";
   import * as Card from "$ui/card";
-  import { Badge } from "$ui/badge";
-  import { History, Clock } from "@lucide/svelte";
+  import { Clock, RotateCcwClockIcon } from "@lucide/svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
   import EmptyView from "$components/EmptyView.svelte";
 
@@ -61,16 +60,7 @@
     {
       accessorKey: "notes",
       header: "Notes",
-      cell: ({ row }) => {
-        const notesSnippet = createRawSnippet<[{ notes: string }]>((p) => ({
-          render: () => `
-            <p class="max-w-[300px] truncate text-sm leading-tight text-muted-foreground" title="${p().notes || ""}">
-              ${p().notes || "—"}
-            </p>
-          `
-        }));
-        return renderSnippet(notesSnippet, { notes: row.original.notes });
-      }
+      cell: ({ row }) => renderSnippet(notesCell, { notes: row.original.notes })
     },
     {
       accessorKey: "amount",
@@ -91,11 +81,17 @@
   ];
 </script>
 
+{#snippet notesCell({ notes }: { notes: string })}
+  <p class="max-w-75 truncate text-sm leading-tight text-muted-foreground" title={notes || ""}>
+    {notes || "—"}
+  </p>
+{/snippet}
+
 {#if history.length > 0}
   <Card.Root class="overflow-hidden {className}">
     <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
       <Card.Title class="flex items-center gap-2 text-lg">
-        <History class="h-5 w-5" />
+        <RotateCcwClockIcon class="h-5 w-5" />
         Transaction History
       </Card.Title>
     </Card.Header>

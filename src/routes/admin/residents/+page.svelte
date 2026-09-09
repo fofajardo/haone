@@ -257,7 +257,7 @@
               <Input
                 bind:value={tableSync.filters!.search}
                 placeholder="Search by name, email, or room…"
-                class="h-9 pl-9 text-xs"
+                class="h-9 pl-9 text-sm"
               />
             </div>
           </div>

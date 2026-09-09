@@ -117,7 +117,7 @@
     <div class="relative z-10 flex shrink-0 flex-col items-end gap-1 text-right">
       {#if achievement.points}
         <span
-          class="inline-flex items-center gap-0.5 rounded border border-border/50 bg-background/80 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground"
+          class="inline-flex items-center gap-0.5 rounded border border-border/50 bg-background/80 px-1.5 py-0.5 text-xs font-semibold text-muted-foreground"
         >
           +{achievement.points} XP
         </span>
@@ -158,7 +158,7 @@
     {#if achievement.points}
       <div class="shrink-0 text-right">
         <span
-          class="inline-flex items-center gap-0.5 rounded border border-border/30 bg-background/40 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground/70"
+          class="inline-flex items-center gap-0.5 rounded border border-border/30 bg-background/40 px-1.5 py-0.5 text-xs font-semibold text-muted-foreground/70"
         >
           +{achievement.points} XP
         </span>

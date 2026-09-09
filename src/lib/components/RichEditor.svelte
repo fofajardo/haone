@@ -54,6 +54,7 @@
     Rows2,
     Columns2
   } from "@lucide/svelte";
+  import { cn } from "$lib/utils";
 
   let {
     content = $bindable(),
@@ -237,7 +238,10 @@
       },
       editorProps: {
         attributes: {
-          class: `prose prose-sm max-w-none focus:outline-none ${editable ? "min-h-[400px] p-6" : "min-h-0 p-0"} text-sm text-foreground leading-relaxed`
+          class: cn(
+            "prose prose-sm max-w-none focus:outline-none text-sm text-foreground leading-relaxed",
+            editable ? "min-h-100 p-6" : "min-h-0 p-0"
+          )
         }
       }
     });

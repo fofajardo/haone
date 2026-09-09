@@ -372,7 +372,7 @@
                         </Button>
                       </div>
                       <div
-                        class="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-bold text-brand shadow-sm backdrop-blur-sm"
+                        class="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-background/90 px-2 py-0.5 text-xs font-bold text-brand shadow-sm backdrop-blur-sm"
                       >
                         <ImageIcon class="h-3 w-3" />
                         <span>IMAGE ATTACHED</span>

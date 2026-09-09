@@ -134,7 +134,7 @@
             </p>
 
             {#if heroItem.camera}
-              <div class="flex items-center gap-1.5 pt-1 font-mono text-[11px] text-white/70">
+              <div class="flex items-center gap-1.5 pt-1 font-mono text-xs text-white/70">
                 <Camera class="h-3.5 w-3.5 shrink-0" />
                 <span>
                   {heroItem.camera}{#if heroItem.cameraDetails}
