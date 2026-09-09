@@ -35,6 +35,7 @@
     isResidentRouteAllowed
   } from "$api/controllers/resident-controller";
   import { getCustomServices } from "$lib/services";
+  import { namecase } from "@compwright/namecase";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
@@ -142,7 +143,7 @@
   <div class="mb-5 flex items-start justify-between">
     <div>
       <h1 class="mb-2 text-4xl font-bold tracking-tight">
-        Welcome back, {auth.preferredName}
+        Welcome back, {namecase(auth.preferredName)}
       </h1>
       <div>
         View your profile, track your financial standing, and manage your clearance for <span

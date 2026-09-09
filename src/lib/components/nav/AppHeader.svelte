@@ -16,6 +16,7 @@
   import { dev } from "$app/environment";
   import { page } from "$app/state";
   import BrandingLogo from "$components/BrandingLogo.svelte";
+  import { namecase } from "@compwright/namecase";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -101,7 +102,7 @@
       {#if auth.avatarUrl && !imgError}
         <img
           src={auth.avatarUrl}
-          alt={auth.displayName}
+          alt={namecase(auth.displayName)}
           class="h-full w-full object-cover"
           onerror={() => (imgError = true)}
         />
@@ -123,7 +124,7 @@
               {#if auth.avatarUrl && !imgError}
                 <img
                   src={auth.avatarUrl}
-                  alt={auth.displayName || "User"}
+                  alt={namecase(auth.displayName)}
                   class="h-full w-full object-cover"
                   onerror={() => (imgError = true)}
                 />
@@ -144,7 +145,7 @@
               {#if !imgError}
                 <img
                   src={auth.avatarUrl}
-                  alt={auth.displayName}
+                  alt={namecase(auth.displayName)}
                   class="h-10 w-10 rounded-full border border-border object-cover"
                   onerror={() => (imgError = true)}
                 />
@@ -152,7 +153,9 @@
                 <CircleUser class="h-10 w-10 text-muted-foreground" />
               {/if}
               <div class="flex min-w-0 flex-col">
-                <span class="truncate text-sm font-medium text-foreground">{auth.displayName}</span>
+                <span class="truncate text-sm font-medium text-foreground"
+                  >{namecase(auth.displayName)}</span
+                >
                 <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
               </div>
             </div>

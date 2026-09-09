@@ -2,6 +2,7 @@
   import * as Sidebar from "$ui/sidebar";
   import { auth } from "$state/auth.svelte";
   import { CircleUser, LogOut } from "@lucide/svelte";
+  import { namecase } from "@compwright/namecase";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -13,7 +14,7 @@
       {#if !imgError}
         <img
           src={auth.avatarUrl}
-          alt={auth.displayName}
+          alt={namecase(auth.displayName)}
           class="h-32 w-32 rounded-full object-cover"
           onerror={() => (imgError = true)}
         />
@@ -22,7 +23,7 @@
       {/if}
 
       <h2 class="mt-1 text-2xl font-normal tracking-normal text-foreground">
-        Hi, {auth.preferredName}!
+        Hi, {namecase(auth.preferredName)}!
       </h2>
 
       <button

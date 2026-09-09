@@ -34,6 +34,7 @@
   import { pageState } from "$state/page-info.svelte";
   import * as Card from "$ui/card";
   import { getCustomServices } from "$lib/services";
+  import { namecase } from "@compwright/namecase";
 
   let stats = $state({
     activeResidents: 0,
@@ -226,7 +227,7 @@
   <!-- Header Section -->
   <div class="mb-5">
     <h1 class="mb-2 text-4xl font-bold tracking-tight">
-      Welcome back, {auth.preferredName}
+      Welcome back, {namecase(auth.preferredName)}
     </h1>
     <div>
       Manage residents, track collections, and automate communications for <span
