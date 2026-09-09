@@ -1,4 +1,4 @@
-import { authenticateAdmin } from "$lib/server/api-helper";
+import { authenticateAdmin } from "$api/services/server-sheets-service";
 import { runAnnouncementNotifications } from "$lib/server/tasks/announcements";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";

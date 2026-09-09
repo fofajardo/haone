@@ -1,4 +1,4 @@
-import { fetchSheetsData, getSheetsClient } from "$lib/server/api-helper";
+import { fetchSheetsData, getSheetsClient } from "$api/services/server-sheets-service";
 import { JOURNAL_COL, USER_COL } from "$lib/types";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";

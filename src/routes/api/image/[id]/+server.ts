@@ -1,5 +1,5 @@
 import { deleteImageFromFirestore, getImageFromFirestore } from "$api/services/firestore-service";
-import { authenticateResident, serverError } from "$lib/server/api-helper";
+import { authenticateResident, serverError } from "$api/services/server-sheets-service";
 import { json } from "@sveltejs/kit";
 
 export async function GET({ params }) {

@@ -185,3 +185,14 @@ export async function fetchSheetsData(token: string, ranges: string[]): Promise<
   });
   return Promise.all(promises);
 }
+
+export const serverSheetsService = {
+  fetchGoogleAPI,
+  getSheetValues,
+  appendSheetValue,
+  updateSheetValue,
+  deleteSheetRow,
+  serverError,
+  getSpreadsheetIdForSheet,
+  fetchSheetsData
+};

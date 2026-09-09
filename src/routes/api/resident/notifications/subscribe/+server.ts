@@ -1,10 +1,10 @@
-import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
 import {
   authenticateResident,
   fetchGoogleAPI,
   getFirebaseToken,
   serverError
-} from "$lib/server/api-helper";
+} from "$api/services/server-sheets-service";
+import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 

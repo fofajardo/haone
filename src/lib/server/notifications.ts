@@ -1,7 +1,7 @@
+import { fetchGoogleAPI, getFirebaseToken } from "$api/services/server-sheets-service";
 import branding from "$dataPrivate/branding.json";
 import { GOOGLE_SERVICE_ACCOUNT_JSON, VAPID_PRIVATE_KEY } from "$env/static/private";
 import { PUBLIC_BRANDING, PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";
-import { fetchGoogleAPI, getFirebaseToken } from "$lib/server/api-helper";
 import {
   buildPushPayload,
   type PushMessage,

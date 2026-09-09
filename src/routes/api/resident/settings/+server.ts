@@ -1,11 +1,11 @@
-import { PUBLIC_GS_RR_ID, PUBLIC_GS_SR_ID } from "$env/static/public";
 import {
   appendSheetValue,
   authenticateResident,
   getSheetsClient,
   getSheetValues,
   serverError
-} from "$lib/server/api-helper";
+} from "$api/services/server-sheets-service";
+import { PUBLIC_GS_RR_ID, PUBLIC_GS_SR_ID } from "$env/static/public";
 import { USER_COL, USER_SETTINGS_COL } from "$lib/types";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";

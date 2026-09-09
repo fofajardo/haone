@@ -175,7 +175,7 @@ export async function authenticateResident(request: Request) {
           }
         } else {
           const { USER_COL, UserTag } = await import("$lib/types");
-          const { fetchSheetsData } = await import("$lib/server/api-helper");
+          const { fetchSheetsData } = await import("$api/services/server-sheets-service");
           const saToken = await getSheetsClient();
           const [users] = await fetchSheetsData(saToken, ["users!A:P"]);
           const user = users.find((r: any) => {
@@ -232,7 +232,7 @@ export async function authenticateAdmin(request: Request) {
 
   try {
     const { OFFICER_COL } = await import("$lib/types");
-    const { fetchSheetsData } = await import("$lib/server/api-helper");
+    const { fetchSheetsData } = await import("$api/services/server-sheets-service");
     const token = await getSheetsClient();
     const [directory] = await fetchSheetsData(token, ["directory!A:H"]);
 

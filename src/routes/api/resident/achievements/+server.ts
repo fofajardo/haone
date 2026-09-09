@@ -5,7 +5,7 @@ import {
   getSheetsClient,
   resolveResidentAccountType,
   serverError
-} from "$lib/server/api-helper";
+} from "$api/services/server-sheets-service";
 import {
   ACCOUNT_COL,
   AccountType,

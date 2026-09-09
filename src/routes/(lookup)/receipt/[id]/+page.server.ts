@@ -1,5 +1,5 @@
+import { getSheetsClient, getSheetValues } from "$api/services/server-sheets-service";
 import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
 import type { ReceiptData, ReceiptItem } from "$lib/types";
 import { JOURNAL_COL, USER_COL } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";

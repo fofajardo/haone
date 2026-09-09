@@ -1,5 +1,5 @@
+import { getSheetsClient, getSheetValues } from "$api/services/server-sheets-service";
 import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
 import { ACCOUNT_COL, OFFICER_COL, USER_COL } from "$lib/types";
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";

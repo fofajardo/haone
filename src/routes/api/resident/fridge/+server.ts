@@ -1,5 +1,4 @@
 import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
-import { PUBLIC_GS_SR_ID } from "$env/static/public";
 import {
   appendSheetValue,
   authenticateResident,
@@ -8,7 +7,8 @@ import {
   resolveResidentAccountType,
   serverError,
   updateSheetValue
-} from "$lib/server/api-helper";
+} from "$api/services/server-sheets-service";
+import { PUBLIC_GS_SR_ID } from "$env/static/public";
 import {
   ACCOUNT_COL,
   FRIDGE_ITEM_COL,

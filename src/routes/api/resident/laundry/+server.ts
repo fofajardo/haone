@@ -1,5 +1,4 @@
 import { canAccessLaundryOrFridge, canSeeLaundryNames } from "$api/controllers/resident-controller";
-import { PUBLIC_GS_SR_ID } from "$env/static/public";
 import {
   appendSheetValue,
   authenticateResident,
@@ -7,7 +6,8 @@ import {
   getSheetsClient,
   resolveResidentAccountType,
   serverError
-} from "$lib/server/api-helper";
+} from "$api/services/server-sheets-service";
+import { PUBLIC_GS_SR_ID } from "$env/static/public";
 import { ACCOUNT_COL, LAUNDRY_COL, LaundryStatus, USER_COL } from "$lib/types";
 import { formatTime } from "$utils/formatters";
 import { parseTimeMinutes } from "$utils/parsers";
