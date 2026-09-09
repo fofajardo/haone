@@ -1,4 +1,4 @@
-import { authService } from "$api/services/auth-service";
+import { clientAuthService } from "$api/services/client-auth-service";
 import { browser } from "$app/environment";
 import { LS_KEYS } from "$lib/constants";
 import type { GoogleUserInfo } from "$lib/types";
@@ -197,11 +197,11 @@ class AuthState {
   }
 
   async signIn(type: "admin" | "resident"): Promise<void> {
-    return authService.signIn(type, this.redirectTo);
+    return clientAuthService.signIn(type, this.redirectTo);
   }
 
   async handleCallback(rememberMe = true): Promise<boolean> {
-    const success = await authService.handleCallback({
+    const success = await clientAuthService.handleCallback({
       accessToken: this.accessToken,
       authType: this.authType,
       redirectTo: this.redirectTo,

@@ -1,7 +1,15 @@
-import { createCredentialJwt } from "$api/services/auth-service";
+import { createCredentialJwt, getSheetsClient } from "$api/services/auth-service";
+import { fetchSheetsData } from "$api/services/server-sheets-service";
 import { GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
-import { PUBLIC_GI_CLIENT_ID } from "$env/static/public";
+import {
+  PUBLIC_DB_PROVIDER,
+  PUBLIC_GI_CLIENT_ID,
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  PUBLIC_SUPABASE_URL
+} from "$env/static/public";
 import type { GoogleAuthToken, GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
+import { USER_COL, UserTag } from "$lib/types";
+import { createClient } from "@supabase/supabase-js";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
@@ -100,10 +108,6 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 async function lookupUserSupabase(email: string): Promise<{ userId: string; isStudent: boolean }> {
-  const { UserTag } = await import("$lib/types");
-  const { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } =
-    await import("$env/static/public");
-  const { createClient } = await import("@supabase/supabase-js");
   const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
   const { data: dbUser } = await supabase
     .from("users")
@@ -123,9 +127,6 @@ async function lookupUserSupabase(email: string): Promise<{ userId: string; isSt
 }
 
 async function lookupUserSheets(email: string): Promise<{ userId: string; isStudent: boolean }> {
-  const { USER_COL, UserTag } = await import("$lib/types");
-  const { fetchSheetsData } = await import("$api/services/server-sheets-service");
-  const { getSheetsClient } = await import("$api/services/auth-service");
   const saClient = await getSheetsClient();
   const [userRows] = await fetchSheetsData(saClient, ["users!A:P"]);
   const user = userRows.find((r: any) => {
@@ -145,8 +146,6 @@ async function lookupUserSheets(email: string): Promise<{ userId: string; isStud
 }
 
 async function lookupUser(email: string): Promise<{ userId: string; isStudent: boolean }> {
-  const { PUBLIC_DB_PROVIDER } = await import("$env/static/public");
-
   switch (PUBLIC_DB_PROVIDER) {
     case "supabase": {
       return await lookupUserSupabase(email);

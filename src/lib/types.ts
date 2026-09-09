@@ -40,6 +40,19 @@ export interface CredentialPayload {
   exp?: number;
 }
 
+export interface AuthExchangeResult {
+  tokenData: {
+    access_token: string;
+    id_token: string;
+  };
+  userInfoData: GoogleUserInfo;
+  userId: string;
+  isInstanceAdmin: boolean;
+  credentialJwt: string;
+  savedType: "admin" | "resident";
+  target: string;
+}
+
 export interface ReceiptItem {
   name: string;
   amount: number;

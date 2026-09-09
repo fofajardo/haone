@@ -1,11 +1,9 @@
-import { browser } from "$app/environment";
-import { goto } from "$app/navigation";
-import { PUBLIC_DB_PROVIDER, PUBLIC_GI_CLIENT_ID } from "$env/static/public";
-import type { CredentialPayload, GoogleUserInfo, TokenExchangeResponse } from "$lib/types";
-import { ACCOUNT_COL } from "$lib/types";
-import { generatePKCEChallenge, generatePKCEVerifier } from "$utils/crypto";
+import { fetchSheetsData } from "$api/services/server-sheets-service";
+import { GOOGLE_SERVICE_ACCOUNT_JSON, JWT_SECRET } from "$env/static/private";
+import type { CredentialPayload } from "$lib/types";
+import { ACCOUNT_COL, OFFICER_COL } from "$lib/types";
 import { json } from "@sveltejs/kit";
-import { base64url } from "jose";
+import { base64url, jwtVerify, SignJWT } from "jose";
 
 /**
  * Signs a payload using RS256 with a private key.
@@ -81,7 +79,6 @@ export async function getServiceAccountToken(email: string, privateKey: string, 
  * Creates an authorized Google Sheets client (token) using the service account.
  */
 export async function getSheetsClient() {
-  const { GOOGLE_SERVICE_ACCOUNT_JSON } = await import("$env/static/private");
   const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
   const token = await getServiceAccountToken(keys.client_email, keys.private_key, [
     "https://www.googleapis.com/auth/spreadsheets"
@@ -93,7 +90,6 @@ export async function getSheetsClient() {
  * Creates an authorized Firebase client (token) using the service account.
  */
 export async function getFirebaseToken() {
-  const { GOOGLE_SERVICE_ACCOUNT_JSON } = await import("$env/static/private");
   const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
   const token = await getServiceAccountToken(keys.client_email, keys.private_key, [
     "https://www.googleapis.com/auth/datastore",
@@ -107,8 +103,6 @@ export async function getFirebaseToken() {
  * Creates a signed credential JWT valid for 1 hour.
  */
 export async function createCredentialJwt(payload: CredentialPayload): Promise<string> {
-  const { SignJWT } = await import("jose");
-  const { JWT_SECRET } = await import("$env/static/private");
   const secretKey = new TextEncoder().encode(JWT_SECRET);
 
   return new SignJWT({
@@ -127,8 +121,6 @@ export async function createCredentialJwt(payload: CredentialPayload): Promise<s
  */
 export async function verifyCredentialJwt(token: string): Promise<CredentialPayload | null> {
   try {
-    const { jwtVerify } = await import("jose");
-    const { JWT_SECRET } = await import("$env/static/private");
     const secretKey = new TextEncoder().encode(JWT_SECRET);
 
     const { payload } = await jwtVerify(token, secretKey, {
@@ -190,8 +182,6 @@ export async function authenticateAdmin(request: Request) {
   }
 
   try {
-    const { OFFICER_COL } = await import("$lib/types");
-    const { fetchSheetsData } = await import("$api/services/server-sheets-service");
     const token = await getSheetsClient();
     const [directory] = await fetchSheetsData(token, ["directory!A:H"]);
 
@@ -235,221 +225,6 @@ export function resolveResidentAccountType(
   return null;
 }
 
-/**
- * Initiates Google OAuth sign-in flow.
- */
-export async function signIn(
-  type: "admin" | "resident",
-  redirectTo?: string | null
-): Promise<void> {
-  if (!browser) {
-    return;
-  }
-
-  const residentScopes = ["openid", "profile", "email"];
-
-  const adminScopes = [
-    ...residentScopes,
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/spreadsheets"
-  ];
-
-  const scopes = (type === "admin" ? adminScopes : residentScopes).join(" ");
-
-  const verifier = generatePKCEVerifier();
-  sessionStorage.setItem("pkce_verifier", verifier);
-  sessionStorage.setItem("pkce_auth_type", type);
-  const challenge = await generatePKCEChallenge(verifier);
-
-  const params = new URLSearchParams({
-    client_id: PUBLIC_GI_CLIENT_ID,
-    redirect_uri: window.location.origin + "/sign-in",
-    response_type: "code",
-    scope: scopes,
-    state: redirectTo || (type === "admin" ? "/admin" : "/resident"),
-    include_granted_scopes: "true",
-    code_challenge: challenge,
-    code_challenge_method: "S256"
-  });
-
-  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-}
-
-export interface AuthExchangeResult {
-  tokenData: {
-    access_token: string;
-    id_token: string;
-  };
-  userInfoData: GoogleUserInfo;
-  userId: string;
-  isInstanceAdmin: boolean;
-  credentialJwt: string;
-  savedType: "admin" | "resident";
-  target: string;
-}
-
-/**
- * Exchanges auth code for tokens and validates with backend.
- */
-export async function exchangeAuthCode(): Promise<AuthExchangeResult | null> {
-  if (!browser) {
-    return null;
-  }
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get("code");
-  const state = urlParams.get("state");
-  const savedType =
-    (sessionStorage.getItem("pkce_auth_type") as "admin" | "resident") || "resident";
-
-  if (!code) {
-    return null;
-  }
-
-  const verifier = sessionStorage.getItem("pkce_verifier");
-  if (!verifier) {
-    throw new Error("Missing PKCE verifier");
-  }
-
-  const tokenResp = await fetch("/api/auth/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      code,
-      code_verifier: verifier,
-      redirect_uri: window.location.origin + "/sign-in"
-    })
-  });
-
-  if (!tokenResp.ok) {
-    const err = await tokenResp.json();
-    throw new Error(err.error_description || "Token exchange failed");
-  }
-
-  const { tokenData, userInfoData, userId, isInstanceAdmin, credentialJwt } =
-    (await tokenResp.json()) as TokenExchangeResponse;
-
-  sessionStorage.removeItem("pkce_verifier");
-  sessionStorage.removeItem("pkce_auth_type");
-
-  let target = state || (savedType === "admin" ? "/admin" : "/resident");
-  if (savedType === "resident" && target.startsWith("/admin")) {
-    target = "/resident";
-  }
-
-  return {
-    tokenData,
-    userInfoData,
-    userId,
-    isInstanceAdmin,
-    credentialJwt,
-    savedType,
-    target
-  };
-}
-
-export interface CallbackOptions {
-  accessToken: string | null;
-  authType: "admin" | "resident" | null;
-  redirectTo: string | null;
-  rememberMe?: boolean;
-  onSession: (
-    token: string,
-    userInfo: GoogleUserInfo,
-    remember: boolean,
-    userId: string,
-    type: "admin" | "resident",
-    isInstanceAdmin: boolean,
-    credentialJwt: string
-  ) => void;
-  onSignOut: () => void;
-}
-
-/**
- * Handles OAuth callback workflow.
- */
-export async function handleCallback(options: CallbackOptions): Promise<boolean> {
-  if (!browser) {
-    return false;
-  }
-
-  const { accessToken, authType, redirectTo, rememberMe = true, onSession, onSignOut } = options;
-
-  if (accessToken && !window.location.search.includes("code=")) {
-    const target = redirectTo || (authType === "admin" ? "/admin" : "/resident");
-    await goto(target);
-    return true;
-  }
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get("code");
-
-  if (!code) {
-    if (accessToken) {
-      let target = redirectTo || (authType === "admin" ? "/admin" : "/resident");
-      if (authType === "resident" && target.startsWith("/admin")) {
-        target = "/resident";
-      }
-      await goto(target);
-      return true;
-    }
-    return false;
-  }
-
-  const exchangeResult = await exchangeAuthCode();
-  if (!exchangeResult) {
-    return false;
-  }
-
-  const {
-    tokenData,
-    userInfoData,
-    userId,
-    isInstanceAdmin,
-    credentialJwt,
-    savedType,
-    target: exchangeTarget
-  } = exchangeResult;
-  const { access_token: newAccessToken, id_token: idToken } = tokenData;
-
-  onSession(
-    newAccessToken,
-    userInfoData,
-    rememberMe,
-    userId,
-    savedType,
-    isInstanceAdmin,
-    credentialJwt
-  );
-
-  if (PUBLIC_DB_PROVIDER === "supabase") {
-    const { supabase } = await import("$api/services/common");
-    if (!supabase || !idToken) {
-      throw new Error("Supabase sign-in is not configured (missing Supabase client or ID token).");
-    }
-    const { error: sbErr } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: idToken
-    });
-    if (sbErr) {
-      onSignOut();
-      throw new Error(`Supabase sign-in failed: ${sbErr.message}`);
-    }
-  }
-
-  if (savedType === "admin") {
-    const { settingsService } = await import("$api/services/settings-service");
-    await settingsService.verifyAccess(newAccessToken);
-  }
-
-  let finalTarget = redirectTo || exchangeTarget;
-  if (savedType === "resident" && finalTarget.startsWith("/admin")) {
-    finalTarget = "/resident";
-  }
-  await goto(finalTarget);
-  return true;
-}
-
 export const authService = {
   sign,
   getServiceAccountToken,
@@ -459,8 +234,5 @@ export const authService = {
   verifyCredentialJwt,
   authenticateResident,
   authenticateAdmin,
-  resolveResidentAccountType,
-  signIn,
-  exchangeAuthCode,
-  handleCallback
+  resolveResidentAccountType
 };
