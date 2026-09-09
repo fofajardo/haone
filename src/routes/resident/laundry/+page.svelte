@@ -269,10 +269,10 @@
   </ContentHeader>
 
   <Card.Root
-    class="overflow-hidden border-blue-100 bg-blue-50/50 p-0 dark:border-blue-800 dark:bg-blue-900/10"
+    class="overflow-hidden bg-blue-50/50 p-0 ring-0 dark:border-blue-800 dark:bg-blue-900/10"
   >
     <Collapsible.Root bind:open={isRulesOpen}>
-      <div class="flex items-center justify-between px-4">
+      <div class="flex items-center justify-between pr-2 pl-4">
         <h4
           class="flex items-center gap-2 text-sm font-bold text-blue-900 uppercase dark:text-blue-100"
         >
@@ -283,7 +283,7 @@
             <Button
               variant="ghost"
               size="sm"
-              class="h-8 w-8 p-0"
+              class="h-8 w-8 rounded-full p-0"
               {...props}
               icon={ChevronDown}
               iconClass={cn("transition-transform duration-200", isRulesOpen && "rotate-180")}
