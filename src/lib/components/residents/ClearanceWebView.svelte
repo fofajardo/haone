@@ -105,13 +105,9 @@
         <span class="font-bold">{translatePeriod(clearanceData.period)}</span>.
       </p>
 
-      <div class="pt-2">
-        <div class="flex flex-col items-center border-t border-foreground/10 pt-3 text-center">
-          <span class="text-xs font-bold uppercase">{clearanceData.signatory}</span>
-          <span class="text-xs font-medium text-muted-foreground uppercase"
-            >{clearanceData.signatoryTitle}</span
-          >
-        </div>
+      <div class="flex flex-col items-center pt-2 text-center text-sm">
+        <span class="font-bold uppercase">{clearanceData.signatory}</span>
+        <span class="font-medium text-muted-foreground">{clearanceData.signatoryTitle}</span>
       </div>
     </div>
   </div>
