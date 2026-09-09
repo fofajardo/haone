@@ -55,11 +55,13 @@
       >
         <img src="/ha1_bw.svg" alt="HAOne" class="mr-3 h-8 w-8 drop-shadow-md" />
         <span class="drop-shadow-md">HAOne</span>
-        <div
-          class="ml-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-bold tracking-wider text-white uppercase backdrop-blur-md"
-        >
-          Beta
-        </div>
+        {#if __APP_SUFFIX__ !== ""}
+          <div
+            class="ml-2 inline-flex items-center rounded-full bg-white/15 px-2.5 py-0.5 text-xs font-bold tracking-wider text-white uppercase backdrop-blur-md"
+          >
+            {__APP_SUFFIX__}
+          </div>
+        {/if}
       </div>
 
       <!-- Header Action Buttons -->

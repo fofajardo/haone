@@ -3,6 +3,7 @@
 declare global {
   const __COMMIT_SHA__: string;
   const __APP_VERSION__: string;
+  const __APP_SUFFIX__: string;
   const __BUILD_TIME__: string;
   namespace App {
     // interface Error {}

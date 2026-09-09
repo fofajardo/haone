@@ -12,6 +12,9 @@ export default defineConfig({
   define: {
     __COMMIT_SHA__: JSON.stringify(commitSha),
     __APP_VERSION__: JSON.stringify(appVersion),
+    __APP_SUFFIX__: JSON.stringify(
+      appVersion.includes("b") ? "Beta" : appVersion.includes("a") ? "Alpha" : ""
+    ),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString())
   },
   ssr: {
