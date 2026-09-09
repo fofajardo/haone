@@ -89,6 +89,7 @@
     "d3-scale": "^4.0.2",
     "dayjs": "^1.11.21",
     "html2canvas": "^1.4.1",
+    "jose": "^6.2.12",
     "mode-watcher": "^1.1.0",
     "papaparse": "^5.6.0",
     "pdfmake": "^0.3.11",
