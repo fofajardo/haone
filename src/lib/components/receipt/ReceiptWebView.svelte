@@ -232,7 +232,7 @@
     <Button
       onclick={() => handleAction("pdf", onDownloadPDF)}
       size="lg"
-      class="h-12 w-full bg-brand font-bold hover:bg-brand/90"
+      class="h-12 w-full bg-brand font-bold text-brand-foreground hover:bg-brand/90"
       disabled={isExporting}
       icon={isExporting && clickedAction === "pdf" ? Spinner : Download}
     >
