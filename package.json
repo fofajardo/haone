@@ -56,6 +56,7 @@
   },
   "dependencies": {
     "@block65/webcrypto-web-push": "^1.0.2",
+    "@compwright/namecase": "^3.0.1",
     "@lucide/svelte": "^1.31.0",
     "@supabase/supabase-js": "^2.112.3",
     "@tanstack/svelte-store": "^0.12.1",
