@@ -14,6 +14,7 @@
 
   onMount(() => {
     pageState.title = data.announcement?.title || "Announcement";
+    pageState.isTopLevel = false;
   });
 
   let announcement = $derived(data.announcement);
