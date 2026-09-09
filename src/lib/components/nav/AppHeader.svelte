@@ -144,7 +144,7 @@
               {#if !imgError}
                 <img
                   src={auth.avatarUrl}
-                  alt={auth.user.displayNameFormal}
+                  alt={auth.displayName}
                   class="h-10 w-10 rounded-full border border-border object-cover"
                   onerror={() => (imgError = true)}
                 />
@@ -153,7 +153,7 @@
               {/if}
               <div class="flex min-w-0 flex-col">
                 <span class="truncate text-sm font-medium text-foreground"
-                  >{auth.user.displayNameFormal}</span
+                  >{auth.displayName}</span
                 >
                 <span class="truncate text-xs text-muted-foreground">{auth.user.email}</span>
               </div>

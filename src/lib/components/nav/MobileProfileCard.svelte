@@ -13,7 +13,7 @@
       {#if !imgError}
         <img
           src={auth.avatarUrl}
-          alt={auth.user.displayNameFormal}
+          alt={auth.displayName}
           class="h-32 w-32 rounded-full object-cover"
           onerror={() => (imgError = true)}
         />

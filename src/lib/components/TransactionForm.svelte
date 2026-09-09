@@ -433,9 +433,9 @@
         }
       } else if (auth.user) {
         formData.creatorStNo = auth.user.studentNo;
-        formData.creatorName = auth.user.displayName;
+        formData.creatorName = auth.displayNameLastFirst;
         formData.creatorId = auth.userId;
-        creatorSearch = auth.user.displayName;
+        creatorSearch = auth.displayNameLastFirst;
       }
 
       // Pre-fill target account from query parameters if provided

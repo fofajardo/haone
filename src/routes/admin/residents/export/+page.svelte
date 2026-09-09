@@ -402,7 +402,7 @@
 
       if (auth.user) {
         if (!issuedBy) {
-          issuedBy = auth.user.displayName;
+          issuedBy = auth.displayNameLastFirst;
         }
         if (!issuedByEmail) {
           issuedByEmail = auth.user.email;
