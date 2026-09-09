@@ -73,7 +73,7 @@
 
       <!-- Title & Subtitle -->
       <h2 class="text-2xl font-bold tracking-tight">Certificate of Full Payment</h2>
-      <p class="mt-1 text-sm">
+      <p class="mt-1 text-sm text-muted-foreground">
         Issued by the {activeBranding.issuerName}
       </p>
 
