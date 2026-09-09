@@ -83,11 +83,27 @@
     });
   });
 
-  function isActive(href: string) {
-    if (href === "/resident" || href === "/admin") {
-      return page.url.pathname === href;
+  const activeHref = $derived.by(() => {
+    const pathname = page.url.pathname;
+    const matches = navItems
+      .map((i) => i.href)
+      .filter((href) => {
+        if (href === "/resident" || href === "/admin") {
+          return pathname === href;
+        }
+        return pathname === href || pathname.startsWith(`${href}/`);
+      });
+
+    if (matches.length === 0) {
+      return null;
     }
-    return page.url.pathname.startsWith(href);
+    return matches.reduce((longest, current) => {
+      return current.length > longest.length ? current : longest;
+    });
+  });
+
+  function isActive(href: string) {
+    return activeHref === href;
   }
 
   onMount(() => {
