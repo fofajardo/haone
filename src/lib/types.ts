@@ -84,6 +84,7 @@ export interface ClearanceData {
 }
 
 export interface FeaturedImageItem {
+  id?: string;
   image: string;
   author: string;
   title: string;

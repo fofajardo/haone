@@ -6,15 +6,27 @@
   import { Button } from "$ui/button";
   import { slide, fade, fly } from "svelte/transition";
 
-  let { isMobileHidden = false }: { isMobileHidden?: boolean } = $props();
+  let {
+    isMobileHidden = false,
+    heroId = undefined
+  }: {
+    isMobileHidden?: boolean;
+    heroId?: string;
+  } = $props();
   let heroItem = $state<FeaturedImageItem | null>(null);
   let isExpanded = $state(false);
   let isImageLoaded = $state(false);
 
   onMount(() => {
-    const heroes: FeaturedImageItem[] = (brandingState.profile?.hero || []).filter(
-      (h: FeaturedImageItem) => !h.hidden
-    );
+    const allHeroes: FeaturedImageItem[] = brandingState.profile?.hero || [];
+    if (heroId) {
+      const found = allHeroes.find((h) => h.id === heroId);
+      if (found) {
+        heroItem = found;
+        return;
+      }
+    }
+    const heroes = allHeroes.filter((h: FeaturedImageItem) => !h.hidden);
     if (heroes.length > 0) {
       const randomIndex = Math.floor(Math.random() * heroes.length);
       heroItem = heroes[randomIndex];
