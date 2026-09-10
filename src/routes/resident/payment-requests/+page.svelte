@@ -21,6 +21,7 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
 
@@ -123,16 +124,12 @@
       <div class="grid gap-4 lg:grid-cols-12">
         <div class="space-y-1 lg:col-span-8">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              bind:value={searchQuery}
-              placeholder="Search by MOP or notes…"
-              class="h-9 pl-9"
-            />
-          </div>
+          <InputGroup.Root class="h-9">
+            <InputGroup.Input bind:value={searchQuery} placeholder="Search by MOP or notes…" />
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
 
         <div class="space-y-1 lg:col-span-4">

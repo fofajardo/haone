@@ -15,6 +15,7 @@
   import { Combobox } from "$ui/combobox";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
@@ -171,16 +172,15 @@
         </div>
         <div class="space-y-1 lg:col-span-5">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
+          <InputGroup.Root class="h-9 text-sm">
+            <InputGroup.Input
               bind:value={tableSync.filters!.search}
               placeholder="Search by name, account, or notes…"
-              class="h-9 pl-9 text-sm"
             />
-          </div>
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
 
         <div class="space-y-1 lg:col-span-2">

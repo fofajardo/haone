@@ -15,6 +15,7 @@
   } from "$lib/types";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import * as AlertDialog from "$ui/alert-dialog";
@@ -188,16 +189,15 @@
       <div class="grid items-end gap-4 lg:grid-cols-12">
         <div class="space-y-1 lg:col-span-5">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
+          <InputGroup.Root class="h-9">
+            <InputGroup.Input
               bind:value={searchQuery}
               placeholder="Search items, resident, room, tags, location…"
-              class="h-9 pl-9"
             />
-          </div>
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
 
         <div class="space-y-1 lg:col-span-4">
