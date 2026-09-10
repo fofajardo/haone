@@ -29,6 +29,7 @@
     Mail,
     ChevronDown,
     FileCheck,
+    FileSpreadsheet,
     ShieldCheck,
     Trophy
   } from "@lucide/svelte";
@@ -219,8 +220,16 @@
       isTopLevel={true}
       onRefresh={() => loadData(true)}
       isRefreshing={isLoading}
+      hasFilter={true}
+      actions={[
+        {
+          label: "Export",
+          icon: FileSpreadsheet,
+          href: "/admin/residents/export"
+        }
+      ]}
     >
-      {#snippet actions()}
+      {#snippet legacyActions()}
         <AdminResidentsHeaderActions active="list" />
       {/snippet}
     </ContentHeader>

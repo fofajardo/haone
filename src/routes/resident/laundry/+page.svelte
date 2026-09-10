@@ -262,11 +262,8 @@
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
-    {/snippet}
-  </ContentHeader>
+    actions={[{ label: "Book Slot", onclick: () => (isBookingOpen = true), icon: Plus }]}
+  />
 
   <Card.Root
     class="overflow-hidden bg-blue-50/50 p-0 ring-0 dark:border-blue-800 dark:bg-blue-900/10"

@@ -289,9 +289,9 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    actions={[{ label: "Export", href: "/admin/financial-report/export", icon: FileDown }]}
   >
-    {#snippet actions()}
-      <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export</Button>
+    {#snippet legacyActions()}
       <Tabs.Root bind:value={activeTab}>
         <Tabs.List>
           <Tabs.Trigger value="summary" class="flex items-center gap-1.5">

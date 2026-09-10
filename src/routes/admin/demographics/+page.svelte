@@ -268,7 +268,7 @@
       onRefresh={() => loadData(true)}
       isRefreshing={isLoading}
     >
-      {#snippet actions()}
+      {#snippet legacyActions()}
         <Tabs.List>
           <Tabs.Trigger value="term" class="flex items-center gap-1.5">
             <Calendar class="h-3.5 w-3.5" />

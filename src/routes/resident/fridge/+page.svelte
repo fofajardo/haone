@@ -170,11 +170,9 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" href="/resident/fridge/add" icon={Plus}>Add</Button>
-    {/snippet}
-  </ContentHeader>
+    actions={[{ label: "Add", href: "/resident/fridge/add", icon: Plus }]}
+    hasFilter={true}
+  />
 
   {#if isLoading}
     <LoadingView />

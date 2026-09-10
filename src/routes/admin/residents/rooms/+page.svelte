@@ -28,6 +28,7 @@
     CircleCheck,
     CircleAlert,
     ExternalLink,
+    FileSpreadsheet,
     ShieldCheck,
     ChevronRight
   } from "@lucide/svelte";
@@ -154,8 +155,16 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={true}
+    actions={[
+      {
+        label: "Export",
+        icon: FileSpreadsheet,
+        href: "/admin/residents/export"
+      }
+    ]}
   >
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <AdminResidentsHeaderActions active="rooms" />
     {/snippet}
   </ContentHeader>

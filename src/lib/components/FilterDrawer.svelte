@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { onDestroy } from "svelte";
   import * as Drawer from "$ui/drawer";
   import { Button } from "$ui/button";
-  import { Funnel, FunnelX } from "@lucide/svelte";
+  import { FunnelX } from "@lucide/svelte";
+  import { filterState } from "$state/page-info.svelte";
 
   let {
     children,
@@ -15,45 +17,19 @@
     onClear?: () => void;
   } = $props();
 
-  let open = $state(false);
+  $effect(() => {
+    filterState.activeCount = activeCount;
+  });
+
+  onDestroy(() => {
+    filterState.open = false;
+    filterState.activeCount = 0;
+  });
 </script>
 
-<!-- Mobile Filter Drawer Trigger -->
+<!-- Mobile Filter Drawer (Trigger lives in ContentHeader) -->
 <div class="block lg:hidden">
-  <Drawer.Root bind:open>
-    <div class="flex items-center gap-2">
-      <Drawer.Trigger class="flex-1">
-        {#snippet child({ props })}
-          <Button
-            {...props}
-            variant="outline"
-            size="sm"
-            class="flex h-9 w-full items-center justify-center gap-2"
-          >
-            <Funnel class="h-4 w-4" />
-            <span>Filter</span>
-            {#if activeCount > 0}
-              <span
-                class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
-              >
-                {activeCount}
-              </span>
-            {/if}
-          </Button>
-        {/snippet}
-      </Drawer.Trigger>
-      {#if onClear && activeCount > 0}
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={onClear}
-          class="h-9 shrink-0 px-3"
-          icon={FunnelX}
-        >
-          Clear
-        </Button>
-      {/if}
-    </div>
+  <Drawer.Root bind:open={filterState.open}>
     <Drawer.Content class="max-h-[85vh]">
       <Drawer.Header>
         <div class="flex items-center justify-between">
@@ -64,7 +40,7 @@
               size="sm"
               onclick={() => {
                 onClear();
-                open = false;
+                filterState.open = false;
               }}
               class="h-8 px-2 text-xs"
               icon={FunnelX}

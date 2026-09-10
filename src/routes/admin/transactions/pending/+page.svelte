@@ -19,7 +19,7 @@
   import { Label } from "$ui/label/index.js";
   import { Button } from "$ui/button/index.js";
   import TermFilter from "$components/TermFilter.svelte";
-  import { Search, RefreshCcw, FileCheck, CircleCheckBig } from "@lucide/svelte";
+  import { Search, RefreshCcw, FileCheck, CircleCheckBig, Plus } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -171,8 +171,10 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    actions={[{ label: "Add", href: "/admin/transactions/add", icon: Plus }]}
+    hasFilter={true}
   >
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <AdminTransactionsHeaderActions active="receipts" />
     {/snippet}
   </ContentHeader>

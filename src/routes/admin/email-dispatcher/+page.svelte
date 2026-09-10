@@ -147,31 +147,26 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="Email Dispatcher" isTopLevel={true}>
-    {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="destructive"
-          size="sm"
-          onclick={() => emailDispatcher.clear()}
-          disabled={isSending || isSuccess}
-          icon={Trash2}
-        >
-          Clear Queue
-        </Button>
-        <Button
-          onclick={runBatch}
-          isLoading={isSending}
-          disabled={isSuccess || emailDispatcher.queue.length === 0}
-          icon={isSuccess ? CircleCheckBig : Play}
-          size="sm"
-          class="min-w-30"
-        >
-          {isSuccess ? "Sent" : "Run Batch"}
-        </Button>
-      </div>
-    {/snippet}
-  </ContentHeader>
+  <ContentHeader
+    title="Email Dispatcher"
+    isTopLevel={true}
+    actions={[
+      {
+        label: "Clear Queue",
+        variant: "destructive",
+        onclick: () => emailDispatcher.clear(),
+        disabled: isSending || isSuccess || emailDispatcher.queue.length === 0,
+        icon: Trash2
+      },
+      {
+        label: isSuccess ? "Done" : isSending ? "Sending…" : "Run Batch",
+        onclick: runBatch,
+        isLoading: isSending,
+        disabled: isSuccess || emailDispatcher.queue.length === 0,
+        icon: isSuccess ? CircleCheckBig : Play
+      }
+    ]}
+  />
 
   {#if emailDispatcher.queue.length === 0 && !isSuccess}
     <EmptyView

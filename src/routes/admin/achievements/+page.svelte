@@ -142,10 +142,19 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={!isGlobal}
+    actions={[
+      {
+        label: "New",
+        icon: Plus,
+        onclick: () => {
+          isCreatorOpen = true;
+        }
+      }
+    ]}
   >
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <div class="flex flex-wrap items-center gap-2">
-        <Button size="sm" onclick={() => (isCreatorOpen = true)} icon={Plus}>New</Button>
         <ScopeSwitcher bind:value={scope} />
       </div>
     {/snippet}

@@ -103,7 +103,7 @@
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
   >
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <ScopeSwitcher bind:value={scope} />
     {/snippet}
   </ContentHeader>

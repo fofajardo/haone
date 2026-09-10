@@ -174,96 +174,89 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="View Transaction">
+  <ContentHeader
+    title="View Transaction"
+    actions={[
+      ...(transaction && !transaction.wasAudited
+        ? [
+            {
+              label: "Delete",
+              variant: "destructive" as const,
+              onclick: () => {
+                isDialogOpen = true;
+              },
+              isLoading: isDeleting,
+              icon: Trash2
+            },
+            {
+              label: "Mark as Audited",
+              variant: "outline" as const,
+              onclick: handleMarkAudited,
+              isLoading: isAuditing,
+              icon: ShieldCheck
+            },
+            {
+              label: "Edit",
+              variant: (transaction?.receiptUrl ? "secondary" : "default") as const,
+              href: `/admin/transactions/${id}/edit`,
+              disabled: isDeleting,
+              icon: Pencil
+            }
+          ]
+        : []),
+      ...(transaction && transaction.receiptUrl
+        ? [
+            {
+              label: "View Receipt",
+              href: transaction.receiptUrl,
+              target: "_blank",
+              icon: ExternalLink
+            }
+          ]
+        : [])
+    ]}
+  >
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}
         <Badge>AUDITED</Badge>
       {/if}
     {/snippet}
-    {#snippet actions()}
-      {#if transaction && !transaction.wasAudited}
-        <div class="flex gap-2">
-          <AlertDialog.Root bind:open={isDialogOpen}>
-            <AlertDialog.Trigger>
-              {#snippet child({ props })}
-                <Button
-                  {...props}
-                  variant="destructive"
-                  size="sm"
-                  isLoading={isDeleting}
-                  icon={Trash2}
-                >
-                  Delete
-                </Button>
-              {/snippet}
-            </AlertDialog.Trigger>
-            <AlertDialog.Content>
-              <AlertDialog.Header>
-                <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
-                <AlertDialog.Description class="space-y-3">
-                  <span
-                    >This will permanently delete this transaction record from the ledger. This
-                    action cannot be undone.</span
-                  >
-                  {#if isSpecialType}
-                    <div
-                      class="mt-2 flex animate-in items-start gap-2 rounded-lg border border-border bg-muted/50 p-3 text-xs text-foreground duration-200 fade-in slide-in-from-top-1"
-                    >
-                      <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
-                      <div>
-                        <p class="mb-1 font-bold tracking-wider uppercase">
-                          Special Transaction Type
-                        </p>
-                        This is a special transaction type ({transaction?.type}). Deleting this row
-                        requires manually deleting any related or balancing ledger entries to
-                        maintain consistency.
-                      </div>
-                    </div>
-                  {/if}
-                </AlertDialog.Description>
-              </AlertDialog.Header>
-              <AlertDialog.Footer>
-                <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-                <AlertDialog.Action
-                  onclick={handleDelete}
-                  class="bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Proceed
-                </AlertDialog.Action>
-              </AlertDialog.Footer>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
-        </div>
-      {/if}
-      {#if transaction && !transaction.wasAudited}
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={handleMarkAudited}
-          isLoading={isAuditing}
-          icon={ShieldCheck}
-        >
-          Mark as Audited
-        </Button>
-      {/if}
-      {#if transaction && !transaction.wasAudited}
-        <Button
-          variant={transaction?.receiptUrl ? "secondary" : "default"}
-          size="sm"
-          href="/admin/transactions/{id}/edit"
-          disabled={isDeleting}
-          icon={Pencil}
-        >
-          Edit
-        </Button>
-      {/if}
-      {#if transaction && transaction.receiptUrl}
-        <Button size="sm" href={transaction.receiptUrl} target="_blank" icon={ExternalLink}>
-          View Receipt
-        </Button>
-      {/if}
-    {/snippet}
   </ContentHeader>
+
+  <AlertDialog.Root bind:open={isDialogOpen}>
+    <AlertDialog.Content>
+      <AlertDialog.Header>
+        <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
+        <AlertDialog.Description class="space-y-3">
+          <span
+            >This will permanently delete this transaction record from the ledger. This action
+            cannot be undone.</span
+          >
+          {#if isSpecialType}
+            <div
+              class="mt-2 flex animate-in items-start gap-2 rounded-lg border border-border bg-muted/50 p-3 text-xs text-foreground duration-200 fade-in slide-in-from-top-1"
+            >
+              <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p class="mb-1 font-bold tracking-wider uppercase">Special Transaction Type</p>
+                This is a special transaction type ({transaction?.type}). Deleting this row requires
+                manually deleting any related or balancing ledger entries to maintain consistency.
+              </div>
+            </div>
+          {/if}
+        </AlertDialog.Description>
+      </AlertDialog.Header>
+      <AlertDialog.Footer>
+        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+        <AlertDialog.Action
+          onclick={handleDelete}
+          class="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          Proceed
+        </AlertDialog.Action>
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+  </AlertDialog.Root>
 
   {#if isLoading}
     <LoadingView />

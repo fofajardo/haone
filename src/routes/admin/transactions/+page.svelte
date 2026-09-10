@@ -19,7 +19,7 @@
   import { Label } from "$ui/label";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import { RefreshCcw, ListFilter, Search, ShieldCheck } from "@lucide/svelte";
+  import { RefreshCcw, ListFilter, Search, ShieldCheck, Plus } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -140,8 +140,10 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    actions={[{ label: "Add", href: "/admin/transactions/add", icon: Plus }]}
+    hasFilter={true}
   >
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <AdminTransactionsHeaderActions active="all" />
     {/snippet}
   </ContentHeader>

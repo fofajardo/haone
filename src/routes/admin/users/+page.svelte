@@ -117,25 +117,18 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          {#snippet child({ props })}
-            <Button size="sm" {...props} icon={Plus}>Add</Button>
-          {/snippet}
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content align="end">
-          <DropdownMenu.Item onclick={() => goto("/admin/users/add")}>
-            <UserPlus class="mr-2 h-4 w-4" /> Single User
-          </DropdownMenu.Item>
-          <DropdownMenu.Item onclick={() => goto("/admin/users/batch")}>
-            <FileUp class="mr-2 h-4 w-4" /> Batch Import
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
-    {/snippet}
-  </ContentHeader>
+    hasFilter={true}
+    actions={[
+      {
+        label: "Add",
+        icon: Plus,
+        items: [
+          { label: "Single User", icon: UserPlus, href: "/admin/users/add" },
+          { label: "Batch Import", icon: FileUp, href: "/admin/users/batch" }
+        ]
+      }
+    ]}
+  />
 
   {#if isLoading}
     <LoadingView />

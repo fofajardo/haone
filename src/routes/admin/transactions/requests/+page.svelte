@@ -2,7 +2,7 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Search, Wallet, ListChecks } from "@lucide/svelte";
+  import { RefreshCcw, Search, Wallet, ListChecks, Plus } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -89,8 +89,10 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    actions={[{ label: "Add", href: "/admin/transactions/add", icon: Plus }]}
+    hasFilter={true}
   >
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <AdminTransactionsHeaderActions active="requests" />
     {/snippet}
   </ContentHeader>

@@ -162,32 +162,29 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader title="Edit Announcement">
-    {#snippet actions()}
-      <div class="flex gap-2">
-        {#if isActive}
-          <Button
-            variant="secondary"
-            size="sm"
-            onclick={() => (showExpireDialog = true)}
-            isLoading={isExpiring}
-            icon={Archive}
-          >
-            Expire
-          </Button>
-        {/if}
-        <Button
-          variant="destructive"
-          size="sm"
-          onclick={() => (showDeleteDialog = true)}
-          isLoading={isDeleting}
-          icon={Trash2}
-        >
-          Delete
-        </Button>
-      </div>
-    {/snippet}
-  </ContentHeader>
+  <ContentHeader
+    title="Edit Announcement"
+    actions={[
+      ...(isActive
+        ? [
+            {
+              label: "Expire",
+              variant: "secondary" as const,
+              onclick: () => (showExpireDialog = true),
+              isLoading: isExpiring,
+              icon: Archive
+            }
+          ]
+        : []),
+      {
+        label: "Delete",
+        variant: "destructive" as const,
+        onclick: () => (showDeleteDialog = true),
+        isLoading: isDeleting,
+        icon: Trash2
+      }
+    ]}
+  />
 
   <div class="mx-auto max-w-3xl">
     {#if isLoading}

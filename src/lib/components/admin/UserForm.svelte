@@ -115,11 +115,10 @@
 
 <!-- FIXME: Subpage header should not be handled by this component -->
 <div class="mx-auto max-w-7xl space-y-3">
-  <ContentHeader {title}>
-    {#snippet actions()}
-      <Button size="sm" onclick={onSave} isLoading={isSaving} icon={Save}>Save</Button>
-    {/snippet}
-  </ContentHeader>
+  <ContentHeader
+    {title}
+    actions={[{ label: "Save", onclick: onSave, isLoading: isSaving, icon: Save }]}
+  />
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Left Column -->

@@ -1,8 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import * as Tabs from "$ui/tabs";
-  import { Button } from "$ui/button";
-  import { FileSpreadsheet, List, Bed, BookUser, ArrowRightLeft } from "@lucide/svelte";
+  import { List, Bed, BookUser, ArrowRightLeft } from "@lucide/svelte";
 
   let {
     active = "list"
@@ -24,8 +23,6 @@
 </script>
 
 <div class="flex flex-wrap items-center gap-2">
-  <Button size="sm" href="/admin/residents/export" icon={FileSpreadsheet}>Export</Button>
-
   <Tabs.Root value={active} onValueChange={handleTabChange}>
     <Tabs.List>
       <Tabs.Trigger value="list" class="flex items-center gap-1.5">

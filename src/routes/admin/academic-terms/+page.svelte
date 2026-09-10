@@ -206,11 +206,8 @@
     isTopLevel={true}
     onRefresh={() => loadTerms(true)}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" onclick={() => (showAddDialog = true)} icon={Plus}>Add</Button>
-    {/snippet}
-  </ContentHeader>
+    actions={[{ label: "Add", onclick: () => (showAddDialog = true), icon: Plus }]}
+  />
 
   <div class="space-y-4">
     {#if isLoading}

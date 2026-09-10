@@ -244,6 +244,51 @@
     title={"View User"}
     onRefresh={() => loadUserProfile(true)}
     isRefreshing={isLoading}
+    actions={[
+      ...(currentAccount
+        ? [
+            {
+              label: "Send",
+              icon: Mail,
+              variant: "outline" as const,
+              items: [
+                {
+                  label: "Send Payment Status",
+                  icon: Mail,
+                  onclick: sendStatusEmail
+                },
+                {
+                  label: "Send Clearance Certificate",
+                  icon: FileCheck,
+                  onclick: sendClearanceEmail,
+                  disabled:
+                    !currentAccount.ceLink ||
+                    currentAccount.ceLink === "N/A" ||
+                    currentAccount.ceLink === ""
+                }
+              ]
+            }
+          ]
+        : []),
+      {
+        label: "Edit",
+        icon: UserCog,
+        href: `/admin/users/${userId}/edit`
+      },
+      ...(accounts.length === 0
+        ? [
+            {
+              label: "Delete",
+              icon: Trash2,
+              variant: "destructive" as const,
+              onclick: () => {
+                isDeleteAlertOpen = true;
+              },
+              isLoading
+            }
+          ]
+        : [])
+    ]}
   >
     {#snippet titleExtra()}
       {#if currentAccount}
@@ -265,74 +310,29 @@
         </div>
       {/if}
     {/snippet}
-
-    {#snippet actions()}
-      <div class="flex flex-wrap items-center gap-2">
-        {#if currentAccount}
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              {#snippet child({ props })}
-                <Button size="sm" {...props} icon={Mail} variant="outline">
-                  Send
-                  <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
-                </Button>
-              {/snippet}
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end" class="w-56">
-              <DropdownMenu.Item onclick={sendStatusEmail}>
-                <Mail class="mr-2 h-4 w-4" />
-                <span>Send Payment Status</span>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onclick={sendClearanceEmail}
-                disabled={!currentAccount.ceLink ||
-                  currentAccount.ceLink === "N/A" ||
-                  currentAccount.ceLink === ""}
-              >
-                <FileCheck class="mr-2 h-4 w-4" />
-                <span>Send Clearance Certificate</span>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        {/if}
-
-        <Button size="sm" href="/admin/users/{userId}/edit" icon={UserCog}>Edit</Button>
-        {#if accounts.length === 0}
-          <Button
-            variant="destructive"
-            size="sm"
-            onclick={() => (isDeleteAlertOpen = true)}
-            {isLoading}
-            icon={Trash2}
-          >
-            <span class="hidden sm:inline">Delete</span>
-          </Button>
-        {/if}
-      </div>
-
-      <AlertDialog.Root bind:open={isDeleteAlertOpen}>
-        <AlertDialog.Content>
-          <AlertDialog.Header>
-            <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-            <AlertDialog.Description>
-              This action cannot be undone. This will permanently delete the user profile for
-              <span class="font-bold text-foreground">{user?.displayName}</span>
-              and remove their data from our servers.
-            </AlertDialog.Description>
-          </AlertDialog.Header>
-          <AlertDialog.Footer>
-            <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-            <AlertDialog.Action
-              class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
-              onclick={handleDelete}
-            >
-              Delete
-            </AlertDialog.Action>
-          </AlertDialog.Footer>
-        </AlertDialog.Content>
-      </AlertDialog.Root>
-    {/snippet}
   </ContentHeader>
+
+  <AlertDialog.Root bind:open={isDeleteAlertOpen}>
+    <AlertDialog.Content>
+      <AlertDialog.Header>
+        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+        <AlertDialog.Description>
+          This action cannot be undone. This will permanently delete the user profile for
+          <span class="font-bold text-foreground">{user?.displayName}</span>
+          and remove their data from our servers.
+        </AlertDialog.Description>
+      </AlertDialog.Header>
+      <AlertDialog.Footer>
+        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+        <AlertDialog.Action
+          class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
+          onclick={handleDelete}
+        >
+          Delete
+        </AlertDialog.Action>
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+  </AlertDialog.Root>
 
   {#if isLoading}
     <LoadingView />

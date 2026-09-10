@@ -214,7 +214,7 @@
 
 <div class="mx-auto max-w-7xl space-y-3">
   <ContentHeader title="Review Queue" isTopLevel={false}>
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <div class="flex items-center gap-4">
         {#if payments.length > 0}
           <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground">

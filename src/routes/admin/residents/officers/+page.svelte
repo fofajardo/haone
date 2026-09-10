@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, Search } from "@lucide/svelte";
+  import { RefreshCcw, Plus, Search, FileSpreadsheet } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -78,8 +78,16 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={true}
+    actions={[
+      {
+        label: "Export",
+        icon: FileSpreadsheet,
+        href: "/admin/residents/export"
+      }
+    ]}
   >
-    {#snippet actions()}
+    {#snippet legacyActions()}
       <AdminResidentsHeaderActions active="officers" />
     {/snippet}
   </ContentHeader>

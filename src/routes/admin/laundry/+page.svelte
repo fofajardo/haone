@@ -243,11 +243,8 @@
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
-    {/snippet}
-  </ContentHeader>
+    actions={[{ label: "Book Slot", onclick: () => (isBookingOpen = true), icon: Plus }]}
+  />
 
   {#if isLoading}
     <LoadingView />

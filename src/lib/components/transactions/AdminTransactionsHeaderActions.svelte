@@ -1,8 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import * as Tabs from "$ui/tabs";
-  import { Button } from "$ui/button";
-  import { Plus, List, Receipt, Banknote } from "@lucide/svelte";
+  import { List, Receipt, Banknote } from "@lucide/svelte";
 
   let {
     active = "all"
@@ -21,23 +20,19 @@
   }
 </script>
 
-<div class="flex flex-wrap items-center gap-2">
-  <Button size="sm" href="/admin/transactions/add" icon={Plus}>Add</Button>
-
-  <Tabs.Root value={active} onValueChange={handleTabChange}>
-    <Tabs.List>
-      <Tabs.Trigger value="all" class="flex items-center gap-1.5">
-        <List class="h-3.5 w-3.5" />
-        All
-      </Tabs.Trigger>
-      <Tabs.Trigger value="receipts" class="flex items-center gap-1.5">
-        <Receipt class="h-3.5 w-3.5" />
-        Receipts
-      </Tabs.Trigger>
-      <Tabs.Trigger value="requests" class="flex items-center gap-1.5">
-        <Banknote class="h-3.5 w-3.5" />
-        Requests
-      </Tabs.Trigger>
-    </Tabs.List>
-  </Tabs.Root>
-</div>
+<Tabs.Root value={active} onValueChange={handleTabChange}>
+  <Tabs.List>
+    <Tabs.Trigger value="all" class="flex items-center gap-1.5">
+      <List class="h-3.5 w-3.5" />
+      All
+    </Tabs.Trigger>
+    <Tabs.Trigger value="receipts" class="flex items-center gap-1.5">
+      <Receipt class="h-3.5 w-3.5" />
+      Receipts
+    </Tabs.Trigger>
+    <Tabs.Trigger value="requests" class="flex items-center gap-1.5">
+      <Banknote class="h-3.5 w-3.5" />
+      Requests
+    </Tabs.Trigger>
+  </Tabs.List>
+</Tabs.Root>

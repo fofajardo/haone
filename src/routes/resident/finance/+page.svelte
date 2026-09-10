@@ -76,6 +76,7 @@
     isTopLevel={true}
     onRefresh={() => loadData(undefined, true)}
     isRefreshing={isLoading}
+    hasFilter={true}
   />
 
   {#if isLoading}
