@@ -77,11 +77,9 @@
   // FIXME: also using legacy fields.
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
-    creatorEmail: auth.user?.email || "",
     creatorName: auth.displayNameLastFirst || "",
     creatorStNo: "",
     creatorId: "",
-    accountEmail: "",
     accountName: "",
     accountStNo: "",
     accountId: "",
@@ -263,8 +261,7 @@
   });
 
   $effect(() => {
-    if (isFundsOnly && formData.accountEmail !== "_funds") {
-      formData.accountEmail = "_funds";
+    if (isFundsOnly && formData.accountId !== SYSTEM_IDS.FUNDS) {
       formData.accountName = (brandingState.profile.issuerName || "").toUpperCase();
       formData.accountId = SYSTEM_IDS.FUNDS;
       accountSearch = (brandingState.profile.issuerName || "").toUpperCase();
@@ -275,13 +272,6 @@
   $effect(() => {
     formData.period;
     hasConfirmedTerm = false;
-  });
-
-  // Display initial creator if set (for "add" mode mostly)
-  $effect(() => {
-    if (mode === "add" && formData.creatorEmail && !creatorSearch) {
-      creatorSearch = formData.creatorEmail;
-    }
   });
 
   // Autocomplete State
@@ -368,11 +358,9 @@
         const mopRefInfo = parseRef(initialData.mopRefNo);
         formData = {
           date: initialData.date,
-          creatorEmail: initialData.creator,
           creatorName: initialData.creatorName,
           creatorStNo: "", // Resolving below
           creatorId: initialData.creatorId || "",
-          accountEmail: initialData.account,
           accountName: initialData.name,
           accountStNo: initialData.stno,
           accountId: initialData.accountId || "",
@@ -460,24 +448,22 @@
   onMount(loadData);
 
   function selectCreator(a: ResidentRecord) {
-    formData.creatorEmail = a.email;
     formData.creatorName = a.name;
     formData.creatorStNo = a.stno;
-    formData.creatorId = a.residentId || a.id;
+    formData.creatorId = a.residentId;
     creatorSearch = a.name;
   }
 
   function selectAccount(a: ResidentRecord) {
-    formData.accountEmail = a.email;
     formData.accountName = a.name;
     formData.accountStNo = a.stno;
-    formData.accountId = a.residentId || a.id;
+    formData.accountId = a.residentId;
     accountSearch = a.name;
     selectedResident = a;
   }
 
   async function handleSubmit() {
-    if (!formData.creatorEmail || !formData.accountEmail) {
+    if (!formData.creatorId || !formData.accountId) {
       error = "Please select both a Recorder and an Account.";
       return;
     }
@@ -643,7 +629,7 @@
       ];
 
       let prRef = formData.prRefNo;
-      const isFunds = formData.accountEmail.toLowerCase().includes("_funds");
+      const isFunds = formData.accountId === SYSTEM_IDS.FUNDS;
       const isRefund = mappedType.toUpperCase().includes("REFUND");
 
       const needsPr =
@@ -901,7 +887,7 @@
                       step="0.01"
                       bind:value={formData.waterFee}
                       max={isCollection && !allowOverpayment ? waterLimit : undefined}
-                      disabled={!formData.accountEmail || isSubmitting || isEos}
+                      disabled={!formData.accountId || isSubmitting || isEos}
                       class="text-right font-mono"
                     />
                     {#if isCollection && selectedResident}
@@ -958,7 +944,7 @@
                       step="0.01"
                       bind:value={formData.assocFee}
                       max={isCollection && !allowOverpayment ? assocLimit : undefined}
-                      disabled={!formData.accountEmail || isSubmitting || isEos}
+                      disabled={!formData.accountId || isSubmitting || isEos}
                       class="text-right font-mono"
                     />
                     {#if isCollection && selectedResident}
@@ -1013,7 +999,7 @@
                     type="number"
                     step="0.01"
                     bind:value={formData.miscFee}
-                    disabled={!formData.accountEmail || isSubmitting || isEos}
+                    disabled={!formData.accountId || isSubmitting || isEos}
                     class="text-right font-mono"
                   />
                 </div>
@@ -1049,7 +1035,7 @@
                   <Combobox
                     bind:value={formData.mop}
                     options={mopOptions}
-                    disabled={!formData.accountEmail || isSubmitting}
+                    disabled={!formData.accountId || isSubmitting}
                     class="w-full"
                   />
                 </div>
@@ -1059,7 +1045,7 @@
                     <Combobox
                       bind:value={formData.mopTo}
                       options={mopOptions}
-                      disabled={!formData.accountEmail || isSubmitting}
+                      disabled={!formData.accountId || isSubmitting}
                       class="w-full"
                     />
                   </div>
@@ -1073,7 +1059,7 @@
                   <Label>Reference Number</Label>
                   <Input
                     bind:value={formData.mopRefNo}
-                    disabled={!formData.accountEmail || isSubmitting}
+                    disabled={!formData.accountId || isSubmitting}
                     placeholder="e.g., Transaction ID"
                   />
                 </div>
@@ -1081,7 +1067,7 @@
                   <Label>InstaPay Invoice Number</Label>
                   <Input
                     bind:value={formData.instapayInvoice}
-                    disabled={!formData.accountEmail || isSubmitting}
+                    disabled={!formData.accountId || isSubmitting}
                     placeholder="Optional"
                   />
                 </div>
@@ -1119,7 +1105,7 @@
           <div class="flex justify-end gap-3 border-t pt-4">
             <Button
               onclick={handleSubmit}
-              disabled={!formData.accountEmail}
+              disabled={!formData.accountId || !formData.creatorId}
               isLoading={isSubmitting}
               icon={Save}
               class="min-w-30"
