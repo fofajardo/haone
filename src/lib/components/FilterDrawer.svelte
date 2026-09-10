@@ -81,8 +81,10 @@
   </Drawer.Root>
 </div>
 
-<!-- Desktop: Render as-is directly in page flow -->
-<div class="hidden lg:block">
+<!-- Desktop: Render as-is, but hide labels -->
+<div
+  class="hidden lg:block [&_:not(.flex)>label]:hidden [&_:not(.space-x-2)>label:not([class*='cursor-pointer'])]:hidden"
+>
   <div class="flex items-end gap-2">
     <div class="flex-1">
       {@render children()}
