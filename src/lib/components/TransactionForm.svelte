@@ -46,7 +46,6 @@
     initialData?: JournalRecord | null;
     isSubmitting: boolean;
     onSave: (row: any[]) => Promise<void>;
-    onCancel: () => void;
     hideHeader?: boolean;
     onStateChange?: (data: any) => void;
   }
@@ -56,7 +55,6 @@
     initialData = null,
     isSubmitting,
     onSave,
-    onCancel,
     hideHeader = false,
     onStateChange
   }: Props = $props();
@@ -1119,7 +1117,6 @@
           </div>
 
           <div class="flex justify-end gap-3 border-t pt-4">
-            <Button variant="outline" onclick={onCancel} isLoading={isSubmitting}>Cancel</Button>
             <Button
               onclick={handleSubmit}
               disabled={!formData.accountEmail}

@@ -371,7 +371,6 @@
             initialData={stagedForms[currentPayment.id]}
             isSubmitting={isProcessing}
             onSave={handleSaveReview}
-            onCancel={() => goto("/admin/transactions/requests")}
             onStateChange={handleStateChange}
           />
         {/key}

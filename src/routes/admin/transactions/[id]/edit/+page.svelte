@@ -80,10 +80,6 @@
       isSubmitting = false;
     }
   }
-
-  function handleCancel() {
-    goto(`/admin/transactions/${id}`);
-  }
 </script>
 
 {#if isLoading}
@@ -91,11 +87,5 @@
 {:else if error}
   <ErrorView {error} />
 {:else}
-  <TransactionForm
-    mode="edit"
-    {initialData}
-    {isSubmitting}
-    onSave={handleSave}
-    onCancel={handleCancel}
-  />
+  <TransactionForm mode="edit" {initialData} {isSubmitting} onSave={handleSave} />
 {/if}

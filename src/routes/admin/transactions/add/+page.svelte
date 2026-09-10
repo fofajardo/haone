@@ -42,13 +42,9 @@
     }
   }
 
-  function handleCancel() {
-    goto("/admin/transactions");
-  }
-
   onMount(() => {
     pageState.title = "Add Transaction";
   });
 </script>
 
-<TransactionForm mode="add" {isSubmitting} onSave={handleSave} onCancel={handleCancel} />
+<TransactionForm mode="add" {isSubmitting} onSave={handleSave} />
