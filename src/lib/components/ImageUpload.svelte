@@ -130,7 +130,7 @@
           </AttachmentMedia>
           <AttachmentContent class="min-w-0 flex-1 overflow-hidden">
             <AttachmentTitle class="truncate text-sm font-medium">
-              {fileName || (file ? "Attached Image" : previewUrl ?? "Image Link")}
+              {fileName || (file ? "Attached Image" : (previewUrl ?? "Image Link"))}
             </AttachmentTitle>
             <AttachmentDescription class="truncate text-xs text-muted-foreground">
               {file ? "Ready to upload" : "Image URL"}
