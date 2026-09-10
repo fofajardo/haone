@@ -25,7 +25,7 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
-  import { Search, FunnelX } from "@lucide/svelte";
+  import { Search } from "@lucide/svelte";
 
   import { getAnnouncementStatus } from "$api/controllers/announcement-controller";
   import { AnnouncementStatus } from "$lib/types";
@@ -195,9 +195,10 @@
       activeCount={Number(tableSync.filters!.search !== "") +
         Number(tableSync.filters!.status !== "ALL") +
         Number(tableSync.filters!.tags !== "ALL")}
+      onClear={resetFilters}
     >
       <div class="grid gap-4 lg:grid-cols-12">
-        <div class="space-y-1 lg:col-span-5">
+        <div class="space-y-1 lg:col-span-6">
           <Label>Search</Label>
           <div class="relative">
             <Search
@@ -235,18 +236,6 @@
             ]}
             class="h-9"
           />
-        </div>
-
-        <div class="flex items-end lg:col-span-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={resetFilters}
-            class="h-9 w-full px-2"
-            icon={FunnelX}
-          >
-            Clear
-          </Button>
         </div>
       </div>
     </FilterDrawer>

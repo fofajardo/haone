@@ -26,7 +26,6 @@
     Users,
     Search,
     Mail,
-    FunnelX,
     ChevronDown,
     FileCheck,
     ShieldCheck,
@@ -243,12 +242,13 @@
         activeCount={Number(tableSync.filters!.search !== "") +
           Number(tableSync.filters!.room !== "ALL") +
           Number(tableSync.filters!.status !== "ALL")}
+        onClear={resetFilters}
       >
         <div class="grid gap-2 lg:grid-cols-12">
           <div class="lg:col-span-3">
             <TermFilter onSelect={() => loadData()} />
           </div>
-          <div class="space-y-1 lg:col-span-4">
+          <div class="space-y-1 lg:col-span-5">
             <Label>Search</Label>
             <div class="relative">
               <Search
@@ -270,18 +270,6 @@
           <div class="space-y-1 lg:col-span-2">
             <Label>Payment Status</Label>
             <Combobox bind:value={tableSync.filters!.status} options={statusOptions} class="h-9" />
-          </div>
-
-          <div class="flex items-end lg:col-span-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={resetFilters}
-              class="h-9 w-full px-2"
-              icon={FunnelX}
-            >
-              Clear
-            </Button>
           </div>
         </div>
       </FilterDrawer>

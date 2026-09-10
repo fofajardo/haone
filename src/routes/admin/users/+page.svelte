@@ -10,7 +10,7 @@
   import { Input } from "$ui/input";
   import { Combobox } from "$ui/combobox";
   import { Label } from "$ui/label";
-  import { RefreshCcw, Plus, Search, FunnelX, UserPlus, FileUp, Users } from "@lucide/svelte";
+  import { RefreshCcw, Plus, Search, UserPlus, FileUp, Users } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -155,6 +155,7 @@
         Number(tableSync.filters!.college !== "ALL") +
         Number(tableSync.filters!.program !== "ALL") +
         Number(tableSync.filters!.tags !== "ALL")}
+      onClear={resetFilters}
     >
       <div class="grid gap-2 lg:grid-cols-12">
         <div class="space-y-1 lg:col-span-4">
@@ -195,7 +196,7 @@
           />
         </div>
 
-        <div class="space-y-1 lg:col-span-2">
+        <div class="space-y-1 lg:col-span-3">
           <Label>Tags</Label>
           <Combobox
             bind:value={tableSync.filters!.tags}
@@ -205,18 +206,6 @@
             ]}
             class="h-9"
           />
-        </div>
-
-        <div class="flex items-end lg:col-span-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={resetFilters}
-            class="h-9 w-full px-2"
-            icon={FunnelX}
-          >
-            Clear
-          </Button>
         </div>
       </div>
     </FilterDrawer>
