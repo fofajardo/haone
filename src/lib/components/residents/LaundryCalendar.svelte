@@ -268,7 +268,7 @@
 
 <div class="flex flex-col gap-4">
   <div class="flex items-center justify-between">
-    <div class="flex items-center gap-2">
+    <div class="flex min-w-0 items-center gap-2">
       <Tooltip.Root>
         <Tooltip.Trigger>
           <Button
@@ -320,7 +320,7 @@
         </Tooltip.Content>
       </Tooltip.Root>
 
-      <h2 class="ml-2 text-xl font-medium tracking-tight">
+      <h2 class="ml-2 truncate text-xl font-medium tracking-tight">
         {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
       </h2>
     </div>
