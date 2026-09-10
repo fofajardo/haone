@@ -282,7 +282,7 @@
           onPaginationChange={(p) => (tableSync.pagination = p)}
           onRowClick={(r) => goto(`/admin/users/${r.residentId}?term=${r.period}`)}
           onSelectionChange={(ids) => (selectedIndices = ids)}
-          rowId="stno"
+          rowId="id"
           enableSelection
           sorting={[{ id: "name", desc: false }]}
         >
