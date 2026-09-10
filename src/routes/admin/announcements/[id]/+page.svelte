@@ -164,6 +164,7 @@
 <div class="mx-auto max-w-7xl space-y-3">
   <ContentHeader
     title="Edit Announcement"
+    isRefreshing={isLoading}
     actions={[
       ...(isActive
         ? [

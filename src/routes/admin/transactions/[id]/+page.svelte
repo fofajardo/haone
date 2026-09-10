@@ -176,6 +176,7 @@
 <div class="mx-auto max-w-7xl space-y-3">
   <ContentHeader
     title="View Transaction"
+    isRefreshing={isLoading}
     actions={[
       ...(transaction && !transaction.wasAudited
         ? [

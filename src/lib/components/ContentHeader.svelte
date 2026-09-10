@@ -61,6 +61,7 @@
         size="icon"
         icon={Funnel}
         iconClass="size-6"
+        disabled={isRefreshing}
         onclick={() => {
           filterState.open = true;
         }}
@@ -80,8 +81,15 @@
   <!-- This check is a mouthful due to nested dropdowns. Simply put, if there are 1 or 2 actions with no refresh and none of them have sub-items, display them directly. Otherwise, show a dropdown menu. -->
   {#if (actions.length === 1 && (!actions[0].items || actions[0].items.length === 0)) || (!onRefresh && actions.length === 2 && (!actions[0].items || actions[0].items.length === 0) && (!actions[1].items || actions[1].items.length === 0))}
     {#each actions as action}
-      {@const { label, children, items: _items, icon: ActionIcon, ...rest } = action}
-      <Button variant="ghost" size="icon" icon={ActionIcon} iconClass="size-6" {...rest}>
+      {@const { label, children, items: _items, icon: ActionIcon, disabled, ...rest } = action}
+      <Button
+        variant="ghost"
+        size="icon"
+        icon={ActionIcon}
+        iconClass="size-6"
+        disabled={isRefreshing || disabled}
+        {...rest}
+      >
         {#if !ActionIcon}
           {#if label}
             {label}
@@ -99,6 +107,7 @@
             {...props}
             variant="ghost"
             size="icon"
+            disabled={isRefreshing}
             icon={EllipsisVerticalIcon}
             iconClass="size-6"
           />
@@ -118,11 +127,23 @@
               </DropdownMenu.Label>
               <DropdownMenu.Separator />
               {#each action.items as item}
-                {@const { label, icon: ItemIcon, href, onclick, variant, ...restItem } = item}
+                {@const {
+                  label,
+                  icon: ItemIcon,
+                  href,
+                  onclick,
+                  variant,
+                  disabled,
+                  ...restItem
+                } = item}
                 <DropdownMenu.Item
                   {...restItem}
+                  disabled={isRefreshing || disabled}
                   variant={variant === "destructive" ? "destructive" : "default"}
                   onclick={(e) => {
+                    if (isRefreshing || disabled) {
+                      return;
+                    }
                     if (href) {
                       goto(href);
                     }
@@ -145,9 +166,12 @@
             {/if}
           {:else}
             <DropdownMenu.Item
-              disabled={action.disabled || action.isLoading}
+              disabled={isRefreshing || action.disabled || action.isLoading}
               variant={action.variant === "destructive" ? "destructive" : "default"}
               onclick={(e) => {
+                if (isRefreshing || action.disabled || action.isLoading) {
+                  return;
+                }
                 if (action.href) {
                   goto(action.href);
                 }
@@ -178,11 +202,11 @@
 {#snippet desktopActions()}
   {#each actions as action}
     {#if action.items && action.items.length > 0}
-      {@const { label, children, items, ...rest } = action}
+      {@const { label, children, items, disabled, ...rest } = action}
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
           {#snippet child({ props })}
-            <Button size="sm" {...rest} {...props}>
+            <Button size="sm" disabled={isRefreshing || disabled} {...rest} {...props}>
               {#if label}
                 {label}
               {:else if children}
@@ -194,11 +218,23 @@
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end">
           {#each items as item}
-            {@const { label, icon: ItemIcon, href, onclick, variant, ...restItem } = item}
+            {@const {
+              label,
+              icon: ItemIcon,
+              href,
+              onclick,
+              variant,
+              disabled: itemDisabled,
+              ...restItem
+            } = item}
             <DropdownMenu.Item
               {...restItem}
+              disabled={isRefreshing || itemDisabled}
               variant={variant === "destructive" ? "destructive" : "default"}
               onclick={(e) => {
+                if (isRefreshing || itemDisabled) {
+                  return;
+                }
                 if (href) {
                   goto(href);
                 }
@@ -218,8 +254,8 @@
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     {:else}
-      {@const { label, children, items: _items, ...rest } = action}
-      <Button size="sm" {...rest}>
+      {@const { label, children, items: _items, disabled, ...rest } = action}
+      <Button size="sm" disabled={isRefreshing || disabled} {...rest}>
         {#if label}
           {label}
         {:else if children}
