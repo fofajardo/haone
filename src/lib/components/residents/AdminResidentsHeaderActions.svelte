@@ -22,25 +22,23 @@
   }
 </script>
 
-<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-  <Tabs.Root value={active} onValueChange={handleTabChange}>
-    <Tabs.List>
-      <Tabs.Trigger value="list" class="flex items-center gap-1.5">
-        <List class="h-3.5 w-3.5" />
-        List
-      </Tabs.Trigger>
-      <Tabs.Trigger value="rooms" class="flex items-center gap-1.5">
-        <Bed class="h-3.5 w-3.5" />
-        Rooms
-      </Tabs.Trigger>
-      <Tabs.Trigger value="officers" class="flex items-center gap-1.5">
-        <BookUser class="h-3.5 w-3.5" />
-        Officers
-      </Tabs.Trigger>
-      <Tabs.Trigger value="sync" class="flex items-center gap-1.5">
-        <ArrowRightLeft class="h-3.5 w-3.5" />
-        Sync
-      </Tabs.Trigger>
-    </Tabs.List>
-  </Tabs.Root>
-</div>
+<Tabs.Root value={active} onValueChange={handleTabChange}>
+  <Tabs.List>
+    <Tabs.Trigger value="list" class="flex items-center gap-1.5">
+      <List class="h-3.5 w-3.5" />
+      List
+    </Tabs.Trigger>
+    <Tabs.Trigger value="rooms" class="flex items-center gap-1.5">
+      <Bed class="h-3.5 w-3.5" />
+      Rooms
+    </Tabs.Trigger>
+    <Tabs.Trigger value="officers" class="flex items-center gap-1.5">
+      <BookUser class="h-3.5 w-3.5" />
+      Officers
+    </Tabs.Trigger>
+    <Tabs.Trigger value="sync" class="flex items-center gap-1.5">
+      <ArrowRightLeft class="h-3.5 w-3.5" />
+      Sync
+    </Tabs.Trigger>
+  </Tabs.List>
+</Tabs.Root>
