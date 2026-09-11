@@ -51,10 +51,6 @@
     isSubmitting: false
   });
 
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    globalDialog.show(title, description);
-  }
-
   const groupedPreview = $derived.by(() => {
     const groups = new Map<number, SyncPreviewAction[]>();
     for (const action of previewActions) {
@@ -100,19 +96,19 @@
 
   async function handleApproveSelected() {
     if (selectedActions.length === 0) {
-      showAlert("No Selection", "Please select at least one item to approve.", "error");
+      globalDialog.show("No Selection", "Please select at least one item to approve.");
       return;
     }
     isSyncing = true;
     try {
       const result = await applySync(selectedActions, activeTerm);
-      showAlert(
+      globalDialog.show(
         "Sync Complete",
         `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
       );
       await loadPreview();
     } catch (e: any) {
-      showAlert("Sync Failed", e.message || "An error occurred.", "error");
+      globalDialog.show("Sync Failed", e.message || "An error occurred.");
     } finally {
       isSyncing = false;
     }

@@ -60,10 +60,6 @@
   let selectedIndices = $state<Set<string>>(new Set()); // Uses stno as key
   let customReminders = $state("");
 
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    globalDialog.show(title, description);
-  }
-
   async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
@@ -155,7 +151,10 @@
         r.ceIssued
     );
     if (selectedResidents.length === 0) {
-      showAlert("Dispatch Blocked", "No cleared residents found among the selection.", "error");
+      globalDialog.show(
+        "Dispatch Blocked",
+        "No cleared residents found among the selection."
+      );
       return;
     }
     stageClearanceEmailBatch(selectedResidents, brandingState.profile, {
@@ -183,10 +182,9 @@
     });
 
     if (eligible.length === 0) {
-      showAlert(
+      globalDialog.show(
         "Clearance Blocked",
-        "No eligible residents found in the selection (must be fully paid and not yet cleared).",
-        "error"
+        "No eligible residents found in the selection (must be fully paid and not yet cleared)."
       );
       return;
     }
@@ -339,7 +337,7 @@
   bind:open={isClearDialogOpen}
   residents={residentsToClear}
   onSuccess={(count) => {
-    showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
+    globalDialog.show("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
     selectedIndices = new Set(); // Clear selection after success
   }}
 />

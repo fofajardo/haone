@@ -50,10 +50,6 @@
     }
   });
 
-  function showAlert(title: string, description: string) {
-    globalDialog.show(title, description);
-  }
-
   onMount(async () => {
     pageState.title = "Clearance Verification";
     const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
@@ -117,7 +113,7 @@
       });
     } catch (e: any) {
       console.error("PDF export failed:", e);
-      showAlert("Export Error", `The PDF generation failed: ${e.message}`);
+      globalDialog.show("Export Error", `The PDF generation failed: ${e.message}`);
     } finally {
       isExporting = false;
     }
@@ -126,7 +122,7 @@
   async function downloadImage() {
     const templateElement = document.getElementById("export-template");
     if (!templateElement) {
-      showAlert("Export Error", "Export template content not found.");
+      globalDialog.show("Export Error", "Export template content not found.");
       return;
     }
 
@@ -143,7 +139,7 @@
       document.body.removeChild(link);
     } catch (e: any) {
       console.error("Export failed:", e);
-      showAlert("Export Error", `The image generation failed: ${e.message}`);
+      globalDialog.show("Export Error", `The image generation failed: ${e.message}`);
     } finally {
       isExporting = false;
     }
@@ -170,7 +166,7 @@
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        showAlert("Link Copied", "The clearance link has been copied to your clipboard.");
+        globalDialog.show("Link Copied", "The clearance link has been copied to your clipboard.");
       } catch (err) {
         console.error("Clipboard copy failed:", err);
       }

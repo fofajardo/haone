@@ -93,10 +93,6 @@
   let residentsToClear = $state<ResidentRecord[]>([]);
   let isChangingType = $state(false);
 
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    globalDialog.show(title, description);
-  }
-
   const currentAccount = $derived(accounts.find((a) => a.period === localTerm) || null);
 
   const qualifications = $derived(
@@ -189,10 +185,10 @@
     isChangingType = true;
     try {
       await changeAccountTypeController(currentAccount.residentId, currentAccount.period, newType);
-      showAlert("Account Type Updated", `Account type changed to ${newType}.`);
+      globalDialog.show("Account Type Updated", `Account type changed to ${newType}.`);
       await loadUserProfile(true);
     } catch (e: any) {
-      showAlert("Update Failed", e.message, "error");
+      globalDialog.show("Update Failed", e.message);
     } finally {
       isChangingType = false;
     }
@@ -209,10 +205,9 @@
   function sendClearanceEmail() {
     if (!currentAccount) return;
     if (!currentAccount.ceLink) {
-      showAlert(
+      globalDialog.show(
         "Dispatch Blocked",
-        "No clearance certificate generated for this resident yet.",
-        "error"
+        "No clearance certificate generated for this resident yet."
       );
       return;
     }
@@ -656,6 +651,6 @@
   bind:open={isClearDialogOpen}
   residents={residentsToClear}
   onSuccess={(count) => {
-    showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
+    globalDialog.show("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
   }}
 />

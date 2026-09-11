@@ -34,10 +34,6 @@
 
   let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();
 
-  function showAlert(title: string, description: string) {
-    globalDialog.show(title, description);
-  }
-
   let isSubmitting = $state(false);
   let step = $state(untrack(() => (status.waitingForConfirmation ? 4 : 1)));
   let isOutdated = $state(false);
@@ -136,7 +132,7 @@
           residentState.forceOnboarding = false;
           await onSuccess();
         } catch (e: any) {
-          showAlert(
+          globalDialog.show(
             "Registration Failed",
             e.message || "An error occurred while submitting your registration."
           );
@@ -287,7 +283,7 @@
       residentState.forceOnboarding = false;
       await onSuccess();
     } catch (e: any) {
-      showAlert(
+      globalDialog.show(
         "Registration Failed",
         e.message || "An error occurred while submitting your registration."
       );
