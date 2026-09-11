@@ -11,9 +11,8 @@
     updateJournalEntry,
     batchAuditEntries
   } from "$api/controllers/journal-controller";
-  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { formatCurrency, formatAccounting, formatDate } from "$utils/formatters";
-  import { translateMop, translatePeriod, translateType } from "$utils/translators";
+  import { translateMop, translatePaymentType, translatePeriod } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
   import * as Card from "$ui/card";
   import * as AlertDialog from "$ui/alert-dialog";
@@ -47,7 +46,6 @@
   let creatorResidentId = $state<string | null>(null);
   let accountResidentId = $state<string | null>(null);
   let creatorStNo = $state<string | null>(null);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
@@ -82,10 +80,7 @@
     error = null;
 
     try {
-      const [entries, types] = await Promise.all([
-        fetchJournalEntries(undefined, undefined),
-        fetchTransactionTypes(false)
-      ]);
+      const entries = await fetchJournalEntries(undefined, undefined);
       const list = Array.isArray(entries) ? entries : entries.items;
       const idx = list.findIndex((row, i) => row.id === id || (i + 1).toString() === id);
       const match = list[idx];
@@ -114,8 +109,6 @@
         } catch (e) {
           console.warn("Could not resolve resident info:", e);
         }
-
-        transactionTypes = types;
       }
     } catch (e: any) {
       error = `Failed to retrieve audit data: ${e.message}`;
@@ -273,7 +266,7 @@
         <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div class="space-y-1">
             <span class="text-xs font-bold tracking-widest text-primary uppercase"
-              >{translateType(transaction.type, transactionTypes)}</span
+              >{translatePaymentType(transaction.type)}</span
             >
             <div class="flex items-center gap-3">
               <h2 class="text-3xl font-bold tracking-tight text-foreground">

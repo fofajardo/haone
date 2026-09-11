@@ -3,16 +3,14 @@
   import { Button } from "$ui/button";
   import { ArrowRight, TrendingUp, TrendingDown, RotateCcwClockIcon } from "@lucide/svelte";
   import { formatCurrency, formatDate } from "$utils/formatters";
-  import { translateType } from "$utils/translators";
+  import { translatePaymentType } from "$utils/translators";
 
   let {
     transactions = [],
-    period = "",
-    transactionTypes = []
+    period = ""
   }: {
     transactions?: any[];
     period?: string;
-    transactionTypes?: { value: string; label: string }[];
   } = $props();
 
   const filteredTransactions = $derived(
@@ -52,7 +50,7 @@
           <div class="flex min-w-0 flex-1 items-center justify-between">
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-bold text-foreground">
-                {translateType(tx.type, transactionTypes)}
+                {translatePaymentType(tx.type)}
               </p>
               <p class="truncate text-xs font-bold text-muted-foreground uppercase">
                 {formatDate(tx.date)}

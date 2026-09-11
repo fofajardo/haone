@@ -22,7 +22,7 @@
     DownloadIcon
   } from "@lucide/svelte";
   import { formatAccounting } from "$utils/formatters";
-  import { translateMop, translateType } from "$utils/translators";
+  import { translateMop, translatePaymentType } from "$utils/translators";
   import { getJournalDateRange } from "$utils/parsers";
   import type { JournalRecord, ResidentRecord } from "$lib/types";
   import * as Table from "$ui/table";
@@ -41,7 +41,6 @@
   let allJournal = $state<JournalRecord[]>([]);
   let allAccounts = $state<ResidentRecord[]>([]);
   let availableMops = $state<{ value: string; label: string }[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let periodStart = $state("");
   let periodEnd = $state("");
 
@@ -117,7 +116,7 @@
     const groupMap: Record<string, number> = {};
     processedJournal.forEach((j) => {
       if (j.outgoing > 0) {
-        const typeLabel = translateType(j.type, transactionTypes) || j.type;
+        const typeLabel = translatePaymentType(j.type) || j.type;
         groupMap[typeLabel] = (groupMap[typeLabel] || 0) + j.outgoing;
       }
     });
@@ -261,7 +260,6 @@
       const data = await fetchFinancialReportData(bypassCache);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
-      transactionTypes = data.transactionTypes;
       availableMops = data.availableMops;
 
       // Auto-Period

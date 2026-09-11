@@ -13,7 +13,7 @@
     Calendar,
     UserCog
   } from "@lucide/svelte";
-  import { translateCollege, translateProgram, translateType } from "$utils/translators";
+  import { translateAccountType, translateCollege, translateProgram } from "$utils/translators";
   import { formatDate } from "$utils/formatters";
   import type { ResidentRecord } from "$lib/types";
 
@@ -71,7 +71,7 @@
         <UserCog class="h-3 w-3" /> Account Type
       </Label>
       <p class="text-sm font-semibold text-foreground">
-        {translateType(account.type)}
+        {translateAccountType(account.type)}
       </p>
     </div>
 

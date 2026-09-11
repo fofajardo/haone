@@ -24,7 +24,6 @@
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
-  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { fetchResidents } from "$api/controllers/resident-controller";
   import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
@@ -43,8 +42,6 @@
     collectionRate: 0
   });
 
-  let recentTransactions = $state<any[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(true);
 
   const actions = $derived([
@@ -162,14 +159,12 @@
     isLoading = true;
 
     try {
-      const [journalEntries, allResidents, types, currentTerm] = await Promise.all([
+      const [journalEntries, allResidents, currentTerm] = await Promise.all([
         fetchJournalEntries(),
         fetchResidents(),
-        fetchTransactionTypes(),
         uiSettings.ensureCurrentTerm()
       ]);
 
-      transactionTypes = types;
       const journals = Array.isArray(journalEntries) ? journalEntries : journalEntries.items;
 
       // Stats from Accounts
@@ -203,12 +198,6 @@
 
       // Total Collected in Term
       stats.totalCollected = accounts.reduce((sum, r) => sum + r.paid, 0);
-
-      // Recent Transactions (last 5)
-      recentTransactions = journalData
-        .filter((r) => r.period === currentTerm)
-        .slice(-5)
-        .reverse();
     } catch (e) {
       console.error("Dashboard load failed", e);
     } finally {

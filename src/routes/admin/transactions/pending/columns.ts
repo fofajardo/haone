@@ -29,12 +29,10 @@ export const columns: ColumnDef<JournalRecord>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Account" }),
-    cell: ({ row, table }) => {
+    cell: ({ row }) => {
       return renderComponent(CompositionCell, {
         record: row.original,
-        variant: "account",
-        // @ts-ignore
-        transactionTypes: table.options.meta?.transactionTypes || []
+        variant: "account"
       });
     }
   },

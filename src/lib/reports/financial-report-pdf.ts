@@ -1,7 +1,7 @@
-import { fetchMopTypes, fetchTransactionTypes } from "$api/controllers/constants-controller";
+import { fetchMopTypes } from "$api/controllers/constants-controller";
 import { fetchJournalEntries } from "$api/controllers/journal-controller";
 import { fetchResidents } from "$api/controllers/resident-controller";
-import type { JournalRecord, ResidentRecord } from "$lib/types";
+import { PaymentType, type JournalRecord, type ResidentRecord } from "$lib/types";
 import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
 import { parseDateWeight } from "$utils/parsers";
@@ -27,15 +27,13 @@ export interface FinancialReportOptions {
   assessedBy: string;
   certifiedBy: string;
   periodCovered: string;
-  transactionTypes: { value: string; label: string }[];
   availableMops: { value: string; label: string }[];
 }
 
 export async function fetchFinancialReportData(bypassCache = false) {
-  const [entries, mappedAccounts, types, mops] = await Promise.all([
+  const [entries, mappedAccounts, mops] = await Promise.all([
     fetchJournalEntries(undefined, undefined, bypassCache),
     fetchResidents(bypassCache),
-    fetchTransactionTypes(bypassCache),
     fetchMopTypes(bypassCache)
   ]);
 
@@ -47,7 +45,6 @@ export async function fetchFinancialReportData(bypassCache = false) {
     dateWeight: parseDateWeight(res.date)
   }));
 
-  const transactionTypes = types;
   const availableMops = mops;
 
   // Fetch Accounts
@@ -56,7 +53,6 @@ export async function fetchFinancialReportData(bypassCache = false) {
   return {
     allJournal,
     allAccounts,
-    transactionTypes,
     availableMops
   };
 }
@@ -189,12 +185,15 @@ export function computeFinancialReportData(
     target: accounts.reduce((s, r) => s + r.waterBase, 0),
     waived: accounts.reduce((s, r) => s + r.waterWaived, 0),
     resident: processedJournal.reduce(
-      (s, j) => s + (j.type === "COLLECTION" && j.water > 0 ? j.water : 0),
+      (s, j) => s + (j.type === PaymentType.COLLECTION && j.water > 0 ? j.water : 0),
       0
     ),
-    uho: processedJournal.reduce((s, j) => s + (j.type === "COLLECTION_OTHERS" ? j.water : 0), 0),
+    uho: processedJournal.reduce(
+      (s, j) => s + (j.type === PaymentType.COLLECTION_OTHERS ? j.water : 0),
+      0
+    ),
     refunds: processedJournal.reduce(
-      (s, j) => s + (j.type === "COLLECTION" && j.water < 0 ? Math.abs(j.water) : 0),
+      (s, j) => s + (j.type === PaymentType.COLLECTION && j.water < 0 ? Math.abs(j.water) : 0),
       0
     ),
     overdue: accounts.reduce((s, r) => s + (r.waterBal > 0 ? r.waterBal : 0), 0),
@@ -212,11 +211,11 @@ export function computeFinancialReportData(
     target: accounts.reduce((s, r) => s + r.assocBase, 0),
     waived: accounts.reduce((s, r) => s + r.assocWaived, 0),
     resident: processedJournal.reduce(
-      (s, j) => s + (j.type === "COLLECTION" && j.assoc > 0 ? j.assoc : 0),
+      (s, j) => s + (j.type === PaymentType.COLLECTION && j.assoc > 0 ? j.assoc : 0),
       0
     ),
     refunds: processedJournal.reduce(
-      (s, j) => s + (j.type === "COLLECTION" && j.assoc < 0 ? Math.abs(j.assoc) : 0),
+      (s, j) => s + (j.type === PaymentType.COLLECTION && j.assoc < 0 ? Math.abs(j.assoc) : 0),
       0
     ),
     overdue: accounts.reduce((s, r) => s + (r.assocBal > 0 ? r.assocBal : 0), 0)

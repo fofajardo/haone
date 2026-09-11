@@ -73,8 +73,6 @@ export interface ResidentStatus {
   systemActiveTerm: string;
   /** An array of all available terms */
   allTerms: string[];
-  /** An array of all transaction types */
-  transactionTypes: ConstantOption[];
   /** An array of all MOP types */
   mopTypes: ConstantOption[];
   /** Resident's profile information */

@@ -17,11 +17,6 @@ export const sheetsConstantsService: ConstantsServiceInterface = {
           consts.push({ key: `TERM_${t}`, value: t, description: t, raw: [] });
         }
       }
-      if (Array.isArray(data.transactionTypes)) {
-        for (const t of data.transactionTypes) {
-          consts.push({ key: t.value, value: t.label, description: t.label, raw: [] });
-        }
-      }
       if (Array.isArray(data.mopTypes)) {
         for (const m of data.mopTypes) {
           consts.push({ key: m.value, value: m.label, description: m.label, raw: [] });

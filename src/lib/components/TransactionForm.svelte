@@ -37,9 +37,17 @@
   import * as Dialog from "$ui/dialog";
   import * as Tooltip from "$ui/tooltip";
   import { Badge } from "$ui/badge";
-  import { fetchResidents, mapRowToJournal } from "$api/controllers/resident-controller";
-  import type { ResidentRecord, JournalRecord } from "$lib/types";
-  import { JOURNAL_COL as JOR, PaymentType, PAYMENT_TYPE_FUNDS_ONLY } from "$lib/types";
+  import { fetchResidents } from "$api/controllers/resident-controller";
+  import {
+    JOURNAL_COL as JOR,
+    PaymentType,
+    PAYMENT_TYPE_OPTIONS,
+    PAYMENT_TYPE_FUNDS_ONLY,
+    type ResidentRecord,
+    type JournalRecord,
+    PAYMENT_TYPE_WITH_RECEIPT,
+    PAYMENT_TYPE_MAYBE_WITH_RECEIPT
+  } from "$lib/types";
 
   interface Props {
     mode: "add" | "edit";
@@ -60,7 +68,6 @@
   }: Props = $props();
 
   let accounts = $state<ResidentRecord[]>([]);
-  let transactionTypes = $state<{ value: string; val: string; label: string }[]>([]);
   let academicTerms = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   const mopOptions = $derived(mopTypes);
@@ -105,7 +112,7 @@
   );
 
   const typeOptions = $derived([
-    ...transactionTypes.filter((t) => {
+    ...PAYMENT_TYPE_OPTIONS.filter((t) => {
       if (t.value === formData.type) {
         return true;
       }
@@ -114,8 +121,7 @@
         t.value !== PaymentType.TRANSFER_FROM &&
         t.value !== PaymentType.TRANSFER_TO
       );
-    }),
-    { value: PaymentType.FUND_TRANSFER, val: "FUND_TRANSFER", label: "Fund Transfer" }
+    })
   ]);
 
   const isTypeDisabled = $derived(
@@ -212,7 +218,7 @@
     const type = formData.type;
     return (
       type === PaymentType.COLLECTION ||
-      type === PaymentType.CN_REFUND ||
+      type === PaymentType.REFUND_COLLECTION ||
       type === PaymentType.WAIVED
     );
   });
@@ -317,15 +323,6 @@
         new Map([...rawAccounts, fundsAccount].map((a) => [a.email, a])).values()
       );
 
-      transactionTypes = constants
-        .filter((r) => r.key.startsWith("PMT_") && r.key !== PaymentType.TYPE_RESERVED)
-        .map((r) => ({
-          value: r.key,
-          val: r.value || r.key,
-          label: r.description || r.value || r.key
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-
       const termValues = constants
         .filter(
           (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
@@ -364,7 +361,8 @@
           mopTo: (initialData as any).mopTo || "CASH",
           period: initialData.period,
           type:
-            transactionTypes.find((t) => t.val === initialData!.type)?.value || initialData.type,
+            (PAYMENT_TYPE_OPTIONS.find((t) => t.value === initialData!.type)
+              ?.value as PaymentType) || initialData.type,
           notes: initialData.notes,
           notesPrivate: initialData.notesPrivate,
           mopRefNo: mopRefInfo.reference || initialData.mopRefNo,
@@ -515,7 +513,7 @@
         fromRow[JOR.MISC] = misc !== 0 ? `-${Math.abs(misc)}` : "0";
         fromRow[JOR.MOP] = formData.mop;
         fromRow[JOR.PERIOD] = formData.period;
-        fromRow[JOR.TYPE] = "TRANSFER_FROM";
+        fromRow[JOR.TYPE] = PaymentType.TRANSFER_FROM;
         fromRow[JOR.NOTES] = formData.notes;
         fromRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
         fromRow[JOR.MOP_REFNO] = formData.instapayInvoice
@@ -542,7 +540,7 @@
         toRow[JOR.MISC] = misc !== 0 ? `${Math.abs(misc)}` : "0";
         toRow[JOR.MOP] = formData.mopTo;
         toRow[JOR.PERIOD] = formData.period;
-        toRow[JOR.TYPE] = "TRANSFER_TO";
+        toRow[JOR.TYPE] = PaymentType.TRANSFER_TO;
         toRow[JOR.NOTES] = formData.notes;
         toRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
         toRow[JOR.MOP_REFNO] = formData.instapayInvoice
@@ -570,7 +568,7 @@
       row[JOR.ACCOUNT] = "";
       const negativeTypes: string[] = [
         PaymentType.REFUND,
-        PaymentType.CN_REFUND,
+        PaymentType.REFUND_COLLECTION,
         PaymentType.PURCHASE,
         PaymentType.WATER,
         PaymentType.WATER_AA,
@@ -599,8 +597,9 @@
           ? ""
           : formData.mop;
       row[JOR.PERIOD] = formData.period;
-      const mappedType =
-        transactionTypes.find((t) => t.value === formData.type)?.val || formData.type;
+      const mappedType: PaymentType =
+        (PAYMENT_TYPE_OPTIONS.find((t) => t.value === formData.type)?.value as PaymentType) ||
+        formData.type;
       row[JOR.TYPE] = mappedType;
       row[JOR.NOTES] = formData.notes;
       row[JOR.NOTES_PRIVATE] = formData.notesPrivate;
@@ -613,23 +612,15 @@
       row[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
 
       // PR_REFNO logic based on TYPE and Account
-      const prTypes = ["WAIVED", "COLLECTION"];
-      const conditionalPrTypes = [
-        "RECLASSIFY",
-        "COLLECTION_OTHERS",
-        "TRANSFER_TO",
-        "TRANSFER_FROM",
-        "COLLECTION_REFUND",
-        "REFUND"
-      ];
 
       let prRef = formData.prRefNo;
       const isFunds = formData.accountId === SYSTEM_IDS.FUNDS;
-      const isRefund = mappedType.toUpperCase().includes("REFUND");
+      const isRefund =
+        mappedType === PaymentType.REFUND || mappedType === PaymentType.REFUND_COLLECTION;
 
       const needsPr =
-        prTypes.includes(mappedType) ||
-        ((conditionalPrTypes.includes(mappedType) || isRefund) && !isFunds);
+        PAYMENT_TYPE_WITH_RECEIPT.includes(mappedType) ||
+        ((PAYMENT_TYPE_MAYBE_WITH_RECEIPT.includes(mappedType) || isRefund) && !isFunds);
 
       if (!needsPr) {
         prRef = "N/A";
@@ -662,9 +653,9 @@
         carryoverRow[JOR.MOP] = formData.mop;
         carryoverRow[JOR.PERIOD] = carryoverTerm;
         const mappedCarryoverType =
-          transactionTypes.find((t) => {
+          PAYMENT_TYPE_OPTIONS.find((t) => {
             return t.value === PaymentType.CARRYOVER;
-          })?.val || PaymentType.CARRYOVER;
+          })?.value || PaymentType.CARRYOVER;
         carryoverRow[JOR.TYPE] = mappedCarryoverType;
         carryoverRow[JOR.NOTES] = "";
         carryoverRow[JOR.NOTES_PRIVATE] = "";

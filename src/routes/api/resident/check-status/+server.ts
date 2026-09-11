@@ -1,6 +1,13 @@
 import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
 import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
-import { ACCOUNT_COL, CURR_COL, JOURNAL_COL, PaymentType, USER_COL } from "$lib/types";
+import {
+  ACCOUNT_COL,
+  CURR_COL,
+  JOURNAL_COL,
+  PAYMENT_TYPE_CONFIG,
+  PaymentType,
+  USER_COL
+} from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
@@ -26,18 +33,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
     const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
     const userId = userRow ? (userRow[USER_COL.ID] || "").trim() : "";
 
-    // 3. Fetch Transaction Types & MOPs
-    const transactionTypes = constRows
-      .slice(1)
-      .filter((r: any) => {
-        const key = (r[0] || "").trim();
-        return key.startsWith("PMT_");
-      })
-      .map((r: any) => ({
-        value: r[1] || r[0],
-        label: r[2] || r[1] || r[0]
-      }));
-
+    // 3. Fetch MOPs
     const mopTypes = constRows
       .slice(1)
       .filter((r: any) => {
@@ -135,8 +131,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
     );
 
     // Calculate financials
-    const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
-    const pmtWaived = getConstVal(PaymentType.WAIVED);
+    const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
 
     const filteredJor = jorRows
       .slice(1)
@@ -156,6 +151,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
       .filter((j: any) => j[JOURNAL_COL.TYPE] === pmtWaived)
       .reduce((sum: number, j: any) => sum + parseCSVAmount(j[JOURNAL_COL.ASSOC]), 0);
 
+    const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
     const waterBase = parseCSVAmount(getConstVal(`FEES_${targetTerm}_WATER`));
     const assocBase = parseCSVAmount(getConstVal(`FEES_${targetTerm}_ASSOC`));
 
@@ -171,7 +167,6 @@ export const GET: RequestHandler = async ({ url, request }) => {
       activeTerm: url.searchParams.get("term") || activeTerm,
       systemActiveTerm: activeTerm,
       allTerms: allTerms.sort().reverse(),
-      transactionTypes,
       mopTypes,
       profile: userRow
         ? {

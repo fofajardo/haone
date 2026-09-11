@@ -20,7 +20,7 @@
     exportFinancialReportPDF,
     fetchFinancialReportData
   } from "$reports/financial-report-pdf";
-  import type { JournalRecord, ResidentRecord } from "$lib/types";
+  import { type JournalRecord, type ResidentRecord } from "$lib/types";
 
   let isLoading = $state(true);
   let isProcessing = $state(false);
@@ -38,7 +38,6 @@
     })
   );
   let allAccountsForAutocomplete = $state<ResidentRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let availableMops = $state<{ value: string; label: string }[]>([]);
 
   // Form State
@@ -72,7 +71,6 @@
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
       allAccountsForAutocomplete = data.allAccounts;
-      transactionTypes = data.transactionTypes;
       availableMops = data.availableMops;
 
       // Auto-Period
@@ -116,7 +114,6 @@
         assessedBy: assessedBy ? `${assessedBy} <${assessedByEmail}>` : "—",
         certifiedBy: certifiedBy ? `${certifiedBy} <${certifiedByEmail}>` : "—",
         periodCovered: `${pStart} – ${pEnd}`,
-        transactionTypes,
         availableMops
       });
     } catch (e: any) {

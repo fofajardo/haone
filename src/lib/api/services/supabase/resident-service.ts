@@ -1,5 +1,5 @@
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import { AccountType, PaymentType } from "$lib/types";
+import { AccountType, PAYMENT_TYPE_CONFIG, PaymentType } from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { parseCSVAmount } from "$utils/math";
 import { parseDateWeight, parseDbDate, parseDbUuid } from "$utils/parsers";
@@ -130,7 +130,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     });
 
     const getConst = (k: string) => consts.find((c) => c.key === k)?.value || "0";
-    const pmtWaived = getConst(PaymentType.WAIVED);
+    const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
     const isWaivedEntry = (t: string) =>
       t === pmtWaived || (t && t.toUpperCase().includes("WAIVED"));
 
@@ -308,7 +308,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     }
 
     // ── Financials for the target term ──
-    const pmtWaived = getConst(PaymentType.WAIVED);
+    const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
     const termJournals = journalList.filter((j: any) => j.period === targetTerm);
 
     const waterPaid = termJournals
@@ -338,10 +338,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
       allTerms.push(activeTerm);
     }
 
-    const transactionTypes = consts
-      .filter((c) => c.key.startsWith("PMT_"))
-      .map((c) => ({ value: c.value || c.key, label: c.description || c.value || c.key }));
-
     const mopTypes = consts
       .filter((c) => c.key.startsWith("MOP_"))
       .map((c) => ({ value: c.value || c.key, label: c.description || c.value || c.key }));
@@ -360,7 +356,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
       activeTerm: targetTerm,
       systemActiveTerm: activeTerm,
       allTerms: allTerms.sort().reverse(),
-      transactionTypes,
       mopTypes,
       profile: currentUser
         ? {

@@ -105,7 +105,6 @@
     {/if}
     <TransactionHistoryCard
       history={status.transactions || []}
-      transactionTypes={status.transactionTypes || []}
       onRowClick={(r) => r.prRefNo && window.open(`/receipt/${r.id}`, "_blank")}
     />
   {/if}

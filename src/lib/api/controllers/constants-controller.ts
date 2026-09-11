@@ -1,5 +1,5 @@
 import { constantsService } from "$api/services/constants-service";
-import type { ConstantRecord } from "$lib/types";
+import { type ConstantRecord } from "$lib/types";
 
 export async function fetchConstants(bypassCache = false): Promise<ConstantRecord[]> {
   return constantsService.fetchConstants(bypassCache);
@@ -12,18 +12,6 @@ export async function fetchConstantByKey(key: string): Promise<string | null> {
 export async function fetchTermCurr(bypassCache = false): Promise<string> {
   const val = await constantsService.fetchConstantByKey("TERM_CURR");
   return val || "";
-}
-
-export async function fetchTransactionTypes(
-  bypassCache = false
-): Promise<{ value: string; label: string }[]> {
-  const constants = await constantsService.fetchConstants(bypassCache);
-  return constants
-    .filter((c) => c.key.startsWith("PMT_"))
-    .map((c) => ({
-      value: c.value || c.key,
-      label: c.description || c.value || c.key
-    }));
 }
 
 export async function fetchMopTypes(

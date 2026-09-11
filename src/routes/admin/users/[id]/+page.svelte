@@ -58,7 +58,6 @@
     changeAccountType as changeAccountTypeController
   } from "$api/controllers/resident-controller";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
-  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { pageState } from "$state/page-info.svelte";
   import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
@@ -81,7 +80,6 @@
   let accounts = $state<Account[]>([]);
   let userOfficers = $state<OfficerRecord[]>([]);
   let history = $state<JournalRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let allResidents = $state<ResidentRecord[]>([]);
   let isLoading = $state(true);
   let isDeleteAlertOpen = $state(false);
@@ -120,12 +118,11 @@
         localTerm = currTerm;
       }
 
-      const [userData, accountData, allOfficers, entries, types, allRes] = await Promise.all([
+      const [userData, accountData, allOfficers, entries, allRes] = await Promise.all([
         fetchUserById(userId, bypassCache),
         fetchAccountsByUserId(userId, bypassCache),
         fetchOfficers(bypassCache),
         fetchJournalEntries(undefined, undefined),
-        fetchTransactionTypes(bypassCache),
         fetchResidents(bypassCache)
       ]);
 
@@ -137,7 +134,6 @@
       pageState.title = user.displayName;
       accounts = accountData;
       allResidents = allRes;
-      transactionTypes = types;
 
       userOfficers = allOfficers.filter(
         (o) =>
@@ -598,7 +594,6 @@
           <!-- Transaction History -->
           <TransactionHistoryCard
             {history}
-            {transactionTypes}
             onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
           />
         {:else}

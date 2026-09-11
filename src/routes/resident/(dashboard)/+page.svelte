@@ -204,11 +204,7 @@
 
       <!-- Recent Transactions (1 col) -->
       <div class="min-w-0">
-        <RecentActivityCard
-          transactions={status.transactions}
-          period={status.activeTerm}
-          transactionTypes={status.transactionTypes}
-        />
+        <RecentActivityCard transactions={status.transactions} period={status.activeTerm} />
       </div>
     </div>
 

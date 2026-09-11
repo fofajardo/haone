@@ -1,7 +1,7 @@
 <script lang="ts">
   import { renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
   import { formatDate, formatCurrency, pluralize } from "$utils/formatters";
-  import { translateMop, translateType } from "$utils/translators";
+  import { translateMop, translatePaymentType } from "$utils/translators";
   import { type JournalRecord } from "$lib/types";
   import { createRawSnippet } from "svelte";
   import * as Card from "$ui/card";
@@ -11,12 +11,11 @@
 
   interface Props {
     history: JournalRecord[];
-    transactionTypes?: { value: string; label: string }[];
     onRowClick?: (row: JournalRecord) => void;
     class?: string;
   }
 
-  let { history, transactionTypes = [], onRowClick, class: className }: Props = $props();
+  let { history, onRowClick, class: className }: Props = $props();
 
   const columns: ColumnDef<JournalRecord>[] = [
     {
@@ -48,7 +47,7 @@
           return {
             render: () => `
               <div class="flex flex-col">
-                <span class="text-sm font-medium">${translateType(r.type, transactionTypes)}</span>
+                <span class="text-sm font-medium">${translatePaymentType(r.type)}</span>
                 <span class="text-sm text-muted-foreground">${translateMop(r.mop)}</span>
               </div>
             `

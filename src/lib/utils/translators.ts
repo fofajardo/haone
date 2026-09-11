@@ -1,6 +1,6 @@
 import collegeMapping from "$assets/colleges.json";
 import programMapping from "$assets/programs.json";
-import { ACCOUNT_TYPE_LABELS } from "$lib/types";
+import { ACCOUNT_TYPE_LABELS, PAYMENT_TYPE_CONFIG } from "$lib/types";
 
 export function translateMop(mop: string) {
   const val = mop?.trim().toUpperCase() || "";
@@ -67,13 +67,12 @@ export function translateAccountType(val: string | null | undefined): string {
   return (ACCOUNT_TYPE_LABELS as Record<string, string>)[key] || val;
 }
 
-export function translateType(val: string, types?: { value: string; label: string }[]) {
-  if (!val) {
+export function translatePaymentType(type: string | null | undefined): string {
+  if (!type) {
     return "—";
   }
-  if (!types || !Array.isArray(types)) {
-    return translateAccountType(val);
-  }
-  const type = types.find((t) => t.value === val);
-  return type ? type.label : translateAccountType(val);
+  const key = type.trim().toUpperCase() as keyof typeof PAYMENT_TYPE_CONFIG;
+  return (
+    (PAYMENT_TYPE_CONFIG as Record<string, { label: string }>)[key]?.label || `${type} (Unknown)`
+  );
 }

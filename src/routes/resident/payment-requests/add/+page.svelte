@@ -4,7 +4,7 @@
   import { addPaymentRequest } from "$api/controllers/payment-request-controller";
   import { fetchServer } from "$utils/api-client";
   import { formatCurrency, formatAccounting } from "$utils/formatters";
-  import type { ResidentRecord } from "$lib/types";
+  import { PaymentType, type ResidentRecord } from "$lib/types";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
@@ -130,7 +130,7 @@
         assocFee: assoc,
         misc: misc,
         mop: formData.mop,
-        type: "COLLECTION",
+        type: PaymentType.COLLECTION_OTHERS,
         proofLink: finalProofLink,
         status: "PENDING",
         notes: formData.notes

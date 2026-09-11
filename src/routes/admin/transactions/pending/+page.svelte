@@ -12,7 +12,6 @@
     updateJournalReceiptInfo,
     mapRowToJournal
   } from "$api/controllers/journal-controller";
-  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { parseDateWeight } from "$utils/parsers";
   import { Input } from "$ui/input/index.js";
   import * as InputGroup from "$ui/input-group";
@@ -33,7 +32,6 @@
   import { type JournalRecord } from "$lib/types";
 
   let queue = $state<JournalRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let selectedIndices = $state<Set<string>>(new Set());
   let isLoading = $state(false);
   let error = $state<string | null>(null);
@@ -62,13 +60,10 @@
     selectedIndices = new Set();
 
     try {
-      const [entries, types, currentTerm] = await Promise.all([
+      const [entries, currentTerm] = await Promise.all([
         fetchJournalEntries(undefined, undefined, bypassCache),
-        fetchTransactionTypes(bypassCache),
         uiSettings.ensureCurrentTerm()
       ]);
-
-      transactionTypes = types;
 
       const journals = Array.isArray(entries) ? entries : entries.items;
 
@@ -223,7 +218,6 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         onSelectionChange={(ids) => (selectedIndices = ids)}
-        meta={{ transactionTypes }}
         rowId="id"
         enableSelection
         sorting={[{ id: "date", desc: true }]}

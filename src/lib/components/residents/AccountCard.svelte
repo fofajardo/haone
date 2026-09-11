@@ -6,7 +6,7 @@
   import { MapPin, Bed as BedIcon, Calendar, UserCog, Pencil, ArrowUpRight } from "@lucide/svelte";
   import { type ResidentRecord, AccountType, ACCOUNT_TYPE_LABELS } from "$lib/types";
   import { formatDate } from "$utils/formatters";
-  import { translateType } from "$utils/translators";
+  import { translateAccountType } from "$utils/translators";
 
   interface Props {
     account: ResidentRecord;
@@ -51,7 +51,7 @@
       </Label>
       <div class="flex items-center gap-2">
         <p class="text-sm font-semibold text-foreground">
-          {translateType(account.type)}
+          {translateAccountType(account.type)}
         </p>
         {#if onChangeAccountType}
           <DropdownMenu.Root>

@@ -4,17 +4,11 @@
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import {
-    fetchJournalEntries,
-    batchAuditEntries,
-    mapRowToJournal
-  } from "$api/controllers/journal-controller";
-  import { fetchTransactionTypes, fetchMopTypes } from "$api/controllers/constants-controller";
-  import { translateMop } from "$utils/translators";
+  import { fetchJournalEntries, batchAuditEntries } from "$api/controllers/journal-controller";
+  import { fetchMopTypes } from "$api/controllers/constants-controller";
   import { parseDateWeight } from "$utils/parsers";
   import { Combobox } from "$ui/combobox";
   import { Button } from "$ui/button";
-  import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import TermFilter from "$components/TermFilter.svelte";
@@ -27,9 +21,9 @@
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
+  import { type JournalRecord, PAYMENT_TYPE_OPTIONS, PaymentType } from "$lib/types";
 
   let journal = $state<JournalRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
@@ -43,22 +37,18 @@
     searchKey: "search"
   });
 
-  import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
-
   async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     selectedIds = new Set();
 
     try {
-      const [entries, types, mops, currentTerm] = await Promise.all([
+      const [entries, mops, currentTerm] = await Promise.all([
         fetchJournalEntries(undefined, undefined, bypassCache),
-        fetchTransactionTypes(bypassCache),
         fetchMopTypes(bypassCache),
         uiSettings.ensureCurrentTerm()
       ]);
 
-      transactionTypes = types;
       mopTypes = [{ value: "", label: "N/A" }, ...mops];
 
       const journals = Array.isArray(entries) ? entries : entries.items;
@@ -76,7 +66,7 @@
 
       let globalBalance = 0;
       for (let i = mappedJournal.length - 1; i >= 0; i--) {
-        if (!mappedJournal[i].type.toUpperCase().includes("WAIVED")) {
+        if (mappedJournal[i].type !== PaymentType.WAIVED) {
           globalBalance += mappedJournal[i].amount;
         }
         mappedJournal[i].runningBalance = globalBalance;
@@ -111,7 +101,10 @@
     loadData();
   });
 
-  const transactionOptions = $derived([{ value: "ALL", label: "All Types" }, ...transactionTypes]);
+  const transactionOptions = $derived([
+    { value: "ALL", label: "All Types" },
+    ...PAYMENT_TYPE_OPTIONS
+  ]);
   const mopOptions = $derived([{ value: "ALL", label: "All Methods" }, ...mopTypes]);
 
   const filteredJournal = $derived.by(() => {
@@ -205,7 +198,7 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         onSelectionChange={(ids) => (selectedIds = ids)}
-        meta={{ transactionTypes }}
+        meta={{ PAYMENT_TYPE_OPTIONS }}
         rowId="id"
         enableSelection
         sorting={[{ id: "date", desc: true }]}

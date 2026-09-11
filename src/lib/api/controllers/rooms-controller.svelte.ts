@@ -1,4 +1,3 @@
-import { fetchConstantByKey } from "$api/controllers/constants-controller";
 import { addJournalEntries } from "$api/controllers/journal-controller";
 import {
   addUser,
@@ -7,7 +6,13 @@ import {
   updateUser
 } from "$api/controllers/resident-controller";
 import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
-import { AccountType, PaymentType, UserTag, type UserRecord } from "$lib/types";
+import {
+  AccountType,
+  PAYMENT_TYPE_CONFIG,
+  PaymentType,
+  UserTag,
+  type UserRecord
+} from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { roomsState } from "$state/rooms.svelte";
 import { getLocalDateString } from "$utils/parsers";
@@ -508,7 +513,7 @@ export async function manualDelistResident(
         return r.residentId === residentId && r.period === term;
       });
       if (resRecord && resRecord.bal > 0) {
-        const pmtWaived = await fetchConstantByKey(PaymentType.WAIVED);
+        const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
 
         let remainingToWaive = resRecord.bal;
         let waterWaiveAmt = 0;
