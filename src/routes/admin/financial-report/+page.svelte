@@ -12,14 +12,14 @@
   import StatisticCard from "$components/StatisticCard.svelte";
   import {
     RefreshCcw,
-    FileDown,
     TrendingUp,
     TrendingDown,
     Wallet,
     CircleDollarSign,
     FileSpreadsheet,
     ChartLine,
-    ChartLineIcon
+    ChartLineIcon,
+    DownloadIcon
   } from "@lucide/svelte";
   import { formatAccounting } from "$utils/formatters";
   import { translateMop, translateType } from "$utils/translators";
@@ -289,7 +289,7 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-    actions={[{ label: "Export", href: "/admin/financial-report/export", icon: FileDown }]}
+    actions={[{ label: "Export", href: "/admin/financial-report/export", icon: DownloadIcon }]}
   >
     {#snippet tabs()}
       <Tabs.Root bind:value={activeTab}>

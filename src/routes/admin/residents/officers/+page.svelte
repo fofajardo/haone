@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, Search, FileSpreadsheet } from "@lucide/svelte";
+  import { RefreshCcw, Search, DownloadIcon } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -82,7 +82,7 @@
     actions={[
       {
         label: "Export",
-        icon: FileSpreadsheet,
+        icon: DownloadIcon,
         href: "/admin/residents/export"
       }
     ]}

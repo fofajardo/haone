@@ -28,9 +28,9 @@
     CircleCheck,
     CircleAlert,
     ExternalLink,
-    FileSpreadsheet,
     ShieldCheck,
-    ChevronRight
+    ChevronRight,
+    DownloadIcon
   } from "@lucide/svelte";
 
   let residents = $state<ResidentRecord[]>([]);
@@ -159,7 +159,7 @@
     actions={[
       {
         label: "Export",
-        icon: FileSpreadsheet,
+        icon: DownloadIcon,
         href: "/admin/residents/export"
       }
     ]}

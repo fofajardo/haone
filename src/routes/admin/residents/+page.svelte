@@ -29,9 +29,9 @@
     Mail,
     ChevronDown,
     FileCheck,
-    FileSpreadsheet,
     ShieldCheck,
-    Trophy
+    Trophy,
+    DownloadIcon
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
   import * as AlertDialog from "$ui/alert-dialog";
@@ -224,7 +224,7 @@
       actions={[
         {
           label: "Export",
-          icon: FileSpreadsheet,
+          icon: DownloadIcon,
           href: "/admin/residents/export"
         }
       ]}
