@@ -11,7 +11,7 @@
   import * as InputGroup from "$ui/input-group";
   import { Combobox } from "$ui/combobox";
   import { Label } from "$ui/label";
-  import { RefreshCcw, Plus, Search, UserPlus, FileUp, Users } from "@lucide/svelte";
+  import { RefreshCcw, Plus, Search, Users } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -122,10 +122,7 @@
       {
         label: "Add",
         icon: Plus,
-        items: [
-          { label: "Single User", icon: UserPlus, href: "/admin/users/add" },
-          { label: "Batch Import", icon: FileUp, href: "/admin/users/batch" }
-        ]
+        href: "/admin/users/add"
       }
     ]}
   />

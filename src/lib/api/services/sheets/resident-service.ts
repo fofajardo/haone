@@ -278,39 +278,6 @@ export const sheetsResidentService: ResidentServiceInterface = {
     await appendSheetRow(uiSettings.residentRecordsId, "users!A:P", [row]);
   },
 
-  async addUsersBatch(users: Partial<UserRecord>[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
-      throw new Error("Resident Records ID not configured");
-    }
-
-    const rows = users.map((data) => {
-      const row = new Array(16).fill("");
-      row[USER_COL.EMAIL] = data.email || "";
-      row[USER_COL.LAST_NAME] = data.lastName || "";
-      row[USER_COL.FIRST_NAME] = data.firstName || "";
-      row[USER_COL.MIDDLE_NAME] = data.middleName || "";
-      row[USER_COL.SUFFIX] = data.suffix || "";
-      row[USER_COL.OVERRIDE_NAME] = data.overrideName || "";
-
-      const computed = computeDisplayNames(data);
-      row[USER_COL.DISPLAY_NAME] = computed.displayName;
-      row[USER_COL.DISPLAY_NAME_FL] = computed.displayNameFormal;
-
-      row[USER_COL.STUDENT_NO] = data.studentNo || "";
-      row[USER_COL.SECONDARY_CONTACT] = data.secondaryContact || "";
-      row[USER_COL.ADDRESS] = data.address || "";
-      row[USER_COL.COLLEGE] = data.college || "";
-      row[USER_COL.DEGREE_PROGRAM] = data.program || "";
-      row[USER_COL.TAGS] = data.tags || "";
-      row[USER_COL.NOTES] = data.notes || "";
-      row[USER_COL.ID] = data.id || crypto.randomUUID();
-      return row;
-    });
-
-    await appendSheetRow(uiSettings.residentRecordsId, "users!A:P", rows);
-  },
-
   async deleteUser(userId: string): Promise<void> {
     const { uiSettings } = await import("$state/settings.svelte");
     if (!uiSettings.residentRecordsId) {

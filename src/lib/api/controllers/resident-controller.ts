@@ -76,10 +76,6 @@ export async function addUser(data: Partial<UserRecord>) {
   return residentService.addUser(data);
 }
 
-export async function addUsersBatch(users: Partial<UserRecord>[]) {
-  return residentService.addUsersBatch(users);
-}
-
 export async function fetchAccountsByUserId(
   userId: string,
   bypassCache = false

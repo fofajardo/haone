@@ -495,21 +495,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
     }
   },
 
-  async addUsersBatch(users: Partial<UserRecord>[]): Promise<void> {
-    if (!supabase) {
-      return;
-    }
-    const rows = users.map((u) => {
-      const payload = mapUserRecordToDb(u);
-      payload.id = u.id || crypto.randomUUID();
-      return payload;
-    });
-    const { error } = await supabase.from("users").insert(rows);
-    if (error) {
-      handleSupabaseError(error);
-    }
-  },
-
   async deleteUser(userId: string): Promise<void> {
     if (!supabase) {
       return;

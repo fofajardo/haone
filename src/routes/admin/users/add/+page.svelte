@@ -49,5 +49,5 @@
   bind:academicItems
   {isSaving}
   onSave={handleSave}
-  title="Create New User Account"
+  title="Add User"
 />
