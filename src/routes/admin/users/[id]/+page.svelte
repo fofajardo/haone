@@ -60,7 +60,7 @@
   import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { pageState } from "$state/page-info.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -250,7 +250,7 @@
             {
               label: "Send",
               icon: Mail,
-              variant: "outline" as const,
+              variant: "outline",
               items: [
                 {
                   label: "Send Payment Status",
@@ -280,7 +280,7 @@
             {
               label: "Delete",
               icon: Trash2,
-              variant: "destructive" as const,
+              variant: "destructive",
               onclick: () => {
                 isDeleteAlertOpen = true;
               },
@@ -288,7 +288,7 @@
             }
           ]
         : [])
-    ]}
+    ] as HeaderAction[]}
   >
     {#snippet titleExtra()}
       {#if currentAccount}

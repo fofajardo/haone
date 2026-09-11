@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Pencil, Share2 } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import * as Dialog from "$ui/dialog";
@@ -181,7 +181,7 @@
             {
               label: "Share Story",
               icon: Share2,
-              variant: "outline" as const,
+              variant: "outline",
               isLoading: isSharingStory,
               onclick: handleShareStory
             },
@@ -192,7 +192,7 @@
             }
           ]
         : [])
-    ]}
+    ] as HeaderAction[]}
   />
 
   {#if isLoading}

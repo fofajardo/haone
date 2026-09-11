@@ -10,7 +10,7 @@
   import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { auth } from "$state/auth.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
   import RichEditor from "$components/RichEditor.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -170,7 +170,7 @@
         ? [
             {
               label: "Expire",
-              variant: "secondary" as const,
+              variant: "secondary",
               onclick: () => (showExpireDialog = true),
               isLoading: isExpiring,
               icon: Archive
@@ -179,12 +179,12 @@
         : []),
       {
         label: "Delete",
-        variant: "destructive" as const,
+        variant: "destructive",
         onclick: () => (showDeleteDialog = true),
         isLoading: isDeleting,
         icon: Trash2
       }
-    ]}
+    ] as HeaderAction[]}
   />
 
   <div class="mx-auto max-w-3xl">

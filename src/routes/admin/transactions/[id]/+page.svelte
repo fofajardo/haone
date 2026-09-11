@@ -33,7 +33,7 @@
     Lock,
     TriangleAlert
   } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
 
@@ -182,7 +182,7 @@
         ? [
             {
               label: "Delete",
-              variant: "destructive" as const,
+              variant: "destructive",
               onclick: () => {
                 isDialogOpen = true;
               },
@@ -191,14 +191,14 @@
             },
             {
               label: "Mark as Audited",
-              variant: "outline" as const,
+              variant: "outline",
               onclick: handleMarkAudited,
               isLoading: isAuditing,
               icon: ShieldCheck
             },
             {
               label: "Edit",
-              variant: (transaction?.receiptUrl ? "secondary" : "default") as const,
+              variant: transaction?.receiptUrl ? "secondary" : "default",
               href: `/admin/transactions/${id}/edit`,
               disabled: isDeleting,
               icon: Pencil
@@ -215,7 +215,7 @@
             }
           ]
         : [])
-    ]}
+    ] as HeaderAction[]}
   >
     {#snippet titleExtra()}
       {#if transaction && transaction.wasAudited === true}
