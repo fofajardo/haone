@@ -26,7 +26,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
+  import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";
   import type { ReceiptData } from "$lib/types";
 
@@ -175,7 +175,7 @@
     hasFilter={true}
   >
     {#snippet tabs()}
-      <AdminTransactionsHeaderActions active="receipts" />
+      <AdminTransactionsTabs active="receipts" />
     {/snippet}
   </ContentHeader>
 

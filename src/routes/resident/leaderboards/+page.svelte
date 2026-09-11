@@ -7,7 +7,7 @@
   import ErrorView from "$components/ErrorView.svelte";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
+  import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
   import { fetchAchievements } from "$api/controllers/achievement-controller";
   import { uiSettings } from "$state/settings.svelte";
@@ -64,7 +64,7 @@
     isRefreshing={isLoading}
   >
     {#snippet tabs()}
-      <ScopeSwitcher bind:value={scope} />
+      <AchievementTabs bind:value={scope} />
     {/snippet}
   </ContentHeader>
 

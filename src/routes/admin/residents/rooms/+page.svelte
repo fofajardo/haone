@@ -19,7 +19,7 @@
   import * as Tooltip from "$ui/tooltip";
   import * as AlertDialog from "$ui/alert-dialog";
   import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import {
     RefreshCcw,
     User,
@@ -165,7 +165,7 @@
     ]}
   >
     {#snippet tabs()}
-      <AdminResidentsHeaderActions active="rooms" />
+      <AdminResidentsTabs active="rooms" />
     {/snippet}
   </ContentHeader>
 

@@ -9,7 +9,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
+  import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";
   import { fetchAdminPaymentRequests } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
@@ -93,7 +93,7 @@
     hasFilter={true}
   >
     {#snippet tabs()}
-      <AdminTransactionsHeaderActions active="requests" />
+      <AdminTransactionsTabs active="requests" />
     {/snippet}
   </ContentHeader>
 

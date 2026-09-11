@@ -26,7 +26,7 @@
   import ErrorView from "$components/ErrorView.svelte";
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
+  import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
 
   let journal = $state<JournalRecord[]>([]);
   let transactionTypes = $state<{ value: string; label: string }[]>([]);
@@ -144,7 +144,7 @@
     hasFilter={true}
   >
     {#snippet tabs()}
-      <AdminTransactionsHeaderActions active="all" />
+      <AdminTransactionsTabs active="all" />
     {/snippet}
   </ContentHeader>
 

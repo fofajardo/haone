@@ -22,7 +22,7 @@
   import { Checkbox } from "$ui/checkbox";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
+  import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/achievements/AchievementCard.svelte";
@@ -154,7 +154,7 @@
     ]}
   >
     {#snippet tabs()}
-      <ScopeSwitcher bind:value={scope} />
+      <AchievementTabs bind:value={scope} />
     {/snippet}
   </ContentHeader>
 

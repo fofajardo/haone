@@ -15,7 +15,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Checkbox } from "$ui/checkbox";
@@ -192,7 +192,7 @@
     isRefreshing={isLoading}
   >
     {#snippet tabs()}
-      <AdminResidentsHeaderActions active="sync" />
+      <AdminResidentsTabs active="sync" />
     {/snippet}
   </ContentHeader>
 

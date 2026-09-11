@@ -44,7 +44,7 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
   import AwardDialog from "$components/residents/AwardDialog.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
 
   let residents = $state<Resident[]>([]);
   let isLoading = $state(false);
@@ -230,7 +230,7 @@
       ]}
     >
       {#snippet tabs()}
-        <AdminResidentsHeaderActions active="list" />
+        <AdminResidentsTabs active="list" />
       {/snippet}
     </ContentHeader>
 

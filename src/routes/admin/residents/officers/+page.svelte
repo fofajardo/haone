@@ -16,7 +16,7 @@
   import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
   import TermFilter from "$components/TermFilter.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { goto } from "$app/navigation";
   import { pageState } from "$state/page-info.svelte";
 
@@ -88,7 +88,7 @@
     ]}
   >
     {#snippet tabs()}
-      <AdminResidentsHeaderActions active="officers" />
+      <AdminResidentsTabs active="officers" />
     {/snippet}
   </ContentHeader>
 
