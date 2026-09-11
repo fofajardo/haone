@@ -171,7 +171,6 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-    actions={[{ label: "Add", href: "/admin/transactions/add", icon: Plus }]}
     hasFilter={true}
   >
     {#snippet tabs()}
