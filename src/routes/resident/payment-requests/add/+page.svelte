@@ -130,7 +130,7 @@
         assocFee: assoc,
         misc: misc,
         mop: formData.mop,
-        type: TransactionType.COLLECTION_OTHERS,
+        type: misc > 0 ? TransactionType.COLLECTION_OTHERS : TransactionType.COLLECTION,
         proofLink: finalProofLink,
         status: "PENDING",
         notes: formData.notes
