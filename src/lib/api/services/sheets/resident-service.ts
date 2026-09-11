@@ -1,5 +1,5 @@
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import { ACCOUNT_COL, USER_COL } from "$lib/types";
+import { ACCOUNT_COL, PaymentType, USER_COL } from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
 import { parseCSVAmount } from "$utils/math";
@@ -43,7 +43,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
     const journal = journalRows.slice(1).map((r, idx) => mapRowToJournal(r, idx + 2));
 
     const getConst = (key: string) => constRows.find((r) => r[0] === key)?.[1] || "0";
-    const pmtWaived = getConst("PMT_WAIVED");
+    const pmtWaived = getConst(PaymentType.WAIVED);
 
     const allResidents = accRows
       .slice(1)

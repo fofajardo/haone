@@ -610,6 +610,40 @@ export const USER_TAG_COLORS: Record<string, string> = {
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };
 
+export enum PaymentType {
+  COLLECTION = "PMT_COLLECTION",
+  FUND_TRANSFER = "PMT_FUND_TRANSFER",
+  TRANSFER_FROM = "PMT_TRANSFER_FROM",
+  TRANSFER_TO = "PMT_TRANSFER_TO",
+  CARRYOVER = "PMT_CARRYOVER",
+  EOS = "PMT_EOS",
+  EOS_UNSETTLED = "PMT_EOS_UNSETTLED",
+  WAIVED = "PMT_WAIVED",
+  DISCREPANCY = "PMT_DISCREPANCY",
+  REFUND = "PMT_REFUND",
+  CN_REFUND = "PMT_CN_REFUND",
+  PURCHASE = "PMT_PURCHASE",
+  WATER = "PMT_WATER",
+  WATER_AA = "PMT_WATER_AA",
+  TRANSACTION_FEE = "PMT_TRANSACTION_FEE",
+  UPLB_ADA_FEE = "PMT_UPLB_ADA_FEE",
+  TRANSPORTATION = "PMT_TRANSPORTATION",
+  TYPE_RESERVED = "PMT_TYPE_RESERVED"
+}
+
+export const PAYMENT_TYPE_FUNDS_ONLY: PaymentType[] = [
+  PaymentType.CARRYOVER,
+  PaymentType.DISCREPANCY,
+  PaymentType.EOS,
+  PaymentType.EOS_UNSETTLED,
+  PaymentType.PURCHASE,
+  PaymentType.REFUND,
+  PaymentType.TRANSPORTATION,
+  PaymentType.UPLB_ADA_FEE,
+  PaymentType.WATER_AA,
+  PaymentType.WATER
+];
+
 export enum PaymentRequestStatus {
   PENDING = "PENDING",
   APPROVED = "APPROVED",

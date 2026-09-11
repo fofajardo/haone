@@ -1,6 +1,6 @@
 import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
 import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
-import { ACCOUNT_COL, CURR_COL, JOURNAL_COL, USER_COL } from "$lib/types";
+import { ACCOUNT_COL, CURR_COL, JOURNAL_COL, PaymentType, USER_COL } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
@@ -136,7 +136,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
 
     // Calculate financials
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
-    const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
+    const pmtWaived = getConstVal(PaymentType.WAIVED);
 
     const filteredJor = jorRows
       .slice(1)

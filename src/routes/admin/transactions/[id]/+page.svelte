@@ -40,7 +40,7 @@
 
   const id = $derived(page.params.id);
 
-  import { JOURNAL_COL as JOR, type JournalRecord } from "$lib/types";
+  import { JOURNAL_COL as JOR, type JournalRecord, PaymentType } from "$lib/types";
   import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
 
   let transaction = $state<JournalRecord | null>(null);
@@ -163,12 +163,7 @@
       return false;
     }
     const type = transaction.type.toUpperCase();
-    return (
-      type === "TRANSFER_FROM" ||
-      type === "TRANSFER_TO" ||
-      type === "CARRYOVER" ||
-      type === "PMT_CARRYOVER"
-    );
+    return type === "TRANSFER_FROM" || type === "TRANSFER_TO" || type === "CARRYOVER";
   });
 
   const headerColors = $derived(() => {

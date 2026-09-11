@@ -7,7 +7,7 @@ import {
   updateUser
 } from "$api/controllers/resident-controller";
 import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
-import { AccountType, UserTag, type UserRecord } from "$lib/types";
+import { AccountType, PaymentType, UserTag, type UserRecord } from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { roomsState } from "$state/rooms.svelte";
 import { getLocalDateString } from "$utils/parsers";
@@ -508,7 +508,7 @@ export async function manualDelistResident(
         return r.residentId === residentId && r.period === term;
       });
       if (resRecord && resRecord.bal > 0) {
-        const pmtWaived = (await fetchConstantByKey("PMT_WAIVED")) || "WAIVED";
+        const pmtWaived = await fetchConstantByKey(PaymentType.WAIVED);
 
         let remainingToWaive = resRecord.bal;
         let waterWaiveAmt = 0;

@@ -1,6 +1,6 @@
 import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
 import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
-import { ACCOUNT_COL, USER_COL } from "$lib/types";
+import { ACCOUNT_COL, PaymentType, USER_COL } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
@@ -30,7 +30,7 @@ export const GET: RequestHandler = async ({ request }) => {
     const userId = (userRow[USER_COL.ID] || "").trim();
 
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
-    const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
+    const pmtWaived = getConstVal(PaymentType.WAIVED);
 
     interface JournalEntry {
       period: string;

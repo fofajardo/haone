@@ -39,7 +39,7 @@
   import { Badge } from "$ui/badge";
   import { fetchResidents, mapRowToJournal } from "$api/controllers/resident-controller";
   import type { ResidentRecord, JournalRecord } from "$lib/types";
-  import { JOURNAL_COL as JOR } from "$lib/types";
+  import { JOURNAL_COL as JOR, PaymentType, PAYMENT_TYPE_FUNDS_ONLY } from "$lib/types";
 
   interface Props {
     mode: "add" | "edit";
@@ -89,7 +89,7 @@
     mop: "CASH",
     mopTo: "CASH",
     period: uiSettings.currentTerm || "",
-    type: "PMT_COLLECTION",
+    type: PaymentType.COLLECTION,
     notes: "",
     notesPrivate: "",
     mopRefNo: "",
@@ -100,7 +100,9 @@
   });
 
   let carryoverTerm = $state("");
-  const isEos = $derived(formData.type === "PMT_EOS" || formData.type === "PMT_EOS_UNSETTLED");
+  const isEos = $derived(
+    formData.type === PaymentType.EOS || formData.type === PaymentType.EOS_UNSETTLED
+  );
 
   const typeOptions = $derived([
     ...transactionTypes.filter((t) => {
@@ -108,19 +110,19 @@
         return true;
       }
       return (
-        t.value !== "PMT_CARRYOVER" &&
-        t.value !== "PMT_TRANSFER_FROM" &&
-        t.value !== "PMT_TRANSFER_TO"
+        t.value !== PaymentType.CARRYOVER &&
+        t.value !== PaymentType.TRANSFER_FROM &&
+        t.value !== PaymentType.TRANSFER_TO
       );
     }),
-    { value: "PMT_FUND_TRANSFER", val: "FUND_TRANSFER", label: "Fund Transfer" }
+    { value: PaymentType.FUND_TRANSFER, val: "FUND_TRANSFER", label: "Fund Transfer" }
   ]);
 
   const isTypeDisabled = $derived(
     isSubmitting ||
-      formData.type === "PMT_TRANSFER_FROM" ||
-      formData.type === "PMT_TRANSFER_TO" ||
-      formData.type === "PMT_CARRYOVER"
+      formData.type === PaymentType.TRANSFER_FROM ||
+      formData.type === PaymentType.TRANSFER_TO ||
+      formData.type === PaymentType.CARRYOVER
   );
 
   const carryoverAcademicTerms = $derived.by(() => {
@@ -208,7 +210,11 @@
 
   const isCollection = $derived.by(() => {
     const type = formData.type;
-    return type === "PMT_COLLECTION" || type === "PMT_CN_REFUND" || type === "PMT_WAIVED";
+    return (
+      type === PaymentType.COLLECTION ||
+      type === PaymentType.CN_REFUND ||
+      type === PaymentType.WAIVED
+    );
   });
 
   const waterLimit = $derived.by(() => {
@@ -237,20 +243,7 @@
     return assocLimit - fee;
   });
 
-  const fundsOnlyTypes = [
-    "PMT_CARRYOVER",
-    "PMT_DISCREPANCY",
-    "PMT_EOS",
-    "PMT_EOS_UNSETTLED",
-    "PMT_PURCHASE",
-    "PMT_REFUND",
-    "PMT_TRANSPORTATION",
-    "PMT_UPLB_ADA_FEE",
-    "PMT_WATER_AA",
-    "PMT_WATER"
-  ];
-
-  const isFundsOnly = $derived(fundsOnlyTypes.includes(formData.type));
+  const isFundsOnly = $derived(PAYMENT_TYPE_FUNDS_ONLY.includes(formData.type as PaymentType));
 
   $effect(() => {
     if (!isReady) return;
@@ -325,7 +318,7 @@
       );
 
       transactionTypes = constants
-        .filter((r) => r.key.startsWith("PMT_") && r.key !== "PMT_TYPE_RESERVED")
+        .filter((r) => r.key.startsWith("PMT_") && r.key !== PaymentType.TYPE_RESERVED)
         .map((r) => ({
           value: r.key,
           val: r.value || r.key,
@@ -468,7 +461,7 @@
       return;
     }
 
-    if (formData.type === "PMT_FUND_TRANSFER" && formData.mop === formData.mopTo) {
+    if (formData.type === PaymentType.FUND_TRANSFER && formData.mop === formData.mopTo) {
       error = "Source (From) and destination (To) payment processors cannot be the same.";
       return;
     }
@@ -483,9 +476,9 @@
     }
 
     const isTransfer =
-      formData.type === "PMT_FUND_TRANSFER" ||
-      formData.type === "PMT_TRANSFER_FROM" ||
-      formData.type === "PMT_TRANSFER_TO";
+      formData.type === PaymentType.FUND_TRANSFER ||
+      formData.type === PaymentType.TRANSFER_FROM ||
+      formData.type === PaymentType.TRANSFER_TO;
 
     if (!isTransfer && misc > 0 && !formData.notes.trim()) {
       error = "Public remarks are required for miscellaneous payments.";
@@ -511,7 +504,7 @@
     error = null;
 
     try {
-      if (formData.type === "PMT_FUND_TRANSFER") {
+      if (formData.type === PaymentType.FUND_TRANSFER) {
         // From Row: Negative amount, MOP From
         const fromRow = new Array(22).fill("");
         fromRow[JOR.DATE] = formData.date;
@@ -575,15 +568,15 @@
       row[JOR.DATE] = formData.date;
       row[JOR.CREATOR] = "";
       row[JOR.ACCOUNT] = "";
-      const negativeTypes = [
-        "PMT_REFUND",
-        "PMT_CN_REFUND",
-        "PMT_PURCHASE",
-        "PMT_WATER",
-        "PMT_WATER_AA",
-        "PMT_TRANSACTION_FEE",
-        "PMT_UPLB_ADA_FEE",
-        "PMT_TRANSPORTATION"
+      const negativeTypes: string[] = [
+        PaymentType.REFUND,
+        PaymentType.CN_REFUND,
+        PaymentType.PURCHASE,
+        PaymentType.WATER,
+        PaymentType.WATER_AA,
+        PaymentType.TRANSACTION_FEE,
+        PaymentType.UPLB_ADA_FEE,
+        PaymentType.TRANSPORTATION
       ];
       const isNegative = negativeTypes.includes(formData.type);
 
@@ -596,13 +589,15 @@
           ? `-${Math.abs(parseFloat(formData.assocFee))}`
           : formData.assocFee || "0";
       row[JOR.MISC] =
-        formData.type === "PMT_WAIVED"
+        formData.type === PaymentType.WAIVED
           ? "0"
           : isNegative && parseFloat(formData.miscFee) !== 0
             ? `-${Math.abs(parseFloat(formData.miscFee))}`
             : formData.miscFee || "0";
       row[JOR.MOP] =
-        formData.type === "PMT_WAIVED" || formData.type === "PMT_DISCREPANCY" ? "" : formData.mop;
+        formData.type === PaymentType.WAIVED || formData.type === PaymentType.DISCREPANCY
+          ? ""
+          : formData.mop;
       row[JOR.PERIOD] = formData.period;
       const mappedType =
         transactionTypes.find((t) => t.value === formData.type)?.val || formData.type;
@@ -610,7 +605,7 @@
       row[JOR.NOTES] = formData.notes;
       row[JOR.NOTES_PRIVATE] = formData.notesPrivate;
       row[JOR.MOP_REFNO] =
-        formData.type === "PMT_WAIVED" || formData.type === "PMT_DISCREPANCY"
+        formData.type === PaymentType.WAIVED || formData.type === PaymentType.DISCREPANCY
           ? ""
           : formData.instapayInvoice
             ? `${formData.mopRefNo};${formData.instapayInvoice}`
@@ -668,8 +663,8 @@
         carryoverRow[JOR.PERIOD] = carryoverTerm;
         const mappedCarryoverType =
           transactionTypes.find((t) => {
-            return t.value === "PMT_CARRYOVER";
-          })?.val || "PMT_CARRYOVER";
+            return t.value === PaymentType.CARRYOVER;
+          })?.val || PaymentType.CARRYOVER;
         carryoverRow[JOR.TYPE] = mappedCarryoverType;
         carryoverRow[JOR.NOTES] = "";
         carryoverRow[JOR.NOTES_PRIVATE] = "";
@@ -837,7 +832,7 @@
                       {/if}
                     </div>
 
-                    {#if formData.type === "PMT_COLLECTION" && selectedResident && selectedResident.email !== "_funds"}
+                    {#if formData.type === PaymentType.COLLECTION && selectedResident && selectedResident.email !== "_funds"}
                       <Dialog.Root bind:open={isStandingOpen}>
                         <Dialog.Trigger>
                           {#snippet child({ props })}
@@ -991,7 +986,7 @@
                 {/if}
               </div>
 
-              {#if formData.type !== "PMT_WAIVED"}
+              {#if formData.type !== PaymentType.WAIVED}
                 <!-- Misc Fee Row -->
                 <div class="space-y-1.5">
                   <Label>Misc</Label>
@@ -1020,15 +1015,15 @@
               {/if}
             </div>
 
-            {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
+            {#if formData.type !== PaymentType.WAIVED && formData.type !== PaymentType.DISCREPANCY}
               <div
-                class="grid gap-6 pt-2 {formData.type === 'PMT_FUND_TRANSFER'
+                class="grid gap-6 pt-2 {formData.type === PaymentType.FUND_TRANSFER
                   ? 'md:grid-cols-2'
                   : ''}"
               >
                 <div class="space-y-1.5">
                   <Label
-                    >{formData.type === "PMT_FUND_TRANSFER"
+                    >{formData.type === PaymentType.FUND_TRANSFER
                       ? "Payment Processor (From)"
                       : "Payment Processor"}</Label
                   >
@@ -1039,7 +1034,7 @@
                     class="w-full"
                   />
                 </div>
-                {#if formData.type === "PMT_FUND_TRANSFER"}
+                {#if formData.type === PaymentType.FUND_TRANSFER}
                   <div class="space-y-1.5">
                     <Label>Payment Processor (To)</Label>
                     <Combobox
@@ -1053,7 +1048,7 @@
               </div>
             {/if}
 
-            {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
+            {#if formData.type !== PaymentType.WAIVED && formData.type !== PaymentType.DISCREPANCY}
               <div class="grid gap-6 md:grid-cols-2">
                 <div class="space-y-1.5">
                   <Label>Reference Number</Label>
