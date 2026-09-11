@@ -87,7 +87,7 @@
       }
     ]}
   >
-    {#snippet legacyActions()}
+    {#snippet tabs()}
       <AdminResidentsHeaderActions active="officers" />
     {/snippet}
   </ContentHeader>

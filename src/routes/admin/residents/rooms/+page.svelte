@@ -164,7 +164,7 @@
       }
     ]}
   >
-    {#snippet legacyActions()}
+    {#snippet tabs()}
       <AdminResidentsHeaderActions active="rooms" />
     {/snippet}
   </ContentHeader>

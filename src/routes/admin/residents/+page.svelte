@@ -229,7 +229,7 @@
         }
       ]}
     >
-      {#snippet legacyActions()}
+      {#snippet tabs()}
         <AdminResidentsHeaderActions active="list" />
       {/snippet}
     </ContentHeader>

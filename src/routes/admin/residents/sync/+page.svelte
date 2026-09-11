@@ -191,7 +191,7 @@
     onRefresh={() => loadPreview()}
     isRefreshing={isLoading}
   >
-    {#snippet legacyActions()}
+    {#snippet tabs()}
       <AdminResidentsHeaderActions active="sync" />
     {/snippet}
   </ContentHeader>

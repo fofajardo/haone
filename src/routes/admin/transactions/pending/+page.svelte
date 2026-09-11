@@ -174,7 +174,7 @@
     actions={[{ label: "Add", href: "/admin/transactions/add", icon: Plus }]}
     hasFilter={true}
   >
-    {#snippet legacyActions()}
+    {#snippet tabs()}
       <AdminTransactionsHeaderActions active="receipts" />
     {/snippet}
   </ContentHeader>

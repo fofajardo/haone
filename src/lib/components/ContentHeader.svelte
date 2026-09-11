@@ -30,7 +30,7 @@
     onRefresh = undefined,
     isRefreshing = false,
     actions = [],
-    legacyActions = undefined,
+    tabs = undefined,
     titleExtra = undefined,
     isTopLevel = false,
     hasFilter = false
@@ -42,7 +42,7 @@
     onRefresh?: () => void;
     isRefreshing?: boolean;
     actions?: HeaderAction[];
-    legacyActions?: Snippet;
+    tabs?: Snippet;
     titleExtra?: Snippet;
     isTopLevel?: boolean;
     hasFilter?: boolean;
@@ -319,14 +319,14 @@
   </div>
 
   <!-- Container for desktop display of action buttons and legacy actions -->
-  {#if actions.length > 0 || legacyActions}
+  {#if actions.length > 0 || tabs}
     <div
-      class="flex items-center gap-3 {legacyActions
+      class="flex items-center gap-3 {tabs
         ? 'w-full **:data-[slot=tabs]:w-full **:data-[slot=tabs-list]:w-full sm:w-auto sm:**:data-[slot=tabs]:w-auto sm:**:data-[slot=tabs-list]:w-auto'
         : 'hidden sm:flex'}"
     >
-      {#if legacyActions}
-        {@render legacyActions()}
+      {#if tabs}
+        {@render tabs()}
       {/if}
 
       {#if actions.length > 0}

@@ -153,7 +153,7 @@
       }
     ]}
   >
-    {#snippet legacyActions()}
+    {#snippet tabs()}
       <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
         <ScopeSwitcher bind:value={scope} />
       </div>
