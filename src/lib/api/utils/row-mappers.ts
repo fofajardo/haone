@@ -54,7 +54,7 @@ export function mapRowToResident(
   const assocBase = financials?.assocBase || 0;
   const assocPaid = financials?.assocPaid || 0;
   const assocWaived = financials?.assocWaived || 0;
-  const paid = waterPaid + assocPaid + (financials?.miscPaid || 0);
+  const paid = waterPaid + assocPaid;
   const waived = waterWaived + assocWaived;
   const totalBase = waterBase + assocBase;
   const bal = totalBase - paid - waived;

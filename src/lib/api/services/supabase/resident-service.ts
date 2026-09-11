@@ -164,15 +164,13 @@ export const supabaseResidentService: ResidentServiceInterface = {
           .filter((j: any) => isWaivedEntry(j.type || ""))
           .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
 
-        const miscPaid = filtered.reduce((sum: number, j: any) => sum + parseCSVAmount(j.misc), 0);
-
         const waterBase = parseCSVAmount(getConst(`FEES_${period}_WATER`));
         const assocBase = parseCSVAmount(getConst(`FEES_${period}_ASSOC`));
 
         const waterBal = waterBase - waterPaid - waterWaived;
         const assocBal = assocBase - assocPaid - assocWaived;
         const totalBase = waterBase + assocBase;
-        const paid = waterPaid + assocPaid + miscPaid;
+        const paid = waterPaid + assocPaid;
         const waived = waterWaived + assocWaived;
         const bal = totalBase - paid - waived;
 
@@ -325,12 +323,11 @@ export const supabaseResidentService: ResidentServiceInterface = {
     const assocWaived = termJournals
       .filter((j: any) => j.type === pmtWaived)
       .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
-    const miscPaid = termJournals.reduce((sum: number, j: any) => sum + parseCSVAmount(j.misc), 0);
 
     const waterBase = parseCSVAmount(getConst(`FEES_${targetTerm}_WATER`));
     const assocBase = parseCSVAmount(getConst(`FEES_${targetTerm}_ASSOC`));
     const totalBase = waterBase + assocBase;
-    const paid = waterPaid + assocPaid + miscPaid;
+    const paid = waterPaid + assocPaid;
     const waived = waterWaived + assocWaived;
     const bal = totalBase - paid - waived;
 

@@ -81,10 +81,9 @@ export const GET: RequestHandler = async ({ request }) => {
         const assocWaived = filtered
           .filter((j: JournalEntry) => j.type === pmtWaived)
           .reduce((sum, j) => sum + j.assoc, 0);
-        const miscPaid = filtered.reduce((sum, j) => sum + j.misc, 0);
 
         const totalBase = waterBase + assocBase;
-        const paid = waterPaid + assocPaid + miscPaid;
+        const paid = waterPaid + assocPaid;
         const waived = waterWaived + assocWaived;
         const bal = totalBase - paid - waived;
 
