@@ -21,7 +21,7 @@
     approvePaymentRequest
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
-  import { PaymentRequestStatus, JOURNAL_COL as JOR, PaymentType } from "$lib/types";
+  import { PaymentRequestStatus, JOURNAL_COL as JOR, TransactionType } from "$lib/types";
   import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { formatAmount, formatDate } from "$utils/formatters";
@@ -73,7 +73,7 @@
           misc: p.misc,
           mop: p.mop,
           period: t,
-          type: PaymentType.COLLECTION,
+          type: TransactionType.COLLECTION,
           notes: p.notes || "",
           notesPrivate: "",
           mopRefNo: "",

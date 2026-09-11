@@ -14,7 +14,7 @@
   } from "@lucide/svelte";
   import { Spinner } from "$ui/spinner";
   import { brandingState } from "$state/branding.svelte";
-  import { PaymentType, type ReceiptData } from "$lib/types";
+  import { TransactionType, type ReceiptData } from "$lib/types";
   import { calculateTotal } from "$utils/math";
   import { formatAccounting, formatCurrency, formatDate } from "$utils/formatters";
   import { parseRef } from "$utils/parsers";
@@ -114,7 +114,7 @@
 {/snippet}
 
 {#snippet paymentDestination()}
-  {#if receiptData.transactionType !== PaymentType.WAIVED}
+  {#if receiptData.transactionType !== TransactionType.WAIVED}
     <div class="text-left">
       <div class="mb-2 text-xs font-semibold tracking-wider uppercase">Payment Destination</div>
       <div class="flex w-full items-center justify-between rounded-2xl bg-muted p-4 text-left">
@@ -157,7 +157,7 @@
               <span>{item.name}</span>
               {#if item.amount < 0}
                 <Badge variant="destructive" class="px-1.5 py-0 text-xs">
-                  {receiptData.transactionType === PaymentType.RECLASSIFY
+                  {receiptData.transactionType === TransactionType.RECLASSIFY
                     ? "Reclassified"
                     : "Refund"}
                 </Badge>
@@ -182,7 +182,7 @@
     {/if}
 
     <!-- Waiver Note -->
-    {#if receiptData.transactionType === PaymentType.WAIVED}
+    {#if receiptData.transactionType === TransactionType.WAIVED}
       <div class="rounded-xl bg-destructive/5 p-3 text-red-800">
         <p class="mt-0.5 text-sm font-semibold opacity-90">
           The above-mentioned amount has been waived for all intents and purposes, and no further

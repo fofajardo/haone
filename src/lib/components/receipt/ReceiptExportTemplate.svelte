@@ -4,7 +4,7 @@
   import { parseRef } from "$utils/parsers";
   import { translateMop, translatePeriod } from "$utils/translators";
   import { brandingState } from "$state/branding.svelte";
-  import { PaymentType, type ReceiptData } from "$lib/types";
+  import { TransactionType, type ReceiptData } from "$lib/types";
 
   let { receiptData, qrDataUrl }: { receiptData: ReceiptData; qrDataUrl: string } = $props();
 
@@ -59,7 +59,7 @@
               {item.name}
               {#if item.amount < 0}
                 <span class="ml-1 text-xs font-bold text-[#dc2626] uppercase">
-                  ({receiptData.transactionType === PaymentType.RECLASSIFY
+                  ({receiptData.transactionType === TransactionType.RECLASSIFY
                     ? "Reclassified"
                     : "Refund"})
                 </span>
@@ -79,7 +79,7 @@
       </tbody>
     </table>
 
-    {#if receiptData.transactionType === PaymentType.WAIVED}
+    {#if receiptData.transactionType === TransactionType.WAIVED}
       <div class="mt-8 space-y-1 text-left text-[#000000]">
         <h4 class="font-bold italic">Acknowledgment of Waiver of Amount</h4>
         <p>

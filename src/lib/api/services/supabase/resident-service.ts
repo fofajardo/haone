@@ -1,5 +1,5 @@
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import { AccountType, PAYMENT_TYPE_CONFIG, PaymentType } from "$lib/types";
+import { AccountType, TRANSACTION_TYPE_CONFIG, TransactionType } from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { parseCSVAmount } from "$utils/math";
 import { parseDateWeight, parseDbDate, parseDbUuid } from "$utils/parsers";
@@ -130,7 +130,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     });
 
     const getConst = (k: string) => consts.find((c) => c.key === k)?.value || "0";
-    const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
+    const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
     const isWaivedEntry = (t: string) =>
       t === pmtWaived || (t && t.toUpperCase().includes("WAIVED"));
 
@@ -308,7 +308,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     }
 
     // ── Financials for the target term ──
-    const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
+    const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
     const termJournals = journalList.filter((j: any) => j.period === targetTerm);
 
     const waterPaid = termJournals

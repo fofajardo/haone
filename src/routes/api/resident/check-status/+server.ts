@@ -4,8 +4,8 @@ import {
   ACCOUNT_COL,
   CURR_COL,
   JOURNAL_COL,
-  PAYMENT_TYPE_CONFIG,
-  PaymentType,
+  TRANSACTION_TYPE_CONFIG,
+  TransactionType,
   USER_COL
 } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
@@ -131,7 +131,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
     );
 
     // Calculate financials
-    const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
+    const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
 
     const filteredJor = jorRows
       .slice(1)

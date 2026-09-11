@@ -1,6 +1,6 @@
 <script lang="ts">
   import { formatAccounting } from "$utils/formatters";
-  import { translatePaymentType } from "$utils/translators";
+  import { translateTransactionType } from "$utils/translators";
   import type { JournalRecord } from "$lib/types";
 
   let {
@@ -24,7 +24,7 @@
   {#if variant === "account"}
     <div class="flex flex-col">
       <span class="font-medium">{record.name}</span>
-      <span class="text-muted-foreground">{translatePaymentType(record.type)}</span>
+      <span class="text-muted-foreground">{translateTransactionType(record.type)}</span>
     </div>
   {:else if variant === "total"}
     <div class="text-right">

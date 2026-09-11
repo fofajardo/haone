@@ -22,7 +22,7 @@
     DownloadIcon
   } from "@lucide/svelte";
   import { formatAccounting } from "$utils/formatters";
-  import { translateMop, translatePaymentType } from "$utils/translators";
+  import { translateMop, translateTransactionType } from "$utils/translators";
   import { getJournalDateRange } from "$utils/parsers";
   import type { JournalRecord, ResidentRecord } from "$lib/types";
   import * as Table from "$ui/table";
@@ -116,7 +116,7 @@
     const groupMap: Record<string, number> = {};
     processedJournal.forEach((j) => {
       if (j.outgoing > 0) {
-        const typeLabel = translatePaymentType(j.type) || j.type;
+        const typeLabel = translateTransactionType(j.type) || j.type;
         groupMap[typeLabel] = (groupMap[typeLabel] || 0) + j.outgoing;
       }
     });

@@ -8,8 +8,8 @@ import {
 import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
 import {
   AccountType,
-  PAYMENT_TYPE_CONFIG,
-  PaymentType,
+  TRANSACTION_TYPE_CONFIG,
+  TransactionType,
   UserTag,
   type UserRecord
 } from "$lib/types";
@@ -513,7 +513,7 @@ export async function manualDelistResident(
         return r.residentId === residentId && r.period === term;
       });
       if (resRecord && resRecord.bal > 0) {
-        const pmtWaived = PAYMENT_TYPE_CONFIG[PaymentType.WAIVED].val;
+        const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
 
         let remainingToWaive = resRecord.bal;
         let waterWaiveAmt = 0;

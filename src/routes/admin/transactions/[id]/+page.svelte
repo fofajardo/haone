@@ -12,7 +12,7 @@
     batchAuditEntries
   } from "$api/controllers/journal-controller";
   import { formatCurrency, formatAccounting, formatDate } from "$utils/formatters";
-  import { translateMop, translatePaymentType, translatePeriod } from "$utils/translators";
+  import { translateMop, translateTransactionType, translatePeriod } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
   import * as Card from "$ui/card";
   import * as AlertDialog from "$ui/alert-dialog";
@@ -39,7 +39,7 @@
 
   const id = $derived(page.params.id);
 
-  import { JOURNAL_COL as JOR, type JournalRecord, PaymentType } from "$lib/types";
+  import { JOURNAL_COL as JOR, type JournalRecord, TransactionType } from "$lib/types";
   import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
 
   let transaction = $state<JournalRecord | null>(null);
@@ -266,7 +266,7 @@
         <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div class="space-y-1">
             <span class="text-xs font-bold tracking-widest text-primary uppercase"
-              >{translatePaymentType(transaction.type)}</span
+              >{translateTransactionType(transaction.type)}</span
             >
             <div class="flex items-center gap-3">
               <h2 class="text-3xl font-bold tracking-tight text-foreground">

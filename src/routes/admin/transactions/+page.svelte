@@ -21,7 +21,7 @@
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
-  import { type JournalRecord, PAYMENT_TYPE_OPTIONS, PaymentType } from "$lib/types";
+  import { type JournalRecord, TRANSACTION_TYPE_OPTIONS, TransactionType } from "$lib/types";
 
   let journal = $state<JournalRecord[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
@@ -66,7 +66,7 @@
 
       let globalBalance = 0;
       for (let i = mappedJournal.length - 1; i >= 0; i--) {
-        if (mappedJournal[i].type !== PaymentType.WAIVED) {
+        if (mappedJournal[i].type !== TransactionType.WAIVED) {
           globalBalance += mappedJournal[i].amount;
         }
         mappedJournal[i].runningBalance = globalBalance;
@@ -103,7 +103,7 @@
 
   const transactionOptions = $derived([
     { value: "ALL", label: "All Types" },
-    ...PAYMENT_TYPE_OPTIONS
+    ...TRANSACTION_TYPE_OPTIONS
   ]);
   const mopOptions = $derived([{ value: "ALL", label: "All Methods" }, ...mopTypes]);
 
@@ -198,7 +198,7 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         onSelectionChange={(ids) => (selectedIds = ids)}
-        meta={{ PAYMENT_TYPE_OPTIONS }}
+        meta={{ TRANSACTION_TYPE_OPTIONS }}
         rowId="id"
         enableSelection
         sorting={[{ id: "date", desc: true }]}

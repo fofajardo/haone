@@ -610,7 +610,7 @@ export const USER_TAG_COLORS: Record<string, string> = {
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };
 
-export enum PaymentType {
+export enum TransactionType {
   COLLECTION = "COLLECTION",
   COLLECTION_OTHERS = "COLLECTION_OTHERS",
   CARRYOVER = "CARRYOVER",
@@ -634,72 +634,72 @@ export enum PaymentType {
   TYPE_RESERVED = "TYPE_RESERVED"
 }
 
-export interface PaymentTypeMetadata {
-  key: PaymentType;
+export interface TransactionTypeMetadata {
+  key: TransactionType;
   value: string;
   label: string;
 }
 
-export const PAYMENT_TYPE_CONFIG: Record<PaymentType, { val: string; label: string }> = {
-  [PaymentType.COLLECTION]: { val: "COLLECTION", label: "Collection" },
-  [PaymentType.COLLECTION_OTHERS]: { val: "COLLECTION_OTHERS", label: "Collection (Others)" },
-  [PaymentType.CARRYOVER]: { val: "CARRYOVER", label: "Carryover" },
-  [PaymentType.FUND_TRANSFER]: { val: "FUND_TRANSFER", label: "Fund Transfer" },
-  [PaymentType.TRANSFER_FROM]: { val: "TRANSFER_FROM", label: "Transfer From" },
-  [PaymentType.TRANSFER_TO]: { val: "TRANSFER_TO", label: "Transfer To" },
-  [PaymentType.DISCREPANCY]: { val: "DISCREPANCY", label: "Discrepancy" },
-  [PaymentType.REFUND]: { val: "REFUND", label: "Refund (General)" },
-  [PaymentType.REFUND_COLLECTION]: { val: "COLLECTION_REFUND", label: "Refund (Collection)" },
-  [PaymentType.RECLASSIFY]: { val: "RECLASSIFY", label: "Reclassify" },
-  [PaymentType.PURCHASE]: { val: "PURCHASE", label: "Purchase" },
-  [PaymentType.WATER_AA]: { val: "WATER_AQUA_ALTRIA", label: "Purchase: Water (Aqua Altria)" },
-  [PaymentType.WATER]: { val: "WATER", label: "Purchase: Water" },
-  [PaymentType.TRANSACTION_FEE]: { val: "TRANSACTION_FEE", label: "Transaction Fees" },
-  [PaymentType.UPLB_ADA_FEE]: { val: "UPLB_ADA_FEE", label: "UPLB ADA Fees" },
-  [PaymentType.TRANSPORTATION]: { val: "TRANSPORTATION", label: "Transportation Fees" },
-  [PaymentType.EOS]: { val: "EOS", label: "End of Term" },
-  [PaymentType.EOS_UNSETTLED]: { val: "EOS_UNSETTLED", label: "End of Term (Unsettled)" },
-  [PaymentType.WAIVED]: { val: "WAIVED", label: "Waived" },
-  [PaymentType.NOTE_MARKER]: { val: "NOTE_MARKER", label: "Note Marker" },
-  [PaymentType.TYPE_RESERVED]: { val: "DO_NOT_USE", label: "Reserved (Hidden)" }
+export const TRANSACTION_TYPE_CONFIG: Record<TransactionType, { val: string; label: string }> = {
+  [TransactionType.COLLECTION]: { val: "COLLECTION", label: "Collection" },
+  [TransactionType.COLLECTION_OTHERS]: { val: "COLLECTION_OTHERS", label: "Collection (Others)" },
+  [TransactionType.CARRYOVER]: { val: "CARRYOVER", label: "Carryover" },
+  [TransactionType.FUND_TRANSFER]: { val: "FUND_TRANSFER", label: "Fund Transfer" },
+  [TransactionType.TRANSFER_FROM]: { val: "TRANSFER_FROM", label: "Transfer From" },
+  [TransactionType.TRANSFER_TO]: { val: "TRANSFER_TO", label: "Transfer To" },
+  [TransactionType.DISCREPANCY]: { val: "DISCREPANCY", label: "Discrepancy" },
+  [TransactionType.REFUND]: { val: "REFUND", label: "Refund (General)" },
+  [TransactionType.REFUND_COLLECTION]: { val: "COLLECTION_REFUND", label: "Refund (Collection)" },
+  [TransactionType.RECLASSIFY]: { val: "RECLASSIFY", label: "Reclassify" },
+  [TransactionType.PURCHASE]: { val: "PURCHASE", label: "Purchase" },
+  [TransactionType.WATER_AA]: { val: "WATER_AQUA_ALTRIA", label: "Purchase: Water (Aqua Altria)" },
+  [TransactionType.WATER]: { val: "WATER", label: "Purchase: Water" },
+  [TransactionType.TRANSACTION_FEE]: { val: "TRANSACTION_FEE", label: "Transaction Fees" },
+  [TransactionType.UPLB_ADA_FEE]: { val: "UPLB_ADA_FEE", label: "UPLB ADA Fees" },
+  [TransactionType.TRANSPORTATION]: { val: "TRANSPORTATION", label: "Transportation Fees" },
+  [TransactionType.EOS]: { val: "EOS", label: "End of Term" },
+  [TransactionType.EOS_UNSETTLED]: { val: "EOS_UNSETTLED", label: "End of Term (Unsettled)" },
+  [TransactionType.WAIVED]: { val: "WAIVED", label: "Waived" },
+  [TransactionType.NOTE_MARKER]: { val: "NOTE_MARKER", label: "Note Marker" },
+  [TransactionType.TYPE_RESERVED]: { val: "DO_NOT_USE", label: "Reserved (Hidden)" }
 };
 
-export const PAYMENT_TYPE_OPTIONS: PaymentTypeMetadata[] = (
-  Object.keys(PAYMENT_TYPE_CONFIG) as PaymentType[]
+export const TRANSACTION_TYPE_OPTIONS: TransactionTypeMetadata[] = (
+  Object.keys(TRANSACTION_TYPE_CONFIG) as TransactionType[]
 )
-  .filter((k) => k !== PaymentType.TYPE_RESERVED && k !== PaymentType.NOTE_MARKER)
+  .filter((k) => k !== TransactionType.TYPE_RESERVED && k !== TransactionType.NOTE_MARKER)
   .map((key) => ({
     key,
-    value: PAYMENT_TYPE_CONFIG[key].val,
-    label: PAYMENT_TYPE_CONFIG[key].label
+    value: TRANSACTION_TYPE_CONFIG[key].val,
+    label: TRANSACTION_TYPE_CONFIG[key].label
   }))
   .sort((a, b) => a.label.localeCompare(b.label));
 
-export const PAYMENT_TYPE_FUNDS_ONLY: PaymentType[] = [
-  PaymentType.CARRYOVER,
-  PaymentType.DISCREPANCY,
-  PaymentType.EOS,
-  PaymentType.EOS_UNSETTLED,
-  PaymentType.PURCHASE,
-  PaymentType.REFUND,
-  PaymentType.TRANSPORTATION,
-  PaymentType.UPLB_ADA_FEE,
-  PaymentType.WATER_AA,
-  PaymentType.WATER
+export const TRANSACTION_TYPE_FUNDS_ONLY: TransactionType[] = [
+  TransactionType.CARRYOVER,
+  TransactionType.DISCREPANCY,
+  TransactionType.EOS,
+  TransactionType.EOS_UNSETTLED,
+  TransactionType.PURCHASE,
+  TransactionType.REFUND,
+  TransactionType.TRANSPORTATION,
+  TransactionType.UPLB_ADA_FEE,
+  TransactionType.WATER_AA,
+  TransactionType.WATER
 ];
 
-export const PAYMENT_TYPE_WITH_RECEIPT: PaymentType[] = [
-  PaymentType.WAIVED,
-  PaymentType.COLLECTION
+export const TRANSACTION_TYPE_WITH_RECEIPT: TransactionType[] = [
+  TransactionType.WAIVED,
+  TransactionType.COLLECTION
 ];
 
-export const PAYMENT_TYPE_MAYBE_WITH_RECEIPT: PaymentType[] = [
-  PaymentType.RECLASSIFY,
-  PaymentType.COLLECTION_OTHERS,
-  PaymentType.TRANSFER_TO,
-  PaymentType.TRANSFER_FROM,
-  PaymentType.REFUND_COLLECTION,
-  PaymentType.REFUND
+export const TRANSACTION_TYPE_MAYBE_WITH_RECEIPT: TransactionType[] = [
+  TransactionType.RECLASSIFY,
+  TransactionType.COLLECTION_OTHERS,
+  TransactionType.TRANSFER_TO,
+  TransactionType.TRANSFER_FROM,
+  TransactionType.REFUND_COLLECTION,
+  TransactionType.REFUND
 ];
 
 export enum PaymentRequestStatus {

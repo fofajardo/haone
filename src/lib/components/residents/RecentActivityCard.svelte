@@ -3,7 +3,7 @@
   import { Button } from "$ui/button";
   import { ArrowRight, TrendingUp, TrendingDown, RotateCcwClockIcon } from "@lucide/svelte";
   import { formatCurrency, formatDate } from "$utils/formatters";
-  import { translatePaymentType } from "$utils/translators";
+  import { translateTransactionType } from "$utils/translators";
 
   let {
     transactions = [],
@@ -50,7 +50,7 @@
           <div class="flex min-w-0 flex-1 items-center justify-between">
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-bold text-foreground">
-                {translatePaymentType(tx.type)}
+                {translateTransactionType(tx.type)}
               </p>
               <p class="truncate text-xs font-bold text-muted-foreground uppercase">
                 {formatDate(tx.date)}
