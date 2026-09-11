@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import * as AlertDialog from "$ui/alert-dialog";
+  import { globalDialog } from "$state/dialog.svelte";
   import { type UserRecord, UserTag } from "$lib/types";
   import { fetchUserById, updateUser } from "$api/controllers/resident-controller";
   import LoadingView from "$components/LoadingView.svelte";
@@ -59,9 +59,6 @@
     }
   }
 
-  let isErrorDialogOpen = $state(false);
-  let saveError = $state<string | null>(null);
-
   async function handleSave() {
     if (!userId || !user) return;
     isSaving = true;
@@ -74,8 +71,10 @@
       await updateUser(userId, formData);
       goto(`/admin/users/${userId}`);
     } catch (e: any) {
-      saveError = e.message;
-      isErrorDialogOpen = true;
+      globalDialog.show(
+        "Save Failed",
+        `An error occurred while trying to save the user data:<div class="mt-2 rounded-md border bg-muted p-3 text-sm text-foreground">${e.message}</div>`
+      );
     } finally {
       isSaving = false;
     }
@@ -103,21 +102,3 @@
     title="Edit User"
   />
 {/if}
-
-<!-- Save Error AlertDialog -->
-<AlertDialog.Root bind:open={isErrorDialogOpen}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Save Failed</AlertDialog.Title>
-      <AlertDialog.Description>
-        An error occurred while trying to save the user data:
-        <div class="mt-2 rounded-md border bg-muted p-3 text-sm text-foreground">
-          {saveError}
-        </div>
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (isErrorDialogOpen = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

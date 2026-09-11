@@ -3,7 +3,14 @@
   import { globalDialog } from "$state/dialog.svelte";
 </script>
 
-<AlertDialog.Root bind:open={globalDialog.open}>
+<AlertDialog.Root
+  bind:open={globalDialog.open}
+  onOpenChange={(v) => {
+    if (!v) {
+      globalDialog.close();
+    }
+  }}
+>
   <AlertDialog.Content>
     <AlertDialog.Header>
       <AlertDialog.Title>{globalDialog.title}</AlertDialog.Title>

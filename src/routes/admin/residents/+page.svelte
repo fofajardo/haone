@@ -15,6 +15,7 @@
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { Combobox } from "$ui/combobox";
+  import { globalDialog } from "$state/dialog.svelte";
 
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
@@ -34,7 +35,6 @@
     DownloadIcon
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
-  import * as AlertDialog from "$ui/alert-dialog";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -60,15 +60,8 @@
   let selectedIndices = $state<Set<string>>(new Set()); // Uses stno as key
   let customReminders = $state("");
 
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
-
   function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
+    globalDialog.show(title, description);
   }
 
   async function loadData(bypassCache = false) {
@@ -358,15 +351,3 @@
     selectedIndices = new Set();
   }}
 />
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>Continue</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

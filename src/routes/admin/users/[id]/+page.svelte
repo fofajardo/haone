@@ -4,6 +4,7 @@
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
   import { translateCollege, translateProgram } from "$utils/translators";
   import { pluralize } from "$utils/formatters";
   import { parseDateWeight } from "$utils/parsers";
@@ -92,15 +93,8 @@
   let residentsToClear = $state<ResidentRecord[]>([]);
   let isChangingType = $state(false);
 
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
-
   function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
+    globalDialog.show(title, description);
   }
 
   const currentAccount = $derived(accounts.find((a) => a.period === localTerm) || null);
@@ -665,15 +659,3 @@
     showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
   }}
 />
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>Continue</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

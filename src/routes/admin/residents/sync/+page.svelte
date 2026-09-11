@@ -2,6 +2,7 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
   import { fetchTermCurr } from "$api/controllers/constants-controller";
   import {
     getSyncPreview,
@@ -50,15 +51,8 @@
     isSubmitting: false
   });
 
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
-
   function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
+    globalDialog.show(title, description);
   }
 
   const groupedPreview = $derived.by(() => {
@@ -429,20 +423,6 @@
       >
         Decline
       </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title class={alertDialog.type === "error" ? "text-destructive" : ""}>
-        {alertDialog.title}
-      </AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>

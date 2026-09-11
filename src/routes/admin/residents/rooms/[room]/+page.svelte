@@ -8,7 +8,6 @@
   import ErrorView from "$components/ErrorView.svelte";
   import { Button } from "$ui/button";
   import * as Card from "$ui/card";
-  import * as AlertDialog from "$ui/alert-dialog";
   import { RefreshCcw, Users, Bed, Info } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
@@ -80,13 +79,6 @@
           .map((slot) => ({ value: slot, label: `Bed ${slot}` }))
       : []
   );
-
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
 
   let assignmentDialog = $state({
     open: false,
@@ -250,19 +242,3 @@
   {availableBedOptions}
   onSuccess={() => loadData(true)}
 />
-
-<AlertDialog.Root bind:open={alertDialog.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title class={alertDialog.type === "error" ? "text-destructive" : ""}>
-        {alertDialog.title}
-      </AlertDialog.Title>
-      <AlertDialog.Description>
-        {alertDialog.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

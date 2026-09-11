@@ -3,7 +3,7 @@
   import { Button } from "$ui/button";
   import { Textarea } from "$ui/textarea";
   import * as Card from "$ui/card";
-  import * as AlertDialog from "$ui/alert-dialog";
+  import { globalDialog } from "$state/dialog.svelte";
   import { Save, FileUp, Info, CircleAlert } from "@lucide/svelte";
   import { type UserRecord } from "$lib/types";
   import { addUsersBatch } from "$api/controllers/resident-controller";
@@ -15,9 +15,6 @@
   let isSaving = $state(false);
   let previewRows = $state<Partial<UserRecord>[]>([]);
   let errors = $state<string[]>([]);
-
-  let isErrorDialogOpen = $state(false);
-  let saveError = $state<string | null>(null);
 
   function handleParse() {
     isProcessing = true;
@@ -80,8 +77,10 @@
       await addUsersBatch(previewRows);
       goto("/admin/users");
     } catch (e: any) {
-      saveError = e.message;
-      isErrorDialogOpen = true;
+      globalDialog.show(
+        "Import Failed",
+        `An error occurred during batch import:<div class="mt-2 rounded-md border bg-muted p-3 text-sm text-foreground">${e.message}</div>`
+      );
     } finally {
       isSaving = false;
     }
@@ -236,21 +235,3 @@ maria.clara@up.edu.ph,Clara,Maria,S.,2018-54321,CAL,BA EL,ALUMNUS`;
     </div>
   </div>
 </div>
-
-<!-- Save Error AlertDialog -->
-<AlertDialog.Root bind:open={isErrorDialogOpen}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Import Failed</AlertDialog.Title>
-      <AlertDialog.Description>
-        An error occurred during batch import:
-        <div class="mt-2 rounded-md border bg-muted p-3 text-sm text-foreground">
-          {saveError}
-        </div>
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (isErrorDialogOpen = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

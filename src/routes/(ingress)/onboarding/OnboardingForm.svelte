@@ -30,18 +30,12 @@
   import { roomsState } from "$state/rooms.svelte";
   import { translatePeriod } from "$utils/translators";
   import * as Stepper from "$ui/stepper";
-  import * as AlertDialog from "$ui/alert-dialog";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();
 
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: ""
-  });
-
   function showAlert(title: string, description: string) {
-    alertDialog = { open: true, title, description };
+    globalDialog.show(title, description);
   }
 
   let isSubmitting = $state(false);
@@ -779,15 +773,3 @@
     </div>
   </div>
 </Stepper.Root>
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

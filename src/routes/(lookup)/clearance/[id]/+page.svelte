@@ -3,8 +3,8 @@
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
   import { brandingState } from "$state/branding.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
 
-  import * as AlertDialog from "$ui/alert-dialog";
   import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
   import ReceiptErrorCard from "$components/receipt/ReceiptErrorCard.svelte";
   import ClearanceWebView from "$components/residents/ClearanceWebView.svelte";
@@ -25,9 +25,6 @@
   let isChecking = $state(false);
   let qrDataUrl = $state("");
   let isExporting = $state(false);
-
-  // AlertDialog State
-  let alertState = $state({ open: false, title: "", description: "" });
 
   $effect(() => {
     if (form?.success) {
@@ -54,9 +51,7 @@
   });
 
   function showAlert(title: string, description: string) {
-    alertState.title = title;
-    alertState.description = description;
-    alertState.open = true;
+    globalDialog.show(title, description);
   }
 
   onMount(async () => {
@@ -276,17 +271,3 @@
     <ClearanceExportTemplate {clearanceData} {qrDataUrl} />
   {/if}
 </main>
-
-<AlertDialog.Root bind:open={alertState.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertState.title}</AlertDialog.Title>
-      <AlertDialog.Description>
-        {alertState.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertState.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

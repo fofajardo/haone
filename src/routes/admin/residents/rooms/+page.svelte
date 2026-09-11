@@ -17,7 +17,6 @@
   import { Checkbox } from "$ui/checkbox";
   import * as Card from "$ui/card";
   import * as Tooltip from "$ui/tooltip";
-  import * as AlertDialog from "$ui/alert-dialog";
   import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import {
@@ -41,13 +40,6 @@
 
   let selectedUnit = $state("ALL");
   let isCompact = $state(true);
-
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
 
   async function loadData(bypassCache = false) {
     isLoading = true;
@@ -387,19 +379,3 @@
   {availableBedOptions}
   onSuccess={() => loadData(true)}
 />
-
-<AlertDialog.Root bind:open={alertDialog.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title class={alertDialog.type === "error" ? "text-destructive" : ""}>
-        {alertDialog.title}
-      </AlertDialog.Title>
-      <AlertDialog.Description>
-        {alertDialog.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
