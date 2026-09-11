@@ -22,7 +22,7 @@
   }
 </script>
 
-<div class="flex flex-wrap items-center gap-2">
+<div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
   <Tabs.Root value={active} onValueChange={handleTabChange}>
     <Tabs.List>
       <Tabs.Trigger value="list" class="flex items-center gap-1.5">

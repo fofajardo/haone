@@ -320,7 +320,11 @@
 
   <!-- Container for desktop display of action buttons and legacy actions -->
   {#if actions.length > 0 || legacyActions}
-    <div class="flex items-center gap-3 {legacyActions ? 'w-full sm:w-auto' : 'hidden sm:flex'}">
+    <div
+      class="flex items-center gap-3 {legacyActions
+        ? 'w-full **:data-[slot=tabs]:w-full **:data-[slot=tabs-list]:w-full sm:w-auto sm:**:data-[slot=tabs]:w-auto sm:**:data-[slot=tabs-list]:w-auto'
+        : 'hidden sm:flex'}"
+    >
       {#if legacyActions}
         {@render legacyActions()}
       {/if}
