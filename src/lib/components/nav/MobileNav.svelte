@@ -114,9 +114,9 @@
 </script>
 
 <div
-  class="relative z-10 w-full shrink-0 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-lg supports-backdrop-filter:bg-background/80 md:hidden"
+  class="relative z-10 w-full shrink-0 bg-sidebar pb-[env(safe-area-inset-bottom,0px)] md:hidden"
 >
-  <nav class="flex h-20 items-center justify-around px-2">
+  <nav class="flex h-16 items-center justify-around px-2">
     {#each navItems as item}
       {@const active = isActive(item.href)}
       {@const IconComponent = item.icon}
@@ -126,19 +126,19 @@
       >
         <div
           class="flex h-8 w-16 items-center justify-center rounded-full transition-all duration-200 {active
-            ? 'bg-brand/15'
+            ? 'bg-brand/15 dark:bg-brand/30'
             : 'group-hover:bg-muted'}"
         >
           <IconComponent
             class="size-6 transition-colors duration-200 {active
-              ? 'text-brand'
-              : 'text-muted-foreground group-hover:text-foreground'}"
+              ? 'text-brand dark:brightness-140'
+              : 'text-foreground group-hover:text-foreground'}"
           />
         </div>
         <span
           class="max-w-18 truncate text-xs font-medium transition-colors duration-200 {active
-            ? 'text-brand'
-            : 'text-muted-foreground group-hover:text-foreground'}"
+            ? 'text-brand dark:brightness-140'
+            : 'text-foreground group-hover:text-foreground'}"
         >
           {item.label}
         </span>

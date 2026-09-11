@@ -57,7 +57,7 @@
             in:fly={{ duration: 200, delay: 80, y: 6, opacity: 0 }}
             out:fly={{ duration: 120, y: -6, opacity: 0 }}
             class="absolute inset-0 {pageState.isTopLevel
-              ? 'bottom-20'
+              ? 'bottom-16'
               : 'bottom-0'} overflow-y-auto md:bottom-0"
             onscroll={scrollState.handleScroll}
           >
