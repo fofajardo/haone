@@ -164,9 +164,7 @@
     />
   </div>
 
-  {#if isLoading && !status}
-    <LoadingView />
-  {:else if error}
+  {#if error}
     <ErrorView {error}>
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
