@@ -98,6 +98,7 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={scope !== "global"}
   >
     {#snippet tabs()}
       <AchievementTabs bind:value={scope} />
