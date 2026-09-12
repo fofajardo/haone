@@ -6,6 +6,7 @@
   import { manualAssignBed, manualDelistResident } from "$api/controllers/rooms-controller.svelte";
   import { toast } from "svelte-sonner";
   import { Info, TriangleAlert } from "@lucide/svelte";
+  import { Button } from "$components/ui/button";
 
   let {
     open = $bindable(false),
@@ -169,18 +170,19 @@
       {/if}
     </div>
     <AlertDialog.Footer>
-      <AlertDialog.Cancel disabled={isLoading}>Cancel</AlertDialog.Cancel>
+      <Button variant="outline" onclick={() => (open = false)} disabled={isLoading}>Cancel</Button>
       {#if delist}
-        <AlertDialog.Action
+        <Button
           onclick={handleConfirm}
           disabled={!userId || !delistReason || delistReason === "regular_checkout" || isLoading}
+          {isLoading}
         >
           {isLoading ? "Saving…" : "Confirm"}
-        </AlertDialog.Action>
+        </Button>
       {:else}
-        <AlertDialog.Action onclick={handleConfirm} disabled={!userId || !bed || isLoading}>
+        <Button onclick={handleConfirm} disabled={!userId || !bed || isLoading} {isLoading}>
           {isLoading ? "Saving…" : "Confirm"}
-        </AlertDialog.Action>
+        </Button>
       {/if}
     </AlertDialog.Footer>
   </AlertDialog.Content>
