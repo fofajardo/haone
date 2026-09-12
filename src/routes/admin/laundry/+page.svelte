@@ -81,7 +81,7 @@
         if (
           res.residentId &&
           res.period === uiSettings.activeTerm &&
-          canAccessLaundryOrFridge(res.type || "")
+          canAccessLaundry(res.type || "")
         ) {
           newActiveResIds.add(res.residentId);
         }
