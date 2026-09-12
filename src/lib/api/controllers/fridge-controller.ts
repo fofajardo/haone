@@ -6,7 +6,7 @@ import { fetchUsers, getSignedInUserId } from "./resident-controller";
 
 export async function fetchFeatureFlagFridge(bypassCache = false): Promise<boolean> {
   const val = await constantsService.fetchConstantByKey("FEATURE_FLAG_FRIDGE", bypassCache);
-  return (val || "").toLowerCase() === "true";
+  return (val || "true").toLowerCase() === "true";
 }
 
 export async function checkFeatureEnabled(bypassCache = false) {

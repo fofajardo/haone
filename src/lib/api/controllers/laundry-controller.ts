@@ -128,7 +128,7 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 
 export async function fetchFeatureFlagLaundry(bypassCache = false): Promise<boolean> {
   const val = await constantsService.fetchConstantByKey("FEATURE_FLAG_LAUNDRY");
-  return (val || "").toLowerCase() === "true";
+  return (val || "true").toLowerCase() === "true";
 }
 
 export async function checkFeatureEnabled() {
