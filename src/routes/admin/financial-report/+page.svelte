@@ -7,7 +7,7 @@
   import ErrorView from "$components/content/ErrorView.svelte";
   import { Button } from "$ui/button";
   import * as Card from "$ui/card";
-  import StatisticCard from "$components/ui/haone/card-statistic.svelte";
+  import { StatisticCard } from "$components/ui/haone";
   import {
     RefreshCcw,
     TrendingUp,

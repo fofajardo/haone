@@ -20,7 +20,6 @@
   } from "@lucide/svelte";
   import AnnouncementsSection from "$components/dashboard/AnnouncementsSection.svelte";
   import RecentActivityCard from "$components/dashboard/RecentActivityCard.svelte";
-  import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
@@ -29,7 +28,7 @@
   import DashboardActionCard from "$components/dashboard/DashboardActionCard.svelte";
   import type { ResidentStatus } from "$state/resident-state.svelte";
   import { AccountType } from "$lib/types";
-  import StatisticCard from "$components/ui/haone/card-statistic.svelte";
+  import { StatisticCard } from "$components/ui/haone";
   import {
     fetchResidentStatus,
     isResidentRouteAllowed

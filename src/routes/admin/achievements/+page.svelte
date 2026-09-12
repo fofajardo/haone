@@ -20,12 +20,12 @@
   import { Textarea } from "$ui/textarea";
   import { toast } from "svelte-sonner";
   import { Checkbox } from "$ui/checkbox";
-  import TermFilter from "$components/ui/haone/input-academic-term.svelte";
   import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/residents/AchievementCard.svelte";
+  import { AcademicTermInput } from "$components/ui/haone";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -241,7 +241,7 @@
       </div>
       {#if !newAchievement.isIndefinite}
         <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <TermFilter bind:value={newAchievement.term} />
+          <AcademicTermInput bind:value={newAchievement.term} />
         </div>
       {/if}
     </div>

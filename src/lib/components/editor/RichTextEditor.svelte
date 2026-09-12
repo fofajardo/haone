@@ -26,7 +26,7 @@
   import * as Popover from "$ui/popover";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
-  import ImageUpload from "$components/ui/haone/image-upload.svelte";
+  import { ImageUpload } from "$components/ui/haone";
   import { transformGoogleDriveLink } from "$utils/image-utils";
   import { fetchServer } from "$utils/api-client";
   import { toast } from "svelte-sonner";

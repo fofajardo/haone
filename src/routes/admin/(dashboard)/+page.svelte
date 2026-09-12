@@ -28,12 +28,11 @@
   import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
   import DashboardActionCard from "$components/dashboard/DashboardActionCard.svelte";
-  import StatisticCard from "$components/ui/haone/card-statistic.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
-  import * as Card from "$ui/card";
   import { getCustomServices } from "$lib/services";
   import { namecase } from "@compwright/namecase";
+  import { StatisticCard } from "$components/ui/haone";
 
   let stats = $state({
     activeResidents: 0,

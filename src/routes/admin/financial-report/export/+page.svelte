@@ -4,7 +4,7 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
-  import AccountAutocomplete from "$components/ui/haone/input-accounts.svelte";
+  import { AccountsInput } from "$components/ui/haone";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
@@ -190,7 +190,7 @@
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <!-- Issued By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountsInput
               label="Issued By"
               accounts={allAccountsForAutocomplete}
               bind:value={issuedBy}
@@ -206,7 +206,7 @@
 
           <!-- Assessed By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountsInput
               label="Assessed By"
               accounts={allAccountsForAutocomplete}
               bind:value={assessedBy}
@@ -222,7 +222,7 @@
 
           <!-- Certified By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountsInput
               label="Certified By"
               accounts={allAccountsForAutocomplete}
               bind:value={certifiedBy}

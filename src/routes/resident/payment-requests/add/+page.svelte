@@ -25,7 +25,7 @@
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
-  import ImageUpload from "$components/ui/haone/image-upload.svelte";
+  import { ImageUpload } from "$components/ui/haone";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);

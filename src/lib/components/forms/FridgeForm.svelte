@@ -24,7 +24,6 @@
   import { goto } from "$app/navigation";
   import { TagsInput } from "$ui/tags-input";
   import ContentHeader from "$components/content/ContentHeader.svelte";
-  import AccountAutocomplete from "$components/ui/haone/input-accounts.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import {
@@ -36,7 +35,7 @@
     FileText,
     User
   } from "@lucide/svelte";
-  import ImageUpload from "$components/ui/haone/image-upload.svelte";
+  import { AccountsInput, ImageUpload } from "$components/ui/haone";
 
   let {
     itemId = null as string | null,
@@ -206,7 +205,7 @@
                 <User class="h-3.5 w-3.5" /> Resident Owner
               </Label>
               <div class="relative space-y-3">
-                <AccountAutocomplete
+                <AccountsInput
                   label="Owner"
                   placeholder="Search resident email or name…"
                   {accounts}

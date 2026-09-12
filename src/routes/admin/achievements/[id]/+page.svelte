@@ -11,7 +11,6 @@
   import { Label } from "$ui/label";
   import { Textarea } from "$ui/textarea";
   import { Checkbox } from "$ui/checkbox";
-  import TermFilter from "$components/ui/haone/input-academic-term.svelte";
   import { toast } from "svelte-sonner";
   import {
     fetchAdminAchievements,
@@ -22,6 +21,7 @@
   import type { AchievementRecord } from "$lib/types";
   import AchievementDetailsView from "$components/residents/AchievementDetailsView.svelte";
   import { shareAchievementStory } from "$components/residents/story-share";
+  import { AcademicTermInput } from "$components/ui/haone";
 
   const id = page.params.id;
 
@@ -249,7 +249,7 @@
       </div>
       {#if !editData.isIndefinite}
         <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <TermFilter bind:value={editData.term} />
+          <AcademicTermInput bind:value={editData.term} />
         </div>
       {/if}
     </div>
