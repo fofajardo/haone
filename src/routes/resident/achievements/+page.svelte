@@ -3,10 +3,10 @@
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
   import { Trophy } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
@@ -17,8 +17,8 @@
   } from "$api/controllers/achievement-controller";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
   import { pageState } from "$state/page-info.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import AchievementCard from "$components/achievements/AchievementCard.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import AchievementCard from "$components/residents/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);

@@ -7,7 +7,7 @@
   import { Combobox } from "$ui/combobox";
   import { Label } from "$ui/label";
   import { Input } from "$ui/input";
-  import Skeleton from "./ui/skeleton/skeleton.svelte";
+  import Skeleton from "../skeleton/skeleton.svelte";
 
   let { value = $bindable(), onSelect } = $props<{
     value?: string;

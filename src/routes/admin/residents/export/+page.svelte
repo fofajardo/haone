@@ -4,9 +4,9 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
-  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
+  import AccountAutocomplete from "$components/ui/haone/input-accounts.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";

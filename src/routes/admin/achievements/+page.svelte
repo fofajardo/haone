@@ -3,10 +3,10 @@
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Trophy } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import {
     fetchAdminAchievements,
     fetchAchievementLogs,
@@ -20,12 +20,12 @@
   import { Textarea } from "$ui/textarea";
   import { toast } from "svelte-sonner";
   import { Checkbox } from "$ui/checkbox";
-  import TermFilter from "$components/TermFilter.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import TermFilter from "$components/ui/haone/input-academic-term.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
-  import AchievementCard from "$components/achievements/AchievementCard.svelte";
+  import AchievementCard from "$components/residents/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);

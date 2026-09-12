@@ -15,7 +15,7 @@
   import { Button } from "$ui/button";
   import { dev } from "$app/environment";
   import { page } from "$app/state";
-  import BrandingLogo from "$components/BrandingLogo.svelte";
+  import BrandingLogo from "$components/branding/BrandingLogo.svelte";
   import { namecase } from "@compwright/namecase";
   import GlobalTermFilter from "./GlobalTermFilter.svelte";
   import { env } from "$env/dynamic/public";

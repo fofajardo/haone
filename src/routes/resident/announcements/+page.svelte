@@ -3,10 +3,10 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Megaphone, ArrowRight } from "@lucide/svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import RichTextRenderer from "$components/editor/RichTextRenderer.svelte";
   import { fetchAnnouncements } from "$api/controllers/announcement-controller";
   import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/types";

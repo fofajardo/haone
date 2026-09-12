@@ -3,8 +3,8 @@
   import { page } from "$app/state";
   import { Button } from "$ui/button";
   import { Save, Trash2 } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
   import {
     fetchOfficers,
     updateOfficer,

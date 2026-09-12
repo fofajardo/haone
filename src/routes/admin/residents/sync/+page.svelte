@@ -12,10 +12,10 @@
   } from "$api/controllers/rooms-controller.svelte";
   import { pluralize } from "$utils/formatters";
   import { translateCollege, translateProgram } from "$utils/translators";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";

@@ -5,8 +5,8 @@
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
   import { Lock, LockOpen } from "@lucide/svelte";
-  import { Spinner } from "./ui/spinner";
-  import BrandingLogo from "./BrandingLogo.svelte";
+  import { Spinner } from "../ui/spinner";
+  import BrandingLogo from "../branding/BrandingLogo.svelte";
 
   let {
     studentNo = $bindable(),

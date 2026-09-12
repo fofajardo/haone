@@ -30,9 +30,9 @@
   } from "@lucide/svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { Checkbox } from "$ui/checkbox";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import AccountAutocomplete from "$components/ui/haone/input-accounts.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import * as Dialog from "$ui/dialog";
   import * as Tooltip from "$ui/tooltip";

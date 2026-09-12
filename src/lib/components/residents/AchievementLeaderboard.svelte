@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Card from "$ui/card";
-  import EmptyView from "$components/EmptyView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import { Crown, Medal, Trophy, Zap } from "@lucide/svelte";
 

@@ -2,10 +2,10 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Search, DownloadIcon } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { fetchTermCurr } from "$api/controllers/resident-controller";
   import type { OfficerRecord } from "$lib/types";

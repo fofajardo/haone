@@ -16,11 +16,11 @@
   import { Label } from "$ui/label/index.js";
   import { Button } from "$ui/button/index.js";
   import { Search, RefreshCcw, FileCheck, CircleCheckBig } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";

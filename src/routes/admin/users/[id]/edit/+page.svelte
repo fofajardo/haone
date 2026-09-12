@@ -6,9 +6,9 @@
   import { globalDialog } from "$state/dialog.svelte";
   import { type UserRecord, UserTag } from "$lib/types";
   import { fetchUserById, updateUser } from "$api/controllers/resident-controller";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import UserForm from "$components/admin/UserForm.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import UserForm from "$components/forms/UserForm.svelte";
   import { Button } from "$ui/button";
 
   const userId = $derived(page.params.id);

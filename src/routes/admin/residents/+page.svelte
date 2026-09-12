@@ -20,7 +20,7 @@
   import { Button } from "$ui/button";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import {
     RefreshCcw,
     Users,
@@ -34,14 +34,14 @@
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
   import * as DropdownMenu from "$ui/dropdown-menu";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
-  import AwardDialog from "$components/residents/AwardDialog.svelte";
+  import ClearanceDialog from "$components/forms/ClearanceDialog.svelte";
+  import AwardDialog from "$components/forms/AwardDialog.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
 
   let residents = $state<Resident[]>([]);

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";

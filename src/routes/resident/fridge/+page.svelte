@@ -19,12 +19,12 @@
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import * as AlertDialog from "$ui/alert-dialog";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FridgeItemCard from "$components/fridge/FridgeItemCard.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FridgeItemCard from "$components/residents/FridgeItemCard.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import { Checkbox } from "$ui/checkbox";
   import { toast } from "svelte-sonner";
   import { Refrigerator, Plus, Search } from "@lucide/svelte";

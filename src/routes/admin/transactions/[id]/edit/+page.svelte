@@ -5,9 +5,9 @@
   import { goto } from "$app/navigation";
   import { fetchJournalEntries, updateJournalEntry } from "$api/controllers/journal-controller";
   import { type JournalRecord, JOURNAL_COL as JOR } from "$lib/types";
-  import TransactionForm from "$components/TransactionForm.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import TransactionForm from "$components/forms/TransactionForm.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
 
   const id = $derived(page.params.id);
 

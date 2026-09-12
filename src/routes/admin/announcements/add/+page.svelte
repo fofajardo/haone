@@ -8,7 +8,7 @@
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
   import { ChevronLeft, Save } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
   import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import { addAnnouncement } from "$api/controllers/announcement-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";

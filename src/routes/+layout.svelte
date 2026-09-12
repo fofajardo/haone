@@ -10,7 +10,7 @@
   import { uiSettings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
   import UIProvider from "$components/UIProvider.svelte";
-  import GlobalAlertDialog from "$components/GlobalAlertDialog.svelte";
+  import GlobalAlertDialog from "$components/forms/GlobalAlertDialog.svelte";
   import { brandingState } from "$state/branding.svelte";
 
   let { children } = $props();

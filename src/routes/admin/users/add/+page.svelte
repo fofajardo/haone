@@ -3,7 +3,7 @@
   import { globalDialog } from "$state/dialog.svelte";
   import { type UserRecord, UserTag } from "$lib/types";
   import { addUser } from "$api/controllers/resident-controller";
-  import UserForm from "$components/admin/UserForm.svelte";
+  import UserForm from "$components/forms/UserForm.svelte";
 
   let isSaving = $state(false);
   let formData = $state<Partial<UserRecord>>({

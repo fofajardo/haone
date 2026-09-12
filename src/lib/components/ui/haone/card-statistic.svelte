@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Card from "$ui/card";
   import type { Snippet } from "svelte";
-  import { Skeleton } from "./ui/skeleton";
+  import { Skeleton } from "../skeleton";
 
   let {
     title,

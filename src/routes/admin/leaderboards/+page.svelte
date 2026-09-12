@@ -2,11 +2,11 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
-  import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
+  import AchievementLeaderboard from "$components/residents/AchievementLeaderboard.svelte";
   import {
     fetchAdminAchievements,
     fetchAchievementLogs

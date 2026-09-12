@@ -23,10 +23,10 @@
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { TagsInput } from "$ui/tags-input";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import AccountAutocomplete from "$components/ui/haone/input-accounts.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import {
     Snowflake,
     Refrigerator,
@@ -36,7 +36,7 @@
     FileText,
     User
   } from "@lucide/svelte";
-  import ImageUpload from "$components/ImageUpload.svelte";
+  import ImageUpload from "$components/ui/haone/image-upload.svelte";
 
   let {
     itemId = null as string | null,

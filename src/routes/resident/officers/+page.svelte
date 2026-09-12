@@ -2,10 +2,10 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, BookUser, Mail } from "@lucide/svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import * as Card from "$ui/card";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { Badge } from "$ui/badge";

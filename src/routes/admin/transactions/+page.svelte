@@ -11,12 +11,12 @@
   import { Button } from "$ui/button";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import { RefreshCcw, ListFilter, Search, ShieldCheck, Plus } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";

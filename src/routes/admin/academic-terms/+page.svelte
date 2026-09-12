@@ -15,12 +15,12 @@
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import { Plus, GraduationCap, Coins, Save, Calculator, CircleCheck } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { Badge } from "$ui/badge";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
 
   let terms = $state<{ value: string; description: string }[]>([]);
   let allConstants = $state<{ key: string; value: string; rowIndex: number }[]>([]);

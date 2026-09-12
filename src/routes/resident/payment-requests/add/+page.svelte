@@ -22,10 +22,10 @@
   import { goto } from "$app/navigation";
   import * as Tooltip from "$ui/tooltip";
   import { Badge } from "$ui/badge";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import ImageUpload from "$components/ImageUpload.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import ImageUpload from "$components/ui/haone/image-upload.svelte";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);

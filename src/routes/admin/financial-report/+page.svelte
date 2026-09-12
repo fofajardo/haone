@@ -2,12 +2,12 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { Button } from "$ui/button";
   import * as Card from "$ui/card";
-  import StatisticCard from "$components/StatisticCard.svelte";
+  import StatisticCard from "$components/ui/haone/card-statistic.svelte";
   import {
     RefreshCcw,
     TrendingUp,

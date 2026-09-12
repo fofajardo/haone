@@ -12,11 +12,11 @@
   import { Combobox } from "$ui/combobox";
   import { Label } from "$ui/label";
   import { RefreshCcw, Plus, Search, Users } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";

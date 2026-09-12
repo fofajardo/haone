@@ -33,9 +33,9 @@
     Lock,
     TriangleAlert
   } from "@lucide/svelte";
-  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
 
   const id = $derived(page.params.id);
 

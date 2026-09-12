@@ -5,10 +5,10 @@
   import { brandingState } from "$state/branding.svelte";
   import { globalDialog } from "$state/dialog.svelte";
 
-  import ReceiptExportTemplate from "$components/receipt/ReceiptExportTemplate.svelte";
-  import ReceiptWebView from "$components/receipt/ReceiptWebView.svelte";
-  import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
-  import ReceiptErrorCard from "$components/receipt/ReceiptErrorCard.svelte";
+  import ReceiptExportTemplate from "$components/lookup/ReceiptExportTemplate.svelte";
+  import ReceiptWebView from "$components/lookup/ReceiptWebView.svelte";
+  import StudentNumberAuthCard from "$components/lookup/StudentNumberAuthCard.svelte";
+  import ReceiptErrorCard from "$components/lookup/ReceiptErrorCard.svelte";
 
   import { LS_KEYS } from "$lib/constants";
 

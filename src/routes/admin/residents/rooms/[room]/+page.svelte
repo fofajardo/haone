@@ -2,10 +2,10 @@
   import { roomsState } from "$state/rooms.svelte";
   import { fetchResidents, fetchUsers, fetchTermCurr } from "$api/controllers/resident-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { Button } from "$ui/button";
   import * as Card from "$ui/card";
   import { RefreshCcw, Users, Bed, Info } from "@lucide/svelte";

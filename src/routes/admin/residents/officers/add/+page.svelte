@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { ChevronLeft, Save } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
   import { addOfficer, fetchOfficers } from "$api/controllers/officer-controller";
   import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
   import { brandingState } from "$state/branding.svelte";

@@ -7,9 +7,9 @@
   import * as Card from "$ui/card";
   import { Button } from "$ui/button";
   import { Progress } from "$ui/progress";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import { formatCurrency, formatAmount } from "$utils/formatters";
   import {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import HeroVisual from "$components/HeroVisual.svelte";
+  import HeroVisual from "$components/branding/HeroVisual.svelte";
   import { Button } from "$ui/button";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import {

@@ -7,7 +7,7 @@
   import * as Card from "$ui/card";
   import { Clock, RotateCcwClockIcon } from "@lucide/svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
 
   interface Props {
     history: JournalRecord[];

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import {
     RefreshCcw,
     GraduationCap,

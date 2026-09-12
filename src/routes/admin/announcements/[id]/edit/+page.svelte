@@ -10,10 +10,10 @@
   import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { auth } from "$state/auth.svelte";
-  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
   import RichTextEditor from "$components/editor/RichTextEditor.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import {
     fetchAdminAnnouncements,
     updateAnnouncement,

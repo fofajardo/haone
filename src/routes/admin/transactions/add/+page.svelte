@@ -4,7 +4,7 @@
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
   import { addJournalEntries } from "$api/controllers/journal-controller";
-  import TransactionForm from "$components/TransactionForm.svelte";
+  import TransactionForm from "$components/forms/TransactionForm.svelte";
 
   let isSubmitting = $state(false);
 

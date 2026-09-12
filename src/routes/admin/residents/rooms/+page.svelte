@@ -6,10 +6,10 @@
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import { fetchTermCurr } from "$api/controllers/constants-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Combobox } from "$ui/combobox";
@@ -17,7 +17,7 @@
   import { Checkbox } from "$ui/checkbox";
   import * as Card from "$ui/card";
   import * as Tooltip from "$ui/tooltip";
-  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
+  import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import {
     RefreshCcw,

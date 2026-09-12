@@ -27,8 +27,8 @@
   import { fetchResidents } from "$api/controllers/resident-controller";
   import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
-  import DashboardActionCard from "$components/DashboardActionCard.svelte";
-  import StatisticCard from "$components/StatisticCard.svelte";
+  import DashboardActionCard from "$components/dashboard/DashboardActionCard.svelte";
+  import StatisticCard from "$components/ui/haone/card-statistic.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
   import * as Card from "$ui/card";

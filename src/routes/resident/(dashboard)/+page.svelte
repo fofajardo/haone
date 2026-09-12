@@ -18,18 +18,18 @@
     Refrigerator,
     ListOrdered
   } from "@lucide/svelte";
-  import AnnouncementsSection from "$components/residents/AnnouncementsSection.svelte";
-  import RecentActivityCard from "$components/residents/RecentActivityCard.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import AnnouncementsSection from "$components/dashboard/AnnouncementsSection.svelte";
+  import RecentActivityCard from "$components/dashboard/RecentActivityCard.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
   import { pageState } from "$state/page-info.svelte";
   import StatusBadge from "$components/residents/StatusBadge.svelte";
-  import DashboardActionCard from "$components/DashboardActionCard.svelte";
+  import DashboardActionCard from "$components/dashboard/DashboardActionCard.svelte";
   import type { ResidentStatus } from "$state/resident-state.svelte";
   import { AccountType } from "$lib/types";
-  import StatisticCard from "$components/StatisticCard.svelte";
+  import StatisticCard from "$components/ui/haone/card-statistic.svelte";
   import {
     fetchResidentStatus,
     isResidentRouteAllowed

@@ -54,18 +54,18 @@
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { pageState } from "$state/page-info.svelte";
-  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
-  import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
+  import ClearanceDialog from "$components/forms/ClearanceDialog.svelte";
   import AccountCard from "$components/residents/AccountCard.svelte";
   import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
   import OfficerHistoryCard from "$components/residents/OfficerHistoryCard.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
-  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
+  import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
 
   const userId = $derived(page.params.id);
 

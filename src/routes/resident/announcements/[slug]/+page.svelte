@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Button } from "$ui/button";
   import { ChevronLeft } from "@lucide/svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import RichTextRenderer from "$components/editor/RichTextRenderer.svelte";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { Badge } from "$ui/badge";

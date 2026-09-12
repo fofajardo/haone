@@ -14,10 +14,10 @@
     SlidersHorizontal
   } from "@lucide/svelte";
   import * as NativeSelect from "$ui/native-select";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
   import {
     fetchLaundryReservations,
     addLaundryReservation,
@@ -40,7 +40,7 @@
   import { formatTime } from "$utils/formatters";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import CancelLaundryDialog from "$components/residents/CancelLaundryDialog.svelte";
+  import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<UserRecord[]>([]);
