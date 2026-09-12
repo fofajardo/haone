@@ -29,10 +29,7 @@ export async function getSignedInUserId(): Promise<string> {
  * Fetches resident status (dashboard context) via direct DB in Supabase mode or API route in Sheets mode.
  */
 export async function fetchResidentStatus(term?: string, bypassCache = false): Promise<any> {
-  const { auth } = await import("$state/auth.svelte");
-  const userEmail = auth.user?.email || "";
-  if (!userEmail) return null;
-  return residentService.fetchResidentStatus(userEmail, term, bypassCache);
+  return residentService.fetchResidentStatus(term, bypassCache);
 }
 
 /**

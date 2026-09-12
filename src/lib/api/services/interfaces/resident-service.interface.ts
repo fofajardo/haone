@@ -2,7 +2,7 @@ import type { ResidentRecord, UserRecord } from "$lib/types";
 
 export interface ResidentServiceInterface {
   fetchResidents(bypassCache?: boolean, term?: string): Promise<ResidentRecord[]>;
-  fetchResidentStatus(email: string, term?: string, bypassCache?: boolean): Promise<any>;
+  fetchResidentStatus(term?: string, bypassCache?: boolean): Promise<any>;
   changeAccountType(residentId: string, period: string, newType: string): Promise<void>;
   fetchUsers(bypassCache?: boolean): Promise<UserRecord[]>;
   updateUser(userId: string, data: Partial<UserRecord>): Promise<void>;
