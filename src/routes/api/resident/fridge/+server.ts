@@ -1,4 +1,4 @@
-import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
+import { canAccessFridge } from "$api/controllers/resident-controller";
 import {
   authenticateResident,
   getSheetsClient,
@@ -20,6 +20,7 @@ import {
 } from "$lib/types";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import { isFeatureFlagEnabled } from "$api/utils/feature-flags";
 
 /**
  * GET: Fetch all fridge items + user/room mapping (Public to all logged-in residents)
@@ -33,16 +34,23 @@ export const GET: RequestHandler = async ({ request }) => {
   try {
     const client = await getSheetsClient();
 
-    const [fridgeRows, accRows, userRows, activeTerm] = await fetchSheetsData(client, [
+    const [constantRows, fridgeRows, accRows, userRows, activeTerm] = await fetchSheetsData(client, [
+      "constants!A:C",
       "fridge_items!A:M",
       "accounts!A:L",
       "users!A:P",
       "TERM_CURR"
     ]);
+    
+    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+
+    if (!isFridgeEnabled) {
+      return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
+    }
 
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundryOrFridge(accountType || "")) {
+    if (!canAccessFridge(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot access fridge" }, { status: 403 });
     }
 
@@ -122,6 +130,15 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const client = await getSheetsClient();
+
+    const [constantRows] = await fetchSheetsData(client, ["constants!A:C"]);
+    
+    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+
+    if (!isFridgeEnabled) {
+      return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
+    }
+
     const id = data.id || crypto.randomUUID();
     const dateStored = data.dateStored || new Date().toISOString().split("T")[0];
 
@@ -164,7 +181,14 @@ export const PATCH: RequestHandler = async ({ request }) => {
     }
 
     const client = await getSheetsClient();
-    const [rows] = await fetchSheetsData(client, ["fridge_items!A:M"]);
+    const [constantRows, rows] = await fetchSheetsData(client, ["constants!A:C", "fridge_items!A:M"]);
+    
+    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+
+    if (!isFridgeEnabled) {
+      return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
+    }
+
     const rowIndex = rows.findIndex((r: any) => (r[FRIDGE_ITEM_COL.ID] || "").trim() === id);
 
     if (rowIndex === -1) {
@@ -231,7 +255,14 @@ export const DELETE: RequestHandler = async ({ request }) => {
     }
 
     const client = await getSheetsClient();
-    const [rows] = await fetchSheetsData(client, ["fridge_items!A:M"]);
+    const [constantRows, rows] = await fetchSheetsData(client, ["constants!A:C", "fridge_items!A:M"]);
+    
+    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+
+    if (!isFridgeEnabled) {
+      return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
+    }
+
     const rowIndex = rows.findIndex((r: any) => (r[FRIDGE_ITEM_COL.ID] || "").trim() === id);
 
     if (rowIndex === -1) {

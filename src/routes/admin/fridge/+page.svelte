@@ -5,7 +5,8 @@
     fetchFridgeItems,
     checkOutFridgeItem,
     restoreFridgeItem,
-    discardFridgeItem
+    discardFridgeItem,
+    checkFeatureEnabled
   } from "$api/controllers/fridge-controller";
   import {
     type FridgeItemRecord,
@@ -59,6 +60,7 @@
     isLoading = true;
     error = null;
     try {
+      await checkFeatureEnabled(bypassCache);
       const res = await fetchFridgeItems(bypassCache);
       items = res.items;
       currentResidentId = res.currentResidentId;
@@ -120,6 +122,7 @@
   async function handleTakeOut(item: FridgeItemRecord) {
     processingId = item.id;
     try {
+      await checkFeatureEnabled();
       await checkOutFridgeItem(item.id, currentResidentId);
       toast.success(`Marked ${item.name} as taken out.`);
       await loadData();
@@ -133,6 +136,7 @@
   async function handlePutBack(item: FridgeItemRecord) {
     processingId = item.id;
     try {
+      await checkFeatureEnabled();
       await restoreFridgeItem(item, currentResidentId);
       toast.success(`Returned ${item.name} back to fridge!`);
       await loadData();
@@ -151,6 +155,7 @@
       action: async () => {
         processingId = item.id;
         try {
+          await checkFeatureEnabled();
           await discardFridgeItem(item.id, currentResidentId);
           toast.success("Item marked as discarded.");
           await loadData();

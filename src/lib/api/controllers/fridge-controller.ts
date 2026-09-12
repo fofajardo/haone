@@ -1,11 +1,26 @@
+import { constantsService } from "$api/services/constants-service";
 import { fridgeService } from "$api/services/fridge-service";
 import { roomsService } from "$api/services/rooms-service";
 import { type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
 import { fetchUsers, getSignedInUserId } from "./resident-controller";
 
+export async function fetchFeatureFlagFridge(bypassCache = false): Promise<boolean> {
+  const val = await constantsService.fetchConstantByKey("FEATURE_FLAG_FRIDGE", bypassCache);
+  return (val || "").toLowerCase() === "true";
+}
+
+export async function checkFeatureEnabled(bypassCache = false) {
+  const fridgeEnabled = await fetchFeatureFlagFridge(bypassCache);
+  console.log("The fridge is", fridgeEnabled ? "enabled" : "disabled");
+  if (!fridgeEnabled) {
+    throw new Error("Access Denied: Fridge service not enabled. Check back later!");
+  }
+}
+
 export async function fetchFridgeItems(
   bypassCache = false
 ): Promise<{ items: FridgeItemRecord[]; currentResidentId: string }> {
+  await checkFeatureEnabled(bypassCache);
   const currentResidentId = await getSignedInUserId();
   const res = await fridgeService.fetchFridgeItems(currentResidentId, undefined, bypassCache);
   const items = Array.isArray(res) ? res : res.items;
@@ -37,6 +52,7 @@ export async function fetchFridgeItems(
 }
 
 export async function addFridgeItem(data: Partial<FridgeItemRecord>): Promise<void> {
+  await checkFeatureEnabled();
   return await fridgeService.addFridgeItem(data);
 }
 
@@ -44,10 +60,12 @@ export async function updateFridgeItem(
   id: string,
   updates: Partial<FridgeItemRecord>
 ): Promise<void> {
+  await checkFeatureEnabled();
   return fridgeService.updateFridgeItem(id, updates);
 }
 
 export async function checkOutFridgeItem(id: string, actionBy?: string): Promise<void> {
+  await checkFeatureEnabled();
   const actorId = actionBy || (await getSignedInUserId());
   return fridgeService.updateFridgeItem(id, {
     status: FridgeItemStatus.CHECKED_OUT,
@@ -57,6 +75,7 @@ export async function checkOutFridgeItem(id: string, actionBy?: string): Promise
 }
 
 export async function restoreFridgeItem(item: FridgeItemRecord, actionBy?: string): Promise<void> {
+  await checkFeatureEnabled();
   const actorId = actionBy || (await getSignedInUserId());
   // 1. Mark existing checkout record as history
   await fridgeService.updateFridgeItem(item.id, {
@@ -84,6 +103,7 @@ export async function restoreFridgeItem(item: FridgeItemRecord, actionBy?: strin
 }
 
 export async function discardFridgeItem(id: string, actionBy?: string): Promise<void> {
+  await checkFeatureEnabled();
   const actorId = actionBy || (await getSignedInUserId());
   return fridgeService.deleteFridgeItem(id, actorId);
 }

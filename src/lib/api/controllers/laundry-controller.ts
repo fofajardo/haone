@@ -1,3 +1,4 @@
+import { constantsService } from "$api/services/constants-service";
 import { laundryService } from "$api/services/laundry-service";
 import {
   type LaundryRecord,
@@ -7,7 +8,7 @@ import {
 } from "$lib/types";
 import { residentState } from "$state/resident-state.svelte";
 import { parseTimeMinutes } from "$utils/parsers";
-import { canAccessLaundryOrFridge, getSignedInUserId } from "./resident-controller";
+import { canAccessLaundry, getSignedInUserId } from "./resident-controller";
 
 export interface ValidateLaundryOptions {
   date: string;
@@ -125,9 +126,22 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
   }
 }
 
+export async function fetchFeatureFlagLaundry(bypassCache = false): Promise<boolean> {
+  const val = await constantsService.fetchConstantByKey("FEATURE_FLAG_LAUNDRY");
+  return (val || "").toLowerCase() === "true";
+}
+
+export async function checkFeatureEnabled() {
+  const laundryEnabled = await fetchFeatureFlagLaundry();
+  if (!laundryEnabled) {
+    throw new Error("Access Denied: Laundry service not enabled. Check back later!");
+  }
+}
+
 export async function fetchLaundryReservations(
   bypassCache = false
 ): Promise<{ reservations: LaundryRecord[]; currentResidentId: string }> {
+  await checkFeatureEnabled();
   const currentResidentId = await getSignedInUserId();
   const res = await laundryService.fetchReservations(currentResidentId, undefined, bypassCache);
   const list = Array.isArray(res) ? res : res.items;
@@ -141,10 +155,11 @@ export async function addLaundryReservation(
   data: Partial<LaundryRecord>,
   isAdmin = false
 ): Promise<void> {
+  await checkFeatureEnabled();
   if (!isAdmin) {
     const accountType =
       residentState.status?.account?.type || residentState.status?.currEntry?.accountType || "";
-    if (!canAccessLaundryOrFridge(accountType)) {
+    if (!canAccessLaundry(accountType)) {
       throw new Error("Access Denied: Account type cannot book laundry");
     }
   }
@@ -213,6 +228,7 @@ export async function cancelLaundryReservation(
   reason: string,
   _status: any = null
 ) {
+  await checkFeatureEnabled();
   return await laundryService.cancelReservation(reservationId, reason || "Cancelled by resident");
 }
 
@@ -220,6 +236,7 @@ export async function fetchAdminLaundryReservations(
   bypassCache = false,
   options?: PaginationOptions
 ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>> {
+  await checkFeatureEnabled();
   return laundryService.fetchReservations(undefined, options, bypassCache);
 }
 
@@ -228,9 +245,11 @@ export async function cancelAdminLaundryReservation(
   reason: string,
   _status: any = null
 ) {
+  await checkFeatureEnabled();
   await laundryService.cancelReservation(reservationId, reason || "Cancelled by admin");
 }
 
 export async function addLaundryReservationsBatch(entries: Partial<LaundryRecord>[]) {
+  await checkFeatureEnabled();
   await laundryService.addReservationsBatch(entries);
 }
