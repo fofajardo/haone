@@ -374,20 +374,23 @@
   async function loadData(bypassCache = false) {
     isLoading = true;
     try {
-      const [mapped, officerList, usersList, currentTerm] = await Promise.all([
+      const [mapped, officerList, usersList] = await Promise.all([
         fetchResidents(bypassCache),
         fetchOfficers(bypassCache),
-        fetchUsers(bypassCache),
-        uiSettings.ensureCurrentTerm()
+        fetchUsers(bypassCache)
       ]);
 
       allAccounts = mapped;
-      residents = mapped.filter((r) => r.period === currentTerm);
+      residents = mapped.filter((r) => r.period === uiSettings.currentTerm);
       officers = officerList;
       rawUsers = usersList;
 
       // Auto-Period
-      const entries = await fetchJournalEntries({ term: currentTerm }, undefined, bypassCache);
+      const entries = await fetchJournalEntries(
+        { term: uiSettings.currentTerm },
+        undefined,
+        bypassCache
+      );
       const journalList = Array.isArray(entries) ? entries : entries.items;
       const dates = journalList
         .map((j) => j.date)

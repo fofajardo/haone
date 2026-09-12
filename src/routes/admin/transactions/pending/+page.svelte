@@ -57,10 +57,7 @@
     selectedIndices = new Set();
 
     try {
-      const [entries, currentTerm] = await Promise.all([
-        fetchJournalEntries(undefined, undefined, bypassCache),
-        uiSettings.ensureCurrentTerm()
-      ]);
+      const [entries] = await Promise.all([fetchJournalEntries(undefined, undefined, bypassCache)]);
 
       const journals = Array.isArray(entries) ? entries : entries.items;
 
@@ -71,7 +68,7 @@
         }))
         .filter((r) => {
           return (
-            r.period === currentTerm.trim() &&
+            r.period === uiSettings.currentTerm &&
             (!r.prDateIssued || r.prDateIssued === "#N/A") &&
             r.prRefNo !== "N/A" &&
             r.prRefNo !== "#N/A"

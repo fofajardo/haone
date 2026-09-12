@@ -29,7 +29,6 @@
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
-  let currentTerm = $state("");
   let currentUserId = $state("");
   let totalUsersCount = $state(0);
   let scope = $state("global");
@@ -67,11 +66,10 @@
     isLoading = true;
     error = null;
     try {
-      const [a, l, r, t, allU] = await Promise.all([
+      const [a, l, r, allU] = await Promise.all([
         fetchAdminAchievements(bypassCache),
         fetchAchievementLogs(bypassCache),
         fetchResidents(bypassCache),
-        fetchTermCurr(bypassCache),
         fetchUsers(bypassCache)
       ]);
       const accountsCountMap = new Map<string, number>();
@@ -90,12 +88,7 @@
         };
       });
       logs = l;
-      currentTerm = t;
       totalUsersCount = allU.length;
-      const currTerm = await uiSettings.ensureCurrentTerm();
-      if (!newAchievement.term) {
-        newAchievement.term = currTerm;
-      }
       currentUserId = auth.userId;
     } catch (e: any) {
       error = e.message;
@@ -114,7 +107,7 @@
         icon: newAchievement.icon,
         extraUrl: newAchievement.extraUrl,
         points: Number(newAchievement.points) || 0,
-        term: newAchievement.isIndefinite ? "" : newAchievement.term || currentTerm
+        term: newAchievement.isIndefinite ? "" : newAchievement.term
       });
       toast.success("Achievement created");
       isCreatorOpen = false;
@@ -124,7 +117,7 @@
         icon: "🏆",
         extraUrl: "",
         points: 10,
-        term: currentTerm,
+        term: uiSettings.currentTerm,
         isIndefinite: false
       };
       loadData();

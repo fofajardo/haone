@@ -159,10 +159,9 @@
     isLoading = true;
 
     try {
-      const [journalEntries, allResidents, currentTerm] = await Promise.all([
+      const [journalEntries, allResidents] = await Promise.all([
         fetchJournalEntries(),
-        fetchResidents(),
-        uiSettings.ensureCurrentTerm()
+        fetchResidents()
       ]);
 
       const journals = Array.isArray(journalEntries) ? journalEntries : journalEntries.items;
@@ -170,7 +169,7 @@
       // Stats from Accounts
       const accounts = allResidents.filter((r) => {
         return (
-          r.period === currentTerm &&
+          r.period === uiSettings.currentTerm &&
           r.email &&
           r.email !== "_vacant" &&
           !(r.bed || "").includes("(")
@@ -187,7 +186,7 @@
       const journalData = journals;
       const pending = journalData.filter((r) => {
         return (
-          r.period === currentTerm &&
+          r.period === uiSettings.currentTerm &&
           (!r.prDateIssued || r.prDateIssued === "#N/A") &&
           r.prRefNo !== "N/A" &&
           r.prRefNo !== "#N/A"

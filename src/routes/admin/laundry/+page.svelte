@@ -64,11 +64,10 @@
     isLoading = true;
     error = null;
     try {
-      const [resResult, allUsers, allResidents, currentTerm] = await Promise.all([
+      const [resResult, allUsers, allResidents] = await Promise.all([
         fetchAdminLaundryReservations(true),
         fetchUsers(true),
-        fetchResidents(true),
-        uiSettings.ensureCurrentTerm()
+        fetchResidents(true)
       ]);
 
       const newRoomMap = new Map<string, string>();
@@ -78,7 +77,7 @@
       allResidents.forEach((res) => {
         if (
           res.residentId &&
-          res.period === currentTerm &&
+          res.period === uiSettings.activeTerm &&
           canAccessLaundryOrFridge(res.type || "")
         ) {
           newActiveResIds.add(res.residentId);

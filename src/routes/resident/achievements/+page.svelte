@@ -33,10 +33,7 @@
     isLoading = true;
     error = null;
     try {
-      const [achResult, activeTerm] = await Promise.all([
-        fetchAchievements(bypassCache),
-        uiSettings.ensureCurrentTerm()
-      ]);
+      const [achResult] = await Promise.all([fetchAchievements(bypassCache)]);
       achievements = achResult.achievements || [];
       logs = achResult.logs || [];
       currentResidentId = achResult.currentResidentId || "";

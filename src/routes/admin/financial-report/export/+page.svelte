@@ -65,7 +65,6 @@
     error = null;
 
     try {
-      await uiSettings.ensureCurrentTerm();
       const data = await fetchFinancialReportData(bypassCache);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;

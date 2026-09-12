@@ -5,7 +5,6 @@
   import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
   import {
@@ -20,7 +19,6 @@
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
-  let currentTerm = $state("");
   let scope = $state("global");
   let isLoading = $state(true);
   let error = $state<string | null>(null);

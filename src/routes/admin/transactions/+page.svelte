@@ -42,10 +42,9 @@
     selectedIds = new Set();
 
     try {
-      const [entries, mops, currentTerm] = await Promise.all([
+      const [entries, mops] = await Promise.all([
         fetchJournalEntries(undefined, undefined, bypassCache),
-        fetchMopTypes(bypassCache),
-        uiSettings.ensureCurrentTerm()
+        fetchMopTypes(bypassCache)
       ]);
 
       mopTypes = [{ value: "", label: "N/A" }, ...mops];
@@ -57,7 +56,7 @@
           ...res,
           dateWeight: parseDateWeight(res.date)
         }))
-        .filter((r) => !currentTerm || r.period === currentTerm)
+        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
         .sort(
           (a, b) =>
             (b.dateWeight ?? 0) - (a.dateWeight ?? 0) || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0)

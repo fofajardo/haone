@@ -14,29 +14,21 @@
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
-  let currentTerm = $state("");
   let scope = $state("global");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
   let isGlobal = $derived(scope === "global");
 
-  import { fetchResidentStatus } from "$api/controllers/resident-controller";
-
   async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
 
     try {
-      const [achResult, statusJson, activeTerm] = await Promise.all([
-        fetchAchievements(bypassCache),
-        fetchResidentStatus(undefined, bypassCache),
-        uiSettings.ensureCurrentTerm()
-      ]);
+      const [achResult] = await Promise.all([fetchAchievements(bypassCache)]);
 
       achievements = Array.isArray(achResult) ? achResult : achResult.achievements;
       logs = Array.isArray(achResult) ? achResult : achResult.logs;
-      currentTerm = statusJson.currentTerm || activeTerm;
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -46,10 +38,12 @@
 
   onMount(() => {
     pageState.title = "Leaderboards";
-    loadData();
   });
 
-  let effectiveTerm = $derived(uiSettings.currentTerm || currentTerm);
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -78,6 +72,6 @@
       >
     </ErrorView>
   {:else}
-    <AchievementLeaderboard {achievements} {logs} term={effectiveTerm} {isGlobal} />
+    <AchievementLeaderboard {achievements} {logs} term={uiSettings.currentTerm} {isGlobal} />
   {/if}
 </div>

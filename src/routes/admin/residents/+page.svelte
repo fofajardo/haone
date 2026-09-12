@@ -63,8 +63,7 @@
     error = null;
     selectedIndices = new Set();
     try {
-      const currentTerm = await uiSettings.ensureCurrentTerm();
-      residents = await fetchResidents(bypassCache, currentTerm);
+      residents = await fetchResidents(bypassCache, uiSettings.currentTerm);
     } catch (e: any) {
       error = e.message;
     } finally {
