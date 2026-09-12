@@ -155,7 +155,7 @@
     }
   ]);
 
-  async function loadDashboardData() {
+  async function loadData() {
     isLoading = true;
 
     try {
@@ -207,7 +207,11 @@
   onMount(() => {
     pageState.title = "Dashboard";
     pageState.isTopLevel = true;
-    loadDashboardData();
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
   });
 </script>
 
