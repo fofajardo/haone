@@ -21,13 +21,14 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { type JournalRecord, TRANSACTION_TYPE_OPTIONS, TransactionType } from "$lib/types";
+  import { toast } from "svelte-sonner";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let journal = $state<JournalRecord[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let selectedIds = $state<Set<string>>(new Set());
-  let isAuditing = $state(false);
 
   // Filters
   const tableSync = new TableSync({
@@ -78,20 +79,44 @@
     }
   }
 
-  async function handleBatchAudit() {
-    if (selectedIds.size === 0) {
+  async function confirmBatchAudit() {
+    const count = selectedIds.size;
+    if (count === 0) {
       return;
     }
-    isAuditing = true;
-    try {
-      await batchAuditEntries(Array.from(selectedIds));
-      selectedIds = new Set();
-      await loadData(true);
-    } catch (e: any) {
-      error = `Audit update failed: ${e.message}`;
-    } finally {
-      isAuditing = false;
-    }
+
+    const title = count === 1 ? "Mark transaction as audited?" : "Mark transactions as audited?";
+
+    const description =
+      count === 1
+        ? "This transaction will be locked and cannot be edited or reverted."
+        : `These ${count} transactions will be locked and cannot be edited or reverted.`;
+
+    globalDialog.confirm(
+      title,
+      description,
+      undefined,
+      async () => {
+        try {
+          await batchAuditEntries(Array.from(selectedIds));
+          toast.success(
+            count === 1
+              ? "Transaction marked as audited."
+              : `${count} transactions marked as audited.`
+          );
+          selectedIds = new Set();
+          await loadData(true);
+        } catch (e: any) {
+          error = `Audit update failed: ${e.message}`;
+          toast.error(error);
+        }
+      },
+      undefined,
+      {
+        accept: "Mark audited",
+        cancel: "Cancel"
+      }
+    );
   }
 
   onMount(() => {
@@ -203,9 +228,7 @@
         sorting={[{ id: "date", desc: true }]}
       >
         {#snippet actions()}
-          <Button size="sm" onclick={handleBatchAudit} isLoading={isAuditing} icon={ShieldCheck}>
-            Mark as Audited
-          </Button>
+          <Button size="sm" onclick={confirmBatchAudit} icon={ShieldCheck}>Mark as Audited</Button>
         {/snippet}
       </DataTable>
     {:else}
