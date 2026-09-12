@@ -182,6 +182,26 @@
           </button>
         </div>
       </div>
+      <Sidebar.Group class="mt-auto">
+        <Sidebar.Menu>
+          {#each secondaryItems as item}
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton
+                size="lg"
+                isActive={page.url.pathname === item.url}
+                onclick={() => sidebar.setOpenMobile(false)}
+              >
+                {#snippet child({ props })}
+                  <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          {/each}
+        </Sidebar.Menu>
+      </Sidebar.Group>
     {/if}
     <Sidebar.Group>
       <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
@@ -240,29 +260,6 @@
         {/each}
       </Sidebar.Menu>
     </Sidebar.Group>
-
-    {#if sidebar.isMobile}
-      <Sidebar.Group class="mt-auto">
-        <Sidebar.Menu>
-          {#each secondaryItems as item}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton
-                size="lg"
-                isActive={page.url.pathname === item.url}
-                onclick={() => sidebar.setOpenMobile(false)}
-              >
-                {#snippet child({ props })}
-                  <a href={item.url} {...props} onclick={() => sidebar.setOpenMobile(false)}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          {/each}
-        </Sidebar.Menu>
-      </Sidebar.Group>
-    {/if}
   </Sidebar.Content>
   <Sidebar.Rail />
 </Sidebar.Root>
