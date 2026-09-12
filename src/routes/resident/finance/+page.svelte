@@ -6,7 +6,6 @@
   import ErrorView from "$components/ErrorView.svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import ResidentTermFilter from "$components/residents/ResidentTermFilter.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
@@ -15,6 +14,7 @@
   import { page } from "$app/state";
   import { pageState } from "$state/page-info.svelte";
   import { fetchResidentStatus } from "$api/controllers/resident-controller";
+  import TermFilter from "$components/TermFilter.svelte";
 
   let status = $state<any>(null);
   let isLoading = $state(true);
@@ -89,11 +89,7 @@
     <FilterDrawer>
       <div class="grid gap-4 lg:grid-cols-12">
         <div class="lg:col-span-3">
-          <ResidentTermFilter
-            bind:value={localTerm}
-            options={status?.allTerms}
-            onSelect={() => loadData(localTerm)}
-          />
+          <TermFilter bind:value={localTerm} onSelect={() => loadData(localTerm)} />
         </div>
       </div>
     </FilterDrawer>
