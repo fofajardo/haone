@@ -9,7 +9,7 @@
   import { Checkbox } from "$ui/checkbox";
   import { ChevronLeft, Save } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
-  import RichEditor from "$components/RichEditor.svelte";
+  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import { addAnnouncement } from "$api/controllers/announcement-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { toast } from "svelte-sonner";
@@ -114,7 +114,7 @@
 
       <div class="space-y-2">
         <Label for="content">Content</Label>
-        <RichEditor
+        <RichTextEditor
           bind:content={formData.content}
           bind:actions={editorActions}
           placeholder="Announcement Details..."

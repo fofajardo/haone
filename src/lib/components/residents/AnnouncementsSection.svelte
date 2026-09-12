@@ -5,7 +5,7 @@
   import * as Card from "$ui/card";
   import { ChevronRight, ChevronLeft } from "@lucide/svelte";
   import { Button } from "$ui/button";
-  import RichEditor from "$components/RichEditor.svelte";
+  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
 
   import { Badge } from "$ui/badge";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
@@ -91,7 +91,7 @@
                 <h3 class="text-xl font-bold text-foreground">{a.title}</h3>
 
                 <div class="text-sm text-muted-foreground">
-                  <RichEditor content={a.content} editable={false} />
+                  <RichTextEditor content={a.content} editable={false} />
                 </div>
               </div>
             </Card.Content>

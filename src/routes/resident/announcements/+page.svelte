@@ -7,7 +7,7 @@
   import ErrorView from "$components/ErrorView.svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
-  import RichEditor from "$components/RichEditor.svelte";
+  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import { fetchAnnouncements } from "$api/controllers/announcement-controller";
   import { type AnnouncementRecord, ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import * as Card from "$ui/card";
@@ -77,7 +77,7 @@
             </div>
 
             <div class="line-clamp-3 text-sm text-muted-foreground">
-              <RichEditor content={a.content} editable={false} />
+              <RichTextEditor content={a.content} editable={false} />
             </div>
 
             <div class="flex items-center justify-between border-t pt-4">

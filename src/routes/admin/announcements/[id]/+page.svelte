@@ -11,7 +11,7 @@
   import * as AlertDialog from "$ui/alert-dialog";
   import { auth } from "$state/auth.svelte";
   import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
-  import RichEditor from "$components/RichEditor.svelte";
+  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import {
@@ -223,7 +223,7 @@
             for="content"
             class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Content</Label
           >
-          <RichEditor
+          <RichTextEditor
             bind:content={formData.content}
             bind:actions={editorActions}
             placeholder="Announcement Details..."

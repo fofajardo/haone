@@ -10,7 +10,7 @@
   import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import RichEditor from "$components/RichEditor.svelte";
+  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import { formatCurrency, formatAmount } from "$utils/formatters";
   import {
     Play,
@@ -251,7 +251,7 @@
               </Card.Title>
             </Card.Header>
             <Card.Content>
-              <RichEditor bind:content={emailDispatcher.customReminders} />
+              <RichTextEditor bind:content={emailDispatcher.customReminders} />
               <p class="mt-2 text-xs text-muted-foreground italic">
                 Globally applied to this batch.
               </p>
