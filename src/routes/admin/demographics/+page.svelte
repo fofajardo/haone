@@ -4,7 +4,6 @@
   import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
   import {
     RefreshCcw,
     GraduationCap,
@@ -15,7 +14,6 @@
   } from "@lucide/svelte";
   import { Button } from "$ui/button";
   import { uiSettings } from "$state/settings.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
   import * as Tabs from "$ui/tabs";
   import * as Card from "$ui/card";
   import * as Chart from "$ui/chart";
@@ -256,6 +254,10 @@
 
   onMount(() => {
     pageState.title = "Demographics";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 </script>
@@ -298,12 +300,6 @@
     {:else}
       <!-- Term Tab -->
       <Tabs.Content value="term" class="space-y-6">
-        <FilterDrawer>
-          <div class="mb-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
-            <TermFilter onSelect={() => loadData()} />
-          </div>
-        </FilterDrawer>
-
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <!-- Colleges -->
           <Card.Root>

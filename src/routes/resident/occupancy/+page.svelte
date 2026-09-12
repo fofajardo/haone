@@ -10,7 +10,6 @@
   import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
   import StudentProfileCard from "$components/residents/StudentProfileCard.svelte";
   import { pageState } from "$state/page-info.svelte";
-  import { fetchServer } from "$utils/api-client";
 
   let status = $state<any>(null);
   let occupancyData = $state<any[]>([]);
@@ -18,6 +17,7 @@
   let error = $state<string | null>(null);
 
   import { fetchResidentStatus, fetchResidents } from "$api/controllers/resident-controller";
+  import { uiSettings } from "$state/settings.svelte";
 
   async function loadData(bypassCache = false) {
     if (!auth.accessToken) return;
@@ -82,7 +82,10 @@
       <div class="lg:col-span-8">
         <OccupancyHistoryCard
           accounts={occupancyData}
-          onRowClick={(r) => goto(`/resident/finance?term=${r.period}`)}
+          onRowClick={(r) => {
+            uiSettings.currentTerm = r.period;
+            goto(`/resident/finance`);
+          }}
         />
       </div>
     </div>

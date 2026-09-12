@@ -2,8 +2,6 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -277,6 +275,10 @@
 
   onMount(() => {
     pageState.title = "Financial Report";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 </script>
@@ -322,17 +324,6 @@
     </ErrorView>
   {:else}
     <div class="space-y-6">
-      <!-- Scope / Term filter -->
-      <FilterDrawer>
-        <div class="max-w-xs">
-          <TermFilter
-            onSelect={() => {
-              return loadData();
-            }}
-          />
-        </div>
-      </FilterDrawer>
-
       <!-- (a) SUMMARY TAB -->
       {#if activeTab === "summary"}
         <div class="space-y-6">

@@ -13,12 +13,11 @@
   import { createColumns } from "./columns";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { Label } from "$ui/label";
-  import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
-  import TermFilter from "$components/TermFilter.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { goto } from "$app/navigation";
   import { pageState } from "$state/page-info.svelte";
+  import { uiSettings } from "$state/settings.svelte";
 
   let officers = $state<OfficerRecord[]>([]);
   let currentTerm = $state("");
@@ -51,6 +50,10 @@
 
   onMount(() => {
     pageState.title = "Officers";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -107,11 +110,7 @@
         tableSync.filters!.term = currentTerm;
       }}
     >
-      <div class="grid gap-2 lg:grid-cols-12">
-        <div class="lg:col-span-4">
-          <TermFilter bind:value={tableSync.filters!.term} onSelect={() => loadData()} />
-        </div>
-
+      <div class="grid gap-2 lg:grid-cols-8">
         <div class="space-y-1 lg:col-span-8">
           <Label>Search</Label>
           <InputGroup.Root class="h-9 text-xs">

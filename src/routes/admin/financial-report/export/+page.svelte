@@ -5,7 +5,6 @@
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -88,6 +87,10 @@
 
   onMount(() => {
     pageState.title = "Export Financial Report";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -155,7 +158,8 @@
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <div class="space-y-4">
             <div class="space-y-2">
-              <TermFilter />
+              <Label>Academic Term</Label>
+              <Input value={translatePeriod(uiSettings.currentTerm)} readonly />
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="space-y-2">

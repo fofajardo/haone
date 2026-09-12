@@ -5,7 +5,6 @@
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import { Button } from "$ui/button";
@@ -417,6 +416,10 @@
 
   onMount(() => {
     pageState.title = "Export Residents";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -750,8 +753,10 @@
         >
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <div class="flex flex-col gap-8">
-            <TermFilter onSelect={() => loadData()} />
-
+            <div class="space-y-2">
+              <Label>Academic Term</Label>
+              <Input value={translatePeriod(uiSettings.currentTerm)} readonly />
+            </div>
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="space-y-2">
                 <Label>Period Start</Label>

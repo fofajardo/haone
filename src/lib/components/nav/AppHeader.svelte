@@ -17,6 +17,7 @@
   import { page } from "$app/state";
   import BrandingLogo from "$components/BrandingLogo.svelte";
   import { namecase } from "@compwright/namecase";
+  import GlobalTermFilter from "./GlobalTermFilter.svelte";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -90,6 +91,7 @@
     <div class="flex items-center gap-2 px-1">
       <BrandingLogo class="h-10 w-auto object-contain" />
     </div>
+    <GlobalTermFilter />
   </div>
 
   <div class="flex items-center gap-2">

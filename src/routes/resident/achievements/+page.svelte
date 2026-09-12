@@ -2,12 +2,11 @@
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Trophy } from "@lucide/svelte";
+  import { Trophy } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
@@ -24,7 +23,6 @@
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
   let currentResidentId = $state("");
-  let selectedTerm = $state(uiSettings.currentTerm || "");
   let scope = $state("global");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -42,9 +40,6 @@
       achievements = achResult.achievements || [];
       logs = achResult.logs || [];
       currentResidentId = achResult.currentResidentId || "";
-      if (!selectedTerm) {
-        selectedTerm = activeTerm;
-      }
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -54,6 +49,10 @@
 
   onMount(() => {
     pageState.title = "Achievements";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -79,7 +78,7 @@
       if (isIndefinite) {
         return uiSettings.showAllTimeAchievements;
       }
-      return a.term === selectedTerm;
+      return a.term === uiSettings.currentTerm;
     })
   );
 
@@ -124,9 +123,6 @@
     {#if !isGlobal}
       <FilterDrawer>
         <div class="flex flex-wrap items-end justify-between gap-4">
-          <div class="w-full sm:w-64">
-            <TermFilter bind:value={selectedTerm} />
-          </div>
           <div class="flex items-center space-x-2 pb-1.5">
             <Checkbox id="show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
             <Label for="show-all-time" class="cursor-pointer text-xs font-medium">

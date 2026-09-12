@@ -5,15 +5,12 @@
   import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
   import { fetchAchievements } from "$api/controllers/achievement-controller";
   import { uiSettings } from "$state/settings.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import { pageState } from "$state/page-info.svelte";
-  import { fetchServer } from "$utils/api-client";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -51,9 +48,8 @@
     pageState.title = "Leaderboards";
     loadData();
   });
-  let selectedTerm = $state(uiSettings.currentTerm || "");
 
-  let effectiveTerm = $derived(selectedTerm || uiSettings.currentTerm || currentTerm);
+  let effectiveTerm = $derived(uiSettings.currentTerm || currentTerm);
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -82,16 +78,6 @@
       >
     </ErrorView>
   {:else}
-    {#if !isGlobal}
-      <FilterDrawer>
-        <div class="grid gap-2 lg:grid-cols-12">
-          <div class="lg:col-span-3">
-            <TermFilter bind:value={selectedTerm} />
-          </div>
-        </div>
-      </FilterDrawer>
-    {/if}
-
     <AchievementLeaderboard {achievements} {logs} term={effectiveTerm} {isGlobal} />
   {/if}
 </div>

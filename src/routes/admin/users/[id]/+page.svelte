@@ -14,9 +14,7 @@
   import { Badge } from "$ui/badge";
   import { Label } from "$ui/label";
   import * as AlertDialog from "$ui/alert-dialog";
-  import * as DropdownMenu from "$ui/dropdown-menu";
   import {
-    RefreshCcw,
     User as UserIcon,
     GraduationCap,
     Clock,
@@ -30,9 +28,7 @@
     Trash2,
     Info,
     ArrowUpRight,
-    ChevronDown,
     FileCheck,
-    Plus,
     Banknote,
     Bed,
     BookUser
@@ -44,9 +40,7 @@
     type ResidentRecord,
     type JournalRecord,
     type OfficerRecord,
-    UserTag,
-    AccountType,
-    ACCOUNT_TYPE_LABELS
+    UserTag
   } from "$lib/types";
   import {
     fetchUserById,
@@ -64,7 +58,6 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
   import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
@@ -84,14 +77,15 @@
   let isLoading = $state(true);
   let isDeleteAlertOpen = $state(false);
   let error = $state<string | null>(null);
-  let localTerm = $state(page.url.searchParams.get("term") || uiSettings.currentTerm);
 
   let isClearDialogOpen = $state(false);
   let isDelistOpen = $state(false);
   let residentsToClear = $state<ResidentRecord[]>([]);
   let isChangingType = $state(false);
 
-  const currentAccount = $derived(accounts.find((a) => a.period === localTerm) || null);
+  const currentAccount = $derived(
+    accounts.find((a) => a.period === uiSettings.currentTerm) || null
+  );
 
   const qualifications = $derived(
     user
@@ -113,11 +107,6 @@
     error = null;
 
     try {
-      const currTerm = await uiSettings.ensureCurrentTerm();
-      if (!localTerm) {
-        localTerm = currTerm;
-      }
-
       const [userData, accountData, allOfficers, entries, allRes] = await Promise.all([
         fetchUserById(userId, bypassCache),
         fetchAccountsByUserId(userId, bypassCache),
@@ -148,7 +137,7 @@
             (user?.email && r.account.trim().toLowerCase() === user.email.toLowerCase()) ||
             (user?.studentNo && r.stno.trim() === user.studentNo)
         )
-        .filter((r) => !localTerm || r.period === localTerm)
+        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
         .map((journal) => ({
           ...journal,
           dateWeight: parseDateWeight(journal.date)
@@ -221,7 +210,10 @@
     isClearDialogOpen = true;
   }
 
-  onMount(loadUserProfile);
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadUserProfile();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -537,12 +529,6 @@
 
       <!-- (1) Finance Tab -->
       <Tabs.Content value="finance" class="space-y-6">
-        <div class="grid gap-4 lg:grid-cols-12">
-          <div class="lg:col-span-3">
-            <TermFilter bind:value={localTerm} onSelect={loadUserProfile} />
-          </div>
-        </div>
-
         {#if currentAccount}
           <!-- Occupancy, Financial & Clearance Info for selected term -->
           <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -611,7 +597,7 @@
 
       <!-- (2) Occupancy Tab -->
       <Tabs.Content value="occupancy" class="space-y-4">
-        <OccupancyHistoryCard {accounts} onRowClick={(r) => (localTerm = r.period)} />
+        <OccupancyHistoryCard {accounts} onRowClick={(r) => (uiSettings.currentTerm = r.period)} />
       </Tabs.Content>
 
       <!-- (3) Officership Tab -->
@@ -633,7 +619,7 @@
     bed={currentAccount.bed}
     userId={currentAccount.residentId}
     isOccupied={true}
-    activeTerm={localTerm}
+    activeTerm={uiSettings.currentTerm}
     userOptions={[]}
     availableBedOptions={[]}
     onSuccess={async () => {

@@ -133,7 +133,10 @@
     }
   }
 
-  onMount(loadData);
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -168,13 +171,6 @@
     {#if !isGlobal}
       <FilterDrawer>
         <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
-          <div class="w-full sm:w-64">
-            <TermFilter
-              onSelect={() => {
-                loadData();
-              }}
-            />
-          </div>
           <div class="flex items-center space-x-2 pb-1.5">
             <Checkbox id="admin-show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
             <Label for="admin-show-all-time" class="cursor-pointer text-xs font-medium">

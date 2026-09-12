@@ -11,7 +11,6 @@
   import { Button } from "$ui/button";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
-  import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import { RefreshCcw, ListFilter, Search, ShieldCheck, Plus } from "@lucide/svelte";
   import ContentHeader from "$components/ContentHeader.svelte";
@@ -98,6 +97,10 @@
 
   onMount(() => {
     pageState.title = "Transactions";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -161,10 +164,7 @@
         Number(tableSync.filters!.mop !== "ALL")}
       onClear={resetFilters}
     >
-      <div class="grid gap-2 lg:grid-cols-12">
-        <div class="lg:col-span-3">
-          <TermFilter onSelect={() => loadData()} />
-        </div>
+      <div class="grid gap-2 lg:grid-cols-9">
         <div class="space-y-1 lg:col-span-5">
           <Label>Search</Label>
           <InputGroup.Root class="h-9 text-sm">
