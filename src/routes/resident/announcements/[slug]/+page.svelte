@@ -1,10 +1,9 @@
 <script lang="ts">
   import { Button } from "$ui/button";
   import { ChevronLeft } from "@lucide/svelte";
-  import { goto } from "$app/navigation";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
+  import RichTextRenderer from "$components/editor/RichTextRenderer.svelte";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { Badge } from "$ui/badge";
   import { onMount } from "svelte";
@@ -73,9 +72,10 @@
     </div>
 
     <div class="mx-auto max-w-4xl px-6 pb-12">
-      <div class="prose prose-slate dark:prose-invert max-w-none">
-        <RichTextEditor content={announcement.content} editable={false} />
-      </div>
+      <RichTextRenderer
+        bind:content={announcement.content}
+        class="prose prose-slate dark:prose-invert max-w-none"
+      />
 
       <div class="mt-12 flex flex-col border-t pt-8">
         <span class="text-sm font-medium text-foreground">{announcement.creatorName}</span>

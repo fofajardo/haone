@@ -5,8 +5,7 @@
   import * as Card from "$ui/card";
   import { ChevronRight, ChevronLeft } from "@lucide/svelte";
   import { Button } from "$ui/button";
-  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
-
+  import RichTextRenderer from "$components/editor/RichTextRenderer.svelte";
   import { Badge } from "$ui/badge";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { goto } from "$app/navigation";
@@ -86,13 +85,10 @@
       >
         {#each announcements as a}
           <div class="relative flex h-full w-full shrink-0 flex-col overflow-hidden">
-            <Card.Content class="min-h-0 flex-1 space-y-3 overflow-hidden p-6 pb-2">
+            <Card.Content class="overflow-hidden">
               <div class="space-y-2">
                 <h3 class="text-xl font-bold text-foreground">{a.title}</h3>
-
-                <div class="text-sm text-muted-foreground">
-                  <RichTextEditor content={a.content} editable={false} />
-                </div>
+                <RichTextRenderer bind:content={a.content} />
               </div>
             </Card.Content>
 
