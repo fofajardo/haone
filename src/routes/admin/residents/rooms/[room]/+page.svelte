@@ -1,6 +1,6 @@
 <script lang="ts">
   import { roomsState } from "$state/rooms.svelte";
-  import { fetchResidents, fetchUsers, fetchTermCurr } from "$api/controllers/resident-controller";
+  import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
   import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
@@ -11,6 +11,7 @@
   import { RefreshCcw, Users, Bed, Info } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
+  import { uiSettings } from "$state/settings.svelte.js";
 
   let { data } = $props();
   const roomNumber = $derived(data.roomNumber);
@@ -23,7 +24,6 @@
   let users = $state<UserRecord[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
-  let activeTerm = $state("");
 
   $effect(() => {
     loadData();
@@ -33,16 +33,16 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData, term] = await Promise.all([
+      const [resData, userData] = await Promise.all([
         fetchResidents(bypassCache),
-        fetchUsers(bypassCache),
-        fetchTermCurr(bypassCache)
+        fetchUsers(bypassCache)
       ]);
-      activeTerm = term;
-      if (!activeTerm) {
+      if (!uiSettings.currentTerm) {
         throw new Error("Active academic term (TERM_CURR) not found in constants.");
       }
-      residents = resData.filter((r) => r.period === activeTerm && r.room === roomNumber);
+      residents = resData.filter(
+        (r) => r.period === uiSettings.currentTerm && r.room === roomNumber
+      );
       users = userData;
     } catch (e: any) {
       error = e.message;
@@ -237,7 +237,7 @@
   bind:bed={assignmentDialog.bed}
   bind:userId={assignmentDialog.userId}
   isOccupied={assignmentDialog.isOccupied}
-  {activeTerm}
+  activeTerm={uiSettings.currentTerm}
   {userOptions}
   {availableBedOptions}
   onSuccess={() => loadData(true)}

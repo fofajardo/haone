@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { ChevronLeft, Save } from "@lucide/svelte";
+  import { Save } from "@lucide/svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import { addOfficer, fetchOfficers } from "$api/controllers/officer-controller";
-  import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
+  import { fetchResidents } from "$api/controllers/resident-controller";
   import { brandingState } from "$state/branding.svelte";
   import type { OfficerRecord, ResidentRecord } from "$lib/types";
   import { OfficerStatus } from "$lib/types";
@@ -19,10 +19,10 @@
   import * as Card from "$ui/card";
 
   import { translatePeriod } from "$utils/translators";
+  import { uiSettings } from "$state/settings.svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let officers = $state<OfficerRecord[]>([]);
-  let currentTerm = $state("");
   let isLoading = $state(true);
   let isSaving = $state(false);
 
@@ -38,11 +38,7 @@
   async function loadData() {
     isLoading = true;
     try {
-      [residents, officers, currentTerm] = await Promise.all([
-        fetchResidents(),
-        fetchOfficers(),
-        fetchTermCurr()
-      ]);
+      [residents, officers] = await Promise.all([fetchResidents(), fetchOfficers()]);
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -52,6 +48,10 @@
 
   onMount(() => {
     pageState.title = "Add Officer";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -62,7 +62,7 @@
   const availablePositions = $derived.by(() => {
     return positions.map((p) => {
       const currentCount = officers.filter(
-        (o) => o.position === p.title && o.term === currentTerm
+        (o) => o.position === p.title && o.term === uiSettings.currentTerm
       ).length;
       const isFull = p.limit > 0 && currentCount >= p.limit;
       return {
@@ -75,7 +75,7 @@
 
   const residentOptions = $derived(
     residents
-      .filter((r) => r.period === currentTerm)
+      .filter((r) => r.period === uiSettings.currentTerm)
       .map((r) => ({
         label: `${r.name} (${r.room}${r.bed})`,
         value: r.residentId
@@ -116,7 +116,7 @@
         nickname: newOfficerData.nickname,
         email: resident.email,
         fbLink: newOfficerData.fbLink,
-        term: currentTerm,
+        term: uiSettings.currentTerm,
         committee: newOfficerData.committee,
         birthday: newOfficerData.birthday,
         id: "",
@@ -143,7 +143,7 @@
         <Card.Title>Officer Details</Card.Title>
         <Card.Description
           >Assign a resident to an officer position for {translatePeriod(
-            currentTerm
+            uiSettings.currentTerm
           )}.</Card.Description
         >
       </Card.Header>

@@ -7,7 +7,6 @@
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import { fetchOfficers } from "$api/controllers/officer-controller";
-  import { fetchTermCurr } from "$api/controllers/resident-controller";
   import type { OfficerRecord } from "$lib/types";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { createColumns } from "./columns";
@@ -34,12 +33,9 @@
     isLoading = true;
     error = null;
     try {
-      [officers, currentTerm] = await Promise.all([
-        fetchOfficers(bypassCache),
-        fetchTermCurr(bypassCache)
-      ]);
+      [officers] = await Promise.all([fetchOfficers(bypassCache)]);
       if (tableSync.filters!.term === "ALL") {
-        tableSync.filters!.term = currentTerm;
+        tableSync.filters!.term = uiSettings.currentTerm;
       }
     } catch (e: any) {
       error = e.message;

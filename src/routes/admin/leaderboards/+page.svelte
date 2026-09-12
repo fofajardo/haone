@@ -12,7 +12,7 @@
     fetchAchievementLogs
   } from "$api/controllers/achievement-controller";
   import { fetchUserSettings } from "$api/controllers/settings-controller";
-  import { fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
   import { pageState } from "$state/page-info.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
@@ -30,12 +30,11 @@
     error = null;
 
     try {
-      const [achievementRows, logRows, users, settings, term] = await Promise.all([
+      const [achievementRows, logRows, users, settings] = await Promise.all([
         fetchAdminAchievements(bypassCache),
         fetchAchievementLogs(bypassCache),
         fetchUsers(bypassCache),
-        fetchUserSettings(bypassCache),
-        fetchTermCurr(bypassCache)
+        fetchUserSettings(bypassCache)
       ]);
 
       const userMap = new Map(

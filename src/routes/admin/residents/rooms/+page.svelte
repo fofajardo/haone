@@ -4,7 +4,6 @@
   import { onMount } from "svelte";
   import { roomsState } from "$state/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
-  import { fetchTermCurr } from "$api/controllers/constants-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import FilterDrawer from "$components/content/FilterDrawer.svelte";
@@ -31,12 +30,12 @@
     ChevronRight,
     DownloadIcon
   } from "@lucide/svelte";
+  import { uiSettings } from "$state/settings.svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let users = $state<UserRecord[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
-  let activeTerm = $state("");
 
   let selectedUnit = $state("ALL");
   let isCompact = $state(true);
@@ -45,16 +44,14 @@
     isLoading = true;
     error = null;
     try {
-      const [resData, userData, currentTerm] = await Promise.all([
+      const [resData, userData] = await Promise.all([
         fetchResidents(bypassCache),
-        fetchUsers(bypassCache),
-        fetchTermCurr(bypassCache)
+        fetchUsers(bypassCache)
       ]);
-      activeTerm = currentTerm;
-      if (!activeTerm) {
+      if (!uiSettings.currentTerm) {
         throw new Error("Active academic term (TERM_CURR) not found in constants.");
       }
-      residents = resData.filter((r) => r.period === activeTerm);
+      residents = resData.filter((r) => r.period === uiSettings.currentTerm);
       users = userData;
     } catch (e: any) {
       error = e.message;
@@ -374,7 +371,7 @@
   bind:bed={assignmentDialog.bed}
   bind:userId={assignmentDialog.userId}
   isOccupied={assignmentDialog.isOccupied}
-  {activeTerm}
+  activeTerm={uiSettings.currentTerm}
   {userOptions}
   {availableBedOptions}
   onSuccess={() => loadData(true)}

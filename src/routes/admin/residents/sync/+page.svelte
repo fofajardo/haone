@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { globalDialog } from "$state/dialog.svelte";
-  import { fetchTermCurr } from "$api/controllers/constants-controller";
   import {
     getSyncPreview,
     applySync,
@@ -37,7 +36,6 @@
   let isSyncing = $state(false);
   let processingIndex = $state<number | null>(null);
   let error = $state<string | null>(null);
-  let activeTerm = $state("");
   let previewActions = $state<SyncPreviewAction[]>([]);
   let selectedGroups = $state<Set<number>>(new Set());
 
@@ -80,12 +78,11 @@
     isLoading = true;
     error = null;
     try {
-      activeTerm = (await fetchTermCurr()) || uiSettings.currentTerm;
-      if (!activeTerm) {
+      if (!uiSettings.activeTerm) {
         error = "Active academic term (TERM_CURR) not found.";
         return;
       }
-      previewActions = await getSyncPreview(activeTerm);
+      previewActions = await getSyncPreview(uiSettings.activeTerm);
       selectedGroups = new Set(previewActions.map((a) => a.currIndex ?? -1));
     } catch (e: any) {
       error = e.message || "Failed to load sync preview.";
@@ -101,7 +98,7 @@
     }
     isSyncing = true;
     try {
-      const result = await applySync(selectedActions, activeTerm);
+      const result = await applySync(selectedActions, uiSettings.activeTerm);
       globalDialog.show(
         "Sync Complete",
         `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
@@ -117,7 +114,7 @@
   async function handleApproveSingle(group: { currIndex: number; actions: SyncPreviewAction[] }) {
     processingIndex = group.currIndex;
     try {
-      await applySync(group.actions, activeTerm);
+      await applySync(group.actions, uiSettings.activeTerm);
       toast.success(`Approved registration for ${group.actions[0]?.residentName || "resident"}`);
       await loadPreview();
     } catch (e: any) {
@@ -146,7 +143,7 @@
     try {
       await declineRegistration(
         declineDialog.email,
-        activeTerm,
+        uiSettings.activeTerm,
         declineDialog.reason.trim(),
         declineDialog.currIndex
       );

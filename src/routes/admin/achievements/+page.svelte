@@ -12,7 +12,7 @@
     fetchAchievementLogs,
     addAchievement
   } from "$api/controllers/achievement-controller";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
+  import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import * as Dialog from "$ui/dialog";
   import { Input } from "$ui/input";

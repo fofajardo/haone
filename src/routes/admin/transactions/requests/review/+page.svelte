@@ -20,7 +20,7 @@
     declinePaymentRequest,
     approvePaymentRequest
   } from "$api/controllers/payment-request-controller";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
+  import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import { PaymentRequestStatus, JOURNAL_COL as JOR, TransactionType } from "$lib/types";
   import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
@@ -34,8 +34,6 @@
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);
-  let users = $state<any[]>([]);
-  let currentTerm = $state("");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let currentIndex = $state(0);
@@ -49,10 +47,9 @@
     isLoading = true;
     error = null;
     try {
-      const [p, r, t, u] = await Promise.all([
+      const [p, r, u] = await Promise.all([
         fetchAdminPaymentRequests(true),
         fetchResidents(true),
-        fetchTermCurr(true),
         fetchUsers(true)
       ]);
 
@@ -72,8 +69,11 @@
           assoc: p.assocFee,
           misc: p.misc,
           mop: p.mop,
-          period: t,
-          type: TransactionType.COLLECTION,
+          period: uiSettings.activeTerm,
+          type:
+            p.type !== TransactionType.COLLECTION && p.type !== TransactionType.COLLECTION_OTHERS
+              ? TransactionType.COLLECTION
+              : p.type,
           notes: p.notes || "",
           notesPrivate: "",
           mopRefNo: "",
@@ -94,8 +94,6 @@
 
       payments = filtered;
       residents = r;
-      currentTerm = t;
-      users = u;
 
       if (payments.length === 0) {
         error = "No pending payment requests found for the selected IDs.";
