@@ -38,7 +38,7 @@
   let error = $state<string | null>(null);
 
   let selectedUnit = $state("ALL");
-  let isCompact = $state(true);
+  let isCompact = $state(false);
 
   async function loadData(bypassCache = false) {
     isLoading = true;
