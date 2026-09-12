@@ -40,10 +40,8 @@
 {#if isLoading}
   <Skeleton class="h-175 w-full" />
 {:else if announcements.length > 0}
-  <Card.Root
-    class="relative mx-auto flex h-175 w-full max-w-full flex-col overflow-hidden shadow-none"
-  >
-    <Card.Header class="flex flex-row items-center justify-between pb-0">
+  <Card.Root class="relative mx-auto flex h-175 w-full max-w-full flex-col overflow-hidden">
+    <Card.Header class="flex flex-row items-center justify-between">
       <Card.Title>Announcements</Card.Title>
       {#if announcements.length > 1}
         <Card.Action class="flex items-center gap-1">
