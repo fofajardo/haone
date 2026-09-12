@@ -207,19 +207,19 @@
         <RecentActivityCard transactions={status.transactions} period={status.activeTerm} />
       </div>
     </div>
-
-    <!-- Tools Section (3 cols) -->
-    <Card.Root class="mt-6 shadow-none">
-      <Card.Header>
-        <Card.Title>Tools</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {#each actions as tool}
-            <DashboardActionCard {...tool} />
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
   {/if}
+
+  <!-- Tools Section (3 cols) -->
+  <Card.Root class="mt-6 shadow-none">
+    <Card.Header>
+      <Card.Title>Tools</Card.Title>
+    </Card.Header>
+    <Card.Content>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {#each actions as tool}
+          <DashboardActionCard {...tool} />
+        {/each}
+      </div>
+    </Card.Content>
+  </Card.Root>
 </div>
