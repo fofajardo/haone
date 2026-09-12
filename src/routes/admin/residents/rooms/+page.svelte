@@ -277,7 +277,9 @@
           </button>
         {:else}
           <Card.Root
-            class="overflow-hidden p-0 {room.unavailable_reason ? 'opacity-60 grayscale' : ''}"
+            class="gap-0 overflow-hidden p-0 {room.unavailable_reason
+              ? 'opacity-60 grayscale'
+              : ''}"
           >
             <Card.Header class="bg-muted/50 p-3">
               <div class="flex items-center justify-between">
@@ -308,7 +310,7 @@
             </Card.Header>
             {#if !isCompact}
               <Card.Content class="p-3">
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 gap-2">
                   {#each room.slots as slot}
                     {@const key = `${room.room_number}-${slot}`}
                     {@const resident = occupancyMap.get(key.toUpperCase())}
@@ -331,14 +333,7 @@
                           <CircleCheck class="h-3 w-3 text-primary" />
                         {/if}
                       </div>
-                      <div class="my-1">
-                        {#if resident}
-                          <User class="h-5 w-5 text-primary" />
-                        {:else}
-                          <Bed class="h-5 w-5 text-muted-foreground/40" />
-                        {/if}
-                      </div>
-                      <span class="w-full truncate text-center text-xs font-medium">
+                      <span class="mt-2 w-full truncate text-center text-xs font-medium">
                         {resident ? resident.name : "Available"}
                       </span>
                     </button>
