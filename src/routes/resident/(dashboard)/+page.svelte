@@ -36,17 +36,17 @@
   } from "$api/controllers/resident-controller";
   import { getCustomServices } from "$lib/services";
   import { namecase } from "@compwright/namecase";
+  import { uiSettings } from "$state/settings.svelte";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  async function loadStatus(term?: string) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      const targetTerm = term || status?.activeTerm || "";
-      status = await fetchResidentStatus(targetTerm);
+      status = await fetchResidentStatus(uiSettings.currentTerm, bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -132,9 +132,11 @@
   onMount(() => {
     pageState.title = "Dashboard";
     pageState.isTopLevel = true;
-    if (auth.accessToken && !status) {
-      loadStatus();
-    }
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
   });
 </script>
 
@@ -147,8 +149,7 @@
       </h1>
       <div>
         View your profile, track your financial standing, and manage your clearance for <span
-          class="font-semibold"
-          >{translatePeriod(status?.activeTerm || status?.systemActiveTerm) || "Active Term"}</span
+          class="font-semibold">{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
         >.
       </div>
     </div>
@@ -156,7 +157,7 @@
       variant="ghost"
       size="icon"
       class="h-10 w-10 text-muted-foreground hover:text-foreground"
-      onclick={() => loadStatus()}
+      onclick={() => loadData(true)}
       {isLoading}
       icon={RefreshCcw}
       title="Refresh"
@@ -167,7 +168,7 @@
     <LoadingView />
   {:else if error}
     <ErrorView {error}>
-      <Button onclick={() => loadStatus()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else if status}
     <!-- Quick Stats Grid -->
