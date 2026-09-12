@@ -60,7 +60,10 @@
     }
   }
 
-  onMount(() => loadData());
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
+  });
 
   const occupancyMap = $derived.by(() => {
     const map = new Map<string, ResidentRecord>();

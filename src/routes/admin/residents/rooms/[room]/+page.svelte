@@ -26,6 +26,7 @@
   let error = $state<string | null>(null);
 
   $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
