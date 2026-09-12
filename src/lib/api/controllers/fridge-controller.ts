@@ -1,16 +1,12 @@
 import { constantsService } from "$api/services/constants-service";
 import { fridgeService } from "$api/services/fridge-service";
 import { roomsService } from "$api/services/rooms-service";
+import { isFeatureFlagEnabledFetch } from "$api/utils/feature-flags";
 import { type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
 import { fetchUsers, getSignedInUserId } from "./resident-controller";
 
-export async function fetchFeatureFlagFridge(bypassCache = false): Promise<boolean> {
-  const val = await constantsService.fetchConstantByKey("FEATURE_FLAG_FRIDGE", bypassCache);
-  return (val || "true").toLowerCase() === "true";
-}
-
 export async function checkFeatureEnabled(bypassCache = false) {
-  const fridgeEnabled = await fetchFeatureFlagFridge(bypassCache);
+  const fridgeEnabled = await isFeatureFlagEnabledFetch("FEATURE_FLAG_FRIDGE", bypassCache);
   if (!fridgeEnabled) {
     throw new Error("Access Denied: Fridge service not enabled. Check back later!");
   }
