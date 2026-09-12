@@ -4,7 +4,8 @@
   import {
     fetchConstants,
     addConstant,
-    updateConstant
+    updateConstant,
+    fetchTerms
   } from "$api/controllers/constants-controller";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
@@ -60,14 +61,7 @@
         rowIndex: idx
       }));
 
-      const filtered = records
-        .filter(
-          (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
-        )
-        .map((r) => ({
-          value: r.value,
-          description: r.description
-        }));
+      const filtered = await fetchTerms(bypassCache);
 
       const sortedValues = sortPeriods(filtered.map((t) => t.value));
 

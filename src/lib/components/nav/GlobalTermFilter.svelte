@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import { fetchConstants } from "$api/controllers/constants-controller";
+  import { fetchConstants, fetchTerms } from "$api/controllers/constants-controller";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
   import { Combobox } from "$ui/combobox";
@@ -32,15 +32,7 @@
       const records = await fetchConstants();
       if (records.length === 0) return;
 
-      const allTerms = records
-        .filter(
-          (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
-        )
-        .map((r) => ({
-          value: r.value,
-          label: r.value,
-          description: r.description
-        }));
+      const allTerms = await fetchTerms();
 
       const sortedValues = sortPeriods(allTerms.map((t) => t.value));
       terms = sortedValues.map((val) => {
