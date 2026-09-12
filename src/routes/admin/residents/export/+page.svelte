@@ -4,10 +4,9 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
-  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
+  import { AccountCombobox } from "$components/ui/haone";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
@@ -375,20 +374,23 @@
   async function loadData(bypassCache = false) {
     isLoading = true;
     try {
-      const [mapped, officerList, usersList, currentTerm] = await Promise.all([
+      const [mapped, officerList, usersList] = await Promise.all([
         fetchResidents(bypassCache),
         fetchOfficers(bypassCache),
-        fetchUsers(bypassCache),
-        uiSettings.ensureCurrentTerm()
+        fetchUsers(bypassCache)
       ]);
 
       allAccounts = mapped;
-      residents = mapped.filter((r) => r.period === currentTerm);
+      residents = mapped.filter((r) => r.period === uiSettings.currentTerm);
       officers = officerList;
       rawUsers = usersList;
 
       // Auto-Period
-      const entries = await fetchJournalEntries({ term: currentTerm }, undefined, bypassCache);
+      const entries = await fetchJournalEntries(
+        { term: uiSettings.currentTerm },
+        undefined,
+        bypassCache
+      );
       const journalList = Array.isArray(entries) ? entries : entries.items;
       const dates = journalList
         .map((j) => j.date)
@@ -417,6 +419,10 @@
 
   onMount(() => {
     pageState.title = "Export Residents";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -750,8 +756,10 @@
         >
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <div class="flex flex-col gap-8">
-            <TermFilter onSelect={() => loadData()} />
-
+            <div class="space-y-2">
+              <Label>Academic Term</Label>
+              <Input value={translatePeriod(uiSettings.currentTerm)} readonly />
+            </div>
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="space-y-2">
                 <Label>Period Start</Label>
@@ -915,7 +923,7 @@
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <!-- Issued By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountCombobox
               label="Issued By"
               accounts={allAccounts}
               bind:value={issuedBy}
@@ -929,7 +937,7 @@
 
           <!-- Assessed By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountCombobox
               label="Assessed By"
               accounts={allAccounts}
               bind:value={assessedBy}
@@ -943,7 +951,7 @@
 
           <!-- Certified By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountCombobox
               label="Certified By"
               accounts={allAccounts}
               bind:value={certifiedBy}

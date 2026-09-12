@@ -7,13 +7,11 @@
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
-  import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
-  import * as AlertDialog from "$ui/alert-dialog";
-  import { auth } from "$state/auth.svelte";
-  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
-  import RichEditor from "$components/RichEditor.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import { Save, Archive, Trash2 } from "@lucide/svelte";
+  import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
+  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import {
     fetchAdminAnnouncements,
     updateAnnouncement,
@@ -26,14 +24,11 @@
   import { goto } from "$app/navigation";
   import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";
   import { TagsInput } from "$ui/tags-input";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);
   let error = $state<string | null>(null);
-  let isExpiring = $state(false);
-  let isDeleting = $state(false);
-  let showExpireDialog = $state(false);
-  let showDeleteDialog = $state(false);
 
   let announcement = $state<AnnouncementRecord | null>(null);
   let isActive = $derived(
@@ -129,35 +124,60 @@
     }
   }
 
-  async function handleExpire() {
+  async function confirmExpire() {
     const id = page.params.id;
-    if (!id) return;
-    isExpiring = true;
-    try {
-      await expireAnnouncement(id);
-      toast.success("Announcement expired");
-      showExpireDialog = false;
-      await loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isExpiring = false;
+    if (!id) {
+      toast.error("Announcement not found.");
+      return;
     }
+
+    globalDialog.confirm(
+      "Expire announcement?",
+      "This announcement will no longer be visible to residents.",
+      undefined,
+      async () => {
+        try {
+          await expireAnnouncement(id);
+          toast.success("Announcement expired");
+          await loadData();
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Expire",
+        cancel: "Cancel"
+      }
+    );
   }
 
-  async function handleDelete() {
+  async function confirmDelete() {
     const id = page.params.id;
-    if (!id) return;
-    isDeleting = true;
-    try {
-      await deleteAnnouncement(id, auth.accessToken!);
-      toast.success("Announcement deleted");
-      goto("/admin/announcements");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isDeleting = false;
+    if (!id) {
+      toast.error("Announcement not found.");
+      return;
     }
+
+    globalDialog.confirm(
+      "Delete announcement?",
+      "This announcement and all uploaded images will be permanently deleted.",
+      undefined,
+      async () => {
+        try {
+          await deleteAnnouncement(id);
+          toast.success("Announcement deleted.");
+          goto("/admin/announcements");
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Delete",
+        cancel: "Cancel"
+      }
+    );
   }
 </script>
 
@@ -165,25 +185,28 @@
   <ContentHeader
     title="Edit Announcement"
     isRefreshing={isLoading}
+    href="/admin/announcements"
     actions={[
-      ...(isActive
+      ...(!isLoading && !error && isActive
         ? [
             {
               label: "Expire",
               variant: "secondary",
-              onclick: () => (showExpireDialog = true),
-              isLoading: isExpiring,
+              onclick: () => confirmExpire(),
               icon: Archive
             }
           ]
         : []),
-      {
-        label: "Delete",
-        variant: "destructive",
-        onclick: () => (showDeleteDialog = true),
-        isLoading: isDeleting,
-        icon: Trash2
-      }
+      ...(!isLoading && !error
+        ? [
+            {
+              label: "Delete",
+              variant: "destructive",
+              onclick: () => confirmDelete(),
+              icon: Trash2
+            }
+          ]
+        : [])
     ] as HeaderAction[]}
   />
 
@@ -223,7 +246,7 @@
             for="content"
             class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Content</Label
           >
-          <RichEditor
+          <RichTextEditor
             bind:content={formData.content}
             bind:actions={editorActions}
             placeholder="Announcement Details..."
@@ -303,35 +326,3 @@
     {/if}
   </div>
 </div>
-
-<AlertDialog.Root bind:open={showExpireDialog}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Expire Announcement</AlertDialog.Title>
-      <AlertDialog.Description>
-        Are you sure you want to expire this announcement? It will no longer be visible to
-        residents.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <Button onclick={handleExpire} isLoading={isExpiring}>Expire</Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
-
-<AlertDialog.Root bind:open={showDeleteDialog}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Delete Announcement</AlertDialog.Title>
-      <AlertDialog.Description>
-        Are you sure you want to permanently delete this announcement and all its uploaded images?
-        This action cannot be undone.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <Button onclick={handleDelete} variant="destructive" isLoading={isDeleting}>Delete</Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

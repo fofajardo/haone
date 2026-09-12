@@ -25,6 +25,7 @@ class UISettings {
   #showAllTimeAchievements = $state(true);
 
   #currentTerm = $state<string>("");
+  activeTerm = $state<string>("");
   #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");
   #residentRecordsId = $state<string>(PUBLIC_GS_RR_ID || "");
   #sharedRecordsId = $state<string>(PUBLIC_GS_SR_ID || "");
@@ -164,28 +165,6 @@ class UISettings {
     if (browser) {
       localStorage.setItem(LS_KEYS.UI_CURRENT_TERM, v);
     }
-  }
-
-  /**
-   * Canonical active-term resolution for pages that just need "the current
-   * term". currentTerm is a persisted cache of the user's selected viewing
-   * term; when it is unset, fall back to the system's TERM_CURR constant
-   * (single source of truth) instead of filtering by an empty string.
-   */
-  async ensureCurrentTerm(): Promise<string> {
-    if (this.#currentTerm) {
-      return this.#currentTerm;
-    }
-    try {
-      const { constantsService } = await import("$api/services/constants-service");
-      const term = (await constantsService.fetchConstantByKey("TERM_CURR")) || "";
-      if (term) {
-        this.currentTerm = term;
-      }
-    } catch (e) {
-      console.error("[Settings] Failed to resolve active term:", e);
-    }
-    return this.#currentTerm;
   }
 
   get accountingWorkbookId() {

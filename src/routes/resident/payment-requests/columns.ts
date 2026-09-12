@@ -1,4 +1,4 @@
-import CompositionCell from "$components/CompositionCell.svelte";
+import CompositionCell from "$components/residents/PaymentCompositionCell.svelte";
 import type { PaymentRequestRecord } from "$lib/types";
 import { PAYMENT_REQUEST_STATUS_COLORS, PaymentRequestStatus } from "$lib/types";
 import { Button } from "$ui/button";

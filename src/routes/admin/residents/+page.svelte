@@ -18,11 +18,9 @@
   import { globalDialog } from "$state/dialog.svelte";
 
   import { Button } from "$ui/button";
-  import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
-  import TermFilter from "$components/TermFilter.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import {
     RefreshCcw,
     Users,
@@ -36,14 +34,14 @@
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
   import * as DropdownMenu from "$ui/dropdown-menu";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
-  import AwardDialog from "$components/residents/AwardDialog.svelte";
+  import ClearanceDialog from "$components/forms/ClearanceDialog.svelte";
+  import AwardDialog from "$components/forms/AwardDialog.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
 
   let residents = $state<Resident[]>([]);
@@ -65,8 +63,7 @@
     error = null;
     selectedIndices = new Set();
     try {
-      const currentTerm = await uiSettings.ensureCurrentTerm();
-      residents = await fetchResidents(bypassCache, currentTerm);
+      residents = await fetchResidents(bypassCache, uiSettings.currentTerm);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -76,6 +73,10 @@
 
   onMount(() => {
     pageState.title = "Residents";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -151,10 +152,7 @@
         r.ceIssued
     );
     if (selectedResidents.length === 0) {
-      globalDialog.show(
-        "Dispatch Blocked",
-        "No cleared residents found among the selection."
-      );
+      globalDialog.show("Dispatch Blocked", "No cleared residents found among the selection.");
       return;
     }
     stageClearanceEmailBatch(selectedResidents, brandingState.profile, {
@@ -245,10 +243,7 @@
           Number(tableSync.filters!.status !== "ALL")}
         onClear={resetFilters}
       >
-        <div class="grid gap-2 lg:grid-cols-12">
-          <div class="lg:col-span-3">
-            <TermFilter onSelect={() => loadData()} />
-          </div>
+        <div class="grid gap-2 lg:grid-cols-9">
           <div class="space-y-1 lg:col-span-5">
             <Label>Search</Label>
             <InputGroup.Root class="h-9 text-sm">

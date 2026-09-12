@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
   import { decryptJSON } from "$utils/crypto";
   import { goto } from "$app/navigation";
-  import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
-  import ReceiptErrorCard from "$components/receipt/ReceiptErrorCard.svelte";
+  import StudentNumberAuthCard from "$components/lookup/StudentNumberAuthCard.svelte";
+  import ReceiptErrorCard from "$components/lookup/ReceiptErrorCard.svelte";
   import { LS_KEYS } from "$lib/constants";
   import { pageState } from "$state/page-info.svelte";
 

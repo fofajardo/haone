@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
@@ -13,10 +12,7 @@
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Label } from "$ui/label";
-  import * as AlertDialog from "$ui/alert-dialog";
-  import * as DropdownMenu from "$ui/dropdown-menu";
   import {
-    RefreshCcw,
     User as UserIcon,
     GraduationCap,
     Clock,
@@ -30,9 +26,7 @@
     Trash2,
     Info,
     ArrowUpRight,
-    ChevronDown,
     FileCheck,
-    Plus,
     Banknote,
     Bed,
     BookUser
@@ -44,9 +38,7 @@
     type ResidentRecord,
     type JournalRecord,
     type OfficerRecord,
-    UserTag,
-    AccountType,
-    ACCOUNT_TYPE_LABELS
+    UserTag
   } from "$lib/types";
   import {
     fetchUserById,
@@ -60,19 +52,19 @@
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { pageState } from "$state/page-info.svelte";
-  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
-  import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
+  import ClearanceDialog from "$components/forms/ClearanceDialog.svelte";
   import AccountCard from "$components/residents/AccountCard.svelte";
   import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
   import OfficerHistoryCard from "$components/residents/OfficerHistoryCard.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
-  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
+  import RoomActionDialog from "$components/forms/RoomActionDialog.svelte";
+  import { toast } from "svelte-sonner";
 
   const userId = $derived(page.params.id);
 
@@ -82,16 +74,16 @@
   let history = $state<JournalRecord[]>([]);
   let allResidents = $state<ResidentRecord[]>([]);
   let isLoading = $state(true);
-  let isDeleteAlertOpen = $state(false);
   let error = $state<string | null>(null);
-  let localTerm = $state(page.url.searchParams.get("term") || uiSettings.currentTerm);
 
   let isClearDialogOpen = $state(false);
   let isDelistOpen = $state(false);
   let residentsToClear = $state<ResidentRecord[]>([]);
   let isChangingType = $state(false);
 
-  const currentAccount = $derived(accounts.find((a) => a.period === localTerm) || null);
+  const currentAccount = $derived(
+    accounts.find((a) => a.period === uiSettings.currentTerm) || null
+  );
 
   const qualifications = $derived(
     user
@@ -113,11 +105,6 @@
     error = null;
 
     try {
-      const currTerm = await uiSettings.ensureCurrentTerm();
-      if (!localTerm) {
-        localTerm = currTerm;
-      }
-
       const [userData, accountData, allOfficers, entries, allRes] = await Promise.all([
         fetchUserById(userId, bypassCache),
         fetchAccountsByUserId(userId, bypassCache),
@@ -148,7 +135,7 @@
             (user?.email && r.account.trim().toLowerCase() === user.email.toLowerCase()) ||
             (user?.studentNo && r.stno.trim() === user.studentNo)
         )
-        .filter((r) => !localTerm || r.period === localTerm)
+        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
         .map((journal) => ({
           ...journal,
           dateWeight: parseDateWeight(journal.date)
@@ -161,17 +148,30 @@
     }
   }
 
-  async function handleDelete() {
-    if (!user) return;
-    isDeleteAlertOpen = false;
-    isLoading = true;
-    try {
-      await deleteUser(user.id);
-      goto("/admin/users");
-    } catch (e: any) {
-      error = e.message;
-      isLoading = false;
+  async function confirmDelete() {
+    if (!user) {
+      return;
     }
+    globalDialog.confirm(
+      "Delete user profile?",
+      `The profile and server data for ${user?.displayName ?? "this user"} will be permanently deleted.`,
+      undefined,
+      async () => {
+        if (!user?.id) return;
+        try {
+          await deleteUser(user.id);
+          toast.success("User profile deleted.");
+          goto("/admin/users");
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Delete",
+        cancel: "Cancel"
+      }
+    );
   }
 
   async function handleChangeAccountType(newType: string) {
@@ -221,7 +221,10 @@
     isClearDialogOpen = true;
   }
 
-  onMount(loadUserProfile);
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadUserProfile();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -266,9 +269,7 @@
               label: "Delete",
               icon: Trash2,
               variant: "destructive",
-              onclick: () => {
-                isDeleteAlertOpen = true;
-              },
+              onclick: () => confirmDelete(),
               isLoading
             }
           ]
@@ -296,28 +297,6 @@
       {/if}
     {/snippet}
   </ContentHeader>
-
-  <AlertDialog.Root bind:open={isDeleteAlertOpen}>
-    <AlertDialog.Content>
-      <AlertDialog.Header>
-        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-        <AlertDialog.Description>
-          This action cannot be undone. This will permanently delete the user profile for
-          <span class="font-bold text-foreground">{user?.displayName}</span>
-          and remove their data from our servers.
-        </AlertDialog.Description>
-      </AlertDialog.Header>
-      <AlertDialog.Footer>
-        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-        <AlertDialog.Action
-          class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
-          onclick={handleDelete}
-        >
-          Delete
-        </AlertDialog.Action>
-      </AlertDialog.Footer>
-    </AlertDialog.Content>
-  </AlertDialog.Root>
 
   {#if isLoading}
     <LoadingView />
@@ -537,12 +516,6 @@
 
       <!-- (1) Finance Tab -->
       <Tabs.Content value="finance" class="space-y-6">
-        <div class="grid gap-4 lg:grid-cols-12">
-          <div class="lg:col-span-3">
-            <TermFilter bind:value={localTerm} onSelect={loadUserProfile} />
-          </div>
-        </div>
-
         {#if currentAccount}
           <!-- Occupancy, Financial & Clearance Info for selected term -->
           <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -611,7 +584,7 @@
 
       <!-- (2) Occupancy Tab -->
       <Tabs.Content value="occupancy" class="space-y-4">
-        <OccupancyHistoryCard {accounts} onRowClick={(r) => (localTerm = r.period)} />
+        <OccupancyHistoryCard {accounts} onRowClick={(r) => (uiSettings.currentTerm = r.period)} />
       </Tabs.Content>
 
       <!-- (3) Officership Tab -->
@@ -627,13 +600,13 @@
 </div>
 
 {#if currentAccount}
-  <AssignmentDialog
+  <RoomActionDialog
     bind:open={isDelistOpen}
     room={currentAccount.room}
     bed={currentAccount.bed}
     userId={currentAccount.residentId}
     isOccupied={true}
-    activeTerm={localTerm}
+    activeTerm={uiSettings.currentTerm}
     userOptions={[]}
     availableBedOptions={[]}
     onSuccess={async () => {

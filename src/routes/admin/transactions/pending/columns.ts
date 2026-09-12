@@ -1,4 +1,4 @@
-import CompositionCell from "$components/CompositionCell.svelte";
+import CompositionCell from "$components/residents/PaymentCompositionCell.svelte";
 import type { JournalRecord } from "$lib/types";
 import {
   DataTableColumnHeader,

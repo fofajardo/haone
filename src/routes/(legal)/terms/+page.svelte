@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
 

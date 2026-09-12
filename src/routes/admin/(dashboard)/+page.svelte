@@ -27,13 +27,12 @@
   import { fetchResidents } from "$api/controllers/resident-controller";
   import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
-  import DashboardActionCard from "$components/DashboardActionCard.svelte";
-  import StatisticCard from "$components/StatisticCard.svelte";
+  import DashboardActionCard from "$components/dashboard/DashboardActionCard.svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
-  import * as Card from "$ui/card";
   import { getCustomServices } from "$lib/services";
   import { namecase } from "@compwright/namecase";
+  import { StatisticCard } from "$components/ui/haone";
 
   let stats = $state({
     activeResidents: 0,
@@ -155,14 +154,13 @@
     }
   ]);
 
-  async function loadDashboardData() {
+  async function loadData() {
     isLoading = true;
 
     try {
-      const [journalEntries, allResidents, currentTerm] = await Promise.all([
+      const [journalEntries, allResidents] = await Promise.all([
         fetchJournalEntries(),
-        fetchResidents(),
-        uiSettings.ensureCurrentTerm()
+        fetchResidents()
       ]);
 
       const journals = Array.isArray(journalEntries) ? journalEntries : journalEntries.items;
@@ -170,7 +168,7 @@
       // Stats from Accounts
       const accounts = allResidents.filter((r) => {
         return (
-          r.period === currentTerm &&
+          r.period === uiSettings.currentTerm &&
           r.email &&
           r.email !== "_vacant" &&
           !(r.bed || "").includes("(")
@@ -187,7 +185,7 @@
       const journalData = journals;
       const pending = journalData.filter((r) => {
         return (
-          r.period === currentTerm &&
+          r.period === uiSettings.currentTerm &&
           (!r.prDateIssued || r.prDateIssued === "#N/A") &&
           r.prRefNo !== "N/A" &&
           r.prRefNo !== "#N/A"
@@ -208,7 +206,11 @@
   onMount(() => {
     pageState.title = "Dashboard";
     pageState.isTopLevel = true;
-    loadDashboardData();
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
   });
 </script>
 
@@ -249,16 +251,12 @@
   </div>
 
   <!-- Tools -->
-  <Card.Root class="mt-6 shadow-none">
-    <Card.Header>
-      <Card.Title>Tools</Card.Title>
-    </Card.Header>
-    <Card.Content>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {#each actions as tool}
-          <DashboardActionCard {...tool} />
-        {/each}
-      </div>
-    </Card.Content>
-  </Card.Root>
+  <div class="my-6 space-y-6">
+    <div class="text-xl font-semibold">Tools</div>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {#each actions as tool}
+        <DashboardActionCard {...tool} />
+      {/each}
+    </div>
+  </div>
 </div>

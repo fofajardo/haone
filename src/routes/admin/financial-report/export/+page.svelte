@@ -4,11 +4,10 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
-  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import { AccountCombobox } from "$components/ui/haone";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
@@ -66,7 +65,6 @@
     error = null;
 
     try {
-      await uiSettings.ensureCurrentTerm();
       const data = await fetchFinancialReportData(bypassCache);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
@@ -88,6 +86,10 @@
 
   onMount(() => {
     pageState.title = "Export Financial Report";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -155,7 +157,8 @@
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <div class="space-y-4">
             <div class="space-y-2">
-              <TermFilter />
+              <Label>Academic Term</Label>
+              <Input value={translatePeriod(uiSettings.currentTerm)} readonly />
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="space-y-2">
@@ -187,7 +190,7 @@
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <!-- Issued By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountCombobox
               label="Issued By"
               accounts={allAccountsForAutocomplete}
               bind:value={issuedBy}
@@ -203,7 +206,7 @@
 
           <!-- Assessed By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountCombobox
               label="Assessed By"
               accounts={allAccountsForAutocomplete}
               bind:value={assessedBy}
@@ -219,7 +222,7 @@
 
           <!-- Certified By -->
           <div class="space-y-3">
-            <AccountAutocomplete
+            <AccountCombobox
               label="Certified By"
               accounts={allAccountsForAutocomplete}
               bind:value={certifiedBy}

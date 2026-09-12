@@ -1,5 +1,5 @@
 <script lang="ts">
-  import BrandingLogo from "$components/BrandingLogo.svelte";
+  import BrandingLogo from "$components/branding/BrandingLogo.svelte";
   import { Button } from "$ui/button";
   import {
     Check,

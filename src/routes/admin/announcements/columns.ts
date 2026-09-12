@@ -21,20 +21,10 @@ export const columns: ColumnDef<AnnouncementRecord>[] = [
     enableHiding: false
   },
   {
-    accessorKey: "status",
-    header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Status" }),
-    cell: ({ row }) => renderComponent(AnnouncementStatusCell, { row })
-  },
-  {
     accessorKey: "title",
     header: ({ column }) =>
       renderComponent(DataTableColumnHeader, { column, title: "Announcement" }),
     cell: ({ row }) => renderComponent(AnnouncementTitleCell, { row })
-  },
-  {
-    accessorKey: "tags",
-    header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Tags" }),
-    cell: ({ row }) => renderComponent(AnnouncementTagsCell, { row })
   },
   {
     accessorKey: "startDate",
@@ -48,6 +38,16 @@ export const columns: ColumnDef<AnnouncementRecord>[] = [
       if (row.original.isIndefinite) return "Indefinite";
       return formatDate(row.original.expiryDate);
     }
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Status" }),
+    cell: ({ row }) => renderComponent(AnnouncementStatusCell, { row })
+  },
+  {
+    accessorKey: "tags",
+    header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: "Tags" }),
+    cell: ({ row }) => renderComponent(AnnouncementTagsCell, { row })
   },
   {
     accessorKey: "broadcastCount",

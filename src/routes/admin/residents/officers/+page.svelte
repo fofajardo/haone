@@ -2,26 +2,23 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Search, DownloadIcon } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { fetchOfficers } from "$api/controllers/officer-controller";
-  import { fetchTermCurr } from "$api/controllers/resident-controller";
   import type { OfficerRecord } from "$lib/types";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { createColumns } from "./columns";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { Label } from "$ui/label";
-  import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
-  import TermFilter from "$components/TermFilter.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { goto } from "$app/navigation";
   import { pageState } from "$state/page-info.svelte";
+  import { uiSettings } from "$state/settings.svelte";
 
   let officers = $state<OfficerRecord[]>([]);
-  let currentTerm = $state("");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
@@ -35,13 +32,7 @@
     isLoading = true;
     error = null;
     try {
-      [officers, currentTerm] = await Promise.all([
-        fetchOfficers(bypassCache),
-        fetchTermCurr(bypassCache)
-      ]);
-      if (tableSync.filters!.term === "ALL") {
-        tableSync.filters!.term = currentTerm;
-      }
+      [officers] = await Promise.all([fetchOfficers(bypassCache)]);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -51,6 +42,10 @@
 
   onMount(() => {
     pageState.title = "Officers";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -59,13 +54,12 @@
   const filteredOfficers = $derived.by(() => {
     return officers.filter((o) => {
       const search = tableSync.filters!.search.toLowerCase();
-      const term = tableSync.filters!.term;
 
       const matchesSearch =
         o.name.toLowerCase().includes(search) ||
         o.email.toLowerCase().includes(search) ||
         o.position.toLowerCase().includes(search);
-      const matchesTerm = term === "ALL" || o.term === term;
+      const matchesTerm = o.term === uiSettings.currentTerm;
 
       return matchesSearch && matchesTerm;
     });
@@ -100,18 +94,12 @@
     </ErrorView>
   {:else}
     <FilterDrawer
-      activeCount={Number(tableSync.filters!.search !== "") +
-        Number(tableSync.filters!.term !== currentTerm && tableSync.filters!.term !== "ALL")}
+      activeCount={Number(tableSync.filters!.search !== "")}
       onClear={() => {
         tableSync.reset();
-        tableSync.filters!.term = currentTerm;
       }}
     >
-      <div class="grid gap-2 lg:grid-cols-12">
-        <div class="lg:col-span-4">
-          <TermFilter bind:value={tableSync.filters!.term} onSelect={() => loadData()} />
-        </div>
-
+      <div class="grid gap-2 lg:grid-cols-8">
         <div class="space-y-1 lg:col-span-8">
           <Label>Search</Label>
           <InputGroup.Root class="h-9 text-xs">

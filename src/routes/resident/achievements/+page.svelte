@@ -2,12 +2,11 @@
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Trophy } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
+  import { Trophy } from "@lucide/svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
@@ -18,13 +17,12 @@
   } from "$api/controllers/achievement-controller";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
   import { pageState } from "$state/page-info.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import AchievementCard from "$components/achievements/AchievementCard.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import AchievementCard from "$components/residents/AchievementCard.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
   let currentResidentId = $state("");
-  let selectedTerm = $state(uiSettings.currentTerm || "");
   let scope = $state("global");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -35,16 +33,10 @@
     isLoading = true;
     error = null;
     try {
-      const [achResult, activeTerm] = await Promise.all([
-        fetchAchievements(bypassCache),
-        uiSettings.ensureCurrentTerm()
-      ]);
+      const [achResult] = await Promise.all([fetchAchievements(bypassCache)]);
       achievements = achResult.achievements || [];
       logs = achResult.logs || [];
       currentResidentId = achResult.currentResidentId || "";
-      if (!selectedTerm) {
-        selectedTerm = activeTerm;
-      }
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -54,6 +46,10 @@
 
   onMount(() => {
     pageState.title = "Achievements";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -79,7 +75,7 @@
       if (isIndefinite) {
         return uiSettings.showAllTimeAchievements;
       }
-      return a.term === selectedTerm;
+      return a.term === uiSettings.currentTerm;
     })
   );
 
@@ -102,6 +98,7 @@
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={scope !== "global"}
   >
     {#snippet tabs()}
       <AchievementTabs bind:value={scope} />
@@ -124,9 +121,6 @@
     {#if !isGlobal}
       <FilterDrawer>
         <div class="flex flex-wrap items-end justify-between gap-4">
-          <div class="w-full sm:w-64">
-            <TermFilter bind:value={selectedTerm} />
-          </div>
           <div class="flex items-center space-x-2 pb-1.5">
             <Checkbox id="show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
             <Label for="show-all-time" class="cursor-pointer text-xs font-medium">

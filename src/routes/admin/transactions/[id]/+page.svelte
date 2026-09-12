@@ -33,14 +33,15 @@
     Lock,
     TriangleAlert
   } from "@lucide/svelte";
-  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
 
   const id = $derived(page.params.id);
 
   import { JOURNAL_COL as JOR, type JournalRecord, TransactionType } from "$lib/types";
   import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
+  import { toast } from "svelte-sonner";
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorResidentId = $state<string | null>(null);
@@ -50,7 +51,6 @@
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
   let rowIndex = $state<number | null>(null);
-  let isAuditing = $state(false);
   let isDialogOpen = $state(false);
 
   function showSystemAccountAlert() {
@@ -60,19 +60,29 @@
     );
   }
 
-  async function handleMarkAudited() {
-    if (!transaction?.id) {
-      return;
-    }
-    isAuditing = true;
-    try {
-      await batchAuditEntries([transaction.id]);
-      await loadTransaction();
-    } catch (e: any) {
-      error = `Audit update failed: ${e.message}`;
-    } finally {
-      isAuditing = false;
-    }
+  async function confirmMarkAudited() {
+    globalDialog.confirm(
+      "Mark transaction as audited?",
+      "This transaction will be locked and cannot be edited or reverted.",
+      undefined,
+      async () => {
+        if (!transaction?.id) {
+          return;
+        }
+        try {
+          await batchAuditEntries([transaction.id]);
+          toast.success("Transaction marked as audited.");
+          await loadTransaction();
+        } catch (e: any) {
+          toast.error(e.message || "Failed to mark transaction as audited.");
+        }
+      },
+      undefined,
+      {
+        accept: "Mark audited",
+        cancel: "Cancel"
+      }
+    );
   }
 
   async function loadTransaction() {
@@ -187,8 +197,7 @@
             {
               label: "Mark as Audited",
               variant: "outline",
-              onclick: handleMarkAudited,
-              isLoading: isAuditing,
+              onclick: confirmMarkAudited,
               icon: ShieldCheck
             },
             {

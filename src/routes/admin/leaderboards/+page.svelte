@@ -2,26 +2,23 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import TermFilter from "$components/TermFilter.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
-  import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
+  import AchievementLeaderboard from "$components/residents/AchievementLeaderboard.svelte";
   import {
     fetchAdminAchievements,
     fetchAchievementLogs
   } from "$api/controllers/achievement-controller";
   import { fetchUserSettings } from "$api/controllers/settings-controller";
-  import { fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
+  import { fetchUsers } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
   import { pageState } from "$state/page-info.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
-  let currentTerm = $state("");
   let scope = $state("global");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -33,13 +30,11 @@
     error = null;
 
     try {
-      const [achievementRows, logRows, users, settings, term, activeTerm] = await Promise.all([
+      const [achievementRows, logRows, users, settings] = await Promise.all([
         fetchAdminAchievements(bypassCache),
         fetchAchievementLogs(bypassCache),
         fetchUsers(bypassCache),
-        fetchUserSettings(bypassCache),
-        fetchTermCurr(bypassCache),
-        uiSettings.ensureCurrentTerm()
+        fetchUserSettings(bypassCache)
       ]);
 
       const userMap = new Map(
@@ -62,7 +57,6 @@
           isPublic
         };
       });
-      currentTerm = term || activeTerm;
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -72,12 +66,12 @@
 
   onMount(() => {
     pageState.title = "Leaderboards";
-    loadData();
   });
 
-  let selectedTerm = $state(uiSettings.currentTerm || "");
-
-  let effectiveTerm = $derived(selectedTerm || uiSettings.currentTerm || currentTerm);
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -106,15 +100,6 @@
       >
     </ErrorView>
   {:else}
-    {#if !isGlobal}
-      <FilterDrawer>
-        <div class="grid gap-2 lg:grid-cols-12">
-          <div class="lg:col-span-3">
-            <TermFilter bind:value={selectedTerm} />
-          </div>
-        </div>
-      </FilterDrawer>
-    {/if}
-    <AchievementLeaderboard {achievements} {logs} term={effectiveTerm} {isGlobal} />
+    <AchievementLeaderboard {achievements} {logs} term={uiSettings.currentTerm} {isGlobal} />
   {/if}
 </div>

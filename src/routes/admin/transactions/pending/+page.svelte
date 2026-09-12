@@ -9,21 +9,18 @@
   import { uiSettings } from "$state/settings.svelte";
   import {
     fetchJournalEntries,
-    updateJournalReceiptInfo,
-    mapRowToJournal
+    updateJournalReceiptInfo
   } from "$api/controllers/journal-controller";
   import { parseDateWeight } from "$utils/parsers";
-  import { Input } from "$ui/input/index.js";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label/index.js";
   import { Button } from "$ui/button/index.js";
-  import TermFilter from "$components/TermFilter.svelte";
-  import { Search, RefreshCcw, FileCheck, CircleCheckBig, Plus } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import { Search, RefreshCcw, FileCheck, CircleCheckBig } from "@lucide/svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";
@@ -60,10 +57,7 @@
     selectedIndices = new Set();
 
     try {
-      const [entries, currentTerm] = await Promise.all([
-        fetchJournalEntries(undefined, undefined, bypassCache),
-        uiSettings.ensureCurrentTerm()
-      ]);
+      const [entries] = await Promise.all([fetchJournalEntries(undefined, undefined, bypassCache)]);
 
       const journals = Array.isArray(entries) ? entries : entries.items;
 
@@ -74,7 +68,7 @@
         }))
         .filter((r) => {
           return (
-            r.period === currentTerm.trim() &&
+            r.period === uiSettings.currentTerm &&
             (!r.prDateIssued || r.prDateIssued === "#N/A") &&
             r.prRefNo !== "N/A" &&
             r.prRefNo !== "#N/A"
@@ -89,6 +83,10 @@
 
   onMount(() => {
     pageState.title = "Pending Receipts";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -191,10 +189,7 @@
       activeCount={Number(tableSync.filters!.search !== "")}
       onClear={() => tableSync.reset()}
     >
-      <div class="mb-4 grid gap-2 lg:grid-cols-12">
-        <div class="lg:col-span-3">
-          <TermFilter onSelect={() => loadData()} />
-        </div>
+      <div class="mb-4 grid gap-2 lg:grid-cols-9">
         <div class="space-y-1 lg:col-span-9">
           <Label>Search</Label>
           <InputGroup.Root class="h-9 text-sm">

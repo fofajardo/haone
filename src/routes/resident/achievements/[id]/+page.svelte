@@ -3,15 +3,15 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Share2 } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { fetchAchievements } from "$api/controllers/achievement-controller";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
 
-  import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";
-  import { shareAchievementStory } from "$components/achievements/story-share";
+  import AchievementDetailsView from "$components/residents/AchievementDetailsView.svelte";
+  import { shareAchievementStory } from "$components/residents/story-share";
 
   const id = page.params.id;
 

@@ -9,7 +9,7 @@ export async function fetchConstantByKey(key: string): Promise<string | null> {
   return constantsService.fetchConstantByKey(key);
 }
 
-export async function fetchTermCurr(bypassCache = false): Promise<string> {
+export async function fetchActiveTerm(bypassCache = false): Promise<string> {
   const val = await constantsService.fetchConstantByKey("TERM_CURR");
   return val || "";
 }
@@ -23,6 +23,19 @@ export async function fetchMopTypes(
     .map((c) => ({
       value: c.value || c.key,
       label: c.description || c.value || c.key
+    }));
+}
+
+export async function fetchTerms(
+  bypassCache = false
+): Promise<{ value: string; label: string; description: string }[]> {
+  const constants = await constantsService.fetchConstants(bypassCache);
+  return constants
+    .filter((c) => c.key.startsWith("TERM_") && c.key !== "TERM_CURR")
+    .map((c) => ({
+      value: c.value,
+      label: c.value,
+      description: c.description
     }));
 }
 

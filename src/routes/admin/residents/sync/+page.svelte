@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { globalDialog } from "$state/dialog.svelte";
-  import { fetchTermCurr } from "$api/controllers/constants-controller";
   import {
     getSyncPreview,
     applySync,
@@ -11,11 +10,11 @@
     type SyncPreviewAction
   } from "$api/controllers/rooms-controller.svelte";
   import { pluralize } from "$utils/formatters";
-  import { translateCollege, translateProgram } from "$utils/translators";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import { translateCollege, translatePeriod, translateProgram } from "$utils/translators";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
@@ -32,12 +31,12 @@
     CheckCheck
   } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
+  import Banner from "$components/content/Banner.svelte";
 
   let isLoading = $state(false);
   let isSyncing = $state(false);
   let processingIndex = $state<number | null>(null);
   let error = $state<string | null>(null);
-  let activeTerm = $state("");
   let previewActions = $state<SyncPreviewAction[]>([]);
   let selectedGroups = $state<Set<number>>(new Set());
 
@@ -80,12 +79,11 @@
     isLoading = true;
     error = null;
     try {
-      activeTerm = (await fetchTermCurr()) || uiSettings.currentTerm;
-      if (!activeTerm) {
+      if (!uiSettings.activeTerm) {
         error = "Active academic term (TERM_CURR) not found.";
         return;
       }
-      previewActions = await getSyncPreview(activeTerm);
+      previewActions = await getSyncPreview(uiSettings.activeTerm);
       selectedGroups = new Set(previewActions.map((a) => a.currIndex ?? -1));
     } catch (e: any) {
       error = e.message || "Failed to load sync preview.";
@@ -101,7 +99,7 @@
     }
     isSyncing = true;
     try {
-      const result = await applySync(selectedActions, activeTerm);
+      const result = await applySync(selectedActions, uiSettings.activeTerm);
       globalDialog.show(
         "Sync Complete",
         `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
@@ -117,7 +115,7 @@
   async function handleApproveSingle(group: { currIndex: number; actions: SyncPreviewAction[] }) {
     processingIndex = group.currIndex;
     try {
-      await applySync(group.actions, activeTerm);
+      await applySync(group.actions, uiSettings.activeTerm);
       toast.success(`Approved registration for ${group.actions[0]?.residentName || "resident"}`);
       await loadPreview();
     } catch (e: any) {
@@ -146,7 +144,7 @@
     try {
       await declineRegistration(
         declineDialog.email,
-        activeTerm,
+        uiSettings.activeTerm,
         declineDialog.reason.trim(),
         declineDialog.currIndex
       );
@@ -186,7 +184,15 @@
     {/snippet}
   </ContentHeader>
 
-  {#if isLoading}
+  {#if uiSettings.currentTerm !== uiSettings.activeTerm}
+    <Banner variant="warning">
+      <p>
+        The selected term is <strong>{translatePeriod(uiSettings.currentTerm)}</strong>, but changes
+        only apply to the active term (<strong>{translatePeriod(uiSettings.activeTerm)}</strong>).
+        Switch to the active term in settings to proceed.
+      </p>
+    </Banner>
+  {:else if isLoading}
     <LoadingView />
   {:else if error}
     <ErrorView {error}>

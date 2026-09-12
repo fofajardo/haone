@@ -3,14 +3,13 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { goto } from "$app/navigation";
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
   import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
   import StudentProfileCard from "$components/residents/StudentProfileCard.svelte";
   import { pageState } from "$state/page-info.svelte";
-  import { fetchServer } from "$utils/api-client";
 
   let status = $state<any>(null);
   let occupancyData = $state<any[]>([]);
@@ -18,6 +17,7 @@
   let error = $state<string | null>(null);
 
   import { fetchResidentStatus, fetchResidents } from "$api/controllers/resident-controller";
+  import { uiSettings } from "$state/settings.svelte";
 
   async function loadData(bypassCache = false) {
     if (!auth.accessToken) return;
@@ -82,7 +82,10 @@
       <div class="lg:col-span-8">
         <OccupancyHistoryCard
           accounts={occupancyData}
-          onRowClick={(r) => goto(`/resident/finance?term=${r.period}`)}
+          onRowClick={(r) => {
+            uiSettings.currentTerm = r.period;
+            goto(`/resident/finance`);
+          }}
         />
       </div>
     </div>

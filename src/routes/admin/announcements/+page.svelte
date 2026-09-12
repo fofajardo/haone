@@ -3,26 +3,20 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Megaphone } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import {
-    fetchAdminAnnouncements,
-    expireAnnouncement,
-    deleteAnnouncement
-  } from "$api/controllers/announcement-controller";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import { fetchAdminAnnouncements } from "$api/controllers/announcement-controller";
   import { auth } from "$state/auth.svelte";
   import type { AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-  import * as AlertDialog from "$ui/alert-dialog";
 
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
@@ -30,52 +24,12 @@
 
   import { getAnnouncementStatus } from "$api/controllers/announcement-controller";
   import { AnnouncementStatus } from "$lib/types";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let isExpiring = $state(false);
-  let announcementToExpire = $state<string | null>(null);
-  let isDeleting = $state(false);
-  let announcementToDelete = $state<string | null>(null);
-  let isBroadcasting = $state(false);
   let selectedIds = $state(new Set<string>());
-  let showBroadcastDialog = $state(false);
-
-  function handleBroadcast() {
-    if (selectedIds.size === 0) {
-      toast.error("Please select at least one announcement to broadcast.");
-      return;
-    }
-    showBroadcastDialog = true;
-  }
-
-  async function confirmBroadcast() {
-    isBroadcasting = true;
-    showBroadcastDialog = false;
-    const ids = Array.from(selectedIds);
-    try {
-      const resp = await fetch("/api/admin/announcements/broadcast", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${auth.accessToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ ids })
-      });
-      const data = await resp.json();
-      if (data.success) {
-        toast.success(data.message || "Notifications sent to all residents");
-        await loadData();
-      } else {
-        throw new Error(data.error || "Failed to broadcast");
-      }
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isBroadcasting = false;
-    }
-  }
 
   const tableSync = new TableSync({
     initialFilters: { search: "", status: "ALL", tags: "ALL" },
@@ -95,42 +49,55 @@
     }
   }
 
-  function handleExpire(id: string) {
-    announcementToExpire = id;
-  }
-
-  async function confirmExpire() {
-    if (!announcementToExpire) return;
-    isExpiring = true;
-    try {
-      await expireAnnouncement(announcementToExpire);
-      toast.success("Announcement expired");
-      announcementToExpire = null;
-      await loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isExpiring = false;
+  function handleBroadcast() {
+    if (selectedIds.size === 0) {
+      toast.error("Please select at least one announcement to broadcast.");
+      return;
     }
-  }
 
-  function handleDelete(id: string) {
-    announcementToDelete = id;
-  }
+    const count = selectedIds.size;
+    const title = count === 1 ? "Broadcast announcement?" : "Broadcast announcements?";
+    const target =
+      count === 1 ? "the selected announcement" : `all ${count} selected announcements`;
 
-  async function confirmDelete() {
-    if (!announcementToDelete) return;
-    isDeleting = true;
-    try {
-      await deleteAnnouncement(announcementToDelete, auth.accessToken!);
-      toast.success("Announcement deleted");
-      announcementToDelete = null;
-      await loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isDeleting = false;
-    }
+    globalDialog.confirm(
+      title,
+      `Push notifications will be sent to all subscribed residents for ${target}.`,
+      undefined,
+      async () => {
+        if (selectedIds.size === 0) {
+          return;
+        }
+        try {
+          const ids = Array.from(selectedIds);
+          const resp = await fetch("/api/admin/announcements/broadcast", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${auth.accessToken}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ ids })
+          });
+          const data = await resp.json();
+          if (data.success) {
+            toast.success(data.message || "Announcement notifications sent.");
+            await loadData();
+          } else {
+            throw new Error(data.error || "Failed to broadcast");
+          }
+          toast.success("Announcements broadcasted.");
+          selectedIds.clear();
+          await loadData();
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Broadcast",
+        cancel: "Cancel"
+      }
+    );
   }
 
   onMount(() => {
@@ -244,21 +211,14 @@
         {columns}
         pagination={tableSync.pagination}
         onPaginationChange={(p) => (tableSync.pagination = p)}
-        onRowClick={(r) => goto(`/admin/announcements/${r.id}`)}
+        onRowClick={(r) => goto(`/admin/announcements/${r.id}/edit`)}
         rowId="id"
         enableSelection={true}
         onSelectionChange={(ids) => (selectedIds = ids)}
-        meta={{ onExpire: handleExpire, onDelete: handleDelete }}
         sorting={[{ id: "startDate", desc: true }]}
       >
         {#snippet actions()}
-          <Button
-            variant="secondary"
-            size="sm"
-            onclick={handleBroadcast}
-            isLoading={isBroadcasting}
-            icon={Megaphone}
-          >
+          <Button variant="secondary" size="sm" onclick={handleBroadcast} icon={Megaphone}>
             Broadcast
           </Button>
         {/snippet}
@@ -272,76 +232,3 @@
     {/if}
   {/if}
 </div>
-
-<AlertDialog.Root
-  open={announcementToExpire !== null}
-  onOpenChange={(o) => {
-    if (!o) announcementToExpire = null;
-  }}
->
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Expire Announcement</AlertDialog.Title>
-      <AlertDialog.Description>
-        Are you sure you want to expire this announcement? It will no longer be visible to
-        residents.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <Button
-        onclick={confirmExpire}
-        class="bg-amber-600 hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800"
-        isLoading={isExpiring}
-      >
-        Expire
-      </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
-
-<AlertDialog.Root
-  open={announcementToDelete !== null}
-  onOpenChange={(o) => {
-    if (!o) announcementToDelete = null;
-  }}
->
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Delete Announcement</AlertDialog.Title>
-      <AlertDialog.Description>
-        Are you sure you want to permanently delete this announcement and all its uploaded images?
-        This action cannot be undone.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <Button onclick={confirmDelete} variant="destructive" isLoading={isDeleting}>
-        Delete Permanently
-      </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
-
-<AlertDialog.Root bind:open={showBroadcastDialog}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Broadcast Announcements?</AlertDialog.Title>
-      <AlertDialog.Description>
-        This will send a push notification to <strong>all subscribed residents</strong> for the
-        <span class="font-bold">{selectedIds.size}</span> selected announcement(s) immediately. Each notification
-        will use its respective announcement title and a snippet of its content.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <Button
-        onclick={confirmBroadcast}
-        class="bg-brand hover:bg-brand/90"
-        isLoading={isBroadcasting}
-      >
-        Confirm & Broadcast
-      </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

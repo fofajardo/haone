@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
   import { page } from "$app/state";
-  import FridgeForm from "$components/fridge/FridgeForm.svelte";
+  import FridgeForm from "$components/forms/FridgeForm.svelte";
 
   const itemId = $derived(page.url.searchParams.get("id"));
 
