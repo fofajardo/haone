@@ -91,7 +91,7 @@
   </div>
 
   <!-- Footer -->
-  <div class="mt-auto px-[1in] pb-12 text-center text-[8pt]">
+  <div class="mt-auto px-24 pb-12 text-center text-[8pt]">
     <p>
       This document is electronically generated, does not require a signature, and is not valid for
       claim of input tax.

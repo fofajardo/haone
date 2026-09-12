@@ -5,10 +5,10 @@
   import { brandingState } from "$state/branding.svelte";
   import { globalDialog } from "$state/dialog.svelte";
 
-  import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
-  import ReceiptErrorCard from "$components/receipt/ReceiptErrorCard.svelte";
-  import ClearanceWebView from "$components/residents/ClearanceWebView.svelte";
-  import ClearanceExportTemplate from "$components/residents/ClearanceExportTemplate.svelte";
+  import StudentNumberAuthCard from "$components/lookup/StudentNumberAuthCard.svelte";
+  import ReceiptErrorCard from "$components/lookup/ReceiptErrorCard.svelte";
+  import ClearanceWebView from "$components/lookup/ClearanceWebView.svelte";
+  import ClearanceExportTemplate from "$components/lookup/ClearanceExportTemplate.svelte";
 
   import { LS_KEYS } from "$lib/constants";
   import { pageState } from "$state/page-info.svelte";

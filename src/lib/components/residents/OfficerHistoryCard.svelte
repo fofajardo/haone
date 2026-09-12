@@ -8,7 +8,7 @@
   import { translatePeriod } from "$utils/translators";
   import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
   import { BookUser, Plus } from "@lucide/svelte";
 
   interface Props {

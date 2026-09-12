@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
   import { dev } from "$app/environment";
   import { error } from "@sveltejs/kit";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
   import { Button } from "$ui/button";
   import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "$ui/card";
   import { Badge } from "$ui/badge";

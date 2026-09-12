@@ -4,12 +4,11 @@
   import { onMount } from "svelte";
   import { roomsState } from "$state/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
-  import { fetchTermCurr } from "$api/controllers/constants-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Combobox } from "$ui/combobox";
@@ -17,7 +16,7 @@
   import { Checkbox } from "$ui/checkbox";
   import * as Card from "$ui/card";
   import * as Tooltip from "$ui/tooltip";
-  import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
+  import RoomActionDialog from "$components/forms/RoomActionDialog.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import {
     RefreshCcw,
@@ -31,30 +30,28 @@
     ChevronRight,
     DownloadIcon
   } from "@lucide/svelte";
+  import { uiSettings } from "$state/settings.svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let users = $state<UserRecord[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
-  let activeTerm = $state("");
 
   let selectedUnit = $state("ALL");
-  let isCompact = $state(true);
+  let isCompact = $state(false);
 
   async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      const [resData, userData, currentTerm] = await Promise.all([
+      const [resData, userData] = await Promise.all([
         fetchResidents(bypassCache),
-        fetchUsers(bypassCache),
-        fetchTermCurr(bypassCache)
+        fetchUsers(bypassCache)
       ]);
-      activeTerm = currentTerm;
-      if (!activeTerm) {
+      if (!uiSettings.currentTerm) {
         throw new Error("Active academic term (TERM_CURR) not found in constants.");
       }
-      residents = resData.filter((r) => r.period === activeTerm);
+      residents = resData.filter((r) => r.period === uiSettings.currentTerm);
       users = userData;
     } catch (e: any) {
       error = e.message;
@@ -63,7 +60,10 @@
     }
   }
 
-  onMount(() => loadData());
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
+  });
 
   const occupancyMap = $derived.by(() => {
     const map = new Map<string, ResidentRecord>();
@@ -226,11 +226,7 @@
       >
     </ErrorView>
   {:else}
-    <div
-      class={isCompact
-        ? "flex flex-col gap-2"
-        : "grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}
-    >
+    <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {#each filteredRooms as room}
         {#if isCompact}
           <button
@@ -263,8 +259,8 @@
                     {room.unavailable_reason}
                   </span>
                 {:else}
-                  <Badge variant="outline" class="text-xs uppercase">
-                    {getRoomOccupancy(room.room_number)} Occupied
+                  <Badge variant="outline" class="uppercase">
+                    {getRoomOccupancy(room.room_number)}/{room.available_slots.length}
                   </Badge>
                 {/if}
               </div>
@@ -277,7 +273,9 @@
           </button>
         {:else}
           <Card.Root
-            class="overflow-hidden p-0 {room.unavailable_reason ? 'opacity-60 grayscale' : ''}"
+            class="gap-0 overflow-hidden p-0 {room.unavailable_reason
+              ? 'opacity-60 grayscale'
+              : ''}"
           >
             <Card.Header class="bg-muted/50 p-3">
               <div class="flex items-center justify-between">
@@ -300,15 +298,15 @@
                     </Tooltip.Content>
                   </Tooltip.Root>
                 {:else}
-                  <Badge variant="outline" class="text-xs uppercase">
-                    {getRoomOccupancy(room.room_number)} Occupied
+                  <Badge variant="outline" class="uppercase">
+                    {getRoomOccupancy(room.room_number)}/{room.available_slots.length}
                   </Badge>
                 {/if}
               </div>
             </Card.Header>
             {#if !isCompact}
               <Card.Content class="p-3">
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 gap-2">
                   {#each room.slots as slot}
                     {@const key = `${room.room_number}-${slot}`}
                     {@const resident = occupancyMap.get(key.toUpperCase())}
@@ -331,14 +329,7 @@
                           <CircleCheck class="h-3 w-3 text-primary" />
                         {/if}
                       </div>
-                      <div class="my-1">
-                        {#if resident}
-                          <User class="h-5 w-5 text-primary" />
-                        {:else}
-                          <Bed class="h-5 w-5 text-muted-foreground/40" />
-                        {/if}
-                      </div>
-                      <span class="w-full truncate text-center text-xs font-medium">
+                      <span class="mt-2 w-full truncate text-center text-xs font-medium">
                         {resident ? resident.name : "Available"}
                       </span>
                     </button>
@@ -368,13 +359,13 @@
   {/if}
 </div>
 
-<AssignmentDialog
+<RoomActionDialog
   bind:open={assignmentDialog.open}
   room={assignmentDialog.room}
   bind:bed={assignmentDialog.bed}
   bind:userId={assignmentDialog.userId}
   isOccupied={assignmentDialog.isOccupied}
-  {activeTerm}
+  activeTerm={uiSettings.currentTerm}
   {userOptions}
   {availableBedOptions}
   onSuccess={() => loadData(true)}

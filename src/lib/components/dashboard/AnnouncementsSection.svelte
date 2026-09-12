@@ -5,11 +5,11 @@
   import * as Card from "$ui/card";
   import { ChevronRight, ChevronLeft } from "@lucide/svelte";
   import { Button } from "$ui/button";
-  import RichEditor from "$components/RichEditor.svelte";
-
+  import RichTextRenderer from "$components/editor/RichTextRenderer.svelte";
   import { Badge } from "$ui/badge";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { goto } from "$app/navigation";
+  import { Skeleton } from "$components/ui/skeleton";
 
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
@@ -36,11 +36,11 @@
   onMount(loadData);
 </script>
 
-{#if !isLoading && announcements.length > 0}
-  <Card.Root
-    class="relative mx-auto flex h-175 w-full max-w-full flex-col overflow-hidden shadow-none"
-  >
-    <Card.Header class="flex flex-row items-center justify-between pb-0">
+{#if isLoading}
+  <Skeleton class="h-175 w-full" />
+{:else if announcements.length > 0}
+  <Card.Root class="relative mx-auto flex h-175 w-full max-w-full flex-col overflow-hidden">
+    <Card.Header class="flex flex-row items-center justify-between">
       <Card.Title>Announcements</Card.Title>
       {#if announcements.length > 1}
         <Card.Action class="flex items-center gap-1">
@@ -85,13 +85,10 @@
       >
         {#each announcements as a}
           <div class="relative flex h-full w-full shrink-0 flex-col overflow-hidden">
-            <Card.Content class="min-h-0 flex-1 space-y-3 overflow-hidden p-6 pb-2">
+            <Card.Content class="overflow-hidden">
               <div class="space-y-2">
                 <h3 class="text-xl font-bold text-foreground">{a.title}</h3>
-
-                <div class="text-sm text-muted-foreground">
-                  <RichEditor content={a.content} editable={false} />
-                </div>
+                <RichTextRenderer bind:content={a.content} />
               </div>
             </Card.Content>
 

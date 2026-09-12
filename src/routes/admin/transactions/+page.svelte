@@ -11,24 +11,24 @@
   import { Button } from "$ui/button";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
-  import TermFilter from "$components/TermFilter.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import { RefreshCcw, ListFilter, Search, ShieldCheck, Plus } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { columns } from "./columns";
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { type JournalRecord, TRANSACTION_TYPE_OPTIONS, TransactionType } from "$lib/types";
+  import { toast } from "svelte-sonner";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let journal = $state<JournalRecord[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   let isLoading = $state(false);
   let error = $state<string | null>(null);
   let selectedIds = $state<Set<string>>(new Set());
-  let isAuditing = $state(false);
 
   // Filters
   const tableSync = new TableSync({
@@ -43,10 +43,9 @@
     selectedIds = new Set();
 
     try {
-      const [entries, mops, currentTerm] = await Promise.all([
+      const [entries, mops] = await Promise.all([
         fetchJournalEntries(undefined, undefined, bypassCache),
-        fetchMopTypes(bypassCache),
-        uiSettings.ensureCurrentTerm()
+        fetchMopTypes(bypassCache)
       ]);
 
       mopTypes = [{ value: "", label: "N/A" }, ...mops];
@@ -58,7 +57,7 @@
           ...res,
           dateWeight: parseDateWeight(res.date)
         }))
-        .filter((r) => !currentTerm || r.period === currentTerm)
+        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
         .sort(
           (a, b) =>
             (b.dateWeight ?? 0) - (a.dateWeight ?? 0) || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0)
@@ -80,24 +79,52 @@
     }
   }
 
-  async function handleBatchAudit() {
-    if (selectedIds.size === 0) {
+  async function confirmBatchAudit() {
+    const count = selectedIds.size;
+    if (count === 0) {
       return;
     }
-    isAuditing = true;
-    try {
-      await batchAuditEntries(Array.from(selectedIds));
-      selectedIds = new Set();
-      await loadData(true);
-    } catch (e: any) {
-      error = `Audit update failed: ${e.message}`;
-    } finally {
-      isAuditing = false;
-    }
+
+    const title = count === 1 ? "Mark transaction as audited?" : "Mark transactions as audited?";
+
+    const description =
+      count === 1
+        ? "This transaction will be locked and cannot be edited or reverted."
+        : `These ${count} transactions will be locked and cannot be edited or reverted.`;
+
+    globalDialog.confirm(
+      title,
+      description,
+      undefined,
+      async () => {
+        try {
+          await batchAuditEntries(Array.from(selectedIds));
+          toast.success(
+            count === 1
+              ? "Transaction marked as audited."
+              : `${count} transactions marked as audited.`
+          );
+          selectedIds = new Set();
+          await loadData(true);
+        } catch (e: any) {
+          error = `Audit update failed: ${e.message}`;
+          toast.error(error);
+        }
+      },
+      undefined,
+      {
+        accept: "Mark audited",
+        cancel: "Cancel"
+      }
+    );
   }
 
   onMount(() => {
     pageState.title = "Transactions";
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
     loadData();
   });
 
@@ -161,10 +188,7 @@
         Number(tableSync.filters!.mop !== "ALL")}
       onClear={resetFilters}
     >
-      <div class="grid gap-2 lg:grid-cols-12">
-        <div class="lg:col-span-3">
-          <TermFilter onSelect={() => loadData()} />
-        </div>
+      <div class="grid gap-2 lg:grid-cols-9">
         <div class="space-y-1 lg:col-span-5">
           <Label>Search</Label>
           <InputGroup.Root class="h-9 text-sm">
@@ -204,9 +228,7 @@
         sorting={[{ id: "date", desc: true }]}
       >
         {#snippet actions()}
-          <Button size="sm" onclick={handleBatchAudit} isLoading={isAuditing} icon={ShieldCheck}>
-            Mark as Audited
-          </Button>
+          <Button size="sm" onclick={confirmBatchAudit} icon={ShieldCheck}>Mark as Audited</Button>
         {/snippet}
       </DataTable>
     {:else}

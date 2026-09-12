@@ -3,17 +3,16 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Search, Wallet, ListChecks, Plus } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";
   import { fetchAdminPaymentRequests } from "$api/controllers/payment-request-controller";
-  import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
-  import { Input } from "$ui/input";
+  import { fetchResidents } from "$api/controllers/resident-controller";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { goto } from "$app/navigation";
@@ -22,7 +21,6 @@
 
   let payments = $state<any[]>([]);
   let residents = $state<any[]>([]);
-  let currentTerm = $state("");
   let selectedIndices = $state<Set<string>>(new Set());
   let isLoading = $state(false);
   let error = $state<string | null>(null);
@@ -43,12 +41,10 @@
     try {
       const [p, r, t] = await Promise.all([
         fetchAdminPaymentRequests(bypassCache),
-        fetchResidents(bypassCache),
-        fetchTermCurr(bypassCache)
+        fetchResidents(bypassCache)
       ]);
       payments = p;
       residents = r;
-      currentTerm = t;
     } catch (e: any) {
       error = e.message;
     } finally {

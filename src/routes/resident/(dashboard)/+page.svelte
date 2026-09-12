@@ -18,35 +18,34 @@
     Refrigerator,
     ListOrdered
   } from "@lucide/svelte";
-  import AnnouncementsSection from "$components/residents/AnnouncementsSection.svelte";
-  import RecentActivityCard from "$components/residents/RecentActivityCard.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import AnnouncementsSection from "$components/dashboard/AnnouncementsSection.svelte";
+  import RecentActivityCard from "$components/dashboard/RecentActivityCard.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
   import { pageState } from "$state/page-info.svelte";
   import StatusBadge from "$components/residents/StatusBadge.svelte";
-  import DashboardActionCard from "$components/DashboardActionCard.svelte";
+  import DashboardActionCard from "$components/dashboard/DashboardActionCard.svelte";
   import type { ResidentStatus } from "$state/resident-state.svelte";
   import { AccountType } from "$lib/types";
-  import StatisticCard from "$components/StatisticCard.svelte";
+  import { StatisticCard } from "$components/ui/haone";
   import {
     fetchResidentStatus,
     isResidentRouteAllowed
   } from "$api/controllers/resident-controller";
   import { getCustomServices } from "$lib/services";
   import { namecase } from "@compwright/namecase";
+  import { uiSettings } from "$state/settings.svelte";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
-  async function loadStatus(term?: string) {
+  async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      const targetTerm = term || status?.activeTerm || "";
-      status = await fetchResidentStatus(targetTerm);
+      status = await fetchResidentStatus(uiSettings.currentTerm, bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -132,9 +131,11 @@
   onMount(() => {
     pageState.title = "Dashboard";
     pageState.isTopLevel = true;
-    if (auth.accessToken && !status) {
-      loadStatus();
-    }
+  });
+
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
   });
 </script>
 
@@ -147,8 +148,7 @@
       </h1>
       <div>
         View your profile, track your financial standing, and manage your clearance for <span
-          class="font-semibold"
-          >{translatePeriod(status?.activeTerm || status?.systemActiveTerm) || "Active Term"}</span
+          class="font-semibold">{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
         >.
       </div>
     </div>
@@ -156,18 +156,16 @@
       variant="ghost"
       size="icon"
       class="h-10 w-10 text-muted-foreground hover:text-foreground"
-      onclick={() => loadStatus()}
+      onclick={() => loadData(true)}
       {isLoading}
       icon={RefreshCcw}
       title="Refresh"
     />
   </div>
 
-  {#if isLoading && !status}
-    <LoadingView />
-  {:else if error}
+  {#if error}
     <ErrorView {error}>
-      <Button onclick={() => loadStatus()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else if status}
     <!-- Quick Stats Grid -->
@@ -187,39 +185,37 @@
         </StatisticCard>
 
         <StatisticCard
-          title="Room & Bed"
-          value={`${status.account?.room}-${status.account?.bed}`}
+          title="Room"
+          value={status.account.bed
+            ? `${status.account.room}-${status.account.bed}`
+            : `${status.account.room}`}
           {isLoading}
         >
           {#snippet icon()}<MapPin class="h-6 w-6" />{/snippet}
         </StatisticCard>
       {/if}
     </div>
+  {/if}
 
-    <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
-      <!-- Announcements Section (2 cols) -->
-      <div class="min-w-0 lg:col-span-2">
-        <AnnouncementsSection />
-      </div>
-
-      <!-- Recent Transactions (1 col) -->
-      <div class="min-w-0">
-        <RecentActivityCard transactions={status.transactions} period={status.activeTerm} />
-      </div>
+  <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
+    <!-- Announcements Section (2 cols) -->
+    <div class="min-w-0 lg:col-span-2">
+      <AnnouncementsSection />
     </div>
 
-    <!-- Tools Section (3 cols) -->
-    <Card.Root class="mt-6 shadow-none">
-      <Card.Header>
-        <Card.Title>Tools</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {#each actions as tool}
-            <DashboardActionCard {...tool} />
-          {/each}
-        </div>
-      </Card.Content>
-    </Card.Root>
-  {/if}
+    <!-- Recent Transactions (1 col) -->
+    <div class="min-w-0">
+      <RecentActivityCard transactions={status?.transactions} period={status?.activeTerm} />
+    </div>
+  </div>
+
+  <!-- Tools Section (3 cols) -->
+  <div class="my-6 space-y-6">
+    <div class="text-xl font-semibold">Tools</div>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {#each actions as tool}
+        <DashboardActionCard {...tool} />
+      {/each}
+    </div>
+  </div>
 </div>

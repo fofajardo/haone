@@ -219,13 +219,13 @@ export const supabaseResidentService: ResidentServiceInterface = {
     return result;
   },
 
-  async fetchResidentStatus(emailArg: string, term?: string, _bypassCache = false): Promise<any> {
+  async fetchResidentStatus(term?: string, _bypassCache = false): Promise<any> {
     if (!supabase) {
       return null;
     }
 
     // Sheets always derives the identity from the auth token; mirror that.
-    const email = ((auth.isResident ? auth.user?.email : emailArg) || "").toLowerCase().trim();
+    const email = (auth.user?.email || "").toLowerCase().trim();
     const sb = supabase;
 
     const { data: userRow, error: userErr } = await supabase

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ContentHeader from "$components/ContentHeader.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
   import AppearanceCard from "$components/settings/AppearanceCard.svelte";
   import VersionCard from "$components/settings/VersionCard.svelte";
   import NavSettingsCard from "$components/settings/NavSettingsCard.svelte";

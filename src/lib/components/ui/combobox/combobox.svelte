@@ -88,7 +88,7 @@
                 disabled={opt.disabled}
                 class={cn(opt.disabled && "opacity-50")}
               >
-                <Check class={cn("mr-2 h-4 w-4", value !== opt.value && "text-transparent")} />
+                <Check class={cn("mr-2 h-4 w-4", value !== opt.value && "opacity-0")} />
                 {opt.label}
               </Command.Item>
             {/each}

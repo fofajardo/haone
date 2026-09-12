@@ -21,8 +21,8 @@
   import programsJson from "$assets/programs.json";
   import { TagsInput } from "$ui/tags-input";
   import { Combobox } from "$ui/combobox";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
 
   let {
     formData = $bindable({}),

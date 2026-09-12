@@ -28,11 +28,10 @@
     ArrowLeftToLine,
     TriangleAlert
   } from "@lucide/svelte";
-  import * as AlertDialog from "$ui/alert-dialog";
   import { Checkbox } from "$ui/checkbox";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import { AccountCombobox } from "$components/ui/haone";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import * as Dialog from "$ui/dialog";
   import * as Tooltip from "$ui/tooltip";
@@ -48,6 +47,8 @@
     TRANSACTION_TYPE_WITH_RECEIPT,
     TRANSACTION_TYPE_MAYBE_WITH_RECEIPT
   } from "$lib/types";
+  import { globalDialog } from "$state/dialog.svelte";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     mode: "add" | "edit";
@@ -77,7 +78,6 @@
   let selectedResident = $state<ResidentRecord | null>(null);
   let isStandingOpen = $state(false);
   let allowOverpayment = $state(false);
-  let isTermWarningOpen = $state(false);
   let hasConfirmedTerm = $state(false);
 
   // Form State
@@ -455,6 +455,27 @@
     selectedResident = a;
   }
 
+  function confirmSubmitForInactiveTerm() {
+    globalDialog.confirm(
+      "Record transaction for inactive term?",
+      `This transaction will be recorded under ${translatePeriod(formData.period)} instead of the active term (${translatePeriod(uiSettings.activeTerm)}).`,
+      undefined,
+      async () => {
+        try {
+          hasConfirmedTerm = true;
+          await handleSubmit();
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Record transaction",
+        cancel: "Cancel"
+      }
+    );
+  }
+
   async function handleSubmit() {
     if (!formData.creatorId || !formData.accountId) {
       error = "Please select both a Recorder and an Account.";
@@ -497,7 +518,7 @@
     }
 
     if (formData.period !== uiSettings.currentTerm && !hasConfirmedTerm) {
-      isTermWarningOpen = true;
+      confirmSubmitForInactiveTerm();
       return;
     }
 
@@ -556,7 +577,6 @@
         toRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
         toRow[JOR.WAS_AUDITED] = "FALSE";
         toRow[JOR.ID] = crypto.randomUUID();
-        const row = new Array(22).fill("");
         toRow[JOR.CREATOR_ID] = formData.creatorId || "";
         toRow[JOR.ACCOUNT_ID] = formData.accountId || "";
 
@@ -768,7 +788,7 @@
             </Label>
             <div class="grid gap-8 md:grid-cols-2">
               <div class="relative space-y-3">
-                <AccountAutocomplete
+                <AccountCombobox
                   label="Recorder"
                   placeholder="Search resident email or name…"
                   {accounts}
@@ -798,7 +818,7 @@
 
               {#if !isFundsOnly}
                 <div class="relative space-y-3">
-                  <AccountAutocomplete
+                  <AccountCombobox
                     label="Account"
                     placeholder="Search resident email or name…"
                     {accounts}
@@ -1106,30 +1126,3 @@
     {/if}
   </div>
 </div>
-
-<AlertDialog.Root bind:open={isTermWarningOpen}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Inactive Term Warning</AlertDialog.Title>
-      <AlertDialog.Description>
-        You are recording a transaction for <span class="font-semibold text-foreground"
-          >{translatePeriod(formData.period)}</span
-        >, which is not the currently active term (<span class="font-semibold text-foreground"
-          >{translatePeriod(uiSettings.currentTerm)}</span
-        >).
-        <p class="mt-2">Are you sure you want to proceed?</p>
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action
-        onclick={() => {
-          hasConfirmedTerm = true;
-          handleSubmit();
-        }}
-      >
-        Confirm
-      </AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

@@ -112,7 +112,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
     return allResidents;
   },
 
-  async fetchResidentStatus(_email: string, term?: string, bypassCache = false): Promise<any> {
+  async fetchResidentStatus(term?: string, bypassCache = false): Promise<any> {
     const query = term ? `?term=${encodeURIComponent(term)}` : "";
     return fetchServer(`/api/resident/check-status${query}`, {}, bypassCache);
   },

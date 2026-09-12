@@ -4,10 +4,10 @@
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, CircleX, Funnel } from "@lucide/svelte";
   import * as NativeSelect from "$ui/native-select";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import {
     fetchAdminLaundryReservations,
     cancelLaundryReservation,
@@ -29,7 +29,7 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
-  import CancelLaundryDialog from "$components/residents/CancelLaundryDialog.svelte";
+  import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
@@ -64,11 +64,10 @@
     isLoading = true;
     error = null;
     try {
-      const [resResult, allUsers, allResidents, currentTerm] = await Promise.all([
+      const [resResult, allUsers, allResidents] = await Promise.all([
         fetchAdminLaundryReservations(true),
         fetchUsers(true),
-        fetchResidents(true),
-        uiSettings.ensureCurrentTerm()
+        fetchResidents(true)
       ]);
 
       const newRoomMap = new Map<string, string>();
@@ -78,7 +77,7 @@
       allResidents.forEach((res) => {
         if (
           res.residentId &&
-          res.period === currentTerm &&
+          res.period === uiSettings.activeTerm &&
           canAccessLaundryOrFridge(res.type || "")
         ) {
           newActiveResIds.add(res.residentId);

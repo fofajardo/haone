@@ -4,7 +4,7 @@
   import { Button } from "$ui/button";
   import { LoaderCircleIcon } from "@lucide/svelte";
   import { replaceState } from "$app/navigation";
-  import BrandingLogo from "$components/BrandingLogo.svelte";
+  import BrandingLogo from "$components/branding/BrandingLogo.svelte";
   import { globalDialog } from "$state/dialog.svelte";
   import { pageState } from "$state/page-info.svelte";
   import { fade, fly } from "svelte/transition";

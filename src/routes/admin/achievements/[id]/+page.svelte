@@ -3,15 +3,14 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Pencil, Share2 } from "@lucide/svelte";
-  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import * as Dialog from "$ui/dialog";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Textarea } from "$ui/textarea";
   import { Checkbox } from "$ui/checkbox";
-  import TermFilter from "$components/TermFilter.svelte";
   import { toast } from "svelte-sonner";
   import {
     fetchAdminAchievements,
@@ -20,8 +19,10 @@
   } from "$api/controllers/achievement-controller";
   import { fetchUsers, fetchResidents } from "$api/controllers/resident-controller";
   import type { AchievementRecord } from "$lib/types";
-  import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";
-  import { shareAchievementStory } from "$components/achievements/story-share";
+  import AchievementDetailsView from "$components/residents/AchievementDetailsView.svelte";
+  import { shareAchievementStory } from "$components/residents/story-share";
+  import { TermCombobox } from "$components/ui/haone";
+  import { uiSettings } from "$state/settings.svelte";
 
   const id = page.params.id;
 
@@ -68,7 +69,7 @@
     icon: "🏆",
     extraUrl: "",
     points: 10,
-    term: "",
+    term: uiSettings.currentTerm,
     creatorId: "",
     isIndefinite: false
   });
@@ -249,7 +250,7 @@
       </div>
       {#if !editData.isIndefinite}
         <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <TermFilter bind:value={editData.term} />
+          <TermCombobox bind:value={editData.term} />
         </div>
       {/if}
     </div>

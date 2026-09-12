@@ -15,7 +15,7 @@
   import { slide } from "svelte/transition";
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";
-  import HeroLayout from "$components/HeroLayout.svelte";
+  import HeroLayout from "$components/branding/HeroLayout.svelte";
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
 

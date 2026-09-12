@@ -3,16 +3,16 @@
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Trophy } from "@lucide/svelte";
-  import ContentHeader from "$components/ContentHeader.svelte";
-  import LoadingView from "$components/LoadingView.svelte";
-  import EmptyView from "$components/EmptyView.svelte";
-  import ErrorView from "$components/ErrorView.svelte";
+  import ContentHeader from "$components/content/ContentHeader.svelte";
+  import LoadingView from "$components/content/LoadingView.svelte";
+  import EmptyView from "$components/content/EmptyView.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
   import {
     fetchAdminAchievements,
     fetchAchievementLogs,
     addAchievement
   } from "$api/controllers/achievement-controller";
-  import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
+  import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import * as Dialog from "$ui/dialog";
   import { Input } from "$ui/input";
@@ -20,16 +20,15 @@
   import { Textarea } from "$ui/textarea";
   import { toast } from "svelte-sonner";
   import { Checkbox } from "$ui/checkbox";
-  import TermFilter from "$components/TermFilter.svelte";
-  import FilterDrawer from "$components/FilterDrawer.svelte";
+  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
-  import AchievementCard from "$components/achievements/AchievementCard.svelte";
+  import AchievementCard from "$components/residents/AchievementCard.svelte";
+  import { TermCombobox } from "$components/ui/haone";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
-  let currentTerm = $state("");
   let currentUserId = $state("");
   let totalUsersCount = $state(0);
   let scope = $state("global");
@@ -46,7 +45,7 @@
     icon: "🏆",
     extraUrl: "",
     points: 10,
-    term: "",
+    term: uiSettings.currentTerm,
     isIndefinite: false
   });
 
@@ -67,11 +66,10 @@
     isLoading = true;
     error = null;
     try {
-      const [a, l, r, t, allU] = await Promise.all([
+      const [a, l, r, allU] = await Promise.all([
         fetchAdminAchievements(bypassCache),
         fetchAchievementLogs(bypassCache),
         fetchResidents(bypassCache),
-        fetchTermCurr(bypassCache),
         fetchUsers(bypassCache)
       ]);
       const accountsCountMap = new Map<string, number>();
@@ -90,12 +88,7 @@
         };
       });
       logs = l;
-      currentTerm = t;
       totalUsersCount = allU.length;
-      const currTerm = await uiSettings.ensureCurrentTerm();
-      if (!newAchievement.term) {
-        newAchievement.term = currTerm;
-      }
       currentUserId = auth.userId;
     } catch (e: any) {
       error = e.message;
@@ -114,7 +107,7 @@
         icon: newAchievement.icon,
         extraUrl: newAchievement.extraUrl,
         points: Number(newAchievement.points) || 0,
-        term: newAchievement.isIndefinite ? "" : newAchievement.term || currentTerm
+        term: newAchievement.isIndefinite ? "" : newAchievement.term
       });
       toast.success("Achievement created");
       isCreatorOpen = false;
@@ -124,7 +117,7 @@
         icon: "🏆",
         extraUrl: "",
         points: 10,
-        term: currentTerm,
+        term: uiSettings.currentTerm,
         isIndefinite: false
       };
       loadData();
@@ -133,7 +126,10 @@
     }
   }
 
-  onMount(loadData);
+  $effect(() => {
+    uiSettings.currentTerm;
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -168,13 +164,6 @@
     {#if !isGlobal}
       <FilterDrawer>
         <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
-          <div class="w-full sm:w-64">
-            <TermFilter
-              onSelect={() => {
-                loadData();
-              }}
-            />
-          </div>
           <div class="flex items-center space-x-2 pb-1.5">
             <Checkbox id="admin-show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
             <Label for="admin-show-all-time" class="cursor-pointer text-xs font-medium">
@@ -252,7 +241,7 @@
       </div>
       {#if !newAchievement.isIndefinite}
         <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <TermFilter bind:value={newAchievement.term} />
+          <TermCombobox bind:value={newAchievement.term} />
         </div>
       {/if}
     </div>
