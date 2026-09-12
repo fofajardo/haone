@@ -21,7 +21,9 @@
     Banknote,
     BookUser,
     CirclePlus,
-    X
+    X,
+    CircleUserIcon,
+    LogOutIcon
   } from "@lucide/svelte";
   import { Button } from "$ui/button";
   import { dev } from "$app/environment";
@@ -31,11 +33,12 @@
   import { isResidentRouteAllowed } from "$api/controllers/resident-controller";
   import { getCustomServices } from "$lib/services";
   import { AccountType } from "$lib/types";
-  import MobileProfileCard from "$components/nav/MobileProfileCard.svelte";
+  import { namecase } from "@compwright/namecase";
 
   const sidebar = Sidebar.useSidebar();
 
   const isAdminView = $derived(page.url.pathname.startsWith("/admin"));
+  let imgError = $state(false);
 
   // --- Admin Navigation Items ---
   const adminMgmtItems = [
@@ -152,7 +155,34 @@
   {/if}
 
   <Sidebar.Content>
-    <MobileProfileCard />
+    {#if sidebar.isMobile && auth.user}
+      <div class="flex flex-col gap-6 px-4 pt-6">
+        <div class="flex flex-col items-center justify-center gap-3 text-center">
+          {#if !imgError}
+            <img
+              src={auth.avatarUrl}
+              alt={namecase(auth.displayName)}
+              class="h-32 w-32 rounded-full object-cover"
+              onerror={() => (imgError = true)}
+            />
+          {:else}
+            <CircleUserIcon class="h-32 w-32 text-foreground" />
+          {/if}
+
+          <h2 class="mt-1 text-2xl font-normal tracking-normal text-foreground">
+            Hi, {namecase(auth.preferredName)}!
+          </h2>
+
+          <button
+            onclick={() => auth.signOut()}
+            class="mt-1 flex items-center gap-2 rounded-full border border-border px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            <LogOutIcon class="h-4 w-4" />
+            <span>Sign out</span>
+          </button>
+        </div>
+      </div>
+    {/if}
     <Sidebar.Group>
       <Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
       <Sidebar.Menu>
