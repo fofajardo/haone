@@ -25,7 +25,7 @@
   import { uiSettings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/residents/AchievementCard.svelte";
-  import { AcademicTermInput } from "$components/ui/haone";
+  import { TermCombobox } from "$components/ui/haone";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -241,7 +241,7 @@
       </div>
       {#if !newAchievement.isIndefinite}
         <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <AcademicTermInput bind:value={newAchievement.term} />
+          <TermCombobox bind:value={newAchievement.term} />
         </div>
       {/if}
     </div>

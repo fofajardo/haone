@@ -32,7 +32,7 @@
   import { Checkbox } from "$ui/checkbox";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
-  import { AccountsInput } from "$components/ui/haone";
+  import { AccountCombobox } from "$components/ui/haone";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import * as Dialog from "$ui/dialog";
   import * as Tooltip from "$ui/tooltip";
@@ -768,7 +768,7 @@
             </Label>
             <div class="grid gap-8 md:grid-cols-2">
               <div class="relative space-y-3">
-                <AccountsInput
+                <AccountCombobox
                   label="Recorder"
                   placeholder="Search resident email or name…"
                   {accounts}
@@ -798,7 +798,7 @@
 
               {#if !isFundsOnly}
                 <div class="relative space-y-3">
-                  <AccountsInput
+                  <AccountCombobox
                     label="Account"
                     placeholder="Search resident email or name…"
                     {accounts}

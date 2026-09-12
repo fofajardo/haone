@@ -35,7 +35,7 @@
     FileText,
     User
   } from "@lucide/svelte";
-  import { AccountsInput, ImageUpload } from "$components/ui/haone";
+  import { AccountCombobox, ImageUpload } from "$components/ui/haone";
 
   let {
     itemId = null as string | null,
@@ -205,7 +205,7 @@
                 <User class="h-3.5 w-3.5" /> Resident Owner
               </Label>
               <div class="relative space-y-3">
-                <AccountsInput
+                <AccountCombobox
                   label="Owner"
                   placeholder="Search resident email or name…"
                   {accounts}

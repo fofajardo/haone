@@ -1,6 +1,6 @@
 import StatisticCard from "./card-statistic.svelte";
+import AccountCombobox from "./combobox-account.svelte";
+import TermCombobox from "./combobox-term.svelte";
 import ImageUpload from "./image-upload.svelte";
-import AcademicTermInput from "./input-academic-term.svelte";
-import AccountsInput from "./input-accounts.svelte";
 
-export { AcademicTermInput, AccountsInput, ImageUpload, StatisticCard };
+export { AccountCombobox, ImageUpload, StatisticCard, TermCombobox };

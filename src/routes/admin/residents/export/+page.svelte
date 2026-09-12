@@ -4,7 +4,7 @@
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
-  import { AccountsInput } from "$components/ui/haone";
+  import { AccountCombobox } from "$components/ui/haone";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import { Button } from "$ui/button";
@@ -923,7 +923,7 @@
         <div class="grid gap-6 rounded-2xl border bg-card p-6">
           <!-- Issued By -->
           <div class="space-y-3">
-            <AccountsInput
+            <AccountCombobox
               label="Issued By"
               accounts={allAccounts}
               bind:value={issuedBy}
@@ -937,7 +937,7 @@
 
           <!-- Assessed By -->
           <div class="space-y-3">
-            <AccountsInput
+            <AccountCombobox
               label="Assessed By"
               accounts={allAccounts}
               bind:value={assessedBy}
@@ -951,7 +951,7 @@
 
           <!-- Certified By -->
           <div class="space-y-3">
-            <AccountsInput
+            <AccountCombobox
               label="Certified By"
               accounts={allAccounts}
               bind:value={certifiedBy}

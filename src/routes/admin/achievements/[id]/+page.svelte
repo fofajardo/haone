@@ -21,7 +21,7 @@
   import type { AchievementRecord } from "$lib/types";
   import AchievementDetailsView from "$components/residents/AchievementDetailsView.svelte";
   import { shareAchievementStory } from "$components/residents/story-share";
-  import { AcademicTermInput } from "$components/ui/haone";
+  import { TermCombobox } from "$components/ui/haone";
 
   const id = page.params.id;
 
@@ -249,7 +249,7 @@
       </div>
       {#if !editData.isIndefinite}
         <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <AcademicTermInput bind:value={editData.term} />
+          <TermCombobox bind:value={editData.term} />
         </div>
       {/if}
     </div>
