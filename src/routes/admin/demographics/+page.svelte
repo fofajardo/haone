@@ -21,6 +21,7 @@
   import { translateCollege, translateProgram, translatePeriod } from "$utils/translators";
 
   import { fetchResidents } from "$api/controllers/resident-controller";
+  import { cn } from "$utils";
 
   interface DataItem {
     label: string;
@@ -263,15 +264,15 @@
   });
 </script>
 
-<Tabs.Root bind:value={activeTab} class="space-y-4">
-  <div class="mx-auto max-w-7xl space-y-3">
-    <ContentHeader
-      title="Demographics"
-      isTopLevel={true}
-      onRefresh={() => loadData(true)}
-      isRefreshing={isLoading}
-    >
-      {#snippet tabs()}
+<div class="mx-auto max-w-7xl space-y-3">
+  <ContentHeader
+    title="Demographics"
+    isTopLevel={true}
+    onRefresh={() => loadData(true)}
+    isRefreshing={isLoading}
+  >
+    {#snippet tabs()}
+      <Tabs.Root bind:value={activeTab} class="space-y-4">
         <Tabs.List>
           <Tabs.Trigger value="term" class="flex items-center gap-1.5">
             <Calendar class="h-3.5 w-3.5" />
@@ -282,305 +283,289 @@
             Historical
           </Tabs.Trigger>
         </Tabs.List>
-      {/snippet}
-    </ContentHeader>
+      </Tabs.Root>
+    {/snippet}
+  </ContentHeader>
 
-    {#if isLoading}
-      <LoadingView />
-    {:else if error}
-      <ErrorView {error}>
-        <Button
-          variant="outline"
-          size="sm"
-          class="mt-2"
-          onclick={() => loadData()}
-          {isLoading}
-          icon={RefreshCcw}>Try Again</Button
-        >
-      </ErrorView>
-    {:else}
-      <!-- Term Tab -->
-      <Tabs.Content value="term" class="space-y-6">
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <!-- Colleges -->
-          <Card.Root>
-            <Card.Header>
-              <Card.Title class="flex items-center gap-2 text-lg">
-                <School class="h-5 w-5" />
-                Resident Colleges
-              </Card.Title>
-              <Card.Description>Distribution by Academic Unit</Card.Description>
-            </Card.Header>
-            <Card.Content class="space-y-6">
-              <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-75">
-                <PieChart
-                  data={reportData.colleges}
-                  key="label"
-                  value="value"
-                  c="fill"
-                  innerRadius={-20}
-                  cornerRadius={4}
-                  padAngle={0.02}
-                />
-              </Chart.Container>
+  {#if isLoading}
+    <LoadingView />
+  {:else if error}
+    <ErrorView {error}>
+      <Button
+        variant="outline"
+        size="sm"
+        class="mt-2"
+        onclick={() => loadData()}
+        {isLoading}
+        icon={RefreshCcw}>Try Again</Button
+      >
+    </ErrorView>
+  {:else}
+    <!-- Term Tab -->
+    <div class={cn("grid grid-cols-1 gap-6 xl:grid-cols-2", activeTab === "term" ? "" : "hidden")}>
+      <!-- Colleges -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title class="flex items-center gap-2 text-lg">
+            <School class="h-5 w-5" />
+            Resident Colleges
+          </Card.Title>
+          <Card.Description>Distribution by Academic Unit</Card.Description>
+        </Card.Header>
+        <Card.Content class="space-y-6">
+          <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-75">
+            <PieChart
+              data={reportData.colleges}
+              key="label"
+              value="value"
+              c="fill"
+              innerRadius={-20}
+              cornerRadius={4}
+              padAngle={0.02}
+            />
+          </Chart.Container>
 
-              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {#each reportData.colleges as item}
-                  <div
-                    class="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {#each reportData.colleges as item}
+              <div
+                class="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
+              >
+                <div class="flex items-center gap-2 truncate">
+                  <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
+                  <span class="truncate text-xs font-semibold text-foreground/80" title={item.label}
+                    >{item.label}</span
                   >
-                    <div class="flex items-center gap-2 truncate">
-                      <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
-                      <span
-                        class="truncate text-xs font-semibold text-foreground/80"
-                        title={item.label}>{item.label}</span
-                      >
-                    </div>
-                    <div class="flex shrink-0 items-center gap-2">
-                      <span class="text-xs font-bold text-foreground">{item.value}</span>
-                      <span class="text-xs text-muted-foreground">({item.percentage})</span>
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            </Card.Content>
-          </Card.Root>
-
-          <!-- Batches -->
-          <Card.Root>
-            <Card.Header>
-              <Card.Title class="flex items-center gap-2 text-lg">
-                <CalendarDays class="h-5 w-5" />
-                Resident Batches
-              </Card.Title>
-              <Card.Description>Distribution by Admission Year</Card.Description>
-            </Card.Header>
-            <Card.Content class="space-y-6">
-              <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-75">
-                <PieChart
-                  data={reportData.batches}
-                  key="label"
-                  value="value"
-                  c="fill"
-                  innerRadius={-20}
-                  cornerRadius={4}
-                  padAngle={0.02}
-                />
-              </Chart.Container>
-
-              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {#each reportData.batches as item}
-                  <div
-                    class="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
-                  >
-                    <div class="flex items-center gap-2 truncate">
-                      <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
-                      <span class="truncate text-xs font-semibold text-foreground/80"
-                        >{item.label}</span
-                      >
-                    </div>
-                    <div class="flex shrink-0 items-center gap-2">
-                      <span class="text-xs font-bold text-foreground">{item.value}</span>
-                      <span class="text-xs text-muted-foreground">({item.percentage})</span>
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            </Card.Content>
-          </Card.Root>
-
-          <!-- Degrees -->
-          <Card.Root class="xl:col-span-2">
-            <Card.Header>
-              <Card.Title class="flex items-center gap-2 text-lg">
-                <GraduationCap class="h-5 w-5" />
-                Resident Degree Programs
-              </Card.Title>
-              <Card.Description>All Programs</Card.Description>
-            </Card.Header>
-            <Card.Content class="space-y-8">
-              <div class="flex flex-col gap-8 lg:flex-row lg:items-center">
-                <Chart.Container
-                  config={chartConfig}
-                  class="mx-auto aspect-square w-full max-w-87.5"
-                >
-                  <PieChart
-                    data={reportData.degrees}
-                    key="label"
-                    value="value"
-                    c="fill"
-                    innerRadius={-20}
-                    cornerRadius={4}
-                    padAngle={0.02}
-                  />
-                </Chart.Container>
-
-                <div class="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-2">
-                  {#each reportData.degrees as item}
-                    <div
-                      class="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
-                    >
-                      <div class="flex items-center gap-2 truncate">
-                        <div
-                          class="h-2 w-2 rounded-full"
-                          style="background-color: {item.fill}"
-                        ></div>
-                        <span
-                          class="truncate text-xs font-semibold text-foreground/80"
-                          title={item.label}>{item.label}</span
-                        >
-                      </div>
-                      <div class="flex shrink-0 items-center gap-2">
-                        <span class="text-xs font-bold text-foreground">{item.value}</span>
-                        <span class="text-xs text-muted-foreground">({item.percentage})</span>
-                      </div>
-                    </div>
-                  {/each}
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                  <span class="text-xs font-bold text-foreground">{item.value}</span>
+                  <span class="text-xs text-muted-foreground">({item.percentage})</span>
                 </div>
               </div>
-            </Card.Content>
-          </Card.Root>
-        </div>
-      </Tabs.Content>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
 
-      <!-- Historical Tab -->
-      <Tabs.Content value="historical" class="space-y-6">
-        <!-- Historical Colleges -->
-        <Card.Root>
-          <Card.Header>
-            <Card.Title class="flex items-center gap-2 text-lg">
-              <School class="h-5 w-5" />
-              Resident Colleges Trend
-            </Card.Title>
-            <Card.Description>Resident count per college across academic terms</Card.Description>
-          </Card.Header>
-          <Card.Content class="space-y-6">
-            {#if historicalData.collegesData.length > 0}
-              <div class="h-80 w-full">
-                <LineChart
-                  data={historicalData.collegesData}
-                  x="term"
-                  series={historicalData.collegesSeries}
-                  props={{
-                    xAxis: {
-                      format: (d) => translatePeriod(d)
-                    }
-                  }}
-                >
-                  {#snippet tooltip({ context })}
-                    <Tooltip.Root {context}>
-                      <Tooltip.Header
-                        value={context.tooltip.data
-                          ? translatePeriod(context.tooltip.data.term)
-                          : ""}
-                      />
-                      <Tooltip.List>
-                        {#each context.tooltip.series.filter((s) => s.visible) as s}
-                          {#if context.series.isHighlighted(s.key, true)}
-                            <Tooltip.Item
-                              label={s.label}
-                              value={s.value}
-                              color={s.color}
-                              data-highlighted={context.series.isHighlighted(s.key, true)}
-                              valueAlign="right"
-                              onpointerenter={() => (context.series.highlightKey = s.key)}
-                              onpointerleave={() => (context.series.highlightKey = null)}
-                            />
-                          {/if}
-                        {/each}
-                      </Tooltip.List>
-                    </Tooltip.Root>
-                  {/snippet}
-                </LineChart>
-              </div>
+      <!-- Batches -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title class="flex items-center gap-2 text-lg">
+            <CalendarDays class="h-5 w-5" />
+            Resident Batches
+          </Card.Title>
+          <Card.Description>Distribution by Admission Year</Card.Description>
+        </Card.Header>
+        <Card.Content class="space-y-6">
+          <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-75">
+            <PieChart
+              data={reportData.batches}
+              key="label"
+              value="value"
+              c="fill"
+              innerRadius={-20}
+              cornerRadius={4}
+              padAngle={0.02}
+            />
+          </Chart.Container>
 
-              <div class="flex flex-wrap gap-3 pt-2">
-                {#each historicalData.collegesSeries as s}
-                  <div
-                    class="flex items-center gap-1.5 rounded-md border bg-muted/20 px-2.5 py-1 text-xs"
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {#each reportData.batches as item}
+              <div
+                class="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
+              >
+                <div class="flex items-center gap-2 truncate">
+                  <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
+                  <span class="truncate text-xs font-semibold text-foreground/80">{item.label}</span
                   >
-                    <span class="h-2.5 w-2.5 rounded-full" style="background-color: {s.color}"
-                    ></span>
-                    <span class="font-medium text-foreground">{s.label}</span>
-                  </div>
-                {/each}
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                  <span class="text-xs font-bold text-foreground">{item.value}</span>
+                  <span class="text-xs text-muted-foreground">({item.percentage})</span>
+                </div>
               </div>
-            {:else}
-              <div class="py-12 text-center text-xs text-muted-foreground">
-                No historical records available.
-              </div>
-            {/if}
-          </Card.Content>
-        </Card.Root>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
 
-        <!-- Historical Batches -->
-        <Card.Root>
-          <Card.Header>
-            <Card.Title class="flex items-center gap-2 text-lg">
-              <CalendarDays class="h-5 w-5" />
-              Resident Batches Trend
-            </Card.Title>
-            <Card.Description>Admission batch trends across academic terms</Card.Description>
-          </Card.Header>
-          <Card.Content class="space-y-6">
-            {#if historicalData.batchesData.length > 0}
-              <div class="h-80 w-full">
-                <LineChart
-                  data={historicalData.batchesData}
-                  x="term"
-                  series={historicalData.batchesSeries}
-                  props={{
-                    xAxis: {
-                      format: (d) => translatePeriod(d)
-                    }
-                  }}
+      <!-- Degrees -->
+      <Card.Root class="xl:col-span-2">
+        <Card.Header>
+          <Card.Title class="flex items-center gap-2 text-lg">
+            <GraduationCap class="h-5 w-5" />
+            Resident Degree Programs
+          </Card.Title>
+          <Card.Description>All Programs</Card.Description>
+        </Card.Header>
+        <Card.Content class="space-y-8">
+          <div class="flex flex-col gap-8 lg:flex-row lg:items-center">
+            <Chart.Container config={chartConfig} class="mx-auto aspect-square w-full max-w-87.5">
+              <PieChart
+                data={reportData.degrees}
+                key="label"
+                value="value"
+                c="fill"
+                innerRadius={-20}
+                cornerRadius={4}
+                padAngle={0.02}
+              />
+            </Chart.Container>
+
+            <div class="grid flex-1 grid-cols-1 gap-2 sm:grid-cols-2">
+              {#each reportData.degrees as item}
+                <div
+                  class="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2"
                 >
-                  {#snippet tooltip({ context })}
-                    <Tooltip.Root {context}>
-                      <Tooltip.Header
-                        value={context.tooltip.data
-                          ? translatePeriod(context.tooltip.data.term)
-                          : ""}
-                      />
-                      <Tooltip.List>
-                        {#each context.tooltip.series.filter((s) => s.visible) as s}
-                          {#if context.series.isHighlighted(s.key, true)}
-                            <Tooltip.Item
-                              label={`Batch ${s.label}`}
-                              value={s.value}
-                              color={s.color}
-                              data-highlighted={context.series.isHighlighted(s.key, true)}
-                              valueAlign="right"
-                              onpointerenter={() => (context.series.highlightKey = s.key)}
-                              onpointerleave={() => (context.series.highlightKey = null)}
-                            />
-                          {/if}
-                        {/each}
-                      </Tooltip.List>
-                    </Tooltip.Root>
-                  {/snippet}
-                </LineChart>
-              </div>
-
-              <div class="flex flex-wrap gap-3 pt-2">
-                {#each historicalData.batchesSeries as s}
-                  <div
-                    class="flex items-center gap-1.5 rounded-md border bg-muted/20 px-2.5 py-1 text-xs"
-                  >
-                    <span class="h-2.5 w-2.5 rounded-full" style="background-color: {s.color}"
-                    ></span>
-                    <span class="font-medium text-foreground">Batch {s.label}</span>
+                  <div class="flex items-center gap-2 truncate">
+                    <div class="h-2 w-2 rounded-full" style="background-color: {item.fill}"></div>
+                    <span
+                      class="truncate text-xs font-semibold text-foreground/80"
+                      title={item.label}>{item.label}</span
+                    >
                   </div>
-                {/each}
-              </div>
-            {:else}
-              <div class="py-12 text-center text-xs text-muted-foreground">
-                No historical records available.
-              </div>
-            {/if}
-          </Card.Content>
-        </Card.Root>
-      </Tabs.Content>
-    {/if}
-  </div>
-</Tabs.Root>
+                  <div class="flex shrink-0 items-center gap-2">
+                    <span class="text-xs font-bold text-foreground">{item.value}</span>
+                    <span class="text-xs text-muted-foreground">({item.percentage})</span>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        </Card.Content>
+      </Card.Root>
+    </div>
+
+    <!-- Historical Tab -->
+    <div class={activeTab === "historical" ? "" : "hidden"}>
+      <!-- Historical Colleges -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title class="flex items-center gap-2 text-lg">
+            <School class="h-5 w-5" />
+            Resident Colleges Trend
+          </Card.Title>
+          <Card.Description>Resident count per college across academic terms</Card.Description>
+        </Card.Header>
+        <Card.Content class="space-y-6">
+          {#if historicalData.collegesData.length > 0}
+            <div class="h-80 w-full">
+              <LineChart
+                data={historicalData.collegesData}
+                x="term"
+                series={historicalData.collegesSeries}
+                props={{
+                  xAxis: {
+                    format: (d) => translatePeriod(d)
+                  }
+                }}
+              >
+                {#snippet tooltip({ context })}
+                  <Tooltip.Root {context}>
+                    <Tooltip.Header
+                      value={context.tooltip.data ? translatePeriod(context.tooltip.data.term) : ""}
+                    />
+                    <Tooltip.List>
+                      {#each context.tooltip.series.filter((s) => s.visible) as s}
+                        {#if context.series.isHighlighted(s.key, true)}
+                          <Tooltip.Item
+                            label={s.label}
+                            value={s.value}
+                            color={s.color}
+                            data-highlighted={context.series.isHighlighted(s.key, true)}
+                            valueAlign="right"
+                            onpointerenter={() => (context.series.highlightKey = s.key)}
+                            onpointerleave={() => (context.series.highlightKey = null)}
+                          />
+                        {/if}
+                      {/each}
+                    </Tooltip.List>
+                  </Tooltip.Root>
+                {/snippet}
+              </LineChart>
+            </div>
+
+            <div class="flex flex-wrap gap-3 pt-2">
+              {#each historicalData.collegesSeries as s}
+                <div
+                  class="flex items-center gap-1.5 rounded-md border bg-muted/20 px-2.5 py-1 text-xs"
+                >
+                  <span class="h-2.5 w-2.5 rounded-full" style="background-color: {s.color}"></span>
+                  <span class="font-medium text-foreground">{s.label}</span>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="py-12 text-center text-xs text-muted-foreground">
+              No historical records available.
+            </div>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+
+      <!-- Historical Batches -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title class="flex items-center gap-2 text-lg">
+            <CalendarDays class="h-5 w-5" />
+            Resident Batches Trend
+          </Card.Title>
+          <Card.Description>Admission batch trends across academic terms</Card.Description>
+        </Card.Header>
+        <Card.Content class="space-y-6">
+          {#if historicalData.batchesData.length > 0}
+            <div class="h-80 w-full">
+              <LineChart
+                data={historicalData.batchesData}
+                x="term"
+                series={historicalData.batchesSeries}
+                props={{
+                  xAxis: {
+                    format: (d) => translatePeriod(d)
+                  }
+                }}
+              >
+                {#snippet tooltip({ context })}
+                  <Tooltip.Root {context}>
+                    <Tooltip.Header
+                      value={context.tooltip.data ? translatePeriod(context.tooltip.data.term) : ""}
+                    />
+                    <Tooltip.List>
+                      {#each context.tooltip.series.filter((s) => s.visible) as s}
+                        {#if context.series.isHighlighted(s.key, true)}
+                          <Tooltip.Item
+                            label={`Batch ${s.label}`}
+                            value={s.value}
+                            color={s.color}
+                            data-highlighted={context.series.isHighlighted(s.key, true)}
+                            valueAlign="right"
+                            onpointerenter={() => (context.series.highlightKey = s.key)}
+                            onpointerleave={() => (context.series.highlightKey = null)}
+                          />
+                        {/if}
+                      {/each}
+                    </Tooltip.List>
+                  </Tooltip.Root>
+                {/snippet}
+              </LineChart>
+            </div>
+
+            <div class="flex flex-wrap gap-3 pt-2">
+              {#each historicalData.batchesSeries as s}
+                <div
+                  class="flex items-center gap-1.5 rounded-md border bg-muted/20 px-2.5 py-1 text-xs"
+                >
+                  <span class="h-2.5 w-2.5 rounded-full" style="background-color: {s.color}"></span>
+                  <span class="font-medium text-foreground">Batch {s.label}</span>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="py-12 text-center text-xs text-muted-foreground">
+              No historical records available.
+            </div>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+    </div>
+  {/if}
+</div>
