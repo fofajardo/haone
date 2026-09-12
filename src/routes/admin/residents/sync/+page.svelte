@@ -10,7 +10,7 @@
     type SyncPreviewAction
   } from "$api/controllers/rooms-controller.svelte";
   import { pluralize } from "$utils/formatters";
-  import { translateCollege, translateProgram } from "$utils/translators";
+  import { translateCollege, translatePeriod, translateProgram } from "$utils/translators";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
@@ -31,6 +31,7 @@
     CheckCheck
   } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
+  import Banner from "$components/content/Banner.svelte";
 
   let isLoading = $state(false);
   let isSyncing = $state(false);
@@ -183,7 +184,15 @@
     {/snippet}
   </ContentHeader>
 
-  {#if isLoading}
+  {#if uiSettings.currentTerm !== uiSettings.activeTerm}
+    <Banner variant="warning">
+      <p>
+        The selected term is <strong>{translatePeriod(uiSettings.currentTerm)}</strong>, but changes
+        only apply to the active term (<strong>{translatePeriod(uiSettings.activeTerm)}</strong>).
+        Switch to the active term in settings to proceed.
+      </p>
+    </Banner>
+  {:else if isLoading}
     <LoadingView />
   {:else if error}
     <ErrorView {error}>
