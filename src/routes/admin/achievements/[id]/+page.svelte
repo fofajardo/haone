@@ -22,6 +22,7 @@
   import AchievementDetailsView from "$components/residents/AchievementDetailsView.svelte";
   import { shareAchievementStory } from "$components/residents/story-share";
   import { TermCombobox } from "$components/ui/haone";
+  import { uiSettings } from "$state/settings.svelte";
 
   const id = page.params.id;
 
@@ -68,7 +69,7 @@
     icon: "🏆",
     extraUrl: "",
     points: 10,
-    term: "",
+    term: uiSettings.currentTerm,
     creatorId: "",
     isIndefinite: false
   });

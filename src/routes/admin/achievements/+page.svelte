@@ -45,7 +45,7 @@
     icon: "🏆",
     extraUrl: "",
     points: 10,
-    term: "",
+    term: uiSettings.currentTerm,
     isIndefinite: false
   });
 
