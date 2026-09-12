@@ -1,15 +1,20 @@
-import { roomsService, type CurrRecord, type AccountRow } from "$api/services/rooms-service";
 import { addJournalEntries } from "$api/controllers/journal-controller";
-import { fetchConstantByKey } from "$api/controllers/constants-controller";
-import { AccountType, UserTag, type UserRecord } from "$lib/types";
 import {
-  fetchUsers,
   addUser,
-  updateUser,
-  fetchResidents
+  fetchResidents,
+  fetchUsers,
+  updateUser
 } from "$api/controllers/resident-controller";
-import { roomsState } from "$state/rooms.svelte";
+import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
+import {
+  AccountType,
+  TRANSACTION_TYPE_CONFIG,
+  TransactionType,
+  UserTag,
+  type UserRecord
+} from "$lib/types";
 import { auth } from "$state/auth.svelte";
+import { roomsState } from "$state/rooms.svelte";
 import { getLocalDateString } from "$utils/parsers";
 
 export type { CurrRecord };
@@ -508,7 +513,7 @@ export async function manualDelistResident(
         return r.residentId === residentId && r.period === term;
       });
       if (resRecord && resRecord.bal > 0) {
-        const pmtWaived = (await fetchConstantByKey("PMT_WAIVED")) || "WAIVED";
+        const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
 
         let remainingToWaive = resRecord.bal;
         let waterWaiveAmt = 0;
@@ -545,6 +550,7 @@ export async function manualDelistResident(
           noteLabel = `TRANSFERRED TO ANOTHER RESIDENCE HALL (${dateStr})`;
         }
 
+        // FIXME: this looks broken since it's still using the legacy email as ID behavior.
         await addJournalEntries([
           {
             date: getLocalDateString(),
@@ -561,7 +567,7 @@ export async function manualDelistResident(
             mopRefNo: "",
             prDateIssued: "",
             prRefNo: "",
-            creatorName: auth.displayName,
+            creatorName: auth.displayNameLastFirst,
             name: resRecord.name,
             stno: resRecord.stno,
             wasAudited: false,

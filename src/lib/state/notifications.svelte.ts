@@ -1,6 +1,6 @@
+import { deletePushSubscription, savePushSubscription } from "$api/controllers/settings-controller";
 import { browser } from "$app/environment";
 import { toast } from "svelte-sonner";
-import { savePushSubscription, deletePushSubscription } from "$api/controllers/settings-controller";
 
 class NotificationManager {
   #subscription = $state<PushSubscription | null>(null);

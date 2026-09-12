@@ -1,24 +1,19 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { pageState } from "$state/page-info.svelte";
   import { Toaster } from "$ui/sonner";
   import { ModeWatcher } from "mode-watcher";
   import "./layout.css";
-  import favicon from "$lib/assets/favicon.svg";
+  import favicon from "$assets/favicon.svg";
 
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
   import UIProvider from "$components/UIProvider.svelte";
+  import GlobalAlertDialog from "$components/GlobalAlertDialog.svelte";
+  import { brandingState } from "$state/branding.svelte";
 
   let { children } = $props();
-
-  $effect(() => {
-    if (page.data.pageInfo?.title) {
-      pageState.title = page.data.pageInfo.title;
-    }
-  });
 
   onMount(async () => {
     // Service Worker Registration
@@ -41,13 +36,22 @@
       }
     }
   });
+
+  function getEffectiveTitle(): string {
+    let title = pageState.title;
+    if (title !== "") {
+      title += " - ";
+    }
+    title += `HAOne for ${brandingState.profile.name}`;
+    return title;
+  }
 </script>
 
 <ModeWatcher />
 <Toaster mobileOffset="100px" />
 
 <svelte:head>
-  <title>{pageState.title ? pageState.title + " - HAOne" : "HAOne"}</title>
+  <title>{getEffectiveTitle()}</title>
   <link rel="icon" href={favicon} />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
@@ -59,4 +63,5 @@
 
 <UIProvider class="flex min-h-screen flex-col">
   {@render children()}
+  <GlobalAlertDialog />
 </UIProvider>

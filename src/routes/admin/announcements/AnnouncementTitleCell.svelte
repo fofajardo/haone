@@ -15,7 +15,7 @@
     {#if announcement.isAdminOnly}
       <Badge
         variant="outline"
-        class="h-4 border-purple-200 bg-purple-100 px-1 text-[10px] font-bold text-purple-700 uppercase"
+        class="h-4 border-purple-200 bg-purple-100 px-1 text-xs font-bold text-purple-700 uppercase"
       >
         Admin Only
       </Badge>

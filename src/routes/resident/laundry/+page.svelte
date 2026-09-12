@@ -17,7 +17,7 @@
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import {
     fetchLaundryReservations,
     addLaundryReservation,
@@ -108,11 +108,8 @@
       }
       users = userData;
 
-      if (!currentResidentId && auth.user?.email) {
-        const me = users.find(
-          (u) => (u.email || "").toLowerCase() === auth.user?.email.toLowerCase()
-        );
-        if (me) currentResidentId = me.id;
+      if (!currentResidentId && auth.user) {
+        currentResidentId = auth.userId;
       }
     } catch (e: any) {
       error = e.message;
@@ -260,22 +257,19 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Laundry"
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
-    {/snippet}
-  </SubpageHeader>
+    actions={[{ label: "Book Slot", onclick: () => (isBookingOpen = true), icon: Plus }]}
+  />
 
   <Card.Root
-    class="overflow-hidden border-blue-100 bg-blue-50/50 p-0 dark:border-blue-800 dark:bg-blue-900/10"
+    class="overflow-hidden bg-blue-50/50 p-0 ring-0 dark:border-blue-800 dark:bg-blue-900/10"
   >
     <Collapsible.Root bind:open={isRulesOpen}>
-      <div class="flex items-center justify-between px-4">
+      <div class="flex items-center justify-between pr-2 pl-4">
         <h4
           class="flex items-center gap-2 text-sm font-bold text-blue-900 uppercase dark:text-blue-100"
         >
@@ -286,7 +280,7 @@
             <Button
               variant="ghost"
               size="sm"
-              class="h-8 w-8 p-0"
+              class="h-8 w-8 rounded-full p-0"
               {...props}
               icon={ChevronDown}
               iconClass={cn("transition-transform duration-200", isRulesOpen && "rotate-180")}
@@ -355,7 +349,7 @@
           </h3>
           <div class="flex items-center gap-2">
             <Funnel class="h-4 w-4 text-muted-foreground" />
-            <NativeSelect.Root bind:value={statusFilter} class="h-9 w-[140px] text-xs">
+            <NativeSelect.Root bind:value={statusFilter} class="h-9 w-35 text-xs">
               <NativeSelect.Option value="">All Status</NativeSelect.Option>
               <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
               <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>

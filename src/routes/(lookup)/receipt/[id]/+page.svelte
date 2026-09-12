@@ -1,11 +1,10 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { decryptJSON } from "$utils/crypto";
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
   import { brandingState } from "$state/branding.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
 
-  import * as AlertDialog from "$ui/alert-dialog";
   import ReceiptExportTemplate from "$components/receipt/ReceiptExportTemplate.svelte";
   import ReceiptWebView from "$components/receipt/ReceiptWebView.svelte";
   import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
@@ -39,9 +38,6 @@
   let qrDataUrl = $state("");
   let isExporting = $state(false);
 
-  // AlertDialog State
-  let alertState = $state({ open: false, title: "", description: "" });
-
   $effect(() => {
     if (receiptData && isVerified) {
       const profile = brandingState.profile;
@@ -56,13 +52,8 @@
     }
   });
 
-  function showAlert(title: string, description: string) {
-    alertState.title = title;
-    alertState.description = description;
-    alertState.open = true;
-  }
-
   onMount(async () => {
+    pageState.title = "Verification Required";
     // Load saved student number if "Remember Me" was checked
     const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
     if (savedId) {
@@ -80,8 +71,6 @@
       if (formEl) formEl.requestSubmit();
     }
   });
-
-  function noop() {}
 
   async function generateCanvas(element: HTMLElement) {
     const images = Array.from(element.querySelectorAll("img"));
@@ -124,7 +113,7 @@
       await exportReceiptPDF(receiptData, qrDataUrl);
     } catch (e: any) {
       console.error("pdfmake export failed:", e);
-      showAlert("Export Error", `The PDF generation failed: ${e.message}`);
+      globalDialog.show("Export Error", `The PDF generation failed: ${e.message}`);
     } finally {
       isExporting = false;
     }
@@ -133,7 +122,7 @@
   async function downloadImage() {
     const templateElement = document.getElementById("export-template");
     if (!templateElement) {
-      showAlert("Export Error", "Export template content not found.");
+      globalDialog.show("Export Error", "Export template content not found.");
       return;
     }
 
@@ -154,7 +143,7 @@
       document.body.removeChild(link);
     } catch (e: any) {
       console.error("Export failed:", e);
-      showAlert("Export Error", `The image generation failed: ${e.message}`);
+      globalDialog.show("Export Error", `The image generation failed: ${e.message}`);
     } finally {
       isExporting = false;
     }
@@ -181,7 +170,7 @@
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        showAlert("Link Copied", "The receipt link has been copied to your clipboard.");
+        globalDialog.show("Link Copied", "The receipt link has been copied to your clipboard.");
       } catch (err) {
         console.error("Clipboard copy failed:", err);
       }
@@ -224,7 +213,7 @@
 </script>
 
 <main
-  class="flex min-h-screen items-center justify-center bg-background p-4 text-foreground md:p-8"
+  class="flex min-h-screen flex-col items-center justify-center bg-sidebar p-4 text-foreground md:p-8"
 >
   {#if !isVerified && !error}
     <form
@@ -281,17 +270,3 @@
     <ReceiptExportTemplate {receiptData} {qrDataUrl} />
   {/if}
 </main>
-
-<AlertDialog.Root bind:open={alertState.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertState.title}</AlertDialog.Title>
-      <AlertDialog.Description>
-        {alertState.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertState.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

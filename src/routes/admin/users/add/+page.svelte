@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import * as AlertDialog from "$ui/alert-dialog";
+  import { globalDialog } from "$state/dialog.svelte";
   import { type UserRecord, UserTag } from "$lib/types";
   import { addUser } from "$api/controllers/resident-controller";
   import UserForm from "$components/admin/UserForm.svelte";
@@ -18,9 +18,6 @@
   let academicItems = $state<{ college: string; program: string }[]>([]);
   let userTypes = $state<string[]>([]);
 
-  let isErrorDialogOpen = $state(false);
-  let saveError = $state<string | null>(null);
-
   async function handleSave() {
     isSaving = true;
     try {
@@ -36,8 +33,10 @@
       await addUser(formData);
       goto("/admin/users");
     } catch (e: any) {
-      saveError = e.message;
-      isErrorDialogOpen = true;
+      globalDialog.show(
+        "Creation Failed",
+        `An error occurred while trying to create the user:<div class="mt-2 rounded-md border bg-muted p-3 text-sm text-foreground">${e.message}</div>`
+      );
     } finally {
       isSaving = false;
     }
@@ -50,23 +49,5 @@
   bind:academicItems
   {isSaving}
   onSave={handleSave}
-  title="Create New User Account"
+  title="Add User"
 />
-
-<!-- Save Error AlertDialog -->
-<AlertDialog.Root bind:open={isErrorDialogOpen}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Creation Failed</AlertDialog.Title>
-      <AlertDialog.Description>
-        An error occurred while trying to create the user:
-        <div class="mt-2 rounded-md border bg-muted p-3 text-sm text-foreground">
-          {saveError}
-        </div>
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (isErrorDialogOpen = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

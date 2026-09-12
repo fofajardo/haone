@@ -1,5 +1,3 @@
-import { writable } from "svelte/store";
-
 export interface ScrollHeaderState {
   headerHidden: boolean;
   lastScrollY: number;

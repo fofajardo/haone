@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import * as Card from "$ui/card";
   import { Button } from "$ui/button";
   import {
     ChevronRight,
@@ -13,9 +12,12 @@
     CircleAlert,
     Construction
   } from "@lucide/svelte";
-  import { fade, slide } from "svelte/transition";
+  import { slide } from "svelte/transition";
   import { cn } from "$lib/utils";
   import { toast } from "svelte-sonner";
+  import HeroLayout from "$components/HeroLayout.svelte";
+  import { pageState } from "$state/page-info.svelte";
+  import { onMount } from "svelte";
 
   let showDetails = $state(false);
 
@@ -51,6 +53,10 @@
   const description =
     errorDescriptions[status] || error?.message || "Internal server error occurred.";
 
+  onMount(() => {
+    pageState.title = `${status || 500} - ${title}`;
+  });
+
   function reload() {
     window.location.reload();
   }
@@ -62,85 +68,82 @@
   }
 </script>
 
-<div
-  class="flex min-h-[100dvh] flex-col items-center justify-center bg-background p-4 text-foreground md:p-8"
->
-  <div class="w-full max-w-2xl" in:fade={{ duration: 300 }}>
-    <Card.Root class="border shadow-none sm:shadow-sm">
-      <Card.Header class="text-center">
-        <div
-          class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted/50"
-        >
-          <Icon class="h-6 w-6" />
-        </div>
-        <Card.Title class="text-2xl font-bold">{title}</Card.Title>
-        <Card.Description class="text-sm leading-relaxed text-balance">
-          {description}
-        </Card.Description>
-      </Card.Header>
-
-      <Card.Content class="space-y-4">
-        {#if error?.stack}
-          <div class="space-y-2">
-            <button
-              onclick={() => (showDetails = !showDetails)}
-              class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
-            >
-              <span class="flex items-center gap-2 tracking-wider uppercase">
-                Technical Details
-              </span>
-              <ChevronRight
-                size={14}
-                class={cn("transition-transform duration-200", showDetails ? "rotate-90" : "")}
-              />
-            </button>
-
-            {#if showDetails}
-              <div
-                transition:slide
-                class="overflow-hidden rounded-md border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground"
-              >
-                <div class="max-h-[200px] overflow-auto font-mono whitespace-pre">
-                  {error.stack}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="mt-2 h-7 w-full text-xs tracking-widest uppercase"
-                  onclick={copyToClipboard}
-                >
-                  Copy
-                </Button>
-              </div>
-            {/if}
-          </div>
-        {/if}
-      </Card.Content>
-
-      <Card.Footer class="flex flex-col gap-2 sm:flex-row sm:justify-center">
-        <Button onclick={reload} class="w-full font-bold sm:w-32" icon={RefreshCcw}>Retry</Button>
-        <Button
-          variant="secondary"
-          href="/"
-          class="w-full text-muted-foreground sm:w-32"
-          icon={House}
-        >
-          Go Home
-        </Button>
-      </Card.Footer>
-    </Card.Root>
-
-    <div class="mt-8 flex flex-col items-center gap-4 text-center opacity-50">
-      <div class="h-px w-8 bg-border"></div>
-      <div class="flex cursor-default items-center gap-2">
-        <span class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-          >Powered by</span
-        >
-        <div class="flex items-center gap-1.5">
-          <img src="/ha1.svg" alt="HAOne" class="h-4 w-4" />
-          <span class="text-xs font-black tracking-tighter text-foreground">HAOne</span>
-        </div>
+<HeroLayout heroId="error01" contentClass="max-w-md">
+  <div class="flex flex-col space-y-4 text-center md:text-left">
+    <div class="space-y-3">
+      <div
+        class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/10 text-destructive md:mx-0"
+      >
+        <Icon class="h-6 w-6" />
       </div>
+      <h1 class="font-['Archivo'] text-3xl font-black tracking-tighter text-foreground sm:text-4xl">
+        {title}
+      </h1>
+      <p class="text-base leading-relaxed text-muted-foreground">
+        {description}
+      </p>
     </div>
   </div>
-</div>
+
+  {#if error?.stack}
+    <div class="space-y-2">
+      <button
+        onclick={() => (showDetails = !showDetails)}
+        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+      >
+        <span class="flex items-center gap-2 tracking-wider uppercase"> Technical Details </span>
+        <ChevronRight
+          size={14}
+          class={cn("transition-transform duration-200", showDetails ? "rotate-90" : "")}
+        />
+      </button>
+
+      {#if showDetails}
+        <div
+          transition:slide
+          class="overflow-hidden rounded-md border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground"
+        >
+          <div class="max-h-50 overflow-auto font-mono whitespace-pre">
+            {error.stack}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="mt-2 h-7 w-full text-xs tracking-widest uppercase"
+            onclick={copyToClipboard}
+          >
+            Copy
+          </Button>
+        </div>
+      {/if}
+    </div>
+  {/if}
+
+  <div class="grid gap-3">
+    <Button
+      onclick={reload}
+      class="h-14 rounded-xl bg-foreground text-base font-bold text-background transition-all hover:opacity-90 active:scale-[0.98]"
+      icon={RefreshCcw}
+    >
+      Retry
+    </Button>
+    <Button
+      variant="secondary"
+      href="/"
+      class="h-12 rounded-xl text-sm font-semibold text-muted-foreground transition-all hover:text-foreground"
+      icon={House}
+    >
+      Go Home
+    </Button>
+  </div>
+
+  <div
+    class="flex items-center justify-center gap-2 pt-4 text-xs text-muted-foreground md:justify-start"
+  >
+    <code class="font-mono">
+      v{__APP_VERSION__} ({__COMMIT_SHA__.slice(0, 7)} - {new Date(
+        __BUILD_TIME__
+      ).toLocaleString()})
+    </code>
+  </div>
+</HeroLayout>

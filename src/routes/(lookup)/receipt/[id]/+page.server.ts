@@ -1,16 +1,16 @@
-import { error, fail } from "@sveltejs/kit";
+import { getSheetsClient } from "$api/services/auth-service";
+import { getSheetValues } from "$api/services/server-sheets-service";
 import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { JOURNAL_COL, USER_COL } from "$lib/types";
-import type { PageServerLoad, Actions } from "./$types";
 import type { ReceiptData, ReceiptItem } from "$lib/types";
-import { getSheetsClient, getSheetValues } from "$lib/server/api-helper";
+import { JOURNAL_COL, USER_COL } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
+import { fail } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
   const id = params.id;
 
   return {
-    pageInfo: { title: "Verification Required" },
     receiptData: null,
     id
   };

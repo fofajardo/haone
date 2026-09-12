@@ -1,17 +1,17 @@
-import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import { ACCOUNT_COL, USER_COL } from "$lib/types";
-import {
-  fetchSheetRowsRaw,
-  updateSheetValue,
-  appendSheetRow,
-  deleteSheetRow,
-  batchUpdateValues
-} from "../common";
-import { parseCSVAmount } from "$utils/math";
-import { mapRowToJournal, mapRowToResident, computeDisplayNames } from "../../utils/row-mappers";
+import { ACCOUNT_COL, TRANSACTION_TYPE_CONFIG, TransactionType, USER_COL } from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
+import { parseCSVAmount } from "$utils/math";
+import { computeDisplayNames, mapRowToJournal, mapRowToResident } from "../../utils/row-mappers";
+import {
+  appendSheetRow,
+  batchUpdateValues,
+  deleteSheetRow,
+  fetchSheetRowsRaw,
+  updateSheetValue
+} from "../common";
+import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 
 export const sheetsResidentService: ResidentServiceInterface = {
   async fetchResidents(bypassCache = false, term?: string): Promise<ResidentRecord[]> {
@@ -43,7 +43,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
     const journal = journalRows.slice(1).map((r, idx) => mapRowToJournal(r, idx + 2));
 
     const getConst = (key: string) => constRows.find((r) => r[0] === key)?.[1] || "0";
-    const pmtWaived = getConst("PMT_WAIVED");
+    const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
 
     const allResidents = accRows
       .slice(1)
@@ -276,39 +276,6 @@ export const sheetsResidentService: ResidentServiceInterface = {
     row[USER_COL.ID] = data.id || crypto.randomUUID();
 
     await appendSheetRow(uiSettings.residentRecordsId, "users!A:P", [row]);
-  },
-
-  async addUsersBatch(users: Partial<UserRecord>[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
-      throw new Error("Resident Records ID not configured");
-    }
-
-    const rows = users.map((data) => {
-      const row = new Array(16).fill("");
-      row[USER_COL.EMAIL] = data.email || "";
-      row[USER_COL.LAST_NAME] = data.lastName || "";
-      row[USER_COL.FIRST_NAME] = data.firstName || "";
-      row[USER_COL.MIDDLE_NAME] = data.middleName || "";
-      row[USER_COL.SUFFIX] = data.suffix || "";
-      row[USER_COL.OVERRIDE_NAME] = data.overrideName || "";
-
-      const computed = computeDisplayNames(data);
-      row[USER_COL.DISPLAY_NAME] = computed.displayName;
-      row[USER_COL.DISPLAY_NAME_FL] = computed.displayNameFormal;
-
-      row[USER_COL.STUDENT_NO] = data.studentNo || "";
-      row[USER_COL.SECONDARY_CONTACT] = data.secondaryContact || "";
-      row[USER_COL.ADDRESS] = data.address || "";
-      row[USER_COL.COLLEGE] = data.college || "";
-      row[USER_COL.DEGREE_PROGRAM] = data.program || "";
-      row[USER_COL.TAGS] = data.tags || "";
-      row[USER_COL.NOTES] = data.notes || "";
-      row[USER_COL.ID] = data.id || crypto.randomUUID();
-      return row;
-    });
-
-    await appendSheetRow(uiSettings.residentRecordsId, "users!A:P", rows);
   },
 
   async deleteUser(userId: string): Promise<void> {

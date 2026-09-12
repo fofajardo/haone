@@ -1,11 +1,13 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
   import { emailDispatcher } from "$state/dispatcher.svelte";
   import { auth } from "$state/auth.svelte";
   import { createEmail, sendEmail } from "$api/services/gmail-service";
   import * as Card from "$ui/card";
   import { Button } from "$ui/button";
   import { Progress } from "$ui/progress";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import RichEditor from "$components/RichEditor.svelte";
@@ -138,34 +140,33 @@
     emailDispatcher.clear();
     window.history.back();
   }
+
+  onMount(() => {
+    pageState.title = "Email Dispatcher";
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Email Dispatcher" isTopLevel={true}>
-    {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="destructive"
-          size="sm"
-          onclick={() => emailDispatcher.clear()}
-          disabled={isSending || isSuccess}
-          icon={Trash2}
-        >
-          Clear Queue
-        </Button>
-        <Button
-          onclick={runBatch}
-          isLoading={isSending}
-          disabled={isSuccess || emailDispatcher.queue.length === 0}
-          icon={isSuccess ? CircleCheckBig : Play}
-          size="sm"
-          class="min-w-[120px]"
-        >
-          {isSuccess ? "Sent" : "Run Batch"}
-        </Button>
-      </div>
-    {/snippet}
-  </SubpageHeader>
+  <ContentHeader
+    title="Email Dispatcher"
+    isTopLevel={true}
+    actions={[
+      {
+        label: "Clear Queue",
+        variant: "destructive",
+        onclick: () => emailDispatcher.clear(),
+        disabled: isSending || isSuccess || emailDispatcher.queue.length === 0,
+        icon: Trash2
+      },
+      {
+        label: isSuccess ? "Done" : isSending ? "Sending…" : "Run Batch",
+        onclick: runBatch,
+        isLoading: isSending,
+        disabled: isSuccess || emailDispatcher.queue.length === 0,
+        icon: isSuccess ? CircleCheckBig : Play
+      }
+    ]}
+  />
 
   {#if emailDispatcher.queue.length === 0 && !isSuccess}
     <EmptyView
@@ -353,7 +354,7 @@
             </Card.Title>
           </Card.Header>
           <Card.Content class="p-0">
-            <div class="max-h-[400px] divide-y overflow-auto">
+            <div class="max-h-100 divide-y overflow-auto">
               {#each emailDispatcher.queue as item, i}
                 <button
                   class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30 {previewIndex ===
@@ -419,7 +420,7 @@
               </div>
 
               <div
-                class="max-h-[600px] overflow-auto rounded-lg border bg-background text-foreground shadow-inner"
+                class="max-h-150 overflow-auto rounded-lg border bg-background text-foreground shadow-inner"
               >
                 {@html emailPreview.body}
               </div>

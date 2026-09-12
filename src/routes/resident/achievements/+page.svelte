@@ -3,14 +3,14 @@
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Trophy } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TermFilter from "$components/TermFilter.svelte";
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
-  import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
+  import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import {
     fetchAchievements,
@@ -61,13 +61,10 @@
     new Set(
       logs
         .filter((l) => {
-          if (!currentResidentId && !auth.user?.email) {
+          if (!currentResidentId && !auth.userId) {
             return false;
           }
-          return (
-            (currentResidentId && l.accountId === currentResidentId) ||
-            (auth.user?.email && l.accountId === auth.user?.email)
-          );
+          return currentResidentId && l.accountId === currentResidentId;
         })
         .map((l) => l.achievementId)
     )
@@ -100,16 +97,16 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Achievements"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
   >
-    {#snippet actions()}
-      <ScopeSwitcher bind:value={scope} />
+    {#snippet tabs()}
+      <AchievementTabs bind:value={scope} />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />
@@ -146,9 +143,7 @@
         {#each earnedAchievements as a}
           {@const userLog = logs.find(
             (l) =>
-              l.achievementId === a.id &&
-              ((currentResidentId && l.accountId === currentResidentId) ||
-                (auth.user?.email && l.accountId === auth.user?.email))
+              l.achievementId === a.id && currentResidentId && l.accountId === currentResidentId
           )}
           {@const uniqueEarnersCount = new Set(
             logs.filter((l) => l.achievementId === a.id).map((l) => l.accountId)

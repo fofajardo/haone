@@ -1,20 +1,19 @@
+import { TransactionType, type ReceiptData } from "$lib/types";
 import { brandingState } from "$state/branding.svelte";
-import { calculateTotal } from "$utils/math";
 import { formatAmount, formatCurrency, formatDate } from "$utils/formatters";
+import { calculateTotal } from "$utils/math";
 import { parseRef } from "$utils/parsers";
 import { translateMop, translatePeriod } from "$utils/translators";
-import { imgToDataUrl, getPdfMake } from "./pdf-utils";
-import type { ReceiptData } from "$lib/types";
 import type {
-  TDocumentDefinitions,
-  ContextPageSize,
-  Content,
-  ContentTable,
   Alignment,
+  Content,
+  ContextPageSize,
+  Margins,
   Size,
   TableCell,
-  Margins
+  TDocumentDefinitions
 } from "pdfmake/interfaces";
+import { getPdfMake, imgToDataUrl } from "./pdf-utils";
 
 /**
  * Generates and downloads a branded, selectable PDF receipt.
@@ -108,7 +107,7 @@ export async function exportReceiptPDF(receiptData: ReceiptData, qrDataUrl: stri
                       ...(item.amount < 0
                         ? [
                             {
-                              text: ` (${receiptData.transactionType === "RECLASSIFY" ? "RECLASSIFIED" : "REFUND"})`,
+                              text: ` (${receiptData.transactionType === TransactionType.RECLASSIFY ? "RECLASSIFIED" : "REFUND"})`,
                               color: "#dc2626",
                               bold: true,
                               fontSize: 9
@@ -155,7 +154,7 @@ export async function exportReceiptPDF(receiptData: ReceiptData, qrDataUrl: stri
           paddingBottom: () => 0
         }
       },
-      ...(receiptData.transactionType === "WAIVED"
+      ...(receiptData.transactionType === TransactionType.WAIVED
         ? [
             {
               stack: [

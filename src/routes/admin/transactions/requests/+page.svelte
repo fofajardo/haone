@@ -1,18 +1,20 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Search, Wallet, ListChecks, FunnelX } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import { RefreshCcw, Search, Wallet, ListChecks, Plus } from "@lucide/svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
+  import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";
   import { fetchAdminPaymentRequests } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr } from "$api/controllers/resident-controller";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { goto } from "$app/navigation";
   import { PaymentRequestStatus } from "$lib/types";
@@ -75,20 +77,24 @@
     goto(`/admin/transactions/requests/review?ids=${ids}`);
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Payment Requests";
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Transactions"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={true}
   >
-    {#snippet actions()}
-      <AdminTransactionsHeaderActions active="requests" />
+    {#snippet tabs()}
+      <AdminTransactionsTabs active="requests" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading && payments.length === 0}
     <LoadingView />
@@ -100,20 +106,23 @@
     <FilterDrawer
       activeCount={Number(searchQuery !== "") +
         Number(statusFilter !== PaymentRequestStatus.PENDING)}
+      onClear={() => {
+        searchQuery = "";
+        statusFilter = PaymentRequestStatus.PENDING;
+      }}
     >
       <div class="grid gap-2 lg:grid-cols-12">
-        <div class="space-y-1 lg:col-span-7">
+        <div class="space-y-1 lg:col-span-8">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
+          <InputGroup.Root class="h-9">
+            <InputGroup.Input
               bind:value={searchQuery}
               placeholder="Search by resident ID, MOP, or notes…"
-              class="h-9 pl-9"
             />
-          </div>
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
 
         <div class="space-y-1 lg:col-span-4">
@@ -124,21 +133,6 @@
             placeholder="Select status..."
             class="h-9"
           />
-        </div>
-
-        <div class="flex items-end lg:col-span-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={() => {
-              searchQuery = "";
-              statusFilter = PaymentRequestStatus.PENDING;
-            }}
-            class="h-9 w-full px-2"
-            icon={FunnelX}
-          >
-            Clear
-          </Button>
         </div>
       </div>
     </FilterDrawer>

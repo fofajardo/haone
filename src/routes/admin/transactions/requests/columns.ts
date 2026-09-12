@@ -1,12 +1,17 @@
-import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
-import { formatDate, formatAccounting } from "$utils/formatters";
-import { translateMop } from "$utils/translators";
+import CompositionCell from "$components/CompositionCell.svelte";
 import type { PaymentRequestRecord } from "$lib/types";
 import { PAYMENT_REQUEST_STATUS_COLORS } from "$lib/types";
-import { DataTableSelectHeader, DataTableSelectCell } from "$ui/data-table/index.js";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
+import {
+  DataTableSelectCell,
+  DataTableSelectHeader,
+  renderComponent,
+  renderSnippet,
+  type ColumnDef
+} from "$ui/data-table/index.js";
+import { formatAccounting, formatDate } from "$utils/formatters";
+import { translateMop } from "$utils/translators";
 import { createRawSnippet } from "svelte";
-import CompositionCell from "$components/CompositionCell.svelte";
 
 export const columns: ColumnDef<PaymentRequestRecord>[] = [
   {
@@ -62,7 +67,7 @@ export const columns: ColumnDef<PaymentRequestRecord>[] = [
         render: () => `
           <div class="flex flex-col">
             <span class="text-sm font-medium uppercase">${translateMop(p().mop)}</span>
-            ${p().notes ? `<span class="text-sm text-muted-foreground italic truncate max-w-[300px] block">— ${p().notes}</span>` : ""}
+            ${p().notes ? `<span class="text-sm text-muted-foreground italic truncate max-w-75 block">— ${p().notes}</span>` : ""}
           </div>
         `
       }));

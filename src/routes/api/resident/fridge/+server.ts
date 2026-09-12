@@ -1,23 +1,25 @@
-import { json } from "@sveltejs/kit";
-import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import {
-  FRIDGE_ITEM_COL,
-  ACCOUNT_COL,
-  USER_COL,
-  FridgeItemStatus,
-  FridgeCompartment
-} from "$lib/types";
+import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
 import {
   authenticateResident,
   getSheetsClient,
-  appendSheetValue,
-  updateSheetValue,
-  serverError,
-  fetchSheetsData,
   resolveResidentAccountType
-} from "$lib/server/api-helper";
+} from "$api/services/auth-service";
+import {
+  appendSheetValue,
+  fetchSheetsData,
+  serverError,
+  updateSheetValue
+} from "$api/services/server-sheets-service";
+import { PUBLIC_GS_SR_ID } from "$env/static/public";
+import {
+  ACCOUNT_COL,
+  FRIDGE_ITEM_COL,
+  FridgeCompartment,
+  FridgeItemStatus,
+  USER_COL
+} from "$lib/types";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
 
 /**
  * GET: Fetch all fridge items + user/room mapping (Public to all logged-in residents)

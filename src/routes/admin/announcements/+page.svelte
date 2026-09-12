@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Megaphone } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -22,9 +23,10 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
-  import { Search, FunnelX } from "@lucide/svelte";
+  import { Search } from "@lucide/svelte";
 
   import { getAnnouncementStatus } from "$api/controllers/announcement-controller";
   import { AnnouncementStatus } from "$lib/types";
@@ -131,7 +133,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Announcements";
+    loadData();
+  });
 
   const tagsOptions = $derived.by(() => {
     const set = new Set<string>();
@@ -169,16 +174,14 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Announcements"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" href="/admin/announcements/add" icon={Plus}>Add</Button>
-    {/snippet}
-  </SubpageHeader>
+    actions={[{ label: "Add", href: "/admin/announcements/add", icon: Plus }]}
+    hasFilter={true}
+  />
 
   {#if isLoading}
     <LoadingView />
@@ -191,20 +194,20 @@
       activeCount={Number(tableSync.filters!.search !== "") +
         Number(tableSync.filters!.status !== "ALL") +
         Number(tableSync.filters!.tags !== "ALL")}
+      onClear={resetFilters}
     >
       <div class="grid gap-4 lg:grid-cols-12">
-        <div class="space-y-1 lg:col-span-5">
+        <div class="space-y-1 lg:col-span-6">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
+          <InputGroup.Root class="h-9 text-xs">
+            <InputGroup.Input
               bind:value={tableSync.filters!.search}
               placeholder="Search announcements…"
-              class="h-9 pl-9 text-xs"
             />
-          </div>
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
 
         <div class="space-y-1 lg:col-span-3">
@@ -231,18 +234,6 @@
             ]}
             class="h-9"
           />
-        </div>
-
-        <div class="flex items-end lg:col-span-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={resetFilters}
-            class="h-9 w-full px-2"
-            icon={FunnelX}
-          >
-            Clear
-          </Button>
         </div>
       </div>
     </FilterDrawer>

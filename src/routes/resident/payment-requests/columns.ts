@@ -1,13 +1,13 @@
-import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
-import { formatDate, formatAccounting } from "$utils/formatters";
-import { translateMop } from "$utils/translators";
-import type { PaymentRequestRecord } from "$lib/types";
-import { PaymentRequestStatus, PAYMENT_REQUEST_STATUS_COLORS } from "$lib/types";
-import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
-import { createRawSnippet } from "svelte";
-import { Button } from "$ui/button";
 import CompositionCell from "$components/CompositionCell.svelte";
+import type { PaymentRequestRecord } from "$lib/types";
+import { PAYMENT_REQUEST_STATUS_COLORS, PaymentRequestStatus } from "$lib/types";
+import { Button } from "$ui/button";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
+import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
+import { formatAccounting, formatDate } from "$utils/formatters";
+import { translateMop } from "$utils/translators";
 import { Trash2 } from "@lucide/svelte";
+import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<PaymentRequestRecord>[] = [
   {
@@ -40,7 +40,7 @@ export const columns: ColumnDef<PaymentRequestRecord>[] = [
         render: () => `
           <div class="flex flex-col">
             <span class="text-sm font-medium uppercase">${translateMop(p().mop)}</span>
-            ${p().notes ? `<span class="text-sm text-muted-foreground italic truncate max-w-[200px] block">— ${p().notes}</span>` : ""}
+            ${p().notes ? `<span class="text-sm text-muted-foreground italic truncate max-w-50 block">— ${p().notes}</span>` : ""}
           </div>
         `
       }));

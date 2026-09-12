@@ -6,7 +6,7 @@
   import * as NativeSelect from "$ui/native-select";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import {
     fetchAdminLaundryReservations,
@@ -238,16 +238,13 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Laundry"
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" onclick={() => (isBookingOpen = true)} icon={Plus}>Book Slot</Button>
-    {/snippet}
-  </SubpageHeader>
+    actions={[{ label: "Book Slot", onclick: () => (isBookingOpen = true), icon: Plus }]}
+  />
 
   {#if isLoading}
     <LoadingView />
@@ -260,7 +257,7 @@
       <LaundryCalendar
         {reservations}
         users={users as any[]}
-        currentUserId={auth.user?.email}
+        currentUserId={auth.userId}
         isAdminView={true}
         bind:selectedReservation
         onCancelReservation={(id) => {
@@ -282,7 +279,7 @@
           <FilterDrawer activeCount={Number(statusFilter !== "")}>
             <div class="flex items-center gap-2">
               <Funnel class="h-4 w-4 text-muted-foreground" />
-              <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-[140px]">
+              <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-35">
                 <NativeSelect.Option value="">All Status</NativeSelect.Option>
                 <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
                 <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>

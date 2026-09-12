@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { Button } from "$ui/button";
@@ -10,7 +11,7 @@
     ChevronRight,
     TriangleAlert
   } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TransactionForm from "$components/TransactionForm.svelte";
@@ -20,7 +21,7 @@
     approvePaymentRequest
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchTermCurr, fetchUsers } from "$api/controllers/resident-controller";
-  import { PaymentRequestStatus, JOURNAL_COL as JOR } from "$lib/types";
+  import { PaymentRequestStatus, JOURNAL_COL as JOR, TransactionType } from "$lib/types";
   import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { formatAmount, formatDate } from "$utils/formatters";
@@ -63,31 +64,28 @@
       filtered.forEach((p) => {
         const resident = r.find((res) => res.residentId === p.residentId);
         const user = u.find((usr) => usr.id === p.residentId);
-        const currentUser = u.find(
-          (usr) => (usr.email || "").toLowerCase() === (auth.user?.email || "").toLowerCase()
-        );
         stagedForms[p.id] = {
           date: p.date,
-          creator: auth.user?.email || "",
-          account: resident?.email || user?.email || p.residentId,
+          creator: "", // deprecated
+          account: "", // deprecated
           water: p.waterFee,
           assoc: p.assocFee,
           misc: p.misc,
           mop: p.mop,
           period: t,
-          type: "PMT_COLLECTION",
+          type: TransactionType.COLLECTION,
           notes: p.notes || "",
           notesPrivate: "",
           mopRefNo: "",
           prDateIssued: "",
           prRefNo: "",
-          creatorName: auth.displayName || "",
+          creatorName: auth.displayNameLastFirst || "",
           name: resident?.name || user?.displayName || "",
           stno: resident?.stno || user?.studentNo || "",
           wasAudited: false,
           receiptUrl: "",
           id: "",
-          creatorId: currentUser?.id || "",
+          creatorId: auth.userId,
           accountId: p.residentId || user?.id || resident?.residentId || "",
           amount: p.waterFee + p.assocFee + p.misc,
           raw: []
@@ -208,12 +206,15 @@
     };
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Review Queue";
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Review Queue" isTopLevel={false}>
-    {#snippet actions()}
+  <ContentHeader title="Review Queue" isTopLevel={false}>
+    {#snippet tabs()}
       <div class="flex items-center gap-4">
         {#if payments.length > 0}
           <div class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -240,7 +241,7 @@
         {/if}
       </div>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />
@@ -370,7 +371,6 @@
             initialData={stagedForms[currentPayment.id]}
             isSubmitting={isProcessing}
             onSave={handleSaveReview}
-            onCancel={() => goto("/admin/transactions/requests")}
             onStateChange={handleStateChange}
           />
         {/key}

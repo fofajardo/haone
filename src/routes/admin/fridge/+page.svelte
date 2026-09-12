@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
-  import { auth } from "$state/auth.svelte";
   import {
     fetchFridgeItems,
     checkOutFridgeItem,
@@ -15,10 +15,11 @@
   } from "$lib/types";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import * as AlertDialog from "$ui/alert-dialog";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FridgeItemCard from "$components/fridge/FridgeItemCard.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
@@ -60,7 +61,7 @@
     try {
       const res = await fetchFridgeItems(bypassCache);
       items = res.items;
-      currentResidentId = res.currentResidentId || auth.userId;
+      currentResidentId = res.currentResidentId;
     } catch (e: any) {
       error = e.message || "Failed to load fridge items.";
     } finally {
@@ -69,6 +70,7 @@
   }
 
   onMount(() => {
+    pageState.title = "Fridge";
     loadData();
   });
 
@@ -163,16 +165,13 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-4 pb-16">
-  <SubpageHeader
+  <ContentHeader
     title="Fridge"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      <Button size="sm" href="/admin/fridge/add" icon={Plus}>Add</Button>
-    {/snippet}
-  </SubpageHeader>
+    actions={[{ label: "Add", href: "/admin/fridge/add", icon: Plus }]}
+  />
 
   {#if isLoading}
     <LoadingView />
@@ -187,16 +186,15 @@
       <div class="grid items-end gap-4 lg:grid-cols-12">
         <div class="space-y-1 lg:col-span-5">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
+          <InputGroup.Root class="h-9">
+            <InputGroup.Input
               bind:value={searchQuery}
               placeholder="Search items, resident, room, tags, location…"
-              class="h-9 pl-9"
             />
-          </div>
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
 
         <div class="space-y-1 lg:col-span-4">

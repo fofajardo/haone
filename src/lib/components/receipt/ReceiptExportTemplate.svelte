@@ -4,7 +4,7 @@
   import { parseRef } from "$utils/parsers";
   import { translateMop, translatePeriod } from "$utils/translators";
   import { brandingState } from "$state/branding.svelte";
-  import type { ReceiptData } from "$lib/types";
+  import { TransactionType, type ReceiptData } from "$lib/types";
 
   let { receiptData, qrDataUrl }: { receiptData: ReceiptData; qrDataUrl: string } = $props();
 
@@ -14,7 +14,7 @@
 
 <div
   id="export-template"
-  class="export-font fixed top-0 -left-[10000px] flex min-h-[297mm] w-[210mm] flex-col bg-[#ffffff] text-[#000000]"
+  class="export-font fixed top-0 left-[-10000px] flex min-h-[297mm] w-[210mm] flex-col bg-[#ffffff] text-[#000000]"
 >
   <!-- Letterhead -->
   <div class="w-full">
@@ -22,7 +22,7 @@
   </div>
 
   <!-- Body Content -->
-  <div id="export-body" class="flex-grow p-[1in] pt-8 text-[12pt]">
+  <div id="export-body" class="grow p-24 pt-8 text-[12pt]">
     {#if qrDataUrl}
       <div class="absolute right-5 bottom-5 w-24">
         <img src={qrDataUrl} alt="QR" class="block h-24 w-24 p-0" />
@@ -49,7 +49,7 @@
       <thead>
         <tr class="bg-[#f8fafc]">
           <th class="border-y border-[#000000] px-3 pb-4 text-left font-bold">Description</th>
-          <th class="w-[180px] border-y border-[#000000] px-3 pb-4 text-right font-bold">Amount</th>
+          <th class="w-45 border-y border-[#000000] px-3 pb-4 text-right font-bold">Amount</th>
         </tr>
       </thead>
       <tbody>
@@ -58,8 +58,10 @@
             <td class="border-y border-[#000000] px-3 pb-4">
               {item.name}
               {#if item.amount < 0}
-                <span class="ml-1 text-[10pt] font-bold text-[#dc2626] uppercase">
-                  ({receiptData.transactionType === "RECLASSIFY" ? "Reclassified" : "Refund"})
+                <span class="ml-1 text-xs font-bold text-[#dc2626] uppercase">
+                  ({receiptData.transactionType === TransactionType.RECLASSIFY
+                    ? "Reclassified"
+                    : "Refund"})
                 </span>
               {/if}
             </td>
@@ -77,7 +79,7 @@
       </tbody>
     </table>
 
-    {#if receiptData.transactionType === "WAIVED"}
+    {#if receiptData.transactionType === TransactionType.WAIVED}
       <div class="mt-8 space-y-1 text-left text-[#000000]">
         <h4 class="font-bold italic">Acknowledgment of Waiver of Amount</h4>
         <p>

@@ -1,12 +1,8 @@
-import { json } from "@sveltejs/kit";
-import { ANNOUNCEMENT_COL, USER_COL } from "$lib/types";
-import {
-  authenticateResident,
-  getSheetsClient,
-  serverError,
-  fetchSheetsData
-} from "$lib/server/api-helper";
 import { isAnnouncementActive } from "$api/controllers/announcement-controller";
+import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
+import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
+import { ANNOUNCEMENT_COL, USER_COL } from "$lib/types";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {

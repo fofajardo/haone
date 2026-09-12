@@ -1,6 +1,6 @@
-import { json } from "@sveltejs/kit";
-import { runLaundryReminders } from "$lib/server/tasks/laundry-reminders";
+import { runLaundryReminders } from "$api/controllers/notifications-controller";
 import { CRON_SECRET } from "$env/static/private";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 /**

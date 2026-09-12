@@ -1,11 +1,11 @@
-import { createClient } from "@supabase/supabase-js";
 import {
-  PUBLIC_SUPABASE_URL,
+  PUBLIC_DB_PROVIDER,
   PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-  PUBLIC_DB_PROVIDER
+  PUBLIC_SUPABASE_URL
 } from "$env/static/public";
 import { auth } from "$state/auth.svelte";
 import { brandingState } from "$state/branding.svelte";
+import { createClient } from "@supabase/supabase-js";
 
 export const isSupabase = PUBLIC_DB_PROVIDER === "supabase";
 
@@ -21,12 +21,11 @@ export function handleSupabaseError(error: any) {
     msg.includes("jwt expired") ||
     msg.includes("invalid token")
   ) {
-    auth.lastError = {
-      title: "Session Expired",
-      description: "Your session or authorization is invalid. Please sign in again."
-    };
-    auth.logout();
-    throw new Error("Session expired or unauthorized");
+    auth.signOutWithMessage(
+      "Session Expired",
+      "Your session or authorization is invalid. Please sign in again."
+    );
+    throw new Error("Your session or authorization is invalid. Please sign in again.");
   }
   throw error;
 }
@@ -78,11 +77,10 @@ export const supabase =
             // Only a 401 means the Supabase session/JWT is invalid. A 403 is an
             // RLS denial for the current action and must NOT end the session.
             if (response.status === 401) {
-              auth.lastError = {
-                title: "Session Expired",
-                description: "Please sign in again."
-              };
-              auth.logout();
+              auth.signOutWithMessage(
+                "Session Expired",
+                "Your session has expired. Please sign in again."
+              );
             }
             return response;
           }
@@ -229,21 +227,15 @@ export function patchCacheRange(spreadsheetId: string, range: string, values: an
  */
 async function handleResponseError(resp: Response, defaultMessage: string) {
   if (resp.status === 401) {
-    auth.lastError = {
-      title: "Session Expired",
-      description: "Please sign in again."
-    };
-    auth.logout();
-    throw new Error("Session expired (401)");
+    const message = "Your session has expired. Please sign in again.";
+    auth.signOutWithMessage("Session Expired", message);
+    throw new Error(message);
   }
   if (resp.status === 403) {
     const replyTo = brandingState.profile.replyTo || "";
-    auth.lastError = {
-      title: "Not Authorized",
-      description: `You do not have permission to use this platform. Please contact the administrator via <a href="mailto:${replyTo}">email</a>.`
-    };
-    auth.logout();
-    throw new Error("Not authorized (403)");
+    const message = `You do not have permission to use this platform. Please contact the administrator via <a href="mailto:${replyTo}">email</a>.`;
+    auth.signOutWithMessage("Access Denied", message);
+    throw new Error(message);
   }
   if (resp.status === 429) {
     throw new Error("Too many requests. Please wait a moment before trying again.");
@@ -285,6 +277,17 @@ export async function fetchWithAuth(
   }
 
   return resp;
+}
+
+/**
+ * Probe checking read access on a spreadsheet metadata endpoint without parsing rows.
+ */
+export async function verifySpreadsheetAccess(
+  spreadsheetId: string,
+  explicitToken?: string
+): Promise<void> {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=spreadsheetId`;
+  await fetchWithAuth(url, "Spreadsheet access verification failed", {}, explicitToken);
 }
 
 /**

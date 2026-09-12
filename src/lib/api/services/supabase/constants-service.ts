@@ -1,11 +1,11 @@
-import type { ConstantsServiceInterface } from "../interfaces/constants-service.interface";
-import {
-  supabase,
-  handleSupabaseError,
-  assertSupabaseFound,
-  fetchAllSupabaseRows
-} from "../common";
 import type { ConstantRecord } from "$lib/types";
+import {
+  assertSupabaseFound,
+  fetchAllSupabaseRows,
+  handleSupabaseError,
+  supabase
+} from "../common";
+import type { ConstantsServiceInterface } from "../interfaces/constants-service.interface";
 
 export const supabaseConstantsService: ConstantsServiceInterface = {
   async fetchConstants(_bypassCache?: boolean): Promise<ConstantRecord[]> {

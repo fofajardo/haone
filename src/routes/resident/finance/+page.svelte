@@ -4,9 +4,8 @@
   import { Button } from "$ui/button";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import ResidentTermFilter from "$components/residents/ResidentTermFilter.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import ClearanceCard from "$components/residents/ClearanceCard.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
@@ -15,6 +14,7 @@
   import { page } from "$app/state";
   import { pageState } from "$state/page-info.svelte";
   import { fetchResidentStatus } from "$api/controllers/resident-controller";
+  import TermFilter from "$components/TermFilter.svelte";
 
   let status = $state<any>(null);
   let isLoading = $state(true);
@@ -27,8 +27,6 @@
   }
 
   async function loadStatus(targetTerm: string, bypassCache = false) {
-    if (!auth.user?.email) return;
-
     const url = new URL(window.location.href);
     if (targetTerm) {
       url.searchParams.set("term", targetTerm);
@@ -73,11 +71,12 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Finance"
     isTopLevel={true}
     onRefresh={() => loadData(undefined, true)}
     isRefreshing={isLoading}
+    hasFilter={true}
   />
 
   {#if isLoading}
@@ -90,11 +89,7 @@
     <FilterDrawer>
       <div class="grid gap-4 lg:grid-cols-12">
         <div class="lg:col-span-3">
-          <ResidentTermFilter
-            bind:value={localTerm}
-            options={status?.allTerms}
-            onSelect={() => loadData(localTerm)}
-          />
+          <TermFilter bind:value={localTerm} onSelect={() => loadData(localTerm)} />
         </div>
       </div>
     </FilterDrawer>
@@ -106,7 +101,6 @@
     {/if}
     <TransactionHistoryCard
       history={status.transactions || []}
-      transactionTypes={status.transactionTypes || []}
       onRowClick={(r) => r.prRefNo && window.open(`/receipt/${r.id}`, "_blank")}
     />
   {/if}

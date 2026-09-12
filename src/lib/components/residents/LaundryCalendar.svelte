@@ -1,13 +1,12 @@
 <script lang="ts">
   import type { LaundryRecord, UserRecord } from "$lib/types";
-  import { auth } from "$state/auth.svelte";
   import { cn } from "$lib/utils";
   import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "@lucide/svelte";
   import * as DropdownMenu from "$ui/dropdown-menu";
+  import * as Tooltip from "$ui/tooltip";
   import { Button } from "$ui/button";
   import { parseTime } from "$utils/parsers";
   import * as Sheet from "$ui/sheet";
-  import * as AlertDialog from "$ui/alert-dialog";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import {
@@ -136,9 +135,7 @@
       // Lookup by ID (UUID) or email (legacy)
       const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
 
-      const isMine =
-        resId === currentUserId ||
-        (auth.user?.email && resId.toLowerCase() === auth.user.email.toLowerCase());
+      const isMine = resId === currentUserId;
       const rawName = (user as any)?.name || r.displayName || "Resident";
       const rawRoom = (user as any)?.room || r.room || "";
 
@@ -269,28 +266,61 @@
   }
 </script>
 
-<div class="flex flex-col gap-6">
-  <div class="flex items-center justify-between px-4 py-2">
-    <div class="flex items-center gap-4">
-      <Button
-        variant="outline"
-        size="sm"
-        class="h-9 rounded-full px-5 text-sm font-medium"
-        onclick={goToToday}
-      >
-        Today
-      </Button>
+<div class="flex flex-col gap-4">
+  <div class="flex items-center justify-between">
+    <div class="flex min-w-0 items-center gap-2">
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            onclick={goToToday}
+            aria-label="Today"
+          >
+            <CalendarIconSmall class="h-4 w-4" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="bottom">
+          <p>Today</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
 
-      <div class="flex items-center gap-2">
-        <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full" onclick={prev}>
-          <ChevronLeft class="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" class="h-8 w-8 rounded-full" onclick={next}>
-          <ChevronRight class="h-4 w-4" />
-        </Button>
-      </div>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            onclick={prev}
+            aria-label={viewMode === "week" ? "Previous week" : "Previous day"}
+          >
+            <ChevronLeft class="h-4 w-4" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="bottom">
+          <p>{viewMode === "week" ? "Previous week" : "Previous day"}</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
 
-      <h2 class="text-xl font-medium tracking-tight">
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            variant="secondary"
+            size="icon"
+            class="h-8 w-8 rounded-full"
+            onclick={next}
+            aria-label={viewMode === "week" ? "Next week" : "Next day"}
+          >
+            <ChevronRight class="h-4 w-4" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="bottom">
+          <p>{viewMode === "week" ? "Next week" : "Next day"}</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+
+      <h2 class="ml-2 truncate text-xl font-medium tracking-tight">
         {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
       </h2>
     </div>
@@ -300,13 +330,14 @@
         <DropdownMenu.Trigger>
           {#snippet child({ props })}
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
-              class="h-9 rounded-full bg-muted/50 px-4 text-xs font-medium"
+              class="h-9 rounded-full"
+              icon={ChevronDown}
+              iconPosition="right"
               {...props}
             >
               <span class="capitalize">{viewMode}</span>
-              <ChevronDown class="ml-1.5 h-3.5 w-3.5 opacity-50" />
             </Button>
           {/snippet}
         </DropdownMenu.Trigger>
@@ -319,14 +350,14 @@
   </div>
 
   <div class="overflow-x-auto">
-    <div class={cn(viewMode === "week" ? "min-w-[800px]" : "w-full")}>
+    <div class={cn(viewMode === "week" ? "min-w-200" : "w-full")}>
       <!-- Unified Grid Container -->
       <div
         class={cn(
           "relative grid overflow-hidden rounded-xl border bg-background",
           viewMode === "week" ? "grid-cols-[60px_repeat(7,1fr)]" : "grid-cols-[60px_1fr]"
         )}
-        style="grid-template-rows: 80px repeat({hours.length}, 60px) 30px;"
+        style="grid-template-rows: 80px repeat({hours.length}, 60px);"
       >
         <!-- Header -->
         <div
@@ -363,28 +394,23 @@
 
         <!-- Grid Body -->
         {#each hours as hour, hourIdx}
+          {@const isLastRow = hourIdx === hours.length - 1}
           <!-- Time Label -->
           <div
-            class="relative flex justify-end border-b bg-muted/5 p-0 text-xs font-bold text-muted-foreground uppercase"
+            class={cn(
+              "relative flex justify-end bg-muted/5 p-0 text-xs font-bold text-muted-foreground uppercase",
+              !isLastRow && "border-b"
+            )}
             style="grid-row: {hourIdx + 2}; grid-column: 1;"
           >
-            <span
-              class="absolute inset-x-0 top-0 z-20 flex -translate-y-1/2 items-center justify-center"
-            >
-              <span class="bg-background px-1 text-muted-foreground">
-                {uiSettings.clockFormat === "12h"
-                  ? `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`
-                  : `${hour.toString().padStart(2, "0")}:00`}
-              </span>
-            </span>
-            {#if hourIdx === hours.length - 1}
+            {#if hour !== 0}
               <span
-                class="absolute inset-x-0 bottom-0 z-20 flex translate-y-1/2 items-center justify-center"
+                class="absolute inset-x-0 top-0 z-20 flex -translate-y-1/2 items-center justify-center"
               >
                 <span class="bg-background px-1 text-muted-foreground">
                   {uiSettings.clockFormat === "12h"
-                    ? `${(hour + 1) % 12 || 12} ${hour + 1 >= 12 ? "PM" : "AM"}`
-                    : `${(hour + 1).toString().padStart(2, "0")}:00`}
+                    ? `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`
+                    : `${hour.toString().padStart(2, "0")}:00`}
                 </span>
               </span>
             {/if}
@@ -398,7 +424,8 @@
             <button
               type="button"
               class={cn(
-                "h-15 w-full rounded-none border-b border-l p-0 transition-colors",
+                "h-15 w-full rounded-none border-l p-0 transition-colors",
+                !isLastRow && "border-b",
                 isBlocked
                   ? "cursor-not-allowed bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_6px,var(--color-border)_6px,var(--color-border)_7px)] opacity-50"
                   : isOutsideHours
@@ -426,15 +453,6 @@
               aria-label="Select slot for {dateStr} at {hour}:00"
             ></button>
           {/each}
-        {/each}
-
-        <!-- Bottom Spacer Row -->
-        <div class="bg-muted/5" style="grid-row: {hours.length + 2}; grid-column: 1;"></div>
-        {#each weekDays as { }, dayIdx}
-          <div
-            class="border-l bg-transparent"
-            style="grid-row: {hours.length + 2}; grid-column: {dayIdx + 2};"
-          ></div>
         {/each}
 
         {#each weekDays as day, dayIdx}
@@ -467,9 +485,7 @@
             {#each getActiveReservationsForDay(dateStr) as res}
               {@const startMin = (res.startHour - startHour) * 60}
               {@const durationMin = res.duration * 60}
-              {@const isMine =
-                res.residentId === currentUserId ||
-                (auth.user?.email && res.residentId === auth.user.email)}
+              {@const isMine = res.residentId === currentUserId}
               {@const resEndTime = day.getTime() + res.endHour * 3600000}
               {@const isPast = resEndTime <= now.getTime()}
               {#if durationMin > 0}
@@ -515,6 +531,7 @@
       </div>
     </div>
   </div>
+
   <div
     class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
   >
@@ -546,9 +563,7 @@
 <Sheet.Root open={!!selectedReservation} onOpenChange={(o) => !o && (selectedReservation = null)}>
   <Sheet.Content side="right" class="sm:max-w-md sm:rounded-l-xl">
     {#if selectedReservation}
-      {@const isMine =
-        selectedReservation.residentId === currentUserId ||
-        (auth.user?.email && selectedReservation.residentId === auth.user.email)}
+      {@const isMine = selectedReservation.residentId === currentUserId}
       <Sheet.Header>
         <Sheet.Title class="flex items-center gap-2">
           <Info class="h-5 w-5 text-primary" />

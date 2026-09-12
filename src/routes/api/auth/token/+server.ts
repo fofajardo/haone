@@ -1,23 +1,44 @@
+import { createCredentialJwt, getSheetsClient } from "$api/services/auth-service";
+import { fetchSheetsData } from "$api/services/server-sheets-service";
+import { GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
+import {
+  PUBLIC_DB_PROVIDER,
+  PUBLIC_GI_CLIENT_ID,
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  PUBLIC_SUPABASE_URL
+} from "$env/static/public";
+import type {
+  GoogleAuthToken,
+  GoogleUserInfo,
+  TokenExchangeResponse,
+  UserRecord
+} from "$lib/types";
+import { USER_COL, UserTag } from "$lib/types";
+import { createClient } from "@supabase/supabase-js";
 import { json } from "@sveltejs/kit";
-import { GI_CLIENT_SECRET, RESIDENT_GI_CLIENT_SECRET, INSTANCE_ADMIN } from "$env/static/private";
-import { PUBLIC_GI_CLIENT_ID, PUBLIC_RESIDENT_GI_CLIENT_ID } from "$env/static/public";
 import type { RequestHandler } from "./$types";
+
+const URL_TOKEN_EXCHANGE = "https://oauth2.googleapis.com/token";
+const URL_USERINFO = "https://www.googleapis.com/oauth2/v3/userinfo";
+
+function getHighResPictureUrl(url?: string): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+  return url.replace(/([=|\/])s\d+(-[c|p|o|g])?(\/|$)/, "$1s384-c$3");
+}
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const { code, code_verifier, redirect_uri, client_id } = await request.json();
+    const { code, code_verifier, redirect_uri } = await request.json();
 
-    let clientSecret = GI_CLIENT_SECRET;
-    if (client_id === PUBLIC_RESIDENT_GI_CLIENT_ID) {
-      clientSecret = RESIDENT_GI_CLIENT_SECRET;
-    }
-
-    const tokenResp = await fetch("https://oauth2.googleapis.com/token", {
+    // Exchange authorization code for refresh and access tokens.
+    const tokenResponse = await fetch(URL_TOKEN_EXCHANGE, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        client_id: client_id || PUBLIC_GI_CLIENT_ID,
-        client_secret: clientSecret,
+        client_id: PUBLIC_GI_CLIENT_ID,
+        client_secret: GI_CLIENT_SECRET,
         code,
         code_verifier,
         grant_type: "authorization_code",
@@ -25,75 +46,30 @@ export const POST: RequestHandler = async ({ request }) => {
       })
     });
 
-    const data = await tokenResp.json();
-    if (!tokenResp.ok) return json(data, { status: tokenResp.status });
-
-    const accessToken = data.access_token;
-
-    // Fetch userinfo to check domain/admin
-    const userinfoResp = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-
-    if (!userinfoResp.ok) {
-      return json(
-        { error: "failed_userinfo", message: "Failed to fetch profile info" },
-        { status: 500 }
-      );
+    const tokenData: GoogleAuthToken = await tokenResponse.json();
+    if (!tokenResponse.ok) {
+      return json(tokenData, { status: tokenResponse.status });
     }
 
-    const userData = await userinfoResp.json();
-    const email = userData.email.trim().toLowerCase();
+    // Fetch user profile info from Google.
+    const userInfoResponse = await fetch(URL_USERINFO, {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    if (!userInfoResponse.ok) {
+      return json({ error_description: "Failed to fetch profile info" }, { status: 500 });
+    }
 
+    const userInfoData: GoogleUserInfo = await userInfoResponse.json();
+    const email = userInfoData.email.trim().toLowerCase();
     const isInstanceAdmin = email === (INSTANCE_ADMIN || "").trim().toLowerCase();
 
-    let userId = "";
+    let user: UserRecord | null = null;
     try {
-      const { USER_COL, UserTag } = await import("$lib/types");
-      const { PUBLIC_DB_PROVIDER, PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } =
-        await import("$env/static/public");
-
-      let isStudent = true;
-
-      if (PUBLIC_DB_PROVIDER === "supabase") {
-        const { createClient } = await import("@supabase/supabase-js");
-        const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
-        const { data: dbUser } = await supabase
-          .from("users")
-          .select("id, tags")
-          .ilike("email", email)
-          .maybeSingle();
-
-        if (dbUser) {
-          userId = dbUser.id;
-          const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
-          if (!tags.includes(UserTag.STUDENT)) {
-            isStudent = false;
-          }
-        } else {
-          isStudent = false;
-        }
-      } else {
-        const { getSheetsClient, fetchSheetsData } = await import("$lib/server/api-helper");
-        const saClient = await getSheetsClient();
-        const [userRows] = await fetchSheetsData(saClient, ["users!A:P"]);
-        const user = userRows.find((r: any) => {
-          return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
-        });
-        if (user) {
-          userId = user[USER_COL.ID] || "";
-          const tagsStr = (user[USER_COL.TAGS] || "").trim().toUpperCase();
-          const tags = tagsStr.split(":").map((t: string) => t.trim());
-          if (!tags.includes(UserTag.STUDENT)) {
-            isStudent = false;
-          }
-        } else {
-          isStudent = false;
-        }
-      }
+      const result = await lookupUser(email);
+      user = result.user;
 
       // Enforce domain check
-      if (!isInstanceAdmin && !email.endsWith("@up.edu.ph") && isStudent) {
+      if (!isInstanceAdmin && !email.endsWith("@up.edu.ph") && result.isStudent) {
         return json(
           {
             error: "forbidden_domain",
@@ -103,18 +79,153 @@ export const POST: RequestHandler = async ({ request }) => {
         );
       }
     } catch (e: any) {
-      console.warn("User lookup in token endpoint failed:", e);
+      console.error("User lookup in token endpoint failed:", e);
+      return json(
+        {
+          error: "server_error",
+          error_description: e.message || "User lookup in token endpoint failed."
+        },
+        { status: 500 }
+      );
+    }
+
+    // Build a dummy user record since the signed-in user does not yet exist
+    // in the database. This allows the user to proceed to the app and create
+    // their account. The user will be prompted to fill in the missing details
+    // during the onboarding process.
+    if (!user) {
+      user = {
+        email,
+        lastName: (userInfoData.family_name || "").trim().toUpperCase(),
+        firstName: (userInfoData.given_name || "").trim().toUpperCase(),
+        middleName: "",
+        suffix: "",
+        overrideName: "",
+        displayName:
+          userInfoData.family_name && userInfoData.given_name
+            ? `${userInfoData.family_name.trim().toUpperCase()}, ${userInfoData.given_name.trim().toUpperCase()}`
+            : (userInfoData.name || "").trim(),
+        displayNameFormal: (userInfoData.name || "").trim(),
+        studentNo: "",
+        secondaryContact: "",
+        college: "",
+        program: "",
+        id: crypto.randomUUID()
+      };
+    }
+
+    // Normalize user photo URL to high resolution
+    user.avatarUrl = getHighResPictureUrl(userInfoData.picture);
+
+    let credentialJwt = "";
+    try {
+      credentialJwt = await createCredentialJwt({
+        email,
+        sub: user.id,
+        isInstanceAdmin
+      });
+    } catch (jwtErr: any) {
+      console.error("Failed to generate credential JWT:", jwtErr);
+      return json(
+        {
+          error: "server_error",
+          error_description: "Failed to generate credential token"
+        },
+        { status: 500 }
+      );
     }
 
     return json({
-      ...data,
-      user: {
-        ...userData,
-        id: userId
-      },
-      isInstanceAdmin
-    });
+      tokenData,
+      user,
+      isInstanceAdmin,
+      credentialJwt
+    } satisfies TokenExchangeResponse);
   } catch (e: any) {
     return json({ error: "server_error", error_description: e.message }, { status: 500 });
   }
 };
+
+async function lookupUserSupabase(
+  email: string
+): Promise<{ user: UserRecord | null; isStudent: boolean }> {
+  const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+  const { data: dbUser } = await supabase
+    .from("users")
+    .select("*")
+    .ilike("email", email)
+    .maybeSingle();
+
+  if (dbUser) {
+    const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
+    const user: UserRecord = {
+      id: dbUser.id,
+      email: dbUser.email,
+      lastName: dbUser.last_name || "",
+      firstName: dbUser.first_name || "",
+      middleName: dbUser.middle_name || "",
+      suffix: dbUser.suffix || "",
+      overrideName: dbUser.override_name || "",
+      displayName: dbUser.display_name || "",
+      displayNameFormal: dbUser.display_name_fl || "",
+      studentNo: dbUser.student_no || "",
+      secondaryContact: dbUser.secondary_contact || "",
+      college: dbUser.college || "",
+      program: dbUser.degree_program || ""
+    };
+    return {
+      user,
+      isStudent: tags.includes(UserTag.STUDENT)
+    };
+  }
+
+  return { user: null, isStudent: false };
+}
+
+async function lookupUserSheets(
+  email: string
+): Promise<{ user: UserRecord | null; isStudent: boolean }> {
+  const saClient = await getSheetsClient();
+  const [userRows] = await fetchSheetsData(saClient, ["users!A:P"]);
+  const row = userRows.find((r: any) => {
+    return (r[USER_COL.EMAIL] || "").toLowerCase() === email;
+  });
+
+  if (row) {
+    const tagsStr = (row[USER_COL.TAGS] || "").trim().toUpperCase();
+    const tags = tagsStr.split(":").map((t: string) => t.trim());
+    const user: UserRecord = {
+      email: (row[USER_COL.EMAIL] || "").trim(),
+      lastName: (row[USER_COL.LAST_NAME] || "").trim(),
+      firstName: (row[USER_COL.FIRST_NAME] || "").trim(),
+      middleName: (row[USER_COL.MIDDLE_NAME] || "").trim(),
+      suffix: (row[USER_COL.SUFFIX] || "").trim(),
+      overrideName: (row[USER_COL.OVERRIDE_NAME] || "").trim(),
+      displayName: (row[USER_COL.DISPLAY_NAME] || "").trim(),
+      displayNameFormal: (row[USER_COL.DISPLAY_NAME_FL] || "").trim(),
+      studentNo: (row[USER_COL.STUDENT_NO] || "").trim(),
+      secondaryContact: (row[USER_COL.SECONDARY_CONTACT] || "").trim(),
+      college: (row[USER_COL.COLLEGE] || "").trim(),
+      program: (row[USER_COL.DEGREE_PROGRAM] || "").trim(),
+      id: (row[USER_COL.ID] || "").trim()
+    };
+    return {
+      user,
+      isStudent: tags.includes(UserTag.STUDENT)
+    };
+  }
+
+  return { user: null, isStudent: false };
+}
+
+async function lookupUser(email: string): Promise<{ user: UserRecord | null; isStudent: boolean }> {
+  switch (PUBLIC_DB_PROVIDER) {
+    case "supabase": {
+      return await lookupUserSupabase(email);
+    }
+    case "sheets":
+    default: {
+      return await lookupUserSheets(email);
+    }
+  }
+}

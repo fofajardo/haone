@@ -1,4 +1,4 @@
-import type { LaundryRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
+import type { LaundryRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
 
 export interface LaundryServiceInterface {
   fetchReservations(

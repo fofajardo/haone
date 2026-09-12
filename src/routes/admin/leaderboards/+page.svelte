@@ -2,12 +2,12 @@
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
+  import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import AchievementLeaderboard from "$components/achievements/AchievementLeaderboard.svelte";
   import {
     fetchAdminAchievements,
@@ -81,16 +81,16 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Leaderboards"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
   >
-    {#snippet actions()}
-      <ScopeSwitcher bind:value={scope} />
+    {#snippet tabs()}
+      <AchievementTabs bind:value={scope} />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

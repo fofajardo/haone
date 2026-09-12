@@ -1,14 +1,14 @@
-import type { OfficerServiceInterface } from "../interfaces/officer-service.interface";
 import type { OfficerRecord } from "$lib/types";
 import { OfficerStatus } from "$lib/types";
-import {
-  supabase,
-  handleSupabaseError,
-  assertSupabaseFound,
-  fetchAllSupabaseRows
-} from "../common";
-import { parseDbDate } from "$utils/parsers";
 import { auth } from "$state/auth.svelte";
+import { parseDbDate } from "$utils/parsers";
+import {
+  assertSupabaseFound,
+  fetchAllSupabaseRows,
+  handleSupabaseError,
+  supabase
+} from "../common";
+import type { OfficerServiceInterface } from "../interfaces/officer-service.interface";
 
 function mapRow(row: any): OfficerRecord {
   return {

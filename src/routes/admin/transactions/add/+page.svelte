@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
   import { goto } from "$app/navigation";
   import { uiSettings } from "$state/settings.svelte";
   import { addJournalEntries } from "$api/controllers/journal-controller";
@@ -40,9 +42,9 @@
     }
   }
 
-  function handleCancel() {
-    goto("/admin/transactions");
-  }
+  onMount(() => {
+    pageState.title = "Add Transaction";
+  });
 </script>
 
-<TransactionForm mode="add" {isSubmitting} onSave={handleSave} onCancel={handleCancel} />
+<TransactionForm mode="add" {isSubmitting} onSave={handleSave} />

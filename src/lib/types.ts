@@ -6,15 +6,49 @@
  * Page & General Types
  * ========================================== */
 
-export interface PageInfo {
-  title: string | null;
+export interface GoogleUserInfo {
+  sub?: string;
+  name: string;
+  given_name?: string;
+  family_name?: string;
+  picture?: string;
+  email: string;
+  email_verified?: boolean;
+  hd?: string;
 }
 
-export interface UserInfo {
-  name: string;
+export interface GoogleAuthToken {
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  token_type: string;
+  id_token: string;
+}
+
+export interface TokenExchangeResponse {
+  tokenData: GoogleAuthToken;
+  user: UserRecord;
+  isInstanceAdmin: boolean;
+  credentialJwt: string;
+}
+
+export interface CredentialPayload {
   email: string;
-  picture: string;
-  given_name?: string;
+  sub: string;
+  isInstanceAdmin: boolean;
+  exp?: number;
+}
+
+export interface AuthExchangeResult {
+  tokenData: {
+    access_token: string;
+    id_token: string;
+  };
+  user: UserRecord;
+  isInstanceAdmin: boolean;
+  credentialJwt: string;
+  savedType: "admin" | "resident";
+  target: string;
 }
 
 export interface ReceiptItem {
@@ -49,6 +83,19 @@ export interface ClearanceData {
   signatoryTitle: string;
 }
 
+export interface FeaturedImageItem {
+  id?: string;
+  image: string;
+  author: string;
+  title: string;
+  award?: string;
+  description: string;
+  camera?: string;
+  cameraDetails?: string;
+  voteLink?: string;
+  hidden?: boolean;
+}
+
 export interface BrandingProfile {
   name: string;
   shortName: string;
@@ -66,6 +113,7 @@ export interface BrandingProfile {
   paymentInstructionsUrl?: string;
   defaultReminders?: string;
   laundryRules?: string[];
+  hero?: FeaturedImageItem[];
 }
 
 export interface EmailTemplate<T> {
@@ -347,13 +395,14 @@ export interface UserRecord {
   displayNameFormal: string;
   studentNo: string;
   secondaryContact: string;
-  address: string;
+  avatarUrl?: string;
+  address?: string;
   college: string;
   program: string;
-  tags: string;
-  notes: string;
+  tags?: string;
+  notes?: string;
   id: string;
-  raw: string[];
+  raw?: string[];
 }
 
 export interface LaundryRecord {
@@ -561,6 +610,98 @@ export const USER_TAG_COLORS: Record<string, string> = {
   DEFAULT: "bg-muted text-muted-foreground border-border"
 };
 
+export enum TransactionType {
+  COLLECTION = "COLLECTION",
+  COLLECTION_OTHERS = "COLLECTION_OTHERS",
+  CARRYOVER = "CARRYOVER",
+  FUND_TRANSFER = "FUND_TRANSFER",
+  TRANSFER_FROM = "TRANSFER_FROM",
+  TRANSFER_TO = "TRANSFER_TO",
+  DISCREPANCY = "DISCREPANCY",
+  REFUND = "REFUND",
+  REFUND_COLLECTION = "COLLECTION_REFUND",
+  RECLASSIFY = "RECLASSIFY",
+  PURCHASE = "PURCHASE",
+  WATER = "WATER",
+  WATER_AA = "WATER_AQUA_ALTRIA",
+  TRANSACTION_FEE = "TRANSACTION_FEE",
+  UPLB_ADA_FEE = "UPLB_ADA_FEE",
+  TRANSPORTATION = "TRANSPORTATION",
+  EOS = "EOS",
+  EOS_UNSETTLED = "EOS_UNSETTLED",
+  WAIVED = "WAIVED",
+  NOTE_MARKER = "NOTE_MARKER",
+  TYPE_RESERVED = "TYPE_RESERVED"
+}
+
+export interface TransactionTypeMetadata {
+  key: TransactionType;
+  value: string;
+  label: string;
+}
+
+export const TRANSACTION_TYPE_CONFIG: Record<TransactionType, { val: string; label: string }> = {
+  [TransactionType.COLLECTION]: { val: "COLLECTION", label: "Collection" },
+  [TransactionType.COLLECTION_OTHERS]: { val: "COLLECTION_OTHERS", label: "Collection (Others)" },
+  [TransactionType.CARRYOVER]: { val: "CARRYOVER", label: "Carryover" },
+  [TransactionType.FUND_TRANSFER]: { val: "FUND_TRANSFER", label: "Fund Transfer" },
+  [TransactionType.TRANSFER_FROM]: { val: "TRANSFER_FROM", label: "Transfer From" },
+  [TransactionType.TRANSFER_TO]: { val: "TRANSFER_TO", label: "Transfer To" },
+  [TransactionType.DISCREPANCY]: { val: "DISCREPANCY", label: "Discrepancy" },
+  [TransactionType.REFUND]: { val: "REFUND", label: "Refund (General)" },
+  [TransactionType.REFUND_COLLECTION]: { val: "COLLECTION_REFUND", label: "Refund (Collection)" },
+  [TransactionType.RECLASSIFY]: { val: "RECLASSIFY", label: "Reclassify" },
+  [TransactionType.PURCHASE]: { val: "PURCHASE", label: "Purchase" },
+  [TransactionType.WATER_AA]: { val: "WATER_AQUA_ALTRIA", label: "Purchase: Water (Aqua Altria)" },
+  [TransactionType.WATER]: { val: "WATER", label: "Purchase: Water" },
+  [TransactionType.TRANSACTION_FEE]: { val: "TRANSACTION_FEE", label: "Transaction Fees" },
+  [TransactionType.UPLB_ADA_FEE]: { val: "UPLB_ADA_FEE", label: "UPLB ADA Fees" },
+  [TransactionType.TRANSPORTATION]: { val: "TRANSPORTATION", label: "Transportation Fees" },
+  [TransactionType.EOS]: { val: "EOS", label: "End of Term" },
+  [TransactionType.EOS_UNSETTLED]: { val: "EOS_UNSETTLED", label: "End of Term (Unsettled)" },
+  [TransactionType.WAIVED]: { val: "WAIVED", label: "Waived" },
+  [TransactionType.NOTE_MARKER]: { val: "NOTE_MARKER", label: "Note Marker" },
+  [TransactionType.TYPE_RESERVED]: { val: "DO_NOT_USE", label: "Reserved (Hidden)" }
+};
+
+export const TRANSACTION_TYPE_OPTIONS: TransactionTypeMetadata[] = (
+  Object.keys(TRANSACTION_TYPE_CONFIG) as TransactionType[]
+)
+  .filter((k) => k !== TransactionType.TYPE_RESERVED && k !== TransactionType.NOTE_MARKER)
+  .map((key) => ({
+    key,
+    value: TRANSACTION_TYPE_CONFIG[key].val,
+    label: TRANSACTION_TYPE_CONFIG[key].label
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
+
+export const TRANSACTION_TYPE_FUNDS_ONLY: TransactionType[] = [
+  TransactionType.CARRYOVER,
+  TransactionType.DISCREPANCY,
+  TransactionType.EOS,
+  TransactionType.EOS_UNSETTLED,
+  TransactionType.PURCHASE,
+  TransactionType.REFUND,
+  TransactionType.TRANSPORTATION,
+  TransactionType.UPLB_ADA_FEE,
+  TransactionType.WATER_AA,
+  TransactionType.WATER
+];
+
+export const TRANSACTION_TYPE_WITH_RECEIPT: TransactionType[] = [
+  TransactionType.WAIVED,
+  TransactionType.COLLECTION
+];
+
+export const TRANSACTION_TYPE_MAYBE_WITH_RECEIPT: TransactionType[] = [
+  TransactionType.RECLASSIFY,
+  TransactionType.COLLECTION_OTHERS,
+  TransactionType.TRANSFER_TO,
+  TransactionType.TRANSFER_FROM,
+  TransactionType.REFUND_COLLECTION,
+  TransactionType.REFUND
+];
+
 export enum PaymentRequestStatus {
   PENDING = "PENDING",
   APPROVED = "APPROVED",
@@ -758,4 +899,13 @@ export interface PaginatedResponse<T> {
   page: number;
   pageSize: number;
   totalPages: number;
+}
+
+export interface CustomServiceItem {
+  title: string;
+  url: string;
+  icon: any;
+  description?: string;
+  target: "admin" | "resident";
+  isAllowed?: (accountType: string, room?: string) => boolean;
 }

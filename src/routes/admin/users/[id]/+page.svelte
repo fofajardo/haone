@@ -4,6 +4,7 @@
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
   import { translateCollege, translateProgram } from "$utils/translators";
   import { pluralize } from "$utils/formatters";
   import { parseDateWeight } from "$utils/parsers";
@@ -57,10 +58,9 @@
     changeAccountType as changeAccountTypeController
   } from "$api/controllers/resident-controller";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
-  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { pageState } from "$state/page-info.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
@@ -80,7 +80,6 @@
   let accounts = $state<Account[]>([]);
   let userOfficers = $state<OfficerRecord[]>([]);
   let history = $state<JournalRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let allResidents = $state<ResidentRecord[]>([]);
   let isLoading = $state(true);
   let isDeleteAlertOpen = $state(false);
@@ -91,17 +90,6 @@
   let isDelistOpen = $state(false);
   let residentsToClear = $state<ResidentRecord[]>([]);
   let isChangingType = $state(false);
-
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
-
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
-  }
 
   const currentAccount = $derived(accounts.find((a) => a.period === localTerm) || null);
 
@@ -130,12 +118,11 @@
         localTerm = currTerm;
       }
 
-      const [userData, accountData, allOfficers, entries, types, allRes] = await Promise.all([
+      const [userData, accountData, allOfficers, entries, allRes] = await Promise.all([
         fetchUserById(userId, bypassCache),
         fetchAccountsByUserId(userId, bypassCache),
         fetchOfficers(bypassCache),
         fetchJournalEntries(undefined, undefined),
-        fetchTransactionTypes(bypassCache),
         fetchResidents(bypassCache)
       ]);
 
@@ -147,7 +134,6 @@
       pageState.title = user.displayName;
       accounts = accountData;
       allResidents = allRes;
-      transactionTypes = types;
 
       userOfficers = allOfficers.filter(
         (o) =>
@@ -195,10 +181,10 @@
     isChangingType = true;
     try {
       await changeAccountTypeController(currentAccount.residentId, currentAccount.period, newType);
-      showAlert("Account Type Updated", `Account type changed to ${newType}.`);
+      globalDialog.show("Account Type Updated", `Account type changed to ${newType}.`);
       await loadUserProfile(true);
     } catch (e: any) {
-      showAlert("Update Failed", e.message, "error");
+      globalDialog.show("Update Failed", e.message);
     } finally {
       isChangingType = false;
     }
@@ -215,10 +201,9 @@
   function sendClearanceEmail() {
     if (!currentAccount) return;
     if (!currentAccount.ceLink) {
-      showAlert(
+      globalDialog.show(
         "Dispatch Blocked",
-        "No clearance certificate generated for this resident yet.",
-        "error"
+        "No clearance certificate generated for this resident yet."
       );
       return;
     }
@@ -240,10 +225,55 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
-    title={user?.displayName || "View User"}
+  <ContentHeader
+    title={"View User"}
     onRefresh={() => loadUserProfile(true)}
     isRefreshing={isLoading}
+    actions={[
+      ...(currentAccount
+        ? [
+            {
+              label: "Send",
+              icon: Mail,
+              variant: "outline",
+              items: [
+                {
+                  label: "Send Payment Status",
+                  icon: Mail,
+                  onclick: sendStatusEmail
+                },
+                {
+                  label: "Send Clearance Certificate",
+                  icon: FileCheck,
+                  onclick: sendClearanceEmail,
+                  disabled:
+                    !currentAccount.ceLink ||
+                    currentAccount.ceLink === "N/A" ||
+                    currentAccount.ceLink === ""
+                }
+              ]
+            }
+          ]
+        : []),
+      {
+        label: "Edit",
+        icon: UserCog,
+        href: `/admin/users/${userId}/edit`
+      },
+      ...(accounts.length === 0
+        ? [
+            {
+              label: "Delete",
+              icon: Trash2,
+              variant: "destructive",
+              onclick: () => {
+                isDeleteAlertOpen = true;
+              },
+              isLoading
+            }
+          ]
+        : [])
+    ] as HeaderAction[]}
   >
     {#snippet titleExtra()}
       {#if currentAccount}
@@ -265,74 +295,29 @@
         </div>
       {/if}
     {/snippet}
+  </ContentHeader>
 
-    {#snippet actions()}
-      <div class="flex flex-wrap items-center gap-2">
-        {#if currentAccount}
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
-              {#snippet child({ props })}
-                <Button size="sm" {...props} icon={Mail} variant="outline">
-                  Send
-                  <ChevronDown class="ml-1.5 h-3 w-3 opacity-50" />
-                </Button>
-              {/snippet}
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content align="end" class="w-56">
-              <DropdownMenu.Item onclick={sendStatusEmail}>
-                <Mail class="mr-2 h-4 w-4" />
-                <span>Send Payment Status</span>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onclick={sendClearanceEmail}
-                disabled={!currentAccount.ceLink ||
-                  currentAccount.ceLink === "N/A" ||
-                  currentAccount.ceLink === ""}
-              >
-                <FileCheck class="mr-2 h-4 w-4" />
-                <span>Send Clearance Certificate</span>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        {/if}
-
-        <Button size="sm" href="/admin/users/{userId}/edit" icon={UserCog}>Edit</Button>
-        {#if accounts.length === 0}
-          <Button
-            variant="destructive"
-            size="sm"
-            onclick={() => (isDeleteAlertOpen = true)}
-            {isLoading}
-            icon={Trash2}
-          >
-            <span class="hidden sm:inline">Delete</span>
-          </Button>
-        {/if}
-      </div>
-
-      <AlertDialog.Root bind:open={isDeleteAlertOpen}>
-        <AlertDialog.Content>
-          <AlertDialog.Header>
-            <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-            <AlertDialog.Description>
-              This action cannot be undone. This will permanently delete the user profile for
-              <span class="font-bold text-foreground">{user?.displayName}</span>
-              and remove their data from our servers.
-            </AlertDialog.Description>
-          </AlertDialog.Header>
-          <AlertDialog.Footer>
-            <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-            <AlertDialog.Action
-              class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
-              onclick={handleDelete}
-            >
-              Delete
-            </AlertDialog.Action>
-          </AlertDialog.Footer>
-        </AlertDialog.Content>
-      </AlertDialog.Root>
-    {/snippet}
-  </SubpageHeader>
+  <AlertDialog.Root bind:open={isDeleteAlertOpen}>
+    <AlertDialog.Content>
+      <AlertDialog.Header>
+        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+        <AlertDialog.Description>
+          This action cannot be undone. This will permanently delete the user profile for
+          <span class="font-bold text-foreground">{user?.displayName}</span>
+          and remove their data from our servers.
+        </AlertDialog.Description>
+      </AlertDialog.Header>
+      <AlertDialog.Footer>
+        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+        <AlertDialog.Action
+          class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
+          onclick={handleDelete}
+        >
+          Delete
+        </AlertDialog.Action>
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+  </AlertDialog.Root>
 
   {#if isLoading}
     <LoadingView />
@@ -467,7 +452,7 @@
               Programs & Colleges
             </Label>
             <div
-              class="relative space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
+              class="relative space-y-6 before:absolute before:top-2 before:left-2.75 before:h-[calc(100%-16px)] before:w-px before:bg-border"
             >
               {#each qualifications as q}
                 <div class="relative flex items-start gap-4 pl-8">
@@ -609,7 +594,6 @@
           <!-- Transaction History -->
           <TransactionHistoryCard
             {history}
-            {transactionTypes}
             onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
           />
         {:else}
@@ -661,20 +645,7 @@
 <ClearanceDialog
   bind:open={isClearDialogOpen}
   residents={residentsToClear}
-  allAccounts={allResidents}
   onSuccess={(count) => {
-    showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
+    globalDialog.show("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
   }}
 />
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>Continue</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

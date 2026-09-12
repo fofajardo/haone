@@ -1,12 +1,12 @@
-import type { PaymentRequestRecord } from "$lib/types";
 import { paymentRequestService } from "$api/services/payment-request-service";
-import { getCurrentResidentId } from "./resident-controller";
+import type { PaymentRequestRecord } from "$lib/types";
+import { getSignedInUserId } from "./resident-controller";
 
 export async function fetchPaymentRequests(bypassCache = false): Promise<{
   requests: PaymentRequestRecord[];
   currentResidentId: string;
 }> {
-  const currentResidentId = await getCurrentResidentId();
+  const currentResidentId = await getSignedInUserId();
   const res = await paymentRequestService.fetchPaymentRequests(
     currentResidentId,
     undefined,

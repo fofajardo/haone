@@ -3,7 +3,7 @@
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Plus, Trophy } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -22,7 +22,7 @@
   import { Checkbox } from "$ui/checkbox";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import ScopeSwitcher from "$components/achievements/ScopeSwitcher.svelte";
+  import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/achievements/AchievementCard.svelte";
@@ -96,10 +96,7 @@
       if (!newAchievement.term) {
         newAchievement.term = currTerm;
       }
-      const me = allU.find((u) => {
-        return u.email.toLowerCase() === (auth.user?.email || "").toLowerCase();
-      });
-      currentUserId = me?.id || "";
+      currentUserId = auth.userId;
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -140,19 +137,26 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Achievements"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={!isGlobal}
+    actions={[
+      {
+        label: "New",
+        icon: Plus,
+        onclick: () => {
+          isCreatorOpen = true;
+        }
+      }
+    ]}
   >
-    {#snippet actions()}
-      <div class="flex flex-wrap items-center gap-2">
-        <Button size="sm" onclick={() => (isCreatorOpen = true)} icon={Plus}>New</Button>
-        <ScopeSwitcher bind:value={scope} />
-      </div>
+    {#snippet tabs()}
+      <AchievementTabs bind:value={scope} />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

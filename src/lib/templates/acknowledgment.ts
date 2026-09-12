@@ -1,6 +1,6 @@
-import { wrapEmailHtml } from "./base";
+import { TransactionType, type BrandingProfile, type EmailTemplate } from "$lib/types";
 import { formatDate } from "$utils/formatters";
-import type { BrandingProfile, EmailTemplate } from "$lib/types";
+import { wrapEmailHtml } from "./base";
 
 export interface AcknowledgmentData {
   accountFullName: string;
@@ -22,13 +22,16 @@ export function generateAcknowledgmentReceiptHtml(
   const formattedDate = formatDate(data.date);
 
   // Conditional text logic based on transaction type
-  if (data.type === "COLLECTION" || data.type === "COLLECTION_OTHERS") {
+  if (data.type === TransactionType.COLLECTION || data.type === TransactionType.COLLECTION_OTHERS) {
     typeSpecificText = `Thank you for your payment last ${formattedDate}. `;
-  } else if (data.type === "REFUND") {
+  } else if (
+    data.type === TransactionType.REFUND ||
+    data.type === TransactionType.REFUND_COLLECTION
+  ) {
     typeSpecificText = `Your payment was refunded. `;
-  } else if (data.type === "WAIVED") {
+  } else if (data.type === TransactionType.WAIVED) {
     typeSpecificText = `A portion of your semestral fees to the Association has been waived. `;
-  } else if (data.type === "RECLASSIFY") {
+  } else if (data.type === TransactionType.RECLASSIFY) {
     typeSpecificText = `This is a correction to a previously-issued receipt. `;
   }
 

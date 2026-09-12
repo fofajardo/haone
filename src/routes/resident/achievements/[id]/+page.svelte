@@ -2,15 +2,16 @@
   import { page } from "$app/state";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import { RefreshCcw, Share2 } from "@lucide/svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { fetchAchievements } from "$api/controllers/achievement-controller";
   import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
+  import { toast } from "svelte-sonner";
 
   import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";
-  import AchievementStoryShareButton from "$components/achievements/AchievementStoryShareButton.svelte";
+  import { shareAchievementStory } from "$components/achievements/story-share";
 
   const id = page.params.id;
 
@@ -19,6 +20,7 @@
   let earners = $state<{ residentId: string; name: string; date: string; isPublic: boolean }[]>([]);
   let currentResidentId = $state("");
   let isLoading = $state(true);
+  let isSharingStory = $state(false);
   let error = $state<string | null>(null);
 
   let isEarned = $derived(
@@ -26,6 +28,21 @@
       return l.achievementId === id && l.accountId === currentResidentId;
     })
   );
+
+  async function handleShareStory() {
+    if (!achievement) {
+      return;
+    }
+    isSharingStory = true;
+    try {
+      await shareAchievementStory(achievement);
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not prepare the story image");
+    } finally {
+      isSharingStory = false;
+    }
+  }
 
   async function loadData(bypassCache = false) {
     isLoading = true;
@@ -40,20 +57,20 @@
         allA.find((a) => {
           return a.id === id;
         }) || null;
+
       if (!achievement) {
-        throw new Error("Achievement not found");
+        throw new Error("Achievement not found.");
       }
 
-      const achievementLogs = allLogs.filter((l) => {
+      const logsForThis = allLogs.filter((l) => {
         return l.achievementId === id;
       });
-
-      earners = achievementLogs.map((l) => {
+      earners = logsForThis.map((l) => {
         return {
           residentId: l.accountId,
-          name: l.displayName || "Private Resident",
+          name: l.accountName,
           date: l.date,
-          isPublic: l.isPublic ?? false
+          isPublic: l.isPublic
         };
       });
     } catch (e: any) {
@@ -67,17 +84,23 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Achievement Details"
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      {#if achievement && isEarned}
-        <AchievementStoryShareButton {achievement} isPrimary={true} />
-      {/if}
-    {/snippet}
-  </SubpageHeader>
+    actions={[
+      ...(achievement && isEarned
+        ? [
+            {
+              label: "Share Story",
+              icon: Share2,
+              isLoading: isSharingStory,
+              onclick: handleShareStory
+            }
+          ]
+        : [])
+    ]}
+  />
 
   {#if isLoading}
     <LoadingView />

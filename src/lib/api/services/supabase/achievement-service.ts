@@ -1,16 +1,16 @@
-import type { AchievementServiceInterface } from "../interfaces/achievement-service.interface";
 import type {
-  AchievementRecord,
   AchievementLogRecord,
-  PaginationOptions,
-  PaginatedResponse
+  AchievementRecord,
+  PaginatedResponse,
+  PaginationOptions
 } from "$lib/types";
 import {
-  supabase,
-  handleSupabaseError,
   assertSupabaseFound,
-  fetchAllSupabaseRows
+  fetchAllSupabaseRows,
+  handleSupabaseError,
+  supabase
 } from "../common";
+import type { AchievementServiceInterface } from "../interfaces/achievement-service.interface";
 
 import { isUuid } from "$utils/parsers";
 

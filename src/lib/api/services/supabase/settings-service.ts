@@ -1,7 +1,7 @@
-import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
 import type { UserSettingsRecord } from "$lib/types";
-import { supabase, handleSupabaseError } from "../common";
 import { isUuid } from "$utils/parsers";
+import { handleSupabaseError, supabase } from "../common";
+import type { SettingsServiceInterface } from "../interfaces/settings-service.interface";
 
 export const supabaseSettingsService: SettingsServiceInterface = {
   async fetchUserSettings(residentId: string): Promise<UserSettingsRecord | null> {
@@ -76,5 +76,12 @@ export const supabaseSettingsService: SettingsServiceInterface = {
     if (error) {
       handleSupabaseError(error);
     }
+  },
+
+  async verifyAccess(): Promise<void> {
+    if (!supabase) {
+      return;
+    }
+    // No-op on client side for Supabase. Session auth is checked via signInWithIdToken.
   }
 };

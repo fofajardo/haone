@@ -1,5 +1,5 @@
 import { journalService, type JournalFilters } from "$api/services/journal-service";
-import type { JournalRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
+import type { JournalRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
 
 export { mapRowToJournal } from "./resident-controller";
 

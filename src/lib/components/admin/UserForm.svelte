@@ -17,11 +17,11 @@
   } from "@lucide/svelte";
   import { type UserRecord, UserTag, USER_TAG_LABELS } from "$lib/types";
   import { translateCollege, translateProgram } from "$utils/translators";
-  import collegesJson from "$data/colleges.json";
-  import programsJson from "$data/programs.json";
+  import collegesJson from "$assets/colleges.json";
+  import programsJson from "$assets/programs.json";
   import { TagsInput } from "$ui/tags-input";
   import { Combobox } from "$ui/combobox";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
 
   let {
@@ -115,11 +115,10 @@
 
 <!-- FIXME: Subpage header should not be handled by this component -->
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader {title}>
-    {#snippet actions()}
-      <Button size="sm" onclick={onSave} isLoading={isSaving} icon={Save}>Save</Button>
-    {/snippet}
-  </SubpageHeader>
+  <ContentHeader
+    {title}
+    actions={[{ label: "Save", onclick: onSave, isLoading: isSaving, icon: Save }]}
+  />
 
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Left Column -->
@@ -192,7 +191,7 @@
             </EmptyView>
           {:else}
             <div
-              class="relative space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
+              class="relative space-y-6 before:absolute before:top-2 before:left-2.75 before:h-[calc(100%-16px)] before:w-px before:bg-border"
             >
               {#each academicItems as item, i}
                 <div class="relative flex items-start gap-4 pl-8">
@@ -317,7 +316,7 @@
 
 <!-- Academic Item Dialog -->
 <Dialog.Root bind:open={isDialogOpen}>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>{editingIndex !== null ? "Edit" : "Add"} Academic Record</Dialog.Title>
       <Dialog.Description>Configure college and degree program.</Dialog.Description>

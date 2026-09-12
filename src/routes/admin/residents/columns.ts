@@ -1,12 +1,12 @@
+import { type ResidentRecord as Resident } from "$lib/types";
 import {
+  DataTableColumnHeader,
+  DataTableSelectCell,
+  DataTableSelectHeader,
   renderComponent,
   renderSnippet,
-  DataTableSelectHeader,
-  DataTableSelectCell,
-  DataTableColumnHeader,
   type ColumnDef
 } from "$ui/data-table/index.js";
-import { type ResidentRecord as Resident } from "$lib/types";
 import { formatAccounting } from "$utils/formatters";
 import { createRawSnippet } from "svelte";
 

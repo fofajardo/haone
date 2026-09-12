@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
@@ -41,7 +42,10 @@
     }
   }
 
-  onMount(loadTransaction);
+  onMount(() => {
+    pageState.title = "Edit Transaction";
+    loadTransaction();
+  });
 
   async function handleSave(row: any[]) {
     if (!initialData || !id) {
@@ -76,10 +80,6 @@
       isSubmitting = false;
     }
   }
-
-  function handleCancel() {
-    goto(`/admin/transactions/${id}`);
-  }
 </script>
 
 {#if isLoading}
@@ -87,11 +87,5 @@
 {:else if error}
   <ErrorView {error} />
 {:else}
-  <TransactionForm
-    mode="edit"
-    {initialData}
-    {isSubmitting}
-    onSave={handleSave}
-    onCancel={handleCancel}
-  />
+  <TransactionForm mode="edit" {initialData} {isSubmitting} onSave={handleSave} />
 {/if}

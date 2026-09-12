@@ -1,50 +1,39 @@
-import { supabaseResidentService } from "./supabase/resident-service";
-import { sheetsResidentService } from "./sheets/resident-service";
-import { supabaseAnnouncementService } from "./supabase/announcement-service";
-import { sheetsAnnouncementService } from "./sheets/announcement-service";
-import { supabaseConstantsService } from "./supabase/constants-service";
-import { sheetsConstantsService } from "./sheets/constants-service";
-import { supabaseLaundryService } from "./supabase/laundry-service";
-import { sheetsLaundryService } from "./sheets/laundry-service";
-import { supabasePaymentRequestService } from "./supabase/payment-request-service";
-import { sheetsPaymentRequestService } from "./sheets/payment-request-service";
-import { supabaseAchievementService } from "./supabase/achievement-service";
-import { sheetsAchievementService } from "./sheets/achievement-service";
-import { supabaseOfficerService } from "./supabase/officer-service";
-import { sheetsOfficerService } from "./sheets/officer-service";
-import { supabaseJournalService } from "./supabase/journal-service";
-import { sheetsJournalService } from "./sheets/journal-service";
+import type { JournalRecord } from "$lib/types";
 import {
-  supabase,
-  fetchSheetRowsRaw,
-  batchUpdateValues,
-  appendSheetRow,
-  fetchAllSupabaseRows
-} from "./common";
-import { parseDbDate, isUuid } from "$utils/parsers";
-import {
-  USER_COL,
   ACCOUNT_COL,
-  JOURNAL_COL,
-  ANNOUNCEMENT_COL,
-  LAUNDRY_COL,
-  PAYMENT_REQUEST_COL,
   ACHIEVEMENT_COL,
   ACHIEVEMENT_RECORD_COL,
-  OFFICER_COL
+  ANNOUNCEMENT_COL,
+  JOURNAL_COL,
+  LAUNDRY_COL,
+  OFFICER_COL,
+  PAYMENT_REQUEST_COL,
+  USER_COL
 } from "$lib/types";
-import type {
-  UserRecord,
-  ResidentRecord,
-  JournalRecord,
-  AnnouncementRecord,
-  LaundryRecord,
-  PaymentRequestRecord,
-  AchievementRecord,
-  AchievementLogRecord,
-  OfficerRecord,
-  ConstantRecord
-} from "$lib/types";
+import { isUuid, parseDbDate } from "$utils/parsers";
+import {
+  appendSheetRow,
+  batchUpdateValues,
+  fetchAllSupabaseRows,
+  fetchSheetRowsRaw,
+  supabase
+} from "./common";
+import { sheetsAchievementService } from "./sheets/achievement-service";
+import { sheetsAnnouncementService } from "./sheets/announcement-service";
+import { sheetsConstantsService } from "./sheets/constants-service";
+import { sheetsJournalService } from "./sheets/journal-service";
+import { sheetsLaundryService } from "./sheets/laundry-service";
+import { sheetsOfficerService } from "./sheets/officer-service";
+import { sheetsPaymentRequestService } from "./sheets/payment-request-service";
+import { sheetsResidentService } from "./sheets/resident-service";
+import { supabaseAchievementService } from "./supabase/achievement-service";
+import { supabaseAnnouncementService } from "./supabase/announcement-service";
+import { supabaseConstantsService } from "./supabase/constants-service";
+import { supabaseJournalService } from "./supabase/journal-service";
+import { supabaseLaundryService } from "./supabase/laundry-service";
+import { supabaseOfficerService } from "./supabase/officer-service";
+import { supabasePaymentRequestService } from "./supabase/payment-request-service";
+import { supabaseResidentService } from "./supabase/resident-service";
 
 export type SyncDirection = "toSupabase" | "toGSheets";
 

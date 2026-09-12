@@ -1,14 +1,14 @@
+import { type JournalRecord } from "$lib/types";
+import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import {
+  DataTableSelectCell,
+  DataTableSelectHeader,
   renderComponent,
   renderSnippet,
-  DataTableSelectHeader,
-  DataTableSelectCell,
   type ColumnDef
 } from "$ui/data-table/index.js";
-import { formatDate, formatAccounting } from "$utils/formatters";
-import { translateMop, translateType } from "$utils/translators";
-import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
-import { type JournalRecord } from "$lib/types";
+import { formatAccounting, formatDate } from "$utils/formatters";
+import { translateMop, translateTransactionType } from "$utils/translators";
 import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<JournalRecord>[] = [
@@ -66,19 +66,17 @@ export const columns: ColumnDef<JournalRecord>[] = [
   {
     id: "details",
     header: "Details",
-    cell: ({ row, table }) => {
+    cell: ({ row }) => {
       const detailsSnippet = createRawSnippet<[{ record: JournalRecord }]>((p) => {
         const r = p().record;
-        // @ts-ignore
-        const transactionTypes = table.options.meta?.transactionTypes || [];
         return {
           render: () => `
             <div class="flex flex-col gap-2">
               <div class="flex flex-col">
-                <span class="text-sm uppercase">${translateType(r.type, transactionTypes)}</span>
+                <span class="text-sm uppercase">${translateTransactionType(r.type)}</span>
                 <span class="text-sm text-muted-foreground">${translateMop(r.mop)}</span>
               </div>
-              ${r.notes ? `<span class="text-sm text-muted-foreground truncate max-w-[300px] block italic">— ${r.notes}</span>` : ""}
+              ${r.notes ? `<span class="text-sm text-muted-foreground truncate max-w-75 block italic">— ${r.notes}</span>` : ""}
             </div>
           `
         };

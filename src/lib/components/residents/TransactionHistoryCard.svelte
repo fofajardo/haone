@@ -1,23 +1,21 @@
 <script lang="ts">
   import { renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
   import { formatDate, formatCurrency, pluralize } from "$utils/formatters";
-  import { translateMop, translateType } from "$utils/translators";
+  import { translateMop, translateTransactionType } from "$utils/translators";
   import { type JournalRecord } from "$lib/types";
   import { createRawSnippet } from "svelte";
   import * as Card from "$ui/card";
-  import { Badge } from "$ui/badge";
-  import { History, Clock } from "@lucide/svelte";
+  import { Clock, RotateCcwClockIcon } from "@lucide/svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
   import EmptyView from "$components/EmptyView.svelte";
 
   interface Props {
     history: JournalRecord[];
-    transactionTypes?: { value: string; label: string }[];
     onRowClick?: (row: JournalRecord) => void;
     class?: string;
   }
 
-  let { history, transactionTypes = [], onRowClick, class: className }: Props = $props();
+  let { history, onRowClick, class: className }: Props = $props();
 
   const columns: ColumnDef<JournalRecord>[] = [
     {
@@ -49,7 +47,7 @@
           return {
             render: () => `
               <div class="flex flex-col">
-                <span class="text-sm font-medium">${translateType(r.type, transactionTypes)}</span>
+                <span class="text-sm font-medium">${translateTransactionType(r.type)}</span>
                 <span class="text-sm text-muted-foreground">${translateMop(r.mop)}</span>
               </div>
             `
@@ -61,16 +59,7 @@
     {
       accessorKey: "notes",
       header: "Notes",
-      cell: ({ row }) => {
-        const notesSnippet = createRawSnippet<[{ notes: string }]>((p) => ({
-          render: () => `
-            <p class="max-w-[300px] truncate text-sm leading-tight text-muted-foreground" title="${p().notes || ""}">
-              ${p().notes || "—"}
-            </p>
-          `
-        }));
-        return renderSnippet(notesSnippet, { notes: row.original.notes });
-      }
+      cell: ({ row }) => renderSnippet(notesCell, { notes: row.original.notes })
     },
     {
       accessorKey: "amount",
@@ -91,11 +80,17 @@
   ];
 </script>
 
+{#snippet notesCell({ notes }: { notes: string })}
+  <p class="max-w-75 truncate text-sm leading-tight text-muted-foreground" title={notes || ""}>
+    {notes || "—"}
+  </p>
+{/snippet}
+
 {#if history.length > 0}
   <Card.Root class="overflow-hidden {className}">
     <Card.Header class="flex flex-row items-center justify-between bg-muted/5">
       <Card.Title class="flex items-center gap-2 text-lg">
-        <History class="h-5 w-5" />
+        <RotateCcwClockIcon class="h-5 w-5" />
         Transaction History
       </Card.Title>
     </Card.Header>

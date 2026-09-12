@@ -1,9 +1,9 @@
 import {
-  USER_COL,
   ACCOUNT_COL,
   JOURNAL_COL,
-  type ResidentRecord,
+  USER_COL,
   type JournalRecord,
+  type ResidentRecord,
   type UserRecord
 } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
@@ -54,7 +54,7 @@ export function mapRowToResident(
   const assocBase = financials?.assocBase || 0;
   const assocPaid = financials?.assocPaid || 0;
   const assocWaived = financials?.assocWaived || 0;
-  const paid = waterPaid + assocPaid + (financials?.miscPaid || 0);
+  const paid = waterPaid + assocPaid;
   const waived = waterWaived + assocWaived;
   const totalBase = waterBase + assocBase;
   const bal = totalBase - paid - waived;

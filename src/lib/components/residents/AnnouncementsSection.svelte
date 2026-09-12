@@ -37,11 +37,13 @@
 </script>
 
 {#if !isLoading && announcements.length > 0}
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h2 class="flex items-center gap-2 text-xl font-bold text-foreground">Announcements</h2>
-      <div class="flex items-center gap-2">
-        {#if announcements.length > 1}
+  <Card.Root
+    class="relative mx-auto flex h-175 w-full max-w-full flex-col overflow-hidden shadow-none"
+  >
+    <Card.Header class="flex flex-row items-center justify-between pb-0">
+      <Card.Title>Announcements</Card.Title>
+      {#if announcements.length > 1}
+        <Card.Action class="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
@@ -62,89 +64,85 @@
           >
             <ChevronRight class="h-4 w-4" />
           </Button>
-        {/if}
-      </div>
-    </div>
+        </Card.Action>
+      {/if}
+    </Card.Header>
 
     <div
-      class="relative mx-auto w-full max-w-full cursor-pointer overflow-hidden rounded-xl border bg-card transition-colors hover:bg-muted/30"
+      class="flex min-h-0 flex-1 cursor-pointer flex-col transition-colors hover:bg-muted/30"
       onclick={() => goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
-      onkeydown={(e) =>
-        e.key === "Enter" && goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
+      onkeydown={(e) => {
+        if (e.key === "Enter") {
+          goto(`/resident/announcements/${announcements[activeIndex].slug}`);
+        }
+      }}
       role="button"
       tabindex="0"
     >
       <div
-        class="flex transition-transform duration-300 ease-out"
+        class="flex min-h-0 flex-1 transition-transform duration-300 ease-out"
         style="transform: translateX(-{activeIndex * 100}%);"
       >
         {#each announcements as a}
-          <div class="w-full shrink-0">
-            <Card.Content class="space-y-4 p-6 pb-2">
+          <div class="relative flex h-full w-full shrink-0 flex-col overflow-hidden">
+            <Card.Content class="min-h-0 flex-1 space-y-3 overflow-hidden p-6 pb-2">
               <div class="space-y-2">
-                <div class="flex items-start justify-between gap-2">
-                  <h3 class="line-clamp-1 flex-1 text-xl font-bold text-foreground">{a.title}</h3>
-                  <div class="flex shrink-0 flex-wrap gap-1">
-                    {#each (a.tags || "")
-                      .split(",")
-                      .map((t) => t.trim())
-                      .filter(Boolean) as tag}
-                      <Badge
-                        variant="secondary"
-                        class="px-2 py-0.5 text-xs {ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
-                          ANNOUNCEMENT_TAG_COLORS.DEFAULT}"
-                      >
-                        {tag}
-                      </Badge>
-                    {/each}
-                  </div>
-                </div>
+                <h3 class="text-xl font-bold text-foreground">{a.title}</h3>
 
-                <div class="line-clamp-8 text-sm text-muted-foreground">
+                <div class="text-sm text-muted-foreground">
                   <RichEditor content={a.content} editable={false} />
                 </div>
               </div>
             </Card.Content>
+
+            <!-- Gradient Fade Overlay -->
+            <div
+              class="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-linear-to-t from-card to-transparent"
+            ></div>
           </div>
         {/each}
       </div>
 
       <!-- Fixed Footer Block -->
-      <div class="flex shrink-0 items-center justify-between border-t border-border bg-card p-6">
-        <div class="flex flex-col">
-          <span class="text-sm font-medium text-foreground"
-            >{announcements[activeIndex].creatorName || "Officer"}</span
-          >
-          <span class="text-xs text-muted-foreground">
-            {new Date(
-              announcements[activeIndex].startDate || announcements[activeIndex].dateCreated
-            ).toLocaleString(undefined, {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-              hour: "numeric",
-              minute: "2-digit"
-            })}
-          </span>
+      <div
+        class="flex shrink-0 items-center justify-between border-t border-border bg-card p-6 pb-0"
+      >
+        <div class="flex flex-col gap-5">
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-foreground"
+              >{announcements[activeIndex].creatorName || "Officer"}</span
+            >
+            <span class="text-xs text-muted-foreground">
+              {new Date(
+                announcements[activeIndex].startDate || announcements[activeIndex].dateCreated
+              ).toLocaleString(undefined, {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit"
+              })}
+            </span>
+          </div>
         </div>
 
-        {#if announcements.length > 1}
-          <div class="flex items-center gap-1">
-            {#each announcements as _, idx}
-              <button
-                onclick={(e) => {
-                  e.stopPropagation();
-                  activeIndex = idx;
-                }}
-                class="h-1.5 rounded-full transition-all {activeIndex === idx
-                  ? 'w-4 bg-brand'
-                  : 'w-1.5 bg-muted-foreground/35'}"
-                aria-label="Go to announcement slide {idx + 1}"
-              ></button>
+        {#if announcements[activeIndex].tags}
+          <div class="flex flex-wrap gap-1">
+            {#each announcements[activeIndex].tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean) as tag}
+              <Badge
+                variant="secondary"
+                class="px-2 py-0.5 text-xs {ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
+                  ANNOUNCEMENT_TAG_COLORS.DEFAULT}"
+              >
+                {tag}
+              </Badge>
             {/each}
           </div>
         {/if}
       </div>
     </div>
-  </div>
+  </Card.Root>
 {/if}

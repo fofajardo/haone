@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ChevronLeft } from "@lucide/svelte";
+  import { ArrowLeftIcon } from "@lucide/svelte";
   import { goto } from "$app/navigation";
   import { Button } from "$ui/button";
   import { useSidebar } from "$ui/sidebar/context.svelte.js";
@@ -42,6 +42,7 @@
   size="icon"
   {href}
   onclick={handleBack}
-  icon={ChevronLeft}
-  class="h-9 w-9 {className}"
+  icon={ArrowLeftIcon}
+  iconClass="size-6"
+  class={className}
 />

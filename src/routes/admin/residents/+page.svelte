@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
@@ -14,9 +15,11 @@
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { Combobox } from "$ui/combobox";
+  import { globalDialog } from "$state/dialog.svelte";
 
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
@@ -25,16 +28,15 @@
     Users,
     Search,
     Mail,
-    FunnelX,
     ChevronDown,
     FileCheck,
     ShieldCheck,
-    Trophy
+    Trophy,
+    DownloadIcon
   } from "@lucide/svelte";
   import * as Tooltip from "$ui/tooltip";
-  import * as AlertDialog from "$ui/alert-dialog";
   import * as DropdownMenu from "$ui/dropdown-menu";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -42,7 +44,7 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import ClearanceDialog from "$components/residents/ClearanceDialog.svelte";
   import AwardDialog from "$components/residents/AwardDialog.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
 
   let residents = $state<Resident[]>([]);
   let isLoading = $state(false);
@@ -58,17 +60,6 @@
   let selectedIndices = $state<Set<string>>(new Set()); // Uses stno as key
   let customReminders = $state("");
 
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
-
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
-  }
-
   async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
@@ -83,7 +74,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Residents";
+    loadData();
+  });
 
   const filteredResidents = $derived.by(() => {
     return residents
@@ -157,7 +151,10 @@
         r.ceIssued
     );
     if (selectedResidents.length === 0) {
-      showAlert("Dispatch Blocked", "No cleared residents found among the selection.", "error");
+      globalDialog.show(
+        "Dispatch Blocked",
+        "No cleared residents found among the selection."
+      );
       return;
     }
     stageClearanceEmailBatch(selectedResidents, brandingState.profile, {
@@ -185,10 +182,9 @@
     });
 
     if (eligible.length === 0) {
-      showAlert(
+      globalDialog.show(
         "Clearance Blocked",
-        "No eligible residents found in the selection (must be fully paid and not yet cleared).",
-        "error"
+        "No eligible residents found in the selection (must be fully paid and not yet cleared)."
       );
       return;
     }
@@ -210,16 +206,24 @@
 
 <Tooltip.Provider>
   <div class="mx-auto max-w-7xl space-y-3">
-    <SubpageHeader
+    <ContentHeader
       title="Residents"
       isTopLevel={true}
       onRefresh={() => loadData(true)}
       isRefreshing={isLoading}
+      hasFilter={true}
+      actions={[
+        {
+          label: "Export",
+          icon: DownloadIcon,
+          href: "/admin/residents/export"
+        }
+      ]}
     >
-      {#snippet actions()}
-        <AdminResidentsHeaderActions active="list" />
+      {#snippet tabs()}
+        <AdminResidentsTabs active="list" />
       {/snippet}
-    </SubpageHeader>
+    </ContentHeader>
 
     {#if isLoading}
       <LoadingView />
@@ -239,23 +243,23 @@
         activeCount={Number(tableSync.filters!.search !== "") +
           Number(tableSync.filters!.room !== "ALL") +
           Number(tableSync.filters!.status !== "ALL")}
+        onClear={resetFilters}
       >
         <div class="grid gap-2 lg:grid-cols-12">
           <div class="lg:col-span-3">
             <TermFilter onSelect={() => loadData()} />
           </div>
-          <div class="space-y-1 lg:col-span-4">
+          <div class="space-y-1 lg:col-span-5">
             <Label>Search</Label>
-            <div class="relative">
-              <Search
-                class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
+            <InputGroup.Root class="h-9 text-sm">
+              <InputGroup.Input
                 bind:value={tableSync.filters!.search}
                 placeholder="Search by name, email, or room…"
-                class="h-9 pl-9 text-xs"
               />
-            </div>
+              <InputGroup.Addon>
+                <Search class="h-4 w-4" />
+              </InputGroup.Addon>
+            </InputGroup.Root>
           </div>
 
           <div class="space-y-1 lg:col-span-2">
@@ -266,18 +270,6 @@
           <div class="space-y-1 lg:col-span-2">
             <Label>Payment Status</Label>
             <Combobox bind:value={tableSync.filters!.status} options={statusOptions} class="h-9" />
-          </div>
-
-          <div class="flex items-end lg:col-span-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={resetFilters}
-              class="h-9 w-full px-2"
-              icon={FunnelX}
-            >
-              Clear
-            </Button>
           </div>
         </div>
       </FilterDrawer>
@@ -290,7 +282,7 @@
           onPaginationChange={(p) => (tableSync.pagination = p)}
           onRowClick={(r) => goto(`/admin/users/${r.residentId}?term=${r.period}`)}
           onSelectionChange={(ids) => (selectedIndices = ids)}
-          rowId="stno"
+          rowId="id"
           enableSelection
           sorting={[{ id: "name", desc: false }]}
         >
@@ -344,9 +336,8 @@
 <ClearanceDialog
   bind:open={isClearDialogOpen}
   residents={residentsToClear}
-  allAccounts={residents}
   onSuccess={(count) => {
-    showAlert("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
+    globalDialog.show("Success", `${pluralize(count, "resident", "residents")} marked as cleared.`);
     selectedIndices = new Set(); // Clear selection after success
   }}
 />
@@ -358,15 +349,3 @@
     selectedIndices = new Set();
   }}
 />
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>Continue</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

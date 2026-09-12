@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import dayjs from "dayjs";
   import { onMount } from "svelte";
   import { page } from "$app/state";
@@ -9,7 +10,7 @@
   import { ChevronLeft, Save, Archive, Trash2 } from "@lucide/svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { auth } from "$state/auth.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
   import RichEditor from "$components/RichEditor.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -90,7 +91,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Edit Announcement";
+    loadData();
+  });
 
   async function handleSave() {
     if (!formData.title.trim()) {
@@ -158,32 +162,30 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Edit Announcement">
-    {#snippet actions()}
-      <div class="flex gap-2">
-        {#if isActive}
-          <Button
-            variant="secondary"
-            size="sm"
-            onclick={() => (showExpireDialog = true)}
-            isLoading={isExpiring}
-            icon={Archive}
-          >
-            Expire
-          </Button>
-        {/if}
-        <Button
-          variant="destructive"
-          size="sm"
-          onclick={() => (showDeleteDialog = true)}
-          isLoading={isDeleting}
-          icon={Trash2}
-        >
-          Delete
-        </Button>
-      </div>
-    {/snippet}
-  </SubpageHeader>
+  <ContentHeader
+    title="Edit Announcement"
+    isRefreshing={isLoading}
+    actions={[
+      ...(isActive
+        ? [
+            {
+              label: "Expire",
+              variant: "secondary",
+              onclick: () => (showExpireDialog = true),
+              isLoading: isExpiring,
+              icon: Archive
+            }
+          ]
+        : []),
+      {
+        label: "Delete",
+        variant: "destructive",
+        onclick: () => (showDeleteDialog = true),
+        isLoading: isDeleting,
+        icon: Trash2
+      }
+    ] as HeaderAction[]}
+  />
 
   <div class="mx-auto max-w-3xl">
     {#if isLoading}
@@ -213,9 +215,7 @@
             placeholder="announcement-slug"
             disabled={isSubmitting}
           />
-          <p class="text-[10px] text-muted-foreground italic">
-            This will be used for the announcement URL.
-          </p>
+          <p class="text-xs text-muted-foreground">This will be used for the announcement URL.</p>
         </div>
 
         <div class="space-y-2">
@@ -295,7 +295,7 @@
         </div>
 
         <div class="flex justify-end gap-3 border-t pt-6">
-          <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-[140px]">
+          <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-35">
             Update
           </Button>
         </div>

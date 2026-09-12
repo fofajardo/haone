@@ -26,9 +26,9 @@
   import * as Popover from "$ui/popover";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
-  import { transformGoogleDriveLink, compressImage } from "$utils/image-utils";
+  import ImageUpload from "$components/ImageUpload.svelte";
+  import { transformGoogleDriveLink } from "$utils/image-utils";
   import { fetchServer } from "$utils/api-client";
-  import { uiSettings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import {
     Bold,
@@ -54,6 +54,7 @@
     Rows2,
     Columns2
   } from "@lucide/svelte";
+  import { cn } from "$lib/utils";
 
   let {
     content = $bindable(),
@@ -78,34 +79,18 @@
   // Image Dialog State
   let imageDialogOpen = $state(false);
   let imageUrl = $state("");
+  let pendingImageFile = $state<File | Blob | null>(null);
+  let imagePreviewUrl = $state<string | null>(null);
 
   function openImageDialog() {
     imageUrl = "";
+    pendingImageFile = null;
+    imagePreviewUrl = null;
     imageDialogOpen = true;
   }
 
-  let fileInput: HTMLInputElement | undefined = $state();
   let isUploadingImage = $state(false);
   const pendingImages = new Map<string, Blob>();
-
-  async function handleFileUpload(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-      isUploadingImage = true;
-      try {
-        const processedBlob = await compressImage(file);
-        const blobUrl = URL.createObjectURL(processedBlob);
-        pendingImages.set(blobUrl, processedBlob);
-        editor?.chain().focus().setImage({ src: blobUrl }).run();
-        imageDialogOpen = false;
-      } catch (err: any) {
-        console.error(err);
-        toast.error("File processing failed: " + err.message);
-      } finally {
-        isUploadingImage = false;
-      }
-    }
-  }
 
   async function uploadImages() {
     if (!editor) return;
@@ -154,6 +139,12 @@
   });
 
   function applyImage() {
+    if (pendingImageFile && imagePreviewUrl) {
+      pendingImages.set(imagePreviewUrl, pendingImageFile);
+      editor?.chain().focus().setImage({ src: imagePreviewUrl }).run();
+      imageDialogOpen = false;
+      return;
+    }
     if (imageUrl) {
       const finalUrl = transformGoogleDriveLink(imageUrl);
       editor?.chain().focus().setImage({ src: finalUrl }).run();
@@ -237,7 +228,10 @@
       },
       editorProps: {
         attributes: {
-          class: `prose prose-sm max-w-none focus:outline-none ${editable ? "min-h-[400px] p-6" : "min-h-0 p-0"} text-sm text-foreground leading-relaxed`
+          class: cn(
+            "prose prose-sm max-w-none focus:outline-none text-sm text-foreground leading-relaxed",
+            editable ? "min-h-100 p-6" : "min-h-0 p-0"
+          )
         }
       }
     });
@@ -290,7 +284,7 @@
             title="Undo"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <!-- Basic Marks -->
           <Button
@@ -378,7 +372,7 @@
             title="Highlight"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <!-- Script -->
           <Button
@@ -404,7 +398,7 @@
             title="Superscript"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <!-- Alignment -->
           <Button
@@ -452,7 +446,7 @@
             title="Justify"
           />
 
-          <div class="flex-grow"></div>
+          <div class="grow"></div>
 
           <!-- Utilities -->
           <Button
@@ -502,7 +496,7 @@
             title="Task List"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <Button
             variant="ghost"
@@ -517,7 +511,7 @@
             title="Insert Table"
           />
 
-          <div class="mx-1 h-4 w-[1px] bg-border"></div>
+          <div class="mx-1 h-4 w-px bg-border"></div>
 
           <Button
             variant="ghost"
@@ -581,7 +575,7 @@
               <Trash2 class="size-3" /> Del Col
             </Button>
 
-            <div class="mx-1 h-4 w-[1px] bg-border"></div>
+            <div class="mx-1 h-4 w-px bg-border"></div>
 
             <Button
               variant="ghost"
@@ -608,7 +602,7 @@
               <Trash2 class="size-3" /> Del Row
             </Button>
 
-            <div class="mx-1 h-4 w-[1px] bg-border"></div>
+            <div class="mx-1 h-4 w-px bg-border"></div>
 
             <Button
               variant="ghost"
@@ -627,13 +621,13 @@
   <!-- Editor Container -->
   <div
     bind:this={element}
-    class="tiptap-container border-0 {editable ? 'min-h-[400px]' : 'min-h-0'}"
+    class="tiptap-container border-0 {editable ? 'min-h-100' : 'min-h-0'}"
   ></div>
 </div>
 
 <!-- Link Dialog -->
 <Dialog.Root bind:open={linkDialogOpen}>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>Edit Link</Dialog.Title>
       <Dialog.Description>
@@ -659,55 +653,27 @@
 </Dialog.Root>
 
 <Dialog.Root bind:open={imageDialogOpen}>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>Insert Image</Dialog.Title>
-      <Dialog.Description>Paste a direct link to an image.</Dialog.Description>
     </Dialog.Header>
-    <div class="grid gap-4 py-4">
-      <div class="grid gap-2">
-        <Label for="imageUrl">URL</Label>
-        <div class="flex gap-2">
-          <Input
-            id="imageUrl"
-            placeholder="https://..."
-            bind:value={imageUrl}
-            onkeydown={(e) => e.key === "Enter" && applyImage()}
-          />
-          {#if uiSettings.firebaseEnabled}
-            <Button
-              variant="outline"
-              onclick={() => fileInput?.click()}
-              disabled={isUploadingImage}
-              isLoading={isUploadingImage}
-            >
-              Upload
-            </Button>
-          {/if}
-        </div>
-        {#if uiSettings.firebaseEnabled}
-          <p class="text-xs text-muted-foreground">
-            Paste a link or upload an image. If using a Google Drive link, make sure it's shared
-            with 'Anyone with the link' permission.
-          </p>
-        {:else}
-          <p class="text-xs text-muted-foreground">
-            If using a Google Drive link, make sure it's shared with 'Anyone with the link'
-            permission.
-          </p>
-        {/if}
-      </div>
+    <div class="py-4">
+      <ImageUpload
+        bind:value={imageUrl}
+        bind:file={pendingImageFile}
+        bind:previewUrl={imagePreviewUrl}
+        allowUrl={true}
+      />
     </div>
-    <input
-      type="file"
-      bind:this={fileInput}
-      accept="image/*"
-      class="hidden"
-      onchange={handleFileUpload}
-    />
     <Dialog.Footer>
       <Button variant="outline" onclick={() => (imageDialogOpen = false)}>Cancel</Button>
-      <Button type="submit" onclick={applyImage}>Insert</Button>
+      <Button
+        type="submit"
+        onclick={applyImage}
+        disabled={!imageUrl && !pendingImageFile && !imagePreviewUrl}
+      >
+        Insert
+      </Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>

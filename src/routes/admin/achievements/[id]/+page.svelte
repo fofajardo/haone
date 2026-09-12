@@ -2,8 +2,8 @@
   import { page } from "$app/state";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Pencil } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import { RefreshCcw, Pencil, Share2 } from "@lucide/svelte";
+  import ContentHeader, { type HeaderAction } from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import * as Dialog from "$ui/dialog";
@@ -21,7 +21,7 @@
   import { fetchUsers, fetchResidents } from "$api/controllers/resident-controller";
   import type { AchievementRecord } from "$lib/types";
   import AchievementDetailsView from "$components/achievements/AchievementDetailsView.svelte";
-  import AchievementStoryShareButton from "$components/achievements/AchievementStoryShareButton.svelte";
+  import { shareAchievementStory } from "$components/achievements/story-share";
 
   const id = page.params.id;
 
@@ -30,8 +30,24 @@
   let isAdmin = $state(true);
   let isLoading = $state(true);
   let isSaving = $state(false);
+  let isSharingStory = $state(false);
   let error = $state<string | null>(null);
   let isEditorOpen = $state(false);
+
+  async function handleShareStory() {
+    if (!achievement) {
+      return;
+    }
+    isSharingStory = true;
+    try {
+      await shareAchievementStory(achievement);
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not prepare the story image");
+    } finally {
+      isSharingStory = false;
+    }
+  }
 
   interface EditState {
     id: string;
@@ -155,20 +171,29 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Achievement Details"
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
-  >
-    {#snippet actions()}
-      {#if achievement}
-        <div class="flex items-center gap-2">
-          <AchievementStoryShareButton {achievement} isPrimary={false} />
-          <Button size="sm" onclick={openEditor} icon={Pencil}>Edit</Button>
-        </div>
-      {/if}
-    {/snippet}
-  </SubpageHeader>
+    actions={[
+      ...(achievement
+        ? [
+            {
+              label: "Share Story",
+              icon: Share2,
+              variant: "outline",
+              isLoading: isSharingStory,
+              onclick: handleShareStory
+            },
+            {
+              label: "Edit",
+              icon: Pencil,
+              onclick: openEditor
+            }
+          ]
+        : [])
+    ] as HeaderAction[]}
+  />
 
   {#if isLoading}
     <LoadingView />

@@ -1,6 +1,5 @@
+import { type JournalRecord, type ResidentRecord, type UserRecord, AccountType } from "$lib/types";
 import { auth } from "$state/auth.svelte";
-import { fetchServer } from "$utils/api-client";
-import { type UserRecord, type ResidentRecord, type JournalRecord, AccountType } from "$lib/types";
 
 export type ResidentProfile = Pick<
   UserRecord,
@@ -74,8 +73,6 @@ export interface ResidentStatus {
   systemActiveTerm: string;
   /** An array of all available terms */
   allTerms: string[];
-  /** An array of all transaction types */
-  transactionTypes: ConstantOption[];
   /** An array of all MOP types */
   mopTypes: ConstantOption[];
   /** Resident's profile information */

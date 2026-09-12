@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
   import dayjs from "dayjs";
   import { auth } from "$state/auth.svelte";
   import { Button } from "$ui/button";
@@ -6,7 +8,7 @@
   import { Label } from "$ui/label";
   import { Checkbox } from "$ui/checkbox";
   import { ChevronLeft, Save } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import RichEditor from "$components/RichEditor.svelte";
   import { addAnnouncement } from "$api/controllers/announcement-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
@@ -58,13 +60,9 @@
       if (editorActions) {
         await editorActions.uploadImages();
       }
-      const allUsers = await fetchUsers();
-      const me = allUsers.find(
-        (u) => u.email.toLowerCase() === (auth.user?.email || "").toLowerCase()
-      );
       await addAnnouncement({
         id: crypto.randomUUID(),
-        creatorId: me?.id || "",
+        creatorId: auth.userId,
         dateCreated: dayjs().toISOString(),
         ...formData,
         startDate: formData.startDate ? dayjs(formData.startDate).toISOString() : "",
@@ -81,10 +79,14 @@
       isSubmitting = false;
     }
   }
+
+  onMount(() => {
+    pageState.title = "Add Announcement";
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Add Announcement" />
+  <ContentHeader title="Add Announcement" />
 
   <div class="mx-auto max-w-3xl">
     <div class="space-y-6 rounded-xl border bg-card p-6">
@@ -107,9 +109,7 @@
           disabled={isSubmitting}
           oninput={() => (isSlugManuallyEdited = true)}
         />
-        <p class="text-[10px] text-muted-foreground italic">
-          This will be used for the announcement URL.
-        </p>
+        <p class="text-xs text-muted-foreground">This will be used for the announcement URL.</p>
       </div>
 
       <div class="space-y-2">
@@ -172,7 +172,7 @@
       </div>
 
       <div class="flex justify-end gap-3 border-t pt-6">
-        <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-[140px]">
+        <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-35">
           Save
         </Button>
       </div>

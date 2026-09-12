@@ -1,9 +1,9 @@
-import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
-import { type LaundryRecord, LaundryStatus } from "$lib/types";
+import { LaundryStatus, type LaundryRecord } from "$lib/types";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
-import { createRawSnippet } from "svelte";
-import { parseTime } from "$utils/parsers";
+import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
 import { formatDate } from "$utils/formatters";
+import { parseTime } from "$utils/parsers";
+import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<LaundryRecord>[] = [
   {

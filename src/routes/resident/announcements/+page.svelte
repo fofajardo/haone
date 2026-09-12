@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
   import { RefreshCcw, Megaphone, ArrowRight } from "@lucide/svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import RichEditor from "$components/RichEditor.svelte";
   import { fetchAnnouncements } from "$api/controllers/announcement-controller";
@@ -29,11 +30,14 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Announcements";
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Announcements"
     isTopLevel={true}
     onRefresh={() => loadData(true)}

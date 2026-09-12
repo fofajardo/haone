@@ -1,16 +1,16 @@
-import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import { AccountType } from "$lib/types";
-import {
-  supabase,
-  handleSupabaseError,
-  assertSupabaseFound,
-  fetchAllSupabaseRows
-} from "../common";
-import { supabaseConstantsService } from "./constants-service";
-import { parseCSVAmount } from "$utils/math";
-import { parseDbDate, parseDbUuid, parseDateWeight } from "$utils/parsers";
+import { AccountType, TRANSACTION_TYPE_CONFIG, TransactionType } from "$lib/types";
 import { auth } from "$state/auth.svelte";
+import { parseCSVAmount } from "$utils/math";
+import { parseDateWeight, parseDbDate, parseDbUuid } from "$utils/parsers";
+import {
+  assertSupabaseFound,
+  fetchAllSupabaseRows,
+  handleSupabaseError,
+  supabase
+} from "../common";
+import type { ResidentServiceInterface } from "../interfaces/resident-service.interface";
+import { supabaseConstantsService } from "./constants-service";
 
 function mapDbUserToUserRecord(u: any): UserRecord {
   if (!u) {
@@ -116,14 +116,8 @@ export const supabaseResidentService: ResidentServiceInterface = {
     ]);
 
     let currentUserId: string | null = null;
-    if (auth.isResident && auth.user?.email) {
-      const emailLower = auth.user.email.toLowerCase().trim();
-      const currentUser = usersData.find(
-        (u: any) => (u.email || "").toLowerCase().trim() === emailLower
-      );
-      if (currentUser) {
-        currentUserId = currentUser.id;
-      }
+    if (auth.isResident && auth.user) {
+      currentUserId = auth.userId;
     }
 
     const targetAccounts = currentUserId
@@ -136,7 +130,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     });
 
     const getConst = (k: string) => consts.find((c) => c.key === k)?.value || "0";
-    const pmtWaived = getConst("PMT_WAIVED");
+    const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
     const isWaivedEntry = (t: string) =>
       t === pmtWaived || (t && t.toUpperCase().includes("WAIVED"));
 
@@ -170,15 +164,13 @@ export const supabaseResidentService: ResidentServiceInterface = {
           .filter((j: any) => isWaivedEntry(j.type || ""))
           .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
 
-        const miscPaid = filtered.reduce((sum: number, j: any) => sum + parseCSVAmount(j.misc), 0);
-
         const waterBase = parseCSVAmount(getConst(`FEES_${period}_WATER`));
         const assocBase = parseCSVAmount(getConst(`FEES_${period}_ASSOC`));
 
         const waterBal = waterBase - waterPaid - waterWaived;
         const assocBal = assocBase - assocPaid - assocWaived;
         const totalBase = waterBase + assocBase;
-        const paid = waterPaid + assocPaid + miscPaid;
+        const paid = waterPaid + assocPaid;
         const waived = waterWaived + assocWaived;
         const bal = totalBase - paid - waived;
 
@@ -316,7 +308,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
     }
 
     // ── Financials for the target term ──
-    const pmtWaived = getConst("PMT_WAIVED");
+    const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
     const termJournals = journalList.filter((j: any) => j.period === targetTerm);
 
     const waterPaid = termJournals
@@ -331,12 +323,11 @@ export const supabaseResidentService: ResidentServiceInterface = {
     const assocWaived = termJournals
       .filter((j: any) => j.type === pmtWaived)
       .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
-    const miscPaid = termJournals.reduce((sum: number, j: any) => sum + parseCSVAmount(j.misc), 0);
 
     const waterBase = parseCSVAmount(getConst(`FEES_${targetTerm}_WATER`));
     const assocBase = parseCSVAmount(getConst(`FEES_${targetTerm}_ASSOC`));
     const totalBase = waterBase + assocBase;
-    const paid = waterPaid + assocPaid + miscPaid;
+    const paid = waterPaid + assocPaid;
     const waived = waterWaived + assocWaived;
     const bal = totalBase - paid - waived;
 
@@ -346,10 +337,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
     if (activeTerm && !allTerms.includes(activeTerm)) {
       allTerms.push(activeTerm);
     }
-
-    const transactionTypes = consts
-      .filter((c) => c.key.startsWith("PMT_"))
-      .map((c) => ({ value: c.value || c.key, label: c.description || c.value || c.key }));
 
     const mopTypes = consts
       .filter((c) => c.key.startsWith("MOP_"))
@@ -369,7 +356,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
       activeTerm: targetTerm,
       systemActiveTerm: activeTerm,
       allTerms: allTerms.sort().reverse(),
-      transactionTypes,
       mopTypes,
       profile: currentUser
         ? {
@@ -499,21 +485,6 @@ export const supabaseResidentService: ResidentServiceInterface = {
     const payload = mapUserRecordToDb(data);
     payload.id = data.id || crypto.randomUUID();
     const { error } = await supabase.from("users").insert(payload);
-    if (error) {
-      handleSupabaseError(error);
-    }
-  },
-
-  async addUsersBatch(users: Partial<UserRecord>[]): Promise<void> {
-    if (!supabase) {
-      return;
-    }
-    const rows = users.map((u) => {
-      const payload = mapUserRecordToDb(u);
-      payload.id = u.id || crypto.randomUUID();
-      return payload;
-    });
-    const { error } = await supabase.from("users").insert(rows);
     if (error) {
       handleSupabaseError(error);
     }

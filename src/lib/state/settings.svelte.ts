@@ -1,12 +1,14 @@
+import { fetchUserSettings, updateUserSettings } from "$api/controllers/settings-controller";
 import { browser, dev } from "$app/environment";
-import { LS_KEYS } from "$lib/constants";
 import {
+  PUBLIC_APP_ENV,
+  PUBLIC_APP_FIREBASE_ENABLED,
   PUBLIC_GS_AW_ID,
   PUBLIC_GS_RR_ID,
-  PUBLIC_GS_SR_ID,
-  PUBLIC_APP_ENV,
-  PUBLIC_APP_FIREBASE_ENABLED
+  PUBLIC_GS_SR_ID
 } from "$env/static/public";
+import { LS_KEYS } from "$lib/constants";
+import { auth } from "$state/auth.svelte";
 
 export type UIFont = "default" | "archivo" | "shantell";
 export type DisplayDensity = "default" | "compact" | "comfortable";
@@ -31,21 +33,27 @@ class UISettings {
     if (browser) {
       this.#fontFamily = (localStorage.getItem(LS_KEYS.UI_FONT) as UIFont) || "default";
       this.#reducedMotion = localStorage.getItem(LS_KEYS.ACC_REDUCED_MOTION) === "true";
-      this.#currentTerm = localStorage.getItem("halsk.ui.current_term") || "";
-      const sga = localStorage.getItem("halsk.ui.show_all_time_achievements");
+      this.#currentTerm = localStorage.getItem(LS_KEYS.UI_CURRENT_TERM) || "";
+      const sga = localStorage.getItem(LS_KEYS.UI_SHOW_ALL_TIME_ACHIEVEMENTS);
       this.#showAllTimeAchievements = sga === null ? true : sga === "true";
       this.#displayDensity =
         (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
-      this.#theme = localStorage.getItem("halsk.ui.theme") || "system";
+      this.#theme = localStorage.getItem(LS_KEYS.UI_THEME) || "system";
       this.#accountingWorkbookId = localStorage.getItem(LS_KEYS.GS_AW_ID) || PUBLIC_GS_AW_ID || "";
       this.#residentRecordsId = localStorage.getItem(LS_KEYS.GS_RR_ID) || PUBLIC_GS_RR_ID || "";
       this.#sharedRecordsId = localStorage.getItem(LS_KEYS.GS_SR_ID) || PUBLIC_GS_SR_ID || "";
-      this.#clockFormat = (localStorage.getItem("halsk.ui.clock_format") as "12h" | "24h") || "12h";
+      this.#clockFormat = (localStorage.getItem(LS_KEYS.UI_CLOCK_FORMAT) as "12h" | "24h") || "12h";
 
-      const sn = localStorage.getItem("halsk.ui.nav.res");
-      if (sn) this.#residentNavIds = JSON.parse(sn);
-      const an = localStorage.getItem("halsk.ui.nav.adm");
-      if (an) this.#adminNavIds = JSON.parse(an);
+      const spa = localStorage.getItem(LS_KEYS.UI_IS_PUBLIC_ACHIEVEMENTS);
+      this.#isPublicAchievementList = spa === null ? true : spa === "true";
+      const sn = localStorage.getItem(LS_KEYS.UI_NAV_RESIDENT);
+      if (sn) {
+        this.#residentNavIds = JSON.parse(sn);
+      }
+      const an = localStorage.getItem(LS_KEYS.UI_NAV_ADMIN);
+      if (an) {
+        this.#adminNavIds = JSON.parse(an);
+      }
     }
   }
 
@@ -55,7 +63,10 @@ class UISettings {
   }
   set fontFamily(v: UIFont) {
     this.#fontFamily = v;
-    if (browser) localStorage.setItem(LS_KEYS.UI_FONT, v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_FONT, v);
+    }
+    this.scheduleAutoSave();
   }
 
   get reducedMotion() {
@@ -63,7 +74,10 @@ class UISettings {
   }
   set reducedMotion(v: boolean) {
     this.#reducedMotion = v;
-    if (browser) localStorage.setItem(LS_KEYS.ACC_REDUCED_MOTION, String(v));
+    if (browser) {
+      localStorage.setItem(LS_KEYS.ACC_REDUCED_MOTION, String(v));
+    }
+    this.scheduleAutoSave();
   }
 
   get displayDensity() {
@@ -71,7 +85,10 @@ class UISettings {
   }
   set displayDensity(v: DisplayDensity) {
     this.#displayDensity = v;
-    if (browser) localStorage.setItem(LS_KEYS.ACC_SPACIOUS_LAYOUT, v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.ACC_SPACIOUS_LAYOUT, v);
+    }
+    this.scheduleAutoSave();
   }
 
   get theme() {
@@ -79,7 +96,10 @@ class UISettings {
   }
   set theme(v: string) {
     this.#theme = v;
-    if (browser) localStorage.setItem("halsk.ui.theme", v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_THEME, v);
+    }
+    this.scheduleAutoSave();
   }
 
   get isPublicAchievementList() {
@@ -87,6 +107,10 @@ class UISettings {
   }
   set isPublicAchievementList(v: boolean) {
     this.#isPublicAchievementList = v;
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_IS_PUBLIC_ACHIEVEMENTS, String(v));
+    }
+    this.scheduleAutoSave();
   }
 
   get residentNavIds() {
@@ -94,7 +118,10 @@ class UISettings {
   }
   set residentNavIds(v: string[]) {
     this.#residentNavIds = v;
-    if (browser) localStorage.setItem("halsk.ui.nav.res", JSON.stringify(v));
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_NAV_RESIDENT, JSON.stringify(v));
+    }
+    this.scheduleAutoSave();
   }
 
   get adminNavIds() {
@@ -102,7 +129,10 @@ class UISettings {
   }
   set adminNavIds(v: string[]) {
     this.#adminNavIds = v;
-    if (browser) localStorage.setItem("halsk.ui.nav.adm", JSON.stringify(v));
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_NAV_ADMIN, JSON.stringify(v));
+    }
+    this.scheduleAutoSave();
   }
 
   get clockFormat() {
@@ -110,7 +140,10 @@ class UISettings {
   }
   set clockFormat(v: "12h" | "24h") {
     this.#clockFormat = v;
-    if (browser) localStorage.setItem("halsk.ui.clock_format", v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_CLOCK_FORMAT, v);
+    }
+    this.scheduleAutoSave();
   }
 
   get showAllTimeAchievements() {
@@ -118,7 +151,9 @@ class UISettings {
   }
   set showAllTimeAchievements(v: boolean) {
     this.#showAllTimeAchievements = v;
-    if (browser) localStorage.setItem("halsk.ui.show_all_time_achievements", String(v));
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_SHOW_ALL_TIME_ACHIEVEMENTS, String(v));
+    }
   }
 
   get currentTerm() {
@@ -126,7 +161,9 @@ class UISettings {
   }
   set currentTerm(v: string) {
     this.#currentTerm = v;
-    if (browser) localStorage.setItem("halsk.ui.current_term", v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_CURRENT_TERM, v);
+    }
   }
 
   /**
@@ -156,7 +193,9 @@ class UISettings {
   }
   set accountingWorkbookId(v: string) {
     this.#accountingWorkbookId = v;
-    if (browser) localStorage.setItem(LS_KEYS.GS_AW_ID, v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.GS_AW_ID, v);
+    }
   }
 
   get residentRecordsId() {
@@ -164,7 +203,9 @@ class UISettings {
   }
   set residentRecordsId(v: string) {
     this.#residentRecordsId = v;
-    if (browser) localStorage.setItem(LS_KEYS.GS_RR_ID, v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.GS_RR_ID, v);
+    }
   }
 
   get sharedRecordsId() {
@@ -172,7 +213,9 @@ class UISettings {
   }
   set sharedRecordsId(v: string) {
     this.#sharedRecordsId = v;
-    if (browser) localStorage.setItem(LS_KEYS.GS_SR_ID, v);
+    if (browser) {
+      localStorage.setItem(LS_KEYS.GS_SR_ID, v);
+    }
   }
 
   get isDev() {
@@ -183,37 +226,76 @@ class UISettings {
     return PUBLIC_APP_FIREBASE_ENABLED === "true";
   }
 
+  #isSyncing = false;
+  #saveTimeout: any = null;
+
   async syncFromServer() {
+    this.#isSyncing = true;
     try {
-      const { fetchUserSettings } = await import("$api/controllers/settings-controller");
+      if (!auth.userId) {
+        return;
+      }
       const settings = await fetchUserSettings(true);
       const my = settings[0];
       if (my) {
         // Apply with individual safety checks
-        if (my.typography) this.fontFamily = my.typography as UIFont;
-        if (my.density) this.displayDensity = my.density as DisplayDensity;
-        if (my.theme) this.theme = my.theme;
-        if (my.clockFormat) this.clockFormat = my.clockFormat as "12h" | "24h";
+        if (my.typography) {
+          this.fontFamily = my.typography as UIFont;
+        }
+        if (my.density) {
+          this.displayDensity = my.density as DisplayDensity;
+        }
+        if (my.theme) {
+          this.theme = my.theme;
+        }
+        if (my.clockFormat) {
+          this.clockFormat = my.clockFormat as "12h" | "24h";
+        }
         this.reducedMotion = !!my.isReducedMotion;
         this.isPublicAchievementList = my.isPublicAchievementList !== false;
 
         if (my.residentNav) {
           const nav = my.residentNav.split(",").filter(Boolean);
-          if (nav.length > 0) this.residentNavIds = nav;
+          if (nav.length > 0) {
+            this.residentNavIds = nav;
+          }
         }
 
         if (my.adminNav) {
           const nav = my.adminNav.split(",").filter(Boolean);
-          if (nav.length > 0) this.adminNavIds = nav;
+          if (nav.length > 0) {
+            this.adminNavIds = nav;
+          }
         }
       }
     } catch (e) {
       console.error("[Settings] Sync failed, using local/default values:", e);
+    } finally {
+      this.#isSyncing = false;
     }
   }
 
+  scheduleAutoSave() {
+    if (!browser || this.#isSyncing) {
+      return;
+    }
+    if (this.#saveTimeout) {
+      clearTimeout(this.#saveTimeout);
+    }
+    this.#saveTimeout = setTimeout(async () => {
+      try {
+        if (!auth.accessToken || !auth.userId) {
+          return;
+        }
+
+        await this.save(auth.userId);
+      } catch (e) {
+        console.error("[Settings] Debounced auto-save failed:", e);
+      }
+    }, 600);
+  }
+
   async save(residentId: string) {
-    const { updateUserSettings } = await import("$api/controllers/settings-controller");
     await updateUserSettings(residentId, {
       typography: this.fontFamily,
       density: this.displayDensity,

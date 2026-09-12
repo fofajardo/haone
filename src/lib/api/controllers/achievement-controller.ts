@@ -1,6 +1,6 @@
-import type { AchievementRecord, AchievementLogRecord } from "$lib/types";
 import { achievementService } from "$api/services/achievement-service";
-import { getCurrentResidentId } from "./resident-controller";
+import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
+import { getSignedInUserId } from "./resident-controller";
 
 export async function fetchAchievements(bypassCache = false): Promise<{
   achievements: AchievementRecord[];
@@ -10,7 +10,7 @@ export async function fetchAchievements(bypassCache = false): Promise<{
   const [achRes, logRes, currentResidentId] = await Promise.all([
     achievementService.fetchAchievements(undefined, bypassCache),
     achievementService.fetchAchievementLogs(undefined, undefined, bypassCache),
-    getCurrentResidentId()
+    getSignedInUserId()
   ]);
   const achievements = Array.isArray(achRes) ? achRes : achRes.items;
   const logs = Array.isArray(logRes) ? logRes : logRes.items;

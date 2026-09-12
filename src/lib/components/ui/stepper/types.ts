@@ -1,7 +1,7 @@
-import type { WithChild } from "svelte-toolbelt";
-import type { ButtonSize, ButtonVariant } from "../button";
-import type { HTMLAttributes } from "svelte/elements";
 import type { Snippet } from "svelte";
+import type { WithChild } from "svelte-toolbelt";
+import type { HTMLAttributes } from "svelte/elements";
+import type { ButtonSize, ButtonVariant } from "../button";
 
 export type StepperRootProps = {
   step?: number;

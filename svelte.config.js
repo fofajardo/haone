@@ -1,5 +1,5 @@
-import { mdsvex } from "mdsvex";
 import adapter from "@sveltejs/adapter-cloudflare";
+import { mdsvex } from "mdsvex";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -13,8 +13,8 @@ const config = {
       $state: "src/lib/state",
       $templates: "src/lib/templates",
       $logic: "src/lib/logic",
-      $data: "src/lib/data",
-      $dataPrivate: "src/lib/data-private",
+      $assets: "src/lib/assets",
+      $srcPrivate: "src-private",
       $services: "src/lib/services",
       $api: "src/lib/api"
     }

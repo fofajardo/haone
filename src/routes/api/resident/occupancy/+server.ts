@@ -1,12 +1,8 @@
-import { json } from "@sveltejs/kit";
-import { ACCOUNT_COL, USER_COL } from "$lib/types";
-import {
-  authenticateResident,
-  getSheetsClient,
-  serverError,
-  fetchSheetsData
-} from "$lib/server/api-helper";
+import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
+import { fetchSheetsData, serverError } from "$api/services/server-sheets-service";
+import { ACCOUNT_COL, TRANSACTION_TYPE_CONFIG, TransactionType, USER_COL } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request }) => {
@@ -34,7 +30,7 @@ export const GET: RequestHandler = async ({ request }) => {
     const userId = (userRow[USER_COL.ID] || "").trim();
 
     const getConstVal = (key: string) => constRows.find((r: any) => r[0] === key)?.[1] || "0";
-    const pmtWaived = getConstVal("PMT_WAIVED") || "PMT_WAIVED";
+    const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
 
     interface JournalEntry {
       period: string;
@@ -85,10 +81,9 @@ export const GET: RequestHandler = async ({ request }) => {
         const assocWaived = filtered
           .filter((j: JournalEntry) => j.type === pmtWaived)
           .reduce((sum, j) => sum + j.assoc, 0);
-        const miscPaid = filtered.reduce((sum, j) => sum + j.misc, 0);
 
         const totalBase = waterBase + assocBase;
-        const paid = waterPaid + assocPaid + miscPaid;
+        const paid = waterPaid + assocPaid;
         const waived = waterWaived + assocWaived;
         const bal = totalBase - paid - waived;
 

@@ -1,13 +1,8 @@
-import type { FridgeServiceInterface } from "../interfaces/fridge-service.interface";
-import type { FridgeItemRecord, PaginationOptions, PaginatedResponse } from "$lib/types";
-import { FridgeItemStatus, FridgeCompartment } from "$lib/types";
-import {
-  supabase,
-  handleSupabaseError,
-  assertSupabaseFound,
-  fetchAllSupabaseRows
-} from "../common";
+import type { FridgeItemRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
+import { FridgeCompartment, FridgeItemStatus } from "$lib/types";
 import { isUuid, parseDbUuid } from "$utils/parsers";
+import { fetchAllSupabaseRows, handleSupabaseError, supabase } from "../common";
+import type { FridgeServiceInterface } from "../interfaces/fridge-service.interface";
 
 function emptyResult(
   options?: PaginationOptions

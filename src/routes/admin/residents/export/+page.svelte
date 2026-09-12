@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
   import TermFilter from "$components/TermFilter.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
@@ -61,7 +62,7 @@
 
   // Export Options
   let exportFormat = $state("pdf");
-  let issuedBy = $state(auth.displayName || "");
+  let issuedBy = $state(auth.displayNameLastFirst || "");
   let issuedByEmail = $state(auth.user?.email || "");
   let assessedBy = $state("");
   let assessedByEmail = $state("");
@@ -401,7 +402,7 @@
 
       if (auth.user) {
         if (!issuedBy) {
-          issuedBy = auth.displayName;
+          issuedBy = auth.displayNameLastFirst;
         }
         if (!issuedByEmail) {
           issuedByEmail = auth.user.email;
@@ -414,7 +415,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Export Residents";
+    loadData();
+  });
 
   function downloadCSV() {
     const isPublicMode = isPublic;
@@ -614,7 +618,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Export Residents"
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}

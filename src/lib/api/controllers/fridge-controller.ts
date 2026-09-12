@@ -1,12 +1,12 @@
 import { fridgeService } from "$api/services/fridge-service";
 import { roomsService } from "$api/services/rooms-service";
-import { getCurrentResidentId, fetchUsers } from "./resident-controller";
 import { type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
+import { fetchUsers, getSignedInUserId } from "./resident-controller";
 
 export async function fetchFridgeItems(
   bypassCache = false
 ): Promise<{ items: FridgeItemRecord[]; currentResidentId: string }> {
-  const currentResidentId = await getCurrentResidentId();
+  const currentResidentId = await getSignedInUserId();
   const res = await fridgeService.fetchFridgeItems(currentResidentId, undefined, bypassCache);
   const items = Array.isArray(res) ? res : res.items;
 
@@ -48,7 +48,7 @@ export async function updateFridgeItem(
 }
 
 export async function checkOutFridgeItem(id: string, actionBy?: string): Promise<void> {
-  const actorId = actionBy || (await getCurrentResidentId());
+  const actorId = actionBy || (await getSignedInUserId());
   return fridgeService.updateFridgeItem(id, {
     status: FridgeItemStatus.CHECKED_OUT,
     checkOutDate: new Date().toISOString(),
@@ -57,7 +57,7 @@ export async function checkOutFridgeItem(id: string, actionBy?: string): Promise
 }
 
 export async function restoreFridgeItem(item: FridgeItemRecord, actionBy?: string): Promise<void> {
-  const actorId = actionBy || (await getCurrentResidentId());
+  const actorId = actionBy || (await getSignedInUserId());
   // 1. Mark existing checkout record as history
   await fridgeService.updateFridgeItem(item.id, {
     status: FridgeItemStatus.CHECKED_OUT_HISTORY,
@@ -84,6 +84,6 @@ export async function restoreFridgeItem(item: FridgeItemRecord, actionBy?: strin
 }
 
 export async function discardFridgeItem(id: string, actionBy?: string): Promise<void> {
-  const actorId = actionBy || (await getCurrentResidentId());
+  const actorId = actionBy || (await getSignedInUserId());
   return fridgeService.deleteFridgeItem(id, actorId);
 }

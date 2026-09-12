@@ -3,7 +3,7 @@
   import { page } from "$app/state";
   import { Button } from "$ui/button";
   import { Save, Trash2 } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import {
     fetchOfficers,
@@ -153,7 +153,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Edit Officer" />
+  <ContentHeader title="Edit Officer" />
 
   {#if isLoading}
     <LoadingView />
@@ -259,9 +259,8 @@
         </div>
       </Card.Content>
       <Card.Footer class="justify-end gap-2 border-t pt-6">
-        <Button variant="ghost" onclick={() => goto("/admin/residents/officers")}>Cancel</Button>
         <Button onclick={handleUpdate} isLoading={isSaving} icon={Save} disabled={isImmutable}>
-          Save Changes
+          Save
         </Button>
       </Card.Footer>
     </Card.Root>

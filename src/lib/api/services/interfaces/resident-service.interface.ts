@@ -7,7 +7,6 @@ export interface ResidentServiceInterface {
   fetchUsers(bypassCache?: boolean): Promise<UserRecord[]>;
   updateUser(userId: string, data: Partial<UserRecord>): Promise<void>;
   addUser(data: Partial<UserRecord>): Promise<void>;
-  addUsersBatch(users: Partial<UserRecord>[]): Promise<void>;
   deleteUser(userId: string): Promise<void>;
   updateClearance(
     residentId: string,

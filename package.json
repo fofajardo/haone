@@ -1,7 +1,7 @@
 {
   "name": "haone",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
@@ -11,7 +11,9 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "formatq": "pretty-quick",
+    "symlinks": "find src static -type l -exec ls -l {} +"
   },
   "devDependencies": {
     "@fontsource-variable/inter": "^5.3.0",
@@ -36,8 +38,10 @@
     "mdsvex": "^0.12.8",
     "node-addon-api": "^8.9.2",
     "prettier": "^3.9.6",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-svelte": "^4.1.1",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "pretty-quick": "^4.2.2",
     "shadcn-svelte": "^1.5.0",
     "svelte": "^5.56.9",
     "svelte-check": "^4.7.6",
@@ -54,6 +58,7 @@
   },
   "dependencies": {
     "@block65/webcrypto-web-push": "^1.0.2",
+    "@compwright/namecase": "^3.0.1",
     "@lucide/svelte": "^1.31.0",
     "@supabase/supabase-js": "^2.112.3",
     "@tanstack/svelte-store": "^0.12.1",
@@ -87,6 +92,7 @@
     "d3-scale": "^4.0.2",
     "dayjs": "^1.11.21",
     "html2canvas": "^1.4.1",
+    "jose": "^6.2.12",
     "mode-watcher": "^1.1.0",
     "papaparse": "^5.6.0",
     "pdfmake": "^0.3.11",

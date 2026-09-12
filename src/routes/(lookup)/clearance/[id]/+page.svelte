@@ -3,8 +3,8 @@
   import QRCode from "qrcode";
   import html2canvas from "html2canvas";
   import { brandingState } from "$state/branding.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
 
-  import * as AlertDialog from "$ui/alert-dialog";
   import StudentNumberAuthCard from "$components/StudentNumberAuthCard.svelte";
   import ReceiptErrorCard from "$components/receipt/ReceiptErrorCard.svelte";
   import ClearanceWebView from "$components/residents/ClearanceWebView.svelte";
@@ -26,16 +26,15 @@
   let qrDataUrl = $state("");
   let isExporting = $state(false);
 
-  // AlertDialog State
-  let alertState = $state({ open: false, title: "", description: "" });
-
   $effect(() => {
     if (form?.success) {
       clearanceData = form.clearanceData;
     } else if (data.clearanceData) {
       clearanceData = data.clearanceData;
     }
-    if (data.error) error = data.error;
+    if (data.error) {
+      error = data.error;
+    }
   });
 
   $effect(() => {
@@ -51,13 +50,8 @@
     }
   });
 
-  function showAlert(title: string, description: string) {
-    alertState.title = title;
-    alertState.description = description;
-    alertState.open = true;
-  }
-
   onMount(async () => {
+    pageState.title = "Clearance Verification";
     const savedId = localStorage.getItem(LS_KEYS.STUDENT_NUMBER);
     if (savedId) {
       studentNo = savedId;
@@ -103,7 +97,9 @@
   }
 
   async function downloadPDF() {
-    if (!clearanceData) return;
+    if (!clearanceData) {
+      return;
+    }
     isExporting = true;
     try {
       await exportClearancePDF({
@@ -117,7 +113,7 @@
       });
     } catch (e: any) {
       console.error("PDF export failed:", e);
-      showAlert("Export Error", `The PDF generation failed: ${e.message}`);
+      globalDialog.show("Export Error", `The PDF generation failed: ${e.message}`);
     } finally {
       isExporting = false;
     }
@@ -126,7 +122,7 @@
   async function downloadImage() {
     const templateElement = document.getElementById("export-template");
     if (!templateElement) {
-      showAlert("Export Error", "Export template content not found.");
+      globalDialog.show("Export Error", "Export template content not found.");
       return;
     }
 
@@ -143,14 +139,16 @@
       document.body.removeChild(link);
     } catch (e: any) {
       console.error("Export failed:", e);
-      showAlert("Export Error", `The image generation failed: ${e.message}`);
+      globalDialog.show("Export Error", `The image generation failed: ${e.message}`);
     } finally {
       isExporting = false;
     }
   }
 
   async function shareLink() {
-    if (!clearanceData) return;
+    if (!clearanceData) {
+      return;
+    }
     const shareData = {
       title: "Certificate of Full Payment",
       text: `Clearance for ${clearanceData.name}`,
@@ -161,12 +159,14 @@
       try {
         await navigator.share(shareData);
       } catch (err) {
-        if ((err as Error).name !== "AbortError") console.error("Share failed:", err);
+        if ((err as Error).name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
       }
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        showAlert("Link Copied", "The clearance link has been copied to your clipboard.");
+        globalDialog.show("Link Copied", "The clearance link has been copied to your clipboard.");
       } catch (err) {
         console.error("Clipboard copy failed:", err);
       }
@@ -174,7 +174,9 @@
   }
 
   async function shareQRCode() {
-    if (!qrDataUrl || !clearanceData) return;
+    if (!qrDataUrl || !clearanceData) {
+      return;
+    }
     try {
       const response = await fetch(qrDataUrl);
       const blob = await response.blob();
@@ -207,7 +209,7 @@
 </script>
 
 <main
-  class="flex min-h-screen items-center justify-center bg-background p-4 text-foreground md:p-8"
+  class="flex min-h-screen flex-col items-center justify-center bg-sidebar p-4 text-foreground md:p-8"
 >
   {#if !clearanceData && !error}
     <form
@@ -265,17 +267,3 @@
     <ClearanceExportTemplate {clearanceData} {qrDataUrl} />
   {/if}
 </main>
-
-<AlertDialog.Root bind:open={alertState.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertState.title}</AlertDialog.Title>
-      <AlertDialog.Description>
-        {alertState.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertState.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

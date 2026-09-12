@@ -1,8 +1,8 @@
-import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
-import { type UserRecord as User, USER_TAG_COLORS, UserTag } from "$lib/types";
+import { USER_TAG_COLORS, UserTag, type UserRecord as User } from "$lib/types";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
-import { createRawSnippet } from "svelte";
+import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
 import { translateCollege, translateProgram } from "$utils/translators";
+import { createRawSnippet } from "svelte";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -36,7 +36,7 @@ export const columns: ColumnDef<User>[] = [
       const latest = colleges[colleges.length - 1] || "—";
       const snippet = createRawSnippet<[{ val: string }]>((p) => ({
         render: () =>
-          `<span class="text-sm text-foreground leading-tight whitespace-normal break-words">${p().val}</span>`
+          `<span class="text-sm text-foreground leading-tight whitespace-normal wrap-break-word">${p().val}</span>`
       }));
       return renderSnippet(snippet, { val: latest });
     }
@@ -49,7 +49,7 @@ export const columns: ColumnDef<User>[] = [
       const latest = programs[programs.length - 1] || "—";
       const snippet = createRawSnippet<[{ val: string }]>((p) => ({
         render: () =>
-          `<span class="text-sm text-foreground leading-tight whitespace-normal break-words">${p().val}</span>`
+          `<span class="text-sm text-foreground leading-tight whitespace-normal wrap-break-word">${p().val}</span>`
       }));
       return renderSnippet(snippet, { val: latest });
     }

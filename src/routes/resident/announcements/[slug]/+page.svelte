@@ -7,10 +7,22 @@
   import RichEditor from "$components/RichEditor.svelte";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { Badge } from "$ui/badge";
+  import { onMount } from "svelte";
+  import { pageState } from "$state/page-info.svelte";
 
   let { data } = $props();
 
+  onMount(() => {
+    pageState.title = data.announcement?.title || "Announcement";
+    pageState.isTopLevel = false;
+  });
+
   let announcement = $derived(data.announcement);
+  $effect(() => {
+    if (announcement?.title) {
+      pageState.title = announcement.title;
+    }
+  });
   let error = $derived.by(() => {
     if (data.error === "expired") {
       return "This announcement has expired and is no longer available.";

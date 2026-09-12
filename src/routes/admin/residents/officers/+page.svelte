@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, Search, FunnelX } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import { RefreshCcw, Search, DownloadIcon } from "@lucide/svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -14,8 +14,9 @@
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { Label } from "$ui/label";
   import { Input } from "$ui/input";
+  import * as InputGroup from "$ui/input-group";
   import TermFilter from "$components/TermFilter.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { goto } from "$app/navigation";
   import { pageState } from "$state/page-info.svelte";
 
@@ -72,16 +73,24 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Residents"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={true}
+    actions={[
+      {
+        label: "Export",
+        icon: DownloadIcon,
+        href: "/admin/residents/export"
+      }
+    ]}
   >
-    {#snippet actions()}
-      <AdminResidentsHeaderActions active="officers" />
+    {#snippet tabs()}
+      <AdminResidentsTabs active="officers" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />
@@ -93,39 +102,27 @@
     <FilterDrawer
       activeCount={Number(tableSync.filters!.search !== "") +
         Number(tableSync.filters!.term !== currentTerm && tableSync.filters!.term !== "ALL")}
+      onClear={() => {
+        tableSync.reset();
+        tableSync.filters!.term = currentTerm;
+      }}
     >
       <div class="grid gap-2 lg:grid-cols-12">
         <div class="lg:col-span-4">
           <TermFilter bind:value={tableSync.filters!.term} onSelect={() => loadData()} />
         </div>
 
-        <div class="space-y-1 lg:col-span-7">
+        <div class="space-y-1 lg:col-span-8">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
+          <InputGroup.Root class="h-9 text-xs">
+            <InputGroup.Input
               bind:value={tableSync.filters!.search}
               placeholder="Search officers…"
-              class="h-9 pl-9 text-xs"
             />
-          </div>
-        </div>
-
-        <div class="flex items-end lg:col-span-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={() => {
-              tableSync.reset();
-              tableSync.filters!.term = currentTerm;
-            }}
-            class="h-9 w-full px-2"
-            icon={FunnelX}
-          >
-            Clear
-          </Button>
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
       </div>
     </FilterDrawer>

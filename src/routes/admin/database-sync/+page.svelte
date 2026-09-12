@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { dev } from "$app/environment";
   import { error } from "@sveltejs/kit";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import { Button } from "$ui/button";
   import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "$ui/card";
@@ -116,30 +116,28 @@
 </script>
 
 <div class="space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Database Sync"
     isTopLevel={true}
     onRefresh={loadStatus}
     isRefreshing={loading}
-  >
-    {#snippet actions()}
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onclick={() => syncAll("toSupabase")}
-          disabled={syncing}
-        >
-          <ArrowRightLeft class="mr-2 h-4 w-4" />
-          Sync All to Supabase
-        </Button>
-        <Button variant="outline" size="sm" onclick={() => syncAll("toGSheets")} disabled={syncing}>
-          <ArrowRightLeft class="mr-2 h-4 w-4" />
-          Sync All to GSheets
-        </Button>
-      </div>
-    {/snippet}
-  </SubpageHeader>
+    actions={[
+      {
+        label: "Sync All to Supabase",
+        variant: "outline",
+        onclick: () => syncAll("toSupabase"),
+        disabled: syncing,
+        icon: ArrowRightLeft
+      },
+      {
+        label: "Sync All to GSheets",
+        variant: "outline",
+        onclick: () => syncAll("toGSheets"),
+        disabled: syncing,
+        icon: ArrowRightLeft
+      }
+    ]}
+  />
 
   {#if loading && status.length === 0}
     <LoadingView />

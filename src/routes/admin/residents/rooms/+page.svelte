@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { roomsState } from "$state/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import { fetchTermCurr } from "$api/controllers/constants-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
@@ -16,9 +17,8 @@
   import { Checkbox } from "$ui/checkbox";
   import * as Card from "$ui/card";
   import * as Tooltip from "$ui/tooltip";
-  import * as AlertDialog from "$ui/alert-dialog";
   import AssignmentDialog from "$components/admin/AssignmentDialog.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import {
     RefreshCcw,
     User,
@@ -28,7 +28,8 @@
     CircleAlert,
     ExternalLink,
     ShieldCheck,
-    ChevronRight
+    ChevronRight,
+    DownloadIcon
   } from "@lucide/svelte";
 
   let residents = $state<ResidentRecord[]>([]);
@@ -39,13 +40,6 @@
 
   let selectedUnit = $state("ALL");
   let isCompact = $state(true);
-
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
 
   async function loadData(bypassCache = false) {
     isLoading = true;
@@ -141,19 +135,31 @@
       isOccupied: !!currentRes
     };
   }
+
+  onMount(() => {
+    pageState.title = "Rooms";
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Residents"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={true}
+    actions={[
+      {
+        label: "Export",
+        icon: DownloadIcon,
+        href: "/admin/residents/export"
+      }
+    ]}
   >
-    {#snippet actions()}
-      <AdminResidentsHeaderActions active="rooms" />
+    {#snippet tabs()}
+      <AdminResidentsTabs active="rooms" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   <FilterDrawer activeCount={Number(selectedUnit !== "ALL")}>
     <div class="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -373,19 +379,3 @@
   {availableBedOptions}
   onSuccess={() => loadData(true)}
 />
-
-<AlertDialog.Root bind:open={alertDialog.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title class={alertDialog.type === "error" ? "text-destructive" : ""}>
-        {alertDialog.title}
-      </AlertDialog.Title>
-      <AlertDialog.Description>
-        {alertDialog.description}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

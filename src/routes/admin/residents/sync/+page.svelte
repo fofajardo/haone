@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
   import { fetchTermCurr } from "$api/controllers/constants-controller";
   import {
     getSyncPreview,
@@ -10,11 +12,11 @@
   } from "$api/controllers/rooms-controller.svelte";
   import { pluralize } from "$utils/formatters";
   import { translateCollege, translateProgram } from "$utils/translators";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import EmptyView from "$components/EmptyView.svelte";
-  import AdminResidentsHeaderActions from "$components/residents/AdminResidentsHeaderActions.svelte";
+  import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Checkbox } from "$ui/checkbox";
@@ -48,17 +50,6 @@
     reason: "",
     isSubmitting: false
   });
-
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    type: "info" as "info" | "error"
-  });
-
-  function showAlert(title: string, description: string, type: "info" | "error" = "info") {
-    alertDialog = { open: true, title, description, type };
-  }
 
   const groupedPreview = $derived.by(() => {
     const groups = new Map<number, SyncPreviewAction[]>();
@@ -105,19 +96,19 @@
 
   async function handleApproveSelected() {
     if (selectedActions.length === 0) {
-      showAlert("No Selection", "Please select at least one item to approve.", "error");
+      globalDialog.show("No Selection", "Please select at least one item to approve.");
       return;
     }
     isSyncing = true;
     try {
       const result = await applySync(selectedActions, activeTerm);
-      showAlert(
+      globalDialog.show(
         "Sync Complete",
         `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
       );
       await loadPreview();
     } catch (e: any) {
-      showAlert("Sync Failed", e.message || "An error occurred.", "error");
+      globalDialog.show("Sync Failed", e.message || "An error occurred.");
     } finally {
       isSyncing = false;
     }
@@ -178,21 +169,22 @@
   }
 
   onMount(() => {
+    pageState.title = "Sync Registrations";
     loadPreview();
   });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Residents"
     isTopLevel={true}
     onRefresh={() => loadPreview()}
     isRefreshing={isLoading}
   >
-    {#snippet actions()}
-      <AdminResidentsHeaderActions active="sync" />
+    {#snippet tabs()}
+      <AdminResidentsTabs active="sync" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />
@@ -427,20 +419,6 @@
       >
         Decline
       </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title class={alertDialog.type === "error" ? "text-destructive" : ""}>
-        {alertDialog.title}
-      </AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>

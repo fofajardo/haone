@@ -5,11 +5,13 @@
   import { auth } from "$state/auth.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
-  import { LoaderIcon } from "@lucide/svelte";
+  import { pageState } from "$state/page-info.svelte";
+  import { LoaderCircleIcon } from "@lucide/svelte";
 
   let isChecking = $state(true);
 
   onMount(async () => {
+    pageState.title = "Onboarding";
     if (!auth.accessToken) {
       goto("/sign-in");
       return;
@@ -40,7 +42,7 @@
 
 {#if isChecking || !residentState.status}
   <div class="flex items-center justify-center py-12">
-    <LoaderIcon class="h-6 w-6 animate-spin text-muted-foreground" />
+    <LoaderCircleIcon class="h-6 w-6 animate-spin text-muted-foreground" />
   </div>
 {:else}
   <div class="w-full space-y-6">

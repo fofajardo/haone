@@ -1,30 +1,28 @@
-import { emailDispatcher } from "$state/dispatcher.svelte";
-import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$templates/payment-status";
-import { ClearanceCertificateTemplate } from "$templates/clearance";
-import type { BrandingProfile } from "$lib/types";
 import { goto } from "$app/navigation";
+import type { BrandingProfile } from "$lib/types";
 import { type ResidentRecord, type UserRecord, AccountType } from "$lib/types";
+import { emailDispatcher } from "$state/dispatcher.svelte";
+import { ClearanceCertificateTemplate } from "$templates/clearance";
+import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$templates/payment-status";
 
 import { parseCSVAmount } from "$utils/math";
-import { mapRowToResident, mapRowToJournal, computeDisplayNames } from "../utils/row-mappers";
+import { computeDisplayNames, mapRowToJournal, mapRowToResident } from "../utils/row-mappers";
 
-export { mapRowToResident, mapRowToJournal, parseCSVAmount, computeDisplayNames };
+export { computeDisplayNames, mapRowToJournal, mapRowToResident, parseCSVAmount };
 
-import { residentService } from "$api/services/resident-service";
 import { constantsService } from "$api/services/constants-service";
-import { isStaticIpEnabled } from "$utils/rooms-utils";
-import { brandingState } from "$state/branding.svelte";
+import { residentService } from "$api/services/resident-service";
+import { getCustomServices } from "$lib/services";
 
 /**
- * Resolves the primary identifier (UUID) of the currently signed-in resident.
+ * Resolves the primary identifier (UUID) of the currently signed-in user.
  */
-export async function getCurrentResidentId(): Promise<string> {
+export async function getSignedInUserId(): Promise<string> {
   const { auth } = await import("$state/auth.svelte");
-  if (auth.userId) {
-    return auth.userId;
+  if (!auth.userId) {
+    throw new Error("User ID is unavailable.");
   }
-  const { residentState } = await import("$state/resident-state.svelte");
-  return residentState.status?.profile?.id || "";
+  return auth.userId;
 }
 
 /**
@@ -76,10 +74,6 @@ export async function updateUser(userId: string, data: Partial<UserRecord>) {
 
 export async function addUser(data: Partial<UserRecord>) {
   return residentService.addUser(data);
-}
-
-export async function addUsersBatch(users: Partial<UserRecord>[]) {
-  return residentService.addUsersBatch(users);
 }
 
 export async function fetchAccountsByUserId(
@@ -453,10 +447,10 @@ export function isResidentRouteAllowed(
     return canAccessAchievements(type);
   }
 
-  if (urlOrHref.includes("/static-ip")) {
-    const brandKey =
-      brandingState.selectedKey || brandingState.profile?.shortName?.toLowerCase() || "default";
-    return !!(room && isStaticIpEnabled(room, brandKey) && canAccessLaundryOrFridge(type));
+  const customItems = getCustomServices("resident");
+  const matched = customItems.find((item) => urlOrHref.startsWith(item.url));
+  if (matched && matched.isAllowed) {
+    return matched.isAllowed(type, room);
   }
 
   return true;

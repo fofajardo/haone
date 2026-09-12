@@ -1,7 +1,14 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
-  import { ArrowRight, LoaderIcon } from "@lucide/svelte";
+  import { pageState } from "$state/page-info.svelte";
+  import { ArrowRight, LoaderCircleIcon } from "@lucide/svelte";
   import { Button } from "$ui/button";
+  import { brandingState } from "$state/branding.svelte";
+
+  onMount(() => {
+    pageState.title = "Home";
+  });
 </script>
 
 <div class="flex flex-col space-y-4 text-center md:text-left">
@@ -12,7 +19,8 @@
       </h1>
     </div>
     <p class="text-lg leading-relaxed text-muted-foreground">
-      The comprehensive administrative suite for UPLB Residence Hall Associations.
+      The comprehensive administrative suite for the {brandingState.profile?.issuerName ||
+        "UPLB Residence Hall Association"}.
     </p>
   </div>
 </div>
@@ -20,7 +28,7 @@
 <div class="grid min-h-14 gap-4">
   {#if !auth.initialized}
     <div class="flex items-center justify-center py-4">
-      <LoaderIcon class="h-6 w-6 animate-spin text-muted-foreground" />
+      <LoaderCircleIcon class="h-6 w-6 animate-spin text-muted-foreground" />
     </div>
   {:else if !auth.accessToken}
     <Button

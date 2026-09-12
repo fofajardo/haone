@@ -35,10 +35,7 @@
     try {
       const [achList, userList] = await Promise.all([fetchAdminAchievements(true), fetchUsers()]);
       achievements = achList;
-      const me = userList.find((u) => {
-        return u.email.toLowerCase() === (auth.user?.email || "").toLowerCase();
-      });
-      currentUserId = me?.id || "";
+      currentUserId = auth.userId;
     } catch (e: any) {
       console.error("Failed to load achievements data:", e);
       toast.error("Failed to load achievements: " + e.message);
@@ -109,7 +106,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content class="sm:max-w-[425px]">
+  <Dialog.Content class="sm:max-w-106.25">
     <Dialog.Header>
       <Dialog.Title>Award Achievement</Dialog.Title>
       <Dialog.Description>

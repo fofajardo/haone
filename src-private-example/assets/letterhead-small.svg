@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="8.2679996in"
+   height="11.692913in"
+   viewBox="0 0 210.00719 296.99999"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="letterhead_0.5in.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showguides="true"
+     inkscape:zoom="0.99276682"
+     inkscape:cx="379.74678"
+     inkscape:cy="205.98996"
+     inkscape:window-width="1920"
+     inkscape:window-height="1028"
+     inkscape:window-x="0"
+     inkscape:window-y="30"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <sodipodi:guide
+       position="0,271.60001"
+       orientation="0,1"
+       id="guide1"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+    <sodipodi:guide
+       position="12.7,296.99998"
+       orientation="-1,0"
+       id="guide2"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+    <sodipodi:guide
+       position="209.99999,-1.3280643e-05"
+       orientation="0,-793.70079"
+       id="guide3"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="197.30719,296.99998"
+       orientation="-1,0"
+       id="guide4"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,134,229)" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <linearGradient
+       id="SVGID_Fill1_-8-4"
+       gradientUnits="userSpaceOnUse"
+       x1="38.356575"
+       y1="2004.464"
+       x2="113.83745"
+       y2="2004.464"
+       gradientTransform="matrix(0.27986991,0,0,0.00524845,70.356876,146.43674)">
+      <stop
+         offset="0"
+         stop-color="#000000"
+         stop-opacity="0.501961"
+         id="stop77-0-2" />
+      <stop
+         offset="1"
+         stop-color="#FFFFFF"
+         stop-opacity="0.501961"
+         id="stop78-7-2" />
+    </linearGradient>
+    <linearGradient
+       id="SVGID_Fill2_-4-1"
+       gradientUnits="userSpaceOnUse"
+       x1="38.356754"
+       y1="2004.464"
+       x2="113.8371"
+       y2="2004.464"
+       gradientTransform="matrix(0.27986991,0,0,0.00524845,70.356876,146.43674)">
+      <stop
+         offset="0"
+         stop-color="#000000"
+         stop-opacity="0.501961"
+         id="stop79-9-9" />
+      <stop
+         offset="1"
+         stop-color="#FFFFFF"
+         stop-opacity="0.501961"
+         id="stop80-8-6" />
+    </linearGradient>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.78126"
+       id="rect4"
+       width="210"
+       height="25.4"
+       x="0"
+       y="-4.4408921e-16"
+       inkscape:export-filename="rect4.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.175px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+       x="26.542158"
+       y="20.709372"
+       id="text6-7"><tspan
+         sodipodi:role="line"
+         id="tspan6-0"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:expanded;font-size:3.175px;font-family:'D-DIN Exp';-inkscape-font-specification:'D-DIN Exp Expanded';fill:#000000;stroke-width:0.264583"
+         x="26.542158"
+         y="20.709372" /></text>
+    <text
+       xml:space="preserve"
+       style="font-size:7.05556px;text-align:start;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke-width:0.264583"
+       x="26.855173"
+       y="16.68722"
+       id="text6-6"
+       inkscape:export-filename="rect5.png"
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200"><tspan
+         sodipodi:role="line"
+         id="tspan6-2"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05556px;font-family:D-DIN;-inkscape-font-specification:'D-DIN Bold';fill:#000000;stroke-width:0.264583"
+         x="26.855173"
+         y="16.68722" /></text>
+  </g>
+</svg>

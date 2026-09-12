@@ -1,13 +1,10 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
-  import { auth } from "$state/auth.svelte";
-  import { uiSettings } from "$state/settings.svelte";
-
   import { addPaymentRequest } from "$api/controllers/payment-request-controller";
   import { fetchServer } from "$utils/api-client";
-  import { compressImage, deleteUploadedImage } from "$utils/image-utils";
   import { formatCurrency, formatAccounting } from "$utils/formatters";
-  import type { ResidentRecord } from "$lib/types";
+  import { TransactionType, type ResidentRecord } from "$lib/types";
   import { Button } from "$ui/button";
   import { Input } from "$ui/input";
   import { Label } from "$ui/label";
@@ -19,47 +16,24 @@
     Link,
     ArrowLeftToLine,
     TriangleAlert,
-    Upload,
-    ImageIcon,
-    Trash2,
     HandCoins
   } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import * as Tooltip from "$ui/tooltip";
   import { Badge } from "$ui/badge";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
+  import ImageUpload from "$components/ImageUpload.svelte";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);
   let error = $state<string | null>(null);
   let resident = $state<ResidentRecord | null>(null);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
-  let fileInput: HTMLInputElement | undefined = $state();
-  let isUploading = $state(false);
   let pendingFile = $state<File | Blob | null>(null);
   let previewUrl = $state<string | null>(null);
-
-  async function handleFileUpload(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-      isUploading = true;
-      try {
-        const processedFile = await compressImage(file);
-        pendingFile = processedFile;
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-        previewUrl = URL.createObjectURL(processedFile);
-        formData.proofLink = "PENDING_UPLOAD"; // Marker to show preview
-      } catch (err: any) {
-        console.error(err);
-        toast.error("File processing failed: " + err.message);
-      } finally {
-        isUploading = false;
-      }
-    }
-  }
 
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
@@ -87,9 +61,6 @@
   import { fetchResidentStatus } from "$api/controllers/resident-controller";
 
   async function loadData() {
-    if (!auth.user?.email) {
-      return;
-    }
     isLoading = true;
     error = null;
     try {
@@ -106,14 +77,10 @@
     }
   }
 
-  function handleRemoveImage() {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    pendingFile = null;
-    previewUrl = null;
-    formData.proofLink = "";
-  }
-
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Add Payment Request";
+    loadData();
+  });
 
   async function handleSubmit() {
     if (!resident) return;
@@ -128,7 +95,7 @@
     }
 
     if (!formData.proofLink.trim()) {
-      toast.error("Proof of payment link is required");
+      toast.error("Proof of payment is required");
       return;
     }
 
@@ -137,7 +104,7 @@
         new URL(formData.proofLink);
       }
     } catch (e) {
-      toast.error("Invalid proof of payment link. Please provide a valid URL.");
+      toast.error("Invalid proof of payment. Please provide a valid URL.");
       return;
     }
 
@@ -163,7 +130,7 @@
         assocFee: assoc,
         misc: misc,
         mop: formData.mop,
-        type: "COLLECTION",
+        type: misc > 0 ? TransactionType.COLLECTION_OTHERS : TransactionType.COLLECTION,
         proofLink: finalProofLink,
         status: "PENDING",
         notes: formData.notes
@@ -180,7 +147,7 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader title="Add Payment Request" />
+  <ContentHeader title="Add Payment Request" />
   <div class="mx-auto max-w-3xl space-y-6">
     {#if isLoading}
       <LoadingView />
@@ -346,82 +313,14 @@
               <Link class="h-3.5 w-3.5" /> Verification
             </Label>
             <div class="space-y-4">
-              <div class="space-y-2">
-                <Label>Proof of Payment Link</Label>
-                {#if uiSettings.firebaseEnabled}
-                  {#if formData.proofLink}
-                    <Card.Root
-                      class="group relative max-w-sm overflow-hidden border-brand/20 bg-brand/5"
-                    >
-                      <img
-                        src={previewUrl || formData.proofLink}
-                        alt="Payment Proof"
-                        class="aspect-video w-full object-cover transition-all group-hover:blur-[2px]"
-                      />
-                      <div
-                        class="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity group-hover:opacity-100"
-                      >
-                        <Button
-                          size="sm"
-                          onclick={handleRemoveImage}
-                          class="h-8 gap-2 px-3 shadow-lg"
-                        >
-                          <Trash2 class="h-4 w-4" />
-                          Remove
-                        </Button>
-                      </div>
-                      <div
-                        class="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-bold text-brand shadow-sm backdrop-blur-sm"
-                      >
-                        <ImageIcon class="h-3 w-3" />
-                        <span>IMAGE ATTACHED</span>
-                      </div>
-                    </Card.Root>
-                  {:else}
-                    <div class="flex gap-2">
-                      <Input
-                        placeholder="Drive or Image Link"
-                        bind:value={formData.proofLink}
-                        disabled={isSubmitting || isUploading}
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        class="shrink-0"
-                        disabled={isSubmitting || isUploading}
-                        isLoading={isUploading}
-                        onclick={() => fileInput?.click()}
-                        icon={Upload}
-                      />
-                    </div>
-                  {/if}
-                  <input
-                    type="file"
-                    bind:this={fileInput}
-                    accept="image/*"
-                    class="hidden"
-                    onchange={handleFileUpload}
-                  />
-                  {#if isUploading}
-                    <p class="animate-pulse text-xs font-bold text-brand">Uploading image...</p>
-                  {:else if !formData.proofLink}
-                    <p class="text-xs text-muted-foreground">
-                      Paste a link or upload an image. If using a Google Drive link, make sure it's
-                      shared with 'Anyone with the link' permission.
-                    </p>
-                  {/if}
-                {:else}
-                  <Input
-                    placeholder="https://drive.google.com/..."
-                    bind:value={formData.proofLink}
-                    disabled={isSubmitting}
-                  />
-                  <p class="text-xs text-muted-foreground">
-                    If using a Google Drive link, make sure it's shared with 'Anyone with the link'
-                    permission.
-                  </p>
-                {/if}
-              </div>
+              <ImageUpload
+                label="Proof of Payment"
+                bind:value={formData.proofLink}
+                bind:file={pendingFile}
+                bind:previewUrl
+                allowUrl={true}
+                disabled={isSubmitting}
+              />
               <div class="space-y-2">
                 <Label>Remarks</Label>
                 <Input

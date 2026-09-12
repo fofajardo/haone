@@ -1,7 +1,8 @@
-import { json } from "@sveltejs/kit";
+import { getSheetsClient } from "$api/services/auth-service";
+import { fetchSheetsData } from "$api/services/server-sheets-service";
 import { JOURNAL_COL, USER_COL } from "$lib/types";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { getSheetsClient, fetchSheetsData } from "$lib/server/api-helper";
 
 export const POST: RequestHandler = async ({ request }) => {
   try {

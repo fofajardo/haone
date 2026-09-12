@@ -35,7 +35,7 @@
         </div>
         <div class="flex flex-col gap-0.5">
           <span>Paid</span>
-          <span class="text-foreground text-primary">{formatAmount(account.waterPaid)}</span>
+          <span class="text-foreground">{formatAmount(account.waterPaid)}</span>
         </div>
         <div class="flex flex-col gap-0.5">
           <span>Waived</span>

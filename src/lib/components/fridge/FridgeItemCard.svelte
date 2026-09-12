@@ -158,9 +158,7 @@
               {item.name}
             </h4>
             {#if isMine}
-              <span
-                class="shrink-0 rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-bold text-brand"
-              >
+              <span class="shrink-0 rounded bg-brand/10 px-1.5 py-0.5 text-xs font-bold text-brand">
                 Mine
               </span>
             {/if}
@@ -243,7 +241,7 @@
       <div class="mt-2.5 flex flex-wrap gap-1">
         {#each item.tags as tag}
           <span
-            class="inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium {FRIDGE_TAG_COLORS[
+            class="inline-flex items-center rounded-md border px-1.5 py-0.5 text-xs font-medium {FRIDGE_TAG_COLORS[
               tag
             ] || FRIDGE_TAG_COLORS.DEFAULT}"
           >
@@ -273,7 +271,7 @@
 
       {#if (item.status === FridgeItemStatus.CHECKED_OUT || item.status === FridgeItemStatus.DISCARDED) && item.actionBy && item.actionBy !== item.residentId}
         <div
-          class="flex items-center justify-between pt-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400"
+          class="flex items-center justify-between pt-0.5 text-xs font-medium text-amber-600 dark:text-amber-400"
         >
           <span>
             {item.status === FridgeItemStatus.DISCARDED ? "Discarded by" : "Taken out by"}

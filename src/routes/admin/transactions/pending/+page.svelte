@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { emailDispatcher } from "$state/dispatcher.svelte";
   import { AcknowledgmentTemplate } from "$templates/acknowledgment";
@@ -11,27 +12,26 @@
     updateJournalReceiptInfo,
     mapRowToJournal
   } from "$api/controllers/journal-controller";
-  import { fetchTransactionTypes } from "$api/controllers/constants-controller";
   import { parseDateWeight } from "$utils/parsers";
   import { Input } from "$ui/input/index.js";
+  import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label/index.js";
   import { Button } from "$ui/button/index.js";
   import TermFilter from "$components/TermFilter.svelte";
-  import { Search, RefreshCcw, FileCheck, CircleCheckBig, FunnelX } from "@lucide/svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import { Search, RefreshCcw, FileCheck, CircleCheckBig, Plus } from "@lucide/svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
   import EmptyView from "$components/EmptyView.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import DataTable from "$ui/data-table/data-table.svelte";
-  import AdminTransactionsHeaderActions from "$components/transactions/AdminTransactionsHeaderActions.svelte";
+  import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";
   import type { ReceiptData } from "$lib/types";
 
   import { type JournalRecord } from "$lib/types";
 
   let queue = $state<JournalRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let selectedIndices = $state<Set<string>>(new Set());
   let isLoading = $state(false);
   let error = $state<string | null>(null);
@@ -60,13 +60,10 @@
     selectedIndices = new Set();
 
     try {
-      const [entries, types, currentTerm] = await Promise.all([
+      const [entries, currentTerm] = await Promise.all([
         fetchJournalEntries(undefined, undefined, bypassCache),
-        fetchTransactionTypes(bypassCache),
         uiSettings.ensureCurrentTerm()
       ]);
-
-      transactionTypes = types;
 
       const journals = Array.isArray(entries) ? entries : entries.items;
 
@@ -90,7 +87,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Pending Receipts";
+    loadData();
+  });
 
   async function prepareDispatch() {
     if (selectedIndices.size === 0) {
@@ -161,16 +161,17 @@
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Transactions"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    hasFilter={true}
   >
-    {#snippet actions()}
-      <AdminTransactionsHeaderActions active="receipts" />
+    {#snippet tabs()}
+      <AdminTransactionsTabs active="receipts" />
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading && queue.length === 0}
     <LoadingView />
@@ -186,34 +187,25 @@
       >
     </ErrorView>
   {:else}
-    <FilterDrawer activeCount={Number(tableSync.filters!.search !== "")}>
+    <FilterDrawer
+      activeCount={Number(tableSync.filters!.search !== "")}
+      onClear={() => tableSync.reset()}
+    >
       <div class="mb-4 grid gap-2 lg:grid-cols-12">
         <div class="lg:col-span-3">
           <TermFilter onSelect={() => loadData()} />
         </div>
-        <div class="space-y-1 lg:col-span-8">
+        <div class="space-y-1 lg:col-span-9">
           <Label>Search</Label>
-          <div class="relative">
-            <Search
-              class="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
+          <InputGroup.Root class="h-9 text-sm">
+            <InputGroup.Input
               bind:value={tableSync.filters!.search}
               placeholder="Search by name, account, or notes…"
-              class="h-9 pl-9 text-xs"
             />
-          </div>
-        </div>
-        <div class="flex items-end lg:col-span-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onclick={() => tableSync.reset()}
-            class="h-9 w-full px-2"
-            icon={FunnelX}
-          >
-            Clear
-          </Button>
+            <InputGroup.Addon>
+              <Search />
+            </InputGroup.Addon>
+          </InputGroup.Root>
         </div>
       </div>
     </FilterDrawer>
@@ -226,7 +218,6 @@
         onPaginationChange={(p) => (tableSync.pagination = p)}
         onRowClick={(r) => goto(`/admin/transactions/${r.id}`)}
         onSelectionChange={(ids) => (selectedIndices = ids)}
-        meta={{ transactionTypes }}
         rowId="id"
         enableSelection
         sorting={[{ id: "date", desc: true }]}

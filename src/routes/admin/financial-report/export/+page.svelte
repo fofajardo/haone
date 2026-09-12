@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
   import TermFilter from "$components/TermFilter.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { Button } from "$ui/button";
@@ -19,7 +20,7 @@
     exportFinancialReportPDF,
     fetchFinancialReportData
   } from "$reports/financial-report-pdf";
-  import type { JournalRecord, ResidentRecord } from "$lib/types";
+  import { type JournalRecord, type ResidentRecord } from "$lib/types";
 
   let isLoading = $state(true);
   let isProcessing = $state(false);
@@ -37,11 +38,10 @@
     })
   );
   let allAccountsForAutocomplete = $state<ResidentRecord[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let availableMops = $state<{ value: string; label: string }[]>([]);
 
   // Form State
-  let issuedBy = $state(auth.displayName || "");
+  let issuedBy = $state(auth.displayNameLastFirst || "");
   let issuedByEmail = $state(auth.user?.email || "");
   let assessedBy = $state("");
   let assessedByEmail = $state("");
@@ -71,7 +71,6 @@
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
       allAccountsForAutocomplete = data.allAccounts;
-      transactionTypes = data.transactionTypes;
       availableMops = data.availableMops;
 
       // Auto-Period
@@ -87,7 +86,10 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Export Financial Report";
+    loadData();
+  });
 
   async function handleGenerate() {
     isProcessing = true;
@@ -112,7 +114,6 @@
         assessedBy: assessedBy ? `${assessedBy} <${assessedByEmail}>` : "—",
         certifiedBy: certifiedBy ? `${certifiedBy} <${certifiedByEmail}>` : "—",
         periodCovered: `${pStart} – ${pEnd}`,
-        transactionTypes,
         availableMops
       });
     } catch (e: any) {
@@ -124,7 +125,7 @@
 </script>
 
 <div class="space-y-3 pb-20">
-  <SubpageHeader
+  <ContentHeader
     title="Export Financial Report"
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}

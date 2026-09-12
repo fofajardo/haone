@@ -13,11 +13,12 @@
     Clock,
     Building,
     RotateCcwClockIcon,
-    CircleAlert
+    CircleAlert,
+    LogOut
   } from "@lucide/svelte";
   import * as RadioGroup from "$ui/radio-group";
-  import colleges from "$data/colleges.json";
-  import programs from "$data/programs.json";
+  import colleges from "$assets/colleges.json";
+  import programs from "$assets/programs.json";
   import { untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
@@ -29,19 +30,9 @@
   import { roomsState } from "$state/rooms.svelte";
   import { translatePeriod } from "$utils/translators";
   import * as Stepper from "$ui/stepper";
-  import * as AlertDialog from "$ui/alert-dialog";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let { status, onSuccess }: { status: ResidentStatus; onSuccess: () => Promise<void> } = $props();
-
-  let alertDialog = $state({
-    open: false,
-    title: "",
-    description: ""
-  });
-
-  function showAlert(title: string, description: string) {
-    alertDialog = { open: true, title, description };
-  }
 
   let isSubmitting = $state(false);
   let step = $state(untrack(() => (status.waitingForConfirmation ? 4 : 1)));
@@ -141,7 +132,7 @@
           residentState.forceOnboarding = false;
           await onSuccess();
         } catch (e: any) {
-          showAlert(
+          globalDialog.show(
             "Registration Failed",
             e.message || "An error occurred while submitting your registration."
           );
@@ -292,7 +283,7 @@
       residentState.forceOnboarding = false;
       await onSuccess();
     } catch (e: any) {
-      showAlert(
+      globalDialog.show(
         "Registration Failed",
         e.message || "An error occurred while submitting your registration."
       );
@@ -396,7 +387,7 @@
       </Stepper.Item>
     </Stepper.Nav>
 
-    <div class="min-h-[300px]">
+    <div class="min-h-75">
       {#if step === 1}
         <div class="space-y-6">
           {#if status.currEntry?.declineReason}
@@ -461,7 +452,16 @@
                 Cancel
               </Button>
             {:else}
-              <div></div>
+              <Button
+                variant="outline"
+                onclick={() => {
+                  auth.signOut();
+                  goto("/sign-in");
+                }}
+                icon={LogOut}
+              >
+                Sign out
+              </Button>
             {/if}
             <Button
               onclick={handleProceedStep1}
@@ -769,15 +769,3 @@
     </div>
   </div>
 </Stepper.Root>
-
-<AlertDialog.Root open={alertDialog.open} onOpenChange={(v) => (alertDialog.open = v)}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{alertDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>{alertDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => (alertDialog.open = false)}>OK</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

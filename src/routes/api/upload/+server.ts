@@ -1,6 +1,7 @@
-import { json } from "@sveltejs/kit";
-import { authenticateResident, serverError } from "$lib/server/api-helper";
+import { authenticateResident } from "$api/services/auth-service";
 import { saveImageToFirestore } from "$api/services/firestore-service";
+import { serverError } from "$api/services/server-sheets-service";
+import { json } from "@sveltejs/kit";
 
 export async function POST({ request, url: reqUrl }) {
   const auth = await authenticateResident(request);

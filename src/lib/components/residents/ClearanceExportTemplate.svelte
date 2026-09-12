@@ -30,13 +30,13 @@
 
 <div
   id="export-template"
-  class="export-font fixed top-0 -left-[10000px] flex min-h-[297mm] w-[210mm] flex-col bg-[#ffffff] text-[#000000]"
+  class="export-font fixed top-0 left-[-10000px] flex min-h-[297mm] w-[210mm] flex-col bg-[#ffffff] text-[#000000]"
 >
   <div class="w-full">
     <img src={activeBranding.letterheadUrl} alt="Letterhead" class="block h-auto w-full" />
   </div>
 
-  <div id="export-body" class="flex-grow p-[1in] pt-0 text-[12pt]">
+  <div id="export-body" class="grow p-24 pt-0 text-[12pt]">
     {#if qrDataUrl}
       <div class="absolute right-5 bottom-5 w-24">
         <img src={qrDataUrl} alt="QR" class="block h-24 w-24 p-0" />
@@ -71,7 +71,7 @@
     </div>
 
     <!-- Signatory -->
-    <div class="mt-[1in] mb-16 flex justify-end">
+    <div class="mt-24 mb-16 flex justify-end">
       <div class="text-center" style="min-width: 250px;">
         <p class="font-bold uppercase">{clearanceData.signatory}</p>
         <p class="text-[11pt]">{clearanceData.signatoryTitle}</p>
@@ -79,7 +79,7 @@
     </div>
   </div>
 
-  <div class="mt-auto px-[1in] pb-12 text-center text-[8pt]">
+  <div class="mt-auto px-24 pb-12 text-center text-[8pt]">
     <div>
       Reference Number: {clearanceData.refNo}
     </div>

@@ -13,7 +13,7 @@
     Calendar,
     UserCog
   } from "@lucide/svelte";
-  import { translateCollege, translateProgram, translateType } from "$utils/translators";
+  import { translateAccountType, translateCollege, translateProgram } from "$utils/translators";
   import { formatDate } from "$utils/formatters";
   import type { ResidentRecord } from "$lib/types";
 
@@ -71,7 +71,7 @@
         <UserCog class="h-3 w-3" /> Account Type
       </Label>
       <p class="text-sm font-semibold text-foreground">
-        {translateType(account.type)}
+        {translateAccountType(account.type)}
       </p>
     </div>
 
@@ -105,7 +105,7 @@
         <GraduationCap class="h-3 w-3" /> Academic Program
       </Label>
       <div
-        class="relative mt-2 space-y-6 before:absolute before:top-2 before:left-[11px] before:h-[calc(100%-16px)] before:w-px before:bg-border"
+        class="relative mt-2 space-y-6 before:absolute before:top-2 before:left-2.75 before:h-[calc(100%-16px)] before:w-px before:bg-border"
       >
         {#each qualifications as q}
           <div class="relative flex items-start gap-4 pl-8">

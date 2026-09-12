@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
@@ -253,18 +254,21 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Demographics";
+    loadData();
+  });
 </script>
 
 <Tabs.Root bind:value={activeTab} class="space-y-4">
   <div class="mx-auto max-w-7xl space-y-3">
-    <SubpageHeader
+    <ContentHeader
       title="Demographics"
       isTopLevel={true}
       onRefresh={() => loadData(true)}
       isRefreshing={isLoading}
     >
-      {#snippet actions()}
+      {#snippet tabs()}
         <Tabs.List>
           <Tabs.Trigger value="term" class="flex items-center gap-1.5">
             <Calendar class="h-3.5 w-3.5" />
@@ -276,7 +280,7 @@
           </Tabs.Trigger>
         </Tabs.List>
       {/snippet}
-    </SubpageHeader>
+    </ContentHeader>
 
     {#if isLoading}
       <LoadingView />
@@ -311,7 +315,7 @@
               <Card.Description>Distribution by Academic Unit</Card.Description>
             </Card.Header>
             <Card.Content class="space-y-6">
-              <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-[300px]">
+              <Chart.Container config={chartConfig} class="mx-auto aspect-square max-h-75">
                 <PieChart
                   data={reportData.colleges}
                   key="label"

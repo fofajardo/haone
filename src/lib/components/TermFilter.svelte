@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { fetchConstants } from "$api/controllers/constants-controller";
   import { translatePeriod } from "$utils/translators";
@@ -8,6 +7,7 @@
   import { Combobox } from "$ui/combobox";
   import { Label } from "$ui/label";
   import { Input } from "$ui/input";
+  import Skeleton from "./ui/skeleton/skeleton.svelte";
 
   let { value = $bindable(), onSelect } = $props<{
     value?: string;
@@ -35,6 +35,7 @@
 
   async function loadTerms() {
     isLoading = true;
+    // TODO: These values should be cached.
     try {
       const records = await fetchConstants();
       if (records.length === 0) return;
@@ -99,6 +100,8 @@
       class="h-9 w-full"
       onSelect={(val) => handleChange(val)}
     />
+  {:else if isLoading}
+    <Skeleton class="h-9 w-full" />
   {:else}
     <Input
       value={activeTerm}

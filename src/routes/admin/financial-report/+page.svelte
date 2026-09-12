@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { uiSettings } from "$state/settings.svelte";
   import TermFilter from "$components/TermFilter.svelte";
   import FilterDrawer from "$components/FilterDrawer.svelte";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import LoadingView from "$components/LoadingView.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import { Button } from "$ui/button";
@@ -11,17 +12,17 @@
   import StatisticCard from "$components/StatisticCard.svelte";
   import {
     RefreshCcw,
-    FileDown,
     TrendingUp,
     TrendingDown,
     Wallet,
     CircleDollarSign,
     FileSpreadsheet,
     ChartLine,
-    ChartLineIcon
+    ChartLineIcon,
+    DownloadIcon
   } from "@lucide/svelte";
   import { formatAccounting } from "$utils/formatters";
-  import { translateMop, translateType } from "$utils/translators";
+  import { translateMop, translateTransactionType } from "$utils/translators";
   import { getJournalDateRange } from "$utils/parsers";
   import type { JournalRecord, ResidentRecord } from "$lib/types";
   import * as Table from "$ui/table";
@@ -40,7 +41,6 @@
   let allJournal = $state<JournalRecord[]>([]);
   let allAccounts = $state<ResidentRecord[]>([]);
   let availableMops = $state<{ value: string; label: string }[]>([]);
-  let transactionTypes = $state<{ value: string; label: string }[]>([]);
   let periodStart = $state("");
   let periodEnd = $state("");
 
@@ -116,7 +116,7 @@
     const groupMap: Record<string, number> = {};
     processedJournal.forEach((j) => {
       if (j.outgoing > 0) {
-        const typeLabel = translateType(j.type, transactionTypes) || j.type;
+        const typeLabel = translateTransactionType(j.type) || j.type;
         groupMap[typeLabel] = (groupMap[typeLabel] || 0) + j.outgoing;
       }
     });
@@ -260,7 +260,6 @@
       const data = await fetchFinancialReportData(bypassCache);
       allJournal = data.allJournal;
       allAccounts = data.allAccounts;
-      transactionTypes = data.transactionTypes;
       availableMops = data.availableMops;
 
       // Auto-Period
@@ -276,18 +275,21 @@
     }
   }
 
-  onMount(loadData);
+  onMount(() => {
+    pageState.title = "Financial Report";
+    loadData();
+  });
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
-  <SubpageHeader
+  <ContentHeader
     title="Financial Report"
     isTopLevel={true}
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
+    actions={[{ label: "Export", href: "/admin/financial-report/export", icon: DownloadIcon }]}
   >
-    {#snippet actions()}
-      <Button size="sm" href="/admin/financial-report/export" icon={FileDown}>Export</Button>
+    {#snippet tabs()}
       <Tabs.Root bind:value={activeTab}>
         <Tabs.List>
           <Tabs.Trigger value="summary" class="flex items-center gap-1.5">
@@ -301,7 +303,7 @@
         </Tabs.List>
       </Tabs.Root>
     {/snippet}
-  </SubpageHeader>
+  </ContentHeader>
 
   {#if isLoading}
     <LoadingView />

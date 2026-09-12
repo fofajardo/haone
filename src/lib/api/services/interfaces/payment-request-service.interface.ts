@@ -1,8 +1,8 @@
 import type {
-  PaymentRequestRecord,
   JournalRecord,
+  PaginatedResponse,
   PaginationOptions,
-  PaginatedResponse
+  PaymentRequestRecord
 } from "$lib/types";
 
 export interface PaymentRequestServiceInterface {

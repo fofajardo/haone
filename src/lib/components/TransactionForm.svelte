@@ -30,23 +30,30 @@
   } from "@lucide/svelte";
   import * as AlertDialog from "$ui/alert-dialog";
   import { Checkbox } from "$ui/checkbox";
-  import SubpageHeader from "$components/SubpageHeader.svelte";
+  import ContentHeader from "$components/ContentHeader.svelte";
   import ErrorView from "$components/ErrorView.svelte";
   import AccountAutocomplete from "$components/AccountAutocomplete.svelte";
   import FinancialStandingCard from "$components/residents/FinancialStandingCard.svelte";
   import * as Dialog from "$ui/dialog";
   import * as Tooltip from "$ui/tooltip";
   import { Badge } from "$ui/badge";
-  import { fetchResidents, mapRowToJournal } from "$api/controllers/resident-controller";
-  import type { ResidentRecord, JournalRecord } from "$lib/types";
-  import { JOURNAL_COL as JOR } from "$lib/types";
+  import { fetchResidents } from "$api/controllers/resident-controller";
+  import {
+    JOURNAL_COL as JOR,
+    TransactionType,
+    TRANSACTION_TYPE_OPTIONS,
+    TRANSACTION_TYPE_FUNDS_ONLY,
+    type ResidentRecord,
+    type JournalRecord,
+    TRANSACTION_TYPE_WITH_RECEIPT,
+    TRANSACTION_TYPE_MAYBE_WITH_RECEIPT
+  } from "$lib/types";
 
   interface Props {
     mode: "add" | "edit";
     initialData?: JournalRecord | null;
     isSubmitting: boolean;
     onSave: (row: any[]) => Promise<void>;
-    onCancel: () => void;
     hideHeader?: boolean;
     onStateChange?: (data: any) => void;
   }
@@ -56,13 +63,11 @@
     initialData = null,
     isSubmitting,
     onSave,
-    onCancel,
     hideHeader = false,
     onStateChange
   }: Props = $props();
 
   let accounts = $state<ResidentRecord[]>([]);
-  let transactionTypes = $state<{ value: string; val: string; label: string }[]>([]);
   let academicTerms = $state<{ value: string; label: string }[]>([]);
   let mopTypes = $state<{ value: string; label: string }[]>([]);
   const mopOptions = $derived(mopTypes);
@@ -76,13 +81,12 @@
   let hasConfirmedTerm = $state(false);
 
   // Form State
+  // FIXME: also using legacy fields.
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
-    creatorEmail: auth.user?.email || "",
-    creatorName: auth.displayName || "",
+    creatorName: auth.displayNameLastFirst || "",
     creatorStNo: "",
     creatorId: "",
-    accountEmail: "",
     accountName: "",
     accountStNo: "",
     accountId: "",
@@ -92,7 +96,7 @@
     mop: "CASH",
     mopTo: "CASH",
     period: uiSettings.currentTerm || "",
-    type: "PMT_COLLECTION",
+    type: TransactionType.COLLECTION,
     notes: "",
     notesPrivate: "",
     mopRefNo: "",
@@ -103,27 +107,28 @@
   });
 
   let carryoverTerm = $state("");
-  const isEos = $derived(formData.type === "PMT_EOS" || formData.type === "PMT_EOS_UNSETTLED");
+  const isEos = $derived(
+    formData.type === TransactionType.EOS || formData.type === TransactionType.EOS_UNSETTLED
+  );
 
   const typeOptions = $derived([
-    ...transactionTypes.filter((t) => {
+    ...TRANSACTION_TYPE_OPTIONS.filter((t) => {
       if (t.value === formData.type) {
         return true;
       }
       return (
-        t.value !== "PMT_CARRYOVER" &&
-        t.value !== "PMT_TRANSFER_FROM" &&
-        t.value !== "PMT_TRANSFER_TO"
+        t.value !== TransactionType.CARRYOVER &&
+        t.value !== TransactionType.TRANSFER_FROM &&
+        t.value !== TransactionType.TRANSFER_TO
       );
-    }),
-    { value: "PMT_FUND_TRANSFER", val: "FUND_TRANSFER", label: "Fund Transfer" }
+    })
   ]);
 
   const isTypeDisabled = $derived(
     isSubmitting ||
-      formData.type === "PMT_TRANSFER_FROM" ||
-      formData.type === "PMT_TRANSFER_TO" ||
-      formData.type === "PMT_CARRYOVER"
+      formData.type === TransactionType.TRANSFER_FROM ||
+      formData.type === TransactionType.TRANSFER_TO ||
+      formData.type === TransactionType.CARRYOVER
   );
 
   const carryoverAcademicTerms = $derived.by(() => {
@@ -211,7 +216,11 @@
 
   const isCollection = $derived.by(() => {
     const type = formData.type;
-    return type === "PMT_COLLECTION" || type === "PMT_CN_REFUND" || type === "PMT_WAIVED";
+    return (
+      type === TransactionType.COLLECTION ||
+      type === TransactionType.REFUND_COLLECTION ||
+      type === TransactionType.WAIVED
+    );
   });
 
   const waterLimit = $derived.by(() => {
@@ -240,20 +249,9 @@
     return assocLimit - fee;
   });
 
-  const fundsOnlyTypes = [
-    "PMT_CARRYOVER",
-    "PMT_DISCREPANCY",
-    "PMT_EOS",
-    "PMT_EOS_UNSETTLED",
-    "PMT_PURCHASE",
-    "PMT_REFUND",
-    "PMT_TRANSPORTATION",
-    "PMT_UPLB_ADA_FEE",
-    "PMT_WATER_AA",
-    "PMT_WATER"
-  ];
-
-  const isFundsOnly = $derived(fundsOnlyTypes.includes(formData.type));
+  const isFundsOnly = $derived(
+    TRANSACTION_TYPE_FUNDS_ONLY.includes(formData.type as TransactionType)
+  );
 
   $effect(() => {
     if (!isReady) return;
@@ -264,8 +262,7 @@
   });
 
   $effect(() => {
-    if (isFundsOnly && formData.accountEmail !== "_funds") {
-      formData.accountEmail = "_funds";
+    if (isFundsOnly && formData.accountId !== SYSTEM_IDS.FUNDS) {
       formData.accountName = (brandingState.profile.issuerName || "").toUpperCase();
       formData.accountId = SYSTEM_IDS.FUNDS;
       accountSearch = (brandingState.profile.issuerName || "").toUpperCase();
@@ -276,13 +273,6 @@
   $effect(() => {
     formData.period;
     hasConfirmedTerm = false;
-  });
-
-  // Display initial creator if set (for "add" mode mostly)
-  $effect(() => {
-    if (mode === "add" && formData.creatorEmail && !creatorSearch) {
-      creatorSearch = formData.creatorEmail;
-    }
   });
 
   // Autocomplete State
@@ -335,15 +325,6 @@
         new Map([...rawAccounts, fundsAccount].map((a) => [a.email, a])).values()
       );
 
-      transactionTypes = constants
-        .filter((r) => r.key.startsWith("PMT_") && r.key !== "PMT_TYPE_RESERVED")
-        .map((r) => ({
-          value: r.key,
-          val: r.value || r.key,
-          label: r.description || r.value || r.key
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-
       const termValues = constants
         .filter(
           (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
@@ -369,11 +350,9 @@
         const mopRefInfo = parseRef(initialData.mopRefNo);
         formData = {
           date: initialData.date,
-          creatorEmail: initialData.creator,
           creatorName: initialData.creatorName,
           creatorStNo: "", // Resolving below
           creatorId: initialData.creatorId || "",
-          accountEmail: initialData.account,
           accountName: initialData.name,
           accountStNo: initialData.stno,
           accountId: initialData.accountId || "",
@@ -384,7 +363,8 @@
           mopTo: (initialData as any).mopTo || "CASH",
           period: initialData.period,
           type:
-            transactionTypes.find((t) => t.val === initialData!.type)?.value || initialData.type,
+            (TRANSACTION_TYPE_OPTIONS.find((t) => t.value === initialData!.type)
+              ?.value as TransactionType) || initialData.type,
           notes: initialData.notes,
           notesPrivate: initialData.notesPrivate,
           mopRefNo: mopRefInfo.reference || initialData.mopRefNo,
@@ -430,17 +410,11 @@
             formData.creatorName = creatorAcc.name;
           }
         }
-      } else {
-        const uid = auth.userId;
-        if (uid) {
-          const myAcc = accounts.find((a) => a.residentId === uid || a.id === uid);
-          if (myAcc) {
-            formData.creatorStNo = myAcc.stno;
-            formData.creatorName = myAcc.name;
-            formData.creatorId = myAcc.residentId || myAcc.id;
-            creatorSearch = myAcc.name;
-          }
-        }
+      } else if (auth.user) {
+        formData.creatorStNo = auth.user.studentNo;
+        formData.creatorName = auth.displayNameLastFirst;
+        formData.creatorId = auth.userId;
+        creatorSearch = auth.displayNameLastFirst;
       }
 
       // Pre-fill target account from query parameters if provided
@@ -467,29 +441,27 @@
   onMount(loadData);
 
   function selectCreator(a: ResidentRecord) {
-    formData.creatorEmail = a.email;
     formData.creatorName = a.name;
     formData.creatorStNo = a.stno;
-    formData.creatorId = a.residentId || a.id;
+    formData.creatorId = a.residentId;
     creatorSearch = a.name;
   }
 
   function selectAccount(a: ResidentRecord) {
-    formData.accountEmail = a.email;
     formData.accountName = a.name;
     formData.accountStNo = a.stno;
-    formData.accountId = a.residentId || a.id;
+    formData.accountId = a.residentId;
     accountSearch = a.name;
     selectedResident = a;
   }
 
   async function handleSubmit() {
-    if (!formData.creatorEmail || !formData.accountEmail) {
+    if (!formData.creatorId || !formData.accountId) {
       error = "Please select both a Recorder and an Account.";
       return;
     }
 
-    if (formData.type === "PMT_FUND_TRANSFER" && formData.mop === formData.mopTo) {
+    if (formData.type === TransactionType.FUND_TRANSFER && formData.mop === formData.mopTo) {
       error = "Source (From) and destination (To) payment processors cannot be the same.";
       return;
     }
@@ -504,9 +476,9 @@
     }
 
     const isTransfer =
-      formData.type === "PMT_FUND_TRANSFER" ||
-      formData.type === "PMT_TRANSFER_FROM" ||
-      formData.type === "PMT_TRANSFER_TO";
+      formData.type === TransactionType.FUND_TRANSFER ||
+      formData.type === TransactionType.TRANSFER_FROM ||
+      formData.type === TransactionType.TRANSFER_TO;
 
     if (!isTransfer && misc > 0 && !formData.notes.trim()) {
       error = "Public remarks are required for miscellaneous payments.";
@@ -532,7 +504,7 @@
     error = null;
 
     try {
-      if (formData.type === "PMT_FUND_TRANSFER") {
+      if (formData.type === TransactionType.FUND_TRANSFER) {
         // From Row: Negative amount, MOP From
         const fromRow = new Array(22).fill("");
         fromRow[JOR.DATE] = formData.date;
@@ -543,7 +515,7 @@
         fromRow[JOR.MISC] = misc !== 0 ? `-${Math.abs(misc)}` : "0";
         fromRow[JOR.MOP] = formData.mop;
         fromRow[JOR.PERIOD] = formData.period;
-        fromRow[JOR.TYPE] = "TRANSFER_FROM";
+        fromRow[JOR.TYPE] = TransactionType.TRANSFER_FROM;
         fromRow[JOR.NOTES] = formData.notes;
         fromRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
         fromRow[JOR.MOP_REFNO] = formData.instapayInvoice
@@ -570,7 +542,7 @@
         toRow[JOR.MISC] = misc !== 0 ? `${Math.abs(misc)}` : "0";
         toRow[JOR.MOP] = formData.mopTo;
         toRow[JOR.PERIOD] = formData.period;
-        toRow[JOR.TYPE] = "TRANSFER_TO";
+        toRow[JOR.TYPE] = TransactionType.TRANSFER_TO;
         toRow[JOR.NOTES] = formData.notes;
         toRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
         toRow[JOR.MOP_REFNO] = formData.instapayInvoice
@@ -596,15 +568,15 @@
       row[JOR.DATE] = formData.date;
       row[JOR.CREATOR] = "";
       row[JOR.ACCOUNT] = "";
-      const negativeTypes = [
-        "PMT_REFUND",
-        "PMT_CN_REFUND",
-        "PMT_PURCHASE",
-        "PMT_WATER",
-        "PMT_WATER_AA",
-        "PMT_TRANSACTION_FEE",
-        "PMT_UPLB_ADA_FEE",
-        "PMT_TRANSPORTATION"
+      const negativeTypes: string[] = [
+        TransactionType.REFUND,
+        TransactionType.REFUND_COLLECTION,
+        TransactionType.PURCHASE,
+        TransactionType.WATER,
+        TransactionType.WATER_AA,
+        TransactionType.TRANSACTION_FEE,
+        TransactionType.UPLB_ADA_FEE,
+        TransactionType.TRANSPORTATION
       ];
       const isNegative = negativeTypes.includes(formData.type);
 
@@ -617,21 +589,24 @@
           ? `-${Math.abs(parseFloat(formData.assocFee))}`
           : formData.assocFee || "0";
       row[JOR.MISC] =
-        formData.type === "PMT_WAIVED"
+        formData.type === TransactionType.WAIVED
           ? "0"
           : isNegative && parseFloat(formData.miscFee) !== 0
             ? `-${Math.abs(parseFloat(formData.miscFee))}`
             : formData.miscFee || "0";
       row[JOR.MOP] =
-        formData.type === "PMT_WAIVED" || formData.type === "PMT_DISCREPANCY" ? "" : formData.mop;
+        formData.type === TransactionType.WAIVED || formData.type === TransactionType.DISCREPANCY
+          ? ""
+          : formData.mop;
       row[JOR.PERIOD] = formData.period;
-      const mappedType =
-        transactionTypes.find((t) => t.value === formData.type)?.val || formData.type;
+      const mappedType: TransactionType =
+        (TRANSACTION_TYPE_OPTIONS.find((t) => t.value === formData.type)
+          ?.value as TransactionType) || formData.type;
       row[JOR.TYPE] = mappedType;
       row[JOR.NOTES] = formData.notes;
       row[JOR.NOTES_PRIVATE] = formData.notesPrivate;
       row[JOR.MOP_REFNO] =
-        formData.type === "PMT_WAIVED" || formData.type === "PMT_DISCREPANCY"
+        formData.type === TransactionType.WAIVED || formData.type === TransactionType.DISCREPANCY
           ? ""
           : formData.instapayInvoice
             ? `${formData.mopRefNo};${formData.instapayInvoice}`
@@ -639,23 +614,15 @@
       row[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
 
       // PR_REFNO logic based on TYPE and Account
-      const prTypes = ["WAIVED", "COLLECTION"];
-      const conditionalPrTypes = [
-        "RECLASSIFY",
-        "COLLECTION_OTHERS",
-        "TRANSFER_TO",
-        "TRANSFER_FROM",
-        "COLLECTION_REFUND",
-        "REFUND"
-      ];
 
       let prRef = formData.prRefNo;
-      const isFunds = formData.accountEmail.toLowerCase().includes("_funds");
-      const isRefund = mappedType.toUpperCase().includes("REFUND");
+      const isFunds = formData.accountId === SYSTEM_IDS.FUNDS;
+      const isRefund =
+        mappedType === TransactionType.REFUND || mappedType === TransactionType.REFUND_COLLECTION;
 
       const needsPr =
-        prTypes.includes(mappedType) ||
-        ((conditionalPrTypes.includes(mappedType) || isRefund) && !isFunds);
+        TRANSACTION_TYPE_WITH_RECEIPT.includes(mappedType) ||
+        ((TRANSACTION_TYPE_MAYBE_WITH_RECEIPT.includes(mappedType) || isRefund) && !isFunds);
 
       if (!needsPr) {
         prRef = "N/A";
@@ -688,9 +655,9 @@
         carryoverRow[JOR.MOP] = formData.mop;
         carryoverRow[JOR.PERIOD] = carryoverTerm;
         const mappedCarryoverType =
-          transactionTypes.find((t) => {
-            return t.value === "PMT_CARRYOVER";
-          })?.val || "PMT_CARRYOVER";
+          TRANSACTION_TYPE_OPTIONS.find((t) => {
+            return t.value === TransactionType.CARRYOVER;
+          })?.value || TransactionType.CARRYOVER;
         carryoverRow[JOR.TYPE] = mappedCarryoverType;
         carryoverRow[JOR.NOTES] = "";
         carryoverRow[JOR.NOTES_PRIVATE] = "";
@@ -719,7 +686,7 @@
 <!-- FIXME: Subpage header should not be handled by this component -->
 <div class="mx-auto max-w-7xl space-y-3">
   {#if !hideHeader}
-    <SubpageHeader title={mode === "add" ? "Add Transaction" : "Edit Transaction"} />
+    <ContentHeader title={mode === "add" ? "Add Transaction" : "Edit Transaction"} />
   {/if}
 
   <div class="mx-auto max-w-3xl space-y-6">
@@ -858,7 +825,7 @@
                       {/if}
                     </div>
 
-                    {#if formData.type === "PMT_COLLECTION" && selectedResident && selectedResident.email !== "_funds"}
+                    {#if formData.type === TransactionType.COLLECTION && selectedResident && selectedResident.email !== "_funds"}
                       <Dialog.Root bind:open={isStandingOpen}>
                         <Dialog.Trigger>
                           {#snippet child({ props })}
@@ -873,7 +840,7 @@
                             </Button>
                           {/snippet}
                         </Dialog.Trigger>
-                        <Dialog.Content class="sm:max-w-[425px]">
+                        <Dialog.Content class="sm:max-w-106.25">
                           <Dialog.Header>
                             <Dialog.Title>Financial Standing</Dialog.Title>
                             <Dialog.Description>
@@ -908,7 +875,7 @@
                       step="0.01"
                       bind:value={formData.waterFee}
                       max={isCollection && !allowOverpayment ? waterLimit : undefined}
-                      disabled={!formData.accountEmail || isSubmitting || isEos}
+                      disabled={!formData.accountId || isSubmitting || isEos}
                       class="text-right font-mono"
                     />
                     {#if isCollection && selectedResident}
@@ -965,7 +932,7 @@
                       step="0.01"
                       bind:value={formData.assocFee}
                       max={isCollection && !allowOverpayment ? assocLimit : undefined}
-                      disabled={!formData.accountEmail || isSubmitting || isEos}
+                      disabled={!formData.accountId || isSubmitting || isEos}
                       class="text-right font-mono"
                     />
                     {#if isCollection && selectedResident}
@@ -1012,7 +979,7 @@
                 {/if}
               </div>
 
-              {#if formData.type !== "PMT_WAIVED"}
+              {#if formData.type !== TransactionType.WAIVED}
                 <!-- Misc Fee Row -->
                 <div class="space-y-1.5">
                   <Label>Misc</Label>
@@ -1020,7 +987,7 @@
                     type="number"
                     step="0.01"
                     bind:value={formData.miscFee}
-                    disabled={!formData.accountEmail || isSubmitting || isEos}
+                    disabled={!formData.accountId || isSubmitting || isEos}
                     class="text-right font-mono"
                   />
                 </div>
@@ -1041,32 +1008,32 @@
               {/if}
             </div>
 
-            {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
+            {#if formData.type !== TransactionType.WAIVED && formData.type !== TransactionType.DISCREPANCY}
               <div
-                class="grid gap-6 pt-2 {formData.type === 'PMT_FUND_TRANSFER'
+                class="grid gap-6 pt-2 {formData.type === TransactionType.FUND_TRANSFER
                   ? 'md:grid-cols-2'
                   : ''}"
               >
                 <div class="space-y-1.5">
                   <Label
-                    >{formData.type === "PMT_FUND_TRANSFER"
+                    >{formData.type === TransactionType.FUND_TRANSFER
                       ? "Payment Processor (From)"
                       : "Payment Processor"}</Label
                   >
                   <Combobox
                     bind:value={formData.mop}
                     options={mopOptions}
-                    disabled={!formData.accountEmail || isSubmitting}
+                    disabled={!formData.accountId || isSubmitting}
                     class="w-full"
                   />
                 </div>
-                {#if formData.type === "PMT_FUND_TRANSFER"}
+                {#if formData.type === TransactionType.FUND_TRANSFER}
                   <div class="space-y-1.5">
                     <Label>Payment Processor (To)</Label>
                     <Combobox
                       bind:value={formData.mopTo}
                       options={mopOptions}
-                      disabled={!formData.accountEmail || isSubmitting}
+                      disabled={!formData.accountId || isSubmitting}
                       class="w-full"
                     />
                   </div>
@@ -1074,13 +1041,13 @@
               </div>
             {/if}
 
-            {#if formData.type !== "PMT_WAIVED" && formData.type !== "PMT_DISCREPANCY"}
+            {#if formData.type !== TransactionType.WAIVED && formData.type !== TransactionType.DISCREPANCY}
               <div class="grid gap-6 md:grid-cols-2">
                 <div class="space-y-1.5">
                   <Label>Reference Number</Label>
                   <Input
                     bind:value={formData.mopRefNo}
-                    disabled={!formData.accountEmail || isSubmitting}
+                    disabled={!formData.accountId || isSubmitting}
                     placeholder="e.g., Transaction ID"
                   />
                 </div>
@@ -1088,7 +1055,7 @@
                   <Label>InstaPay Invoice Number</Label>
                   <Input
                     bind:value={formData.instapayInvoice}
-                    disabled={!formData.accountEmail || isSubmitting}
+                    disabled={!formData.accountId || isSubmitting}
                     placeholder="Optional"
                   />
                 </div>
@@ -1109,7 +1076,7 @@
                 <Textarea
                   bind:value={formData.notes}
                   placeholder="Description for the resident…"
-                  class="h-[120px] text-xs"
+                  class="h-30 text-xs"
                 />
               </div>
               <div class="space-y-2">
@@ -1117,20 +1084,19 @@
                 <Textarea
                   bind:value={formData.notesPrivate}
                   placeholder="Internal context only (not visible to resident)…"
-                  class="h-[120px] text-xs"
+                  class="h-30 text-xs"
                 />
               </div>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 border-t pt-4">
-            <Button variant="outline" onclick={onCancel} isLoading={isSubmitting}>Cancel</Button>
             <Button
               onclick={handleSubmit}
-              disabled={!formData.accountEmail}
+              disabled={!formData.accountId || !formData.creatorId}
               isLoading={isSubmitting}
               icon={Save}
-              class="min-w-[120px]"
+              class="min-w-30"
             >
               Save
             </Button>

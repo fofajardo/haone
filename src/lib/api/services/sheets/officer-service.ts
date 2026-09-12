@@ -1,6 +1,6 @@
-import type { OfficerServiceInterface } from "../interfaces/officer-service.interface";
-import { fetchSheetRowsRaw, updateSheetValue, appendSheetRow, deleteSheetRow } from "../common";
 import { OFFICER_COL, type OfficerRecord, OfficerStatus } from "$lib/types";
+import { appendSheetRow, deleteSheetRow, fetchSheetRowsRaw, updateSheetValue } from "../common";
+import type { OfficerServiceInterface } from "../interfaces/officer-service.interface";
 
 import { auth } from "$state/auth.svelte";
 import { fetchServer } from "$utils/api-client";
