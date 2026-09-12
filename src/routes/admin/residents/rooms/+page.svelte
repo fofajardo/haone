@@ -226,11 +226,7 @@
       >
     </ErrorView>
   {:else}
-    <div
-      class={isCompact
-        ? "flex flex-col gap-2"
-        : "grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"}
-    >
+    <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {#each filteredRooms as room}
         {#if isCompact}
           <button
@@ -263,8 +259,8 @@
                     {room.unavailable_reason}
                   </span>
                 {:else}
-                  <Badge variant="outline" class="text-xs uppercase">
-                    {getRoomOccupancy(room.room_number)} Occupied
+                  <Badge variant="outline" class="uppercase">
+                    {getRoomOccupancy(room.room_number)}/{room.available_slots.length}
                   </Badge>
                 {/if}
               </div>
@@ -302,8 +298,8 @@
                     </Tooltip.Content>
                   </Tooltip.Root>
                 {:else}
-                  <Badge variant="outline" class="text-xs uppercase">
-                    {getRoomOccupancy(room.room_number)} Occupied
+                  <Badge variant="outline" class="uppercase">
+                    {getRoomOccupancy(room.room_number)}/{room.available_slots.length}
                   </Badge>
                 {/if}
               </div>
