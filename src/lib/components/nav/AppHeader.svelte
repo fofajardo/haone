@@ -18,6 +18,7 @@
   import BrandingLogo from "$components/BrandingLogo.svelte";
   import { namecase } from "@compwright/namecase";
   import GlobalTermFilter from "./GlobalTermFilter.svelte";
+  import { env } from "$env/dynamic/public";
 
   const sidebar = Sidebar.useSidebar();
   let imgError = $state(false);
@@ -60,7 +61,7 @@
         title: "Database Sync",
         url: "/admin/database-sync",
         icon: Database,
-        hide: !dev
+        hide: !dev || env.PUBLIC_DB_PROVIDER !== "supabase"
       },
       {
         title: "Settings",

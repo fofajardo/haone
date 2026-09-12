@@ -34,6 +34,7 @@
   import { getCustomServices } from "$lib/services";
   import { AccountType } from "$lib/types";
   import { namecase } from "@compwright/namecase";
+  import { env } from "$env/dynamic/public";
 
   const sidebar = Sidebar.useSidebar();
 
@@ -77,7 +78,7 @@
         title: "Database Sync",
         url: "/admin/database-sync",
         icon: Database,
-        hide: !dev
+        hide: !dev || env.PUBLIC_DB_PROVIDER !== "supabase"
       },
       {
         title: "Settings",
