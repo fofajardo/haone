@@ -165,6 +165,7 @@
   <ContentHeader
     title="Edit Announcement"
     isRefreshing={isLoading}
+    href="/admin/announcements"
     actions={[
       ...(isActive
         ? [

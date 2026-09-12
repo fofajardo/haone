@@ -244,7 +244,7 @@
         {columns}
         pagination={tableSync.pagination}
         onPaginationChange={(p) => (tableSync.pagination = p)}
-        onRowClick={(r) => goto(`/admin/announcements/${r.id}`)}
+        onRowClick={(r) => goto(`/admin/announcements/${r.id}/edit`)}
         rowId="id"
         enableSelection={true}
         onSelectionChange={(ids) => (selectedIds = ids)}
