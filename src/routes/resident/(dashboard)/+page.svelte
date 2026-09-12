@@ -187,8 +187,10 @@
         </StatisticCard>
 
         <StatisticCard
-          title="Room & Bed"
-          value={`${status.account?.room}-${status.account?.bed}`}
+          title="Room"
+          value={status.account.bed
+            ? `${status.account.room}-${status.account.bed}`
+            : `${status.account.room}`}
           {isLoading}
         >
           {#snippet icon()}<MapPin class="h-6 w-6" />{/snippet}
