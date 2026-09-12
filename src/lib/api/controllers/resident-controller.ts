@@ -401,7 +401,20 @@ export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean 
 // FIXME: This should be replaced with a less hacky RBAC system in the future.
 //        The CASL.js pattern is already being followed here, however.
 
-export function canAccessLaundryOrFridge(accountType: string): boolean {
+export function canAccessFridge(accountType: string): boolean {
+  const type = (accountType || "").trim().toUpperCase();
+  if (
+    type === AccountType.STUDENT ||
+    type === AccountType.BOOTCAMP ||
+    type === AccountType.TRANSIENT
+  ) {
+    return true;
+  }
+  return false;
+}
+
+
+export function canAccessLaundry(accountType: string): boolean {
   const type = (accountType || "").trim().toUpperCase();
   if (
     type === AccountType.STUDENT ||
@@ -439,8 +452,12 @@ export function isResidentRouteAllowed(
 ): boolean {
   const type = (accountType || "").trim().toUpperCase();
 
-  if (urlOrHref.includes("/laundry") || urlOrHref.includes("/fridge")) {
-    return canAccessLaundryOrFridge(type);
+  if (urlOrHref.includes("/laundry")) {
+    return canAccessLaundry(type);
+  }
+
+  if (urlOrHref.includes("/fridge")) {
+    return canAccessFridge(type);
   }
 
   if (urlOrHref.includes("/achievements") || urlOrHref.includes("/leaderboards")) {
