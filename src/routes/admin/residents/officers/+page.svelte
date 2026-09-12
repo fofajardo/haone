@@ -19,7 +19,6 @@
   import { uiSettings } from "$state/settings.svelte";
 
   let officers = $state<OfficerRecord[]>([]);
-  let currentTerm = $state("");
   let isLoading = $state(true);
   let error = $state<string | null>(null);
 
@@ -34,9 +33,6 @@
     error = null;
     try {
       [officers] = await Promise.all([fetchOfficers(bypassCache)]);
-      if (tableSync.filters!.term === "ALL") {
-        tableSync.filters!.term = uiSettings.currentTerm;
-      }
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -58,13 +54,12 @@
   const filteredOfficers = $derived.by(() => {
     return officers.filter((o) => {
       const search = tableSync.filters!.search.toLowerCase();
-      const term = tableSync.filters!.term;
 
       const matchesSearch =
         o.name.toLowerCase().includes(search) ||
         o.email.toLowerCase().includes(search) ||
         o.position.toLowerCase().includes(search);
-      const matchesTerm = term === "ALL" || o.term === term;
+      const matchesTerm = o.term === uiSettings.currentTerm;
 
       return matchesSearch && matchesTerm;
     });
@@ -99,11 +94,9 @@
     </ErrorView>
   {:else}
     <FilterDrawer
-      activeCount={Number(tableSync.filters!.search !== "") +
-        Number(tableSync.filters!.term !== currentTerm && tableSync.filters!.term !== "ALL")}
+      activeCount={Number(tableSync.filters!.search !== "")}
       onClear={() => {
         tableSync.reset();
-        tableSync.filters!.term = currentTerm;
       }}
     >
       <div class="grid gap-2 lg:grid-cols-8">
