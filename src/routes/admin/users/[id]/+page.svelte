@@ -63,7 +63,7 @@
   import OccupancyHistoryCard from "$components/residents/OccupancyHistoryCard.svelte";
   import OfficerHistoryCard from "$components/residents/OfficerHistoryCard.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
-  import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
+  import RoomActionDialog from "$components/forms/RoomActionDialog.svelte";
   import { toast } from "svelte-sonner";
 
   const userId = $derived(page.params.id);
@@ -600,7 +600,7 @@
 </div>
 
 {#if currentAccount}
-  <AssignmentDialog
+  <RoomActionDialog
     bind:open={isDelistOpen}
     room={currentAccount.room}
     bed={currentAccount.bed}

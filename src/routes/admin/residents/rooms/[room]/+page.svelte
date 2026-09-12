@@ -2,7 +2,7 @@
   import { roomsState } from "$state/rooms.svelte";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import type { ResidentRecord, UserRecord } from "$lib/types";
-  import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
+  import RoomActionDialog from "$components/forms/RoomActionDialog.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
@@ -232,7 +232,7 @@
   {/if}
 </div>
 
-<AssignmentDialog
+<RoomActionDialog
   bind:open={assignmentDialog.open}
   room={roomNumber}
   bind:bed={assignmentDialog.bed}

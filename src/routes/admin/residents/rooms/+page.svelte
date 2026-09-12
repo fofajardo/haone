@@ -16,7 +16,7 @@
   import { Checkbox } from "$ui/checkbox";
   import * as Card from "$ui/card";
   import * as Tooltip from "$ui/tooltip";
-  import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
+  import RoomActionDialog from "$components/forms/RoomActionDialog.svelte";
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import {
     RefreshCcw,
@@ -359,7 +359,7 @@
   {/if}
 </div>
 
-<AssignmentDialog
+<RoomActionDialog
   bind:open={assignmentDialog.open}
   room={assignmentDialog.room}
   bind:bed={assignmentDialog.bed}
