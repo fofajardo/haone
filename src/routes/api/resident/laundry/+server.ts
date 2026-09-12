@@ -15,7 +15,7 @@ import { formatTime } from "$utils/formatters";
 import { parseTimeMinutes } from "$utils/parsers";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { isFeatureFlagEnabled } from "$api/utils/feature-flags";
+import { isFeatureFlagEnabledDirect } from "$api/utils/feature-flags";
 
 /**
  * GET: Fetch all reservations + user room mapping
@@ -37,7 +37,7 @@ export const GET: RequestHandler = async ({ request }) => {
       "TERM_CURR"
     ]);
 
-    const isLaundryEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_LAUNDRY");
+    const isLaundryEnabled = isFeatureFlagEnabledDirect(constantRows, "FEATURE_FLAG_LAUNDRY");
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
@@ -120,7 +120,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [constantRows, accRows, activeTerm] = await fetchSheetsData(client, ["constants!A:C", "accounts!A:L", "TERM_CURR"]);
 
-    const isLaundryEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_LAUNDRY");
+    const isLaundryEnabled = isFeatureFlagEnabledDirect(constantRows, "FEATURE_FLAG_LAUNDRY");
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
@@ -221,7 +221,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [constantRows, resRows] = await fetchSheetsData(client, ["constants!A:C", "laundry!A:I"]);
 
-    const isLaundryEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_LAUNDRY");
+    const isLaundryEnabled = isFeatureFlagEnabledDirect(constantRows, "FEATURE_FLAG_LAUNDRY");
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });

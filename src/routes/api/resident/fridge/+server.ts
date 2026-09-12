@@ -20,7 +20,7 @@ import {
 } from "$lib/types";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { isFeatureFlagEnabled } from "$api/utils/feature-flags";
+import { isFeatureFlagEnabledDirect } from "$api/utils/feature-flags";
 
 /**
  * GET: Fetch all fridge items + user/room mapping (Public to all logged-in residents)
@@ -42,7 +42,7 @@ export const GET: RequestHandler = async ({ request }) => {
       "TERM_CURR"
     ]);
     
-    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+    const isFridgeEnabled = isFeatureFlagEnabledDirect(constantRows, "FEATURE_FLAG_FRIDGE");
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
@@ -133,7 +133,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const [constantRows] = await fetchSheetsData(client, ["constants!A:C"]);
     
-    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+    const isFridgeEnabled = isFeatureFlagEnabledDirect(constantRows, "FEATURE_FLAG_FRIDGE");
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
@@ -183,7 +183,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [constantRows, rows] = await fetchSheetsData(client, ["constants!A:C", "fridge_items!A:M"]);
     
-    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+    const isFridgeEnabled = isFeatureFlagEnabledDirect(constantRows, "FEATURE_FLAG_FRIDGE");
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
@@ -257,7 +257,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [constantRows, rows] = await fetchSheetsData(client, ["constants!A:C", "fridge_items!A:M"]);
     
-    const isFridgeEnabled = isFeatureFlagEnabled(constantRows, "FEATURE_FLAG_FRIDGE");
+    const isFridgeEnabled = isFeatureFlagEnabledDirect(constantRows, "FEATURE_FLAG_FRIDGE");
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });

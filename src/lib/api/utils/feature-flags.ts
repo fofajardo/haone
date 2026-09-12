@@ -6,7 +6,7 @@ import { CONSTANT_COL } from "$lib/types";
  * @param theFeatureFlag the feature flag to look for
  * @returns `true` if the feature flag is set to enabled, `false` otherwise. it returns `true` if not set in the constants table.
  */
-export function isFeatureFlagEnabled(constantRows: any[][], theFeatureFlag: string): boolean {
+export function isFeatureFlagEnabledDirect(constantRows: any[][], theFeatureFlag: string): boolean {
   const featureFlag = constantRows.find((r: any) => {
     return (
       (r[CONSTANT_COL.KEY] || "").trim() === theFeatureFlag
