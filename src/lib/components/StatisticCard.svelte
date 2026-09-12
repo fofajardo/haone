@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Card from "$ui/card";
   import type { Snippet } from "svelte";
+  import { Skeleton } from "./ui/skeleton";
 
   let {
     title,
@@ -30,7 +31,7 @@
   </Card.Header>
   <Card.Content>
     {#if isLoading}
-      <div class="h-9 w-24 animate-pulse rounded bg-muted/50"></div>
+      <Skeleton class="h-9 w-24" />
     {:else if children}
       {@render children()}
     {:else}
