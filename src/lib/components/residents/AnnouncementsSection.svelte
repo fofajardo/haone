@@ -10,6 +10,7 @@
   import { Badge } from "$ui/badge";
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { goto } from "$app/navigation";
+  import { Skeleton } from "$components/ui/skeleton";
 
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
@@ -36,7 +37,9 @@
   onMount(loadData);
 </script>
 
-{#if !isLoading && announcements.length > 0}
+{#if isLoading}
+  <Skeleton class="h-175 w-full" />
+{:else if announcements.length > 0}
   <Card.Root
     class="relative mx-auto flex h-175 w-full max-w-full flex-col overflow-hidden shadow-none"
   >
