@@ -67,7 +67,7 @@ export async function expireAnnouncement(id: string) {
   await announcementService.expireAnnouncement(id);
 }
 
-export async function deleteAnnouncement(id: string, _accessToken?: string) {
+export async function deleteAnnouncement(id: string) {
   const all = await fetchAdminAnnouncements();
   const target = all.find((a) => a.id === id);
   if (target?.content) {

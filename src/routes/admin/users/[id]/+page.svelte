@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
@@ -13,7 +12,6 @@
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Label } from "$ui/label";
-  import * as AlertDialog from "$ui/alert-dialog";
   import {
     User as UserIcon,
     GraduationCap,
@@ -66,6 +64,7 @@
   import OfficerHistoryCard from "$components/residents/OfficerHistoryCard.svelte";
   import TransactionHistoryCard from "$components/residents/TransactionHistoryCard.svelte";
   import AssignmentDialog from "$components/forms/AssignmentDialog.svelte";
+  import { toast } from "svelte-sonner";
 
   const userId = $derived(page.params.id);
 
@@ -75,7 +74,6 @@
   let history = $state<JournalRecord[]>([]);
   let allResidents = $state<ResidentRecord[]>([]);
   let isLoading = $state(true);
-  let isDeleteAlertOpen = $state(false);
   let error = $state<string | null>(null);
 
   let isClearDialogOpen = $state(false);
@@ -150,17 +148,30 @@
     }
   }
 
-  async function handleDelete() {
-    if (!user) return;
-    isDeleteAlertOpen = false;
-    isLoading = true;
-    try {
-      await deleteUser(user.id);
-      goto("/admin/users");
-    } catch (e: any) {
-      error = e.message;
-      isLoading = false;
+  async function confirmDelete() {
+    if (!user) {
+      return;
     }
+    globalDialog.confirm(
+      "Delete user profile?",
+      `The profile and server data for ${user?.displayName ?? "this user"} will be permanently deleted.`,
+      undefined,
+      async () => {
+        if (!user?.id) return;
+        try {
+          await deleteUser(user.id);
+          toast.success("User profile deleted.");
+          goto("/admin/users");
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Delete",
+        cancel: "Cancel"
+      }
+    );
   }
 
   async function handleChangeAccountType(newType: string) {
@@ -258,9 +269,7 @@
               label: "Delete",
               icon: Trash2,
               variant: "destructive",
-              onclick: () => {
-                isDeleteAlertOpen = true;
-              },
+              onclick: () => confirmDelete(),
               isLoading
             }
           ]
@@ -288,28 +297,6 @@
       {/if}
     {/snippet}
   </ContentHeader>
-
-  <AlertDialog.Root bind:open={isDeleteAlertOpen}>
-    <AlertDialog.Content>
-      <AlertDialog.Header>
-        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-        <AlertDialog.Description>
-          This action cannot be undone. This will permanently delete the user profile for
-          <span class="font-bold text-foreground">{user?.displayName}</span>
-          and remove their data from our servers.
-        </AlertDialog.Description>
-      </AlertDialog.Header>
-      <AlertDialog.Footer>
-        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-        <AlertDialog.Action
-          class="text-destructive-foreground bg-destructive hover:bg-destructive/90"
-          onclick={handleDelete}
-        >
-          Delete
-        </AlertDialog.Action>
-      </AlertDialog.Footer>
-    </AlertDialog.Content>
-  </AlertDialog.Root>
 
   {#if isLoading}
     <LoadingView />

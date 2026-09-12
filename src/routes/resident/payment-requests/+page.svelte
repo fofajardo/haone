@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { Search, RefreshCcw, Plus, ReceiptText, Wallet } from "@lucide/svelte";
+  import { Search, Plus, ReceiptText, Wallet } from "@lucide/svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
@@ -12,25 +11,20 @@
     fetchPaymentRequests,
     cancelPaymentRequest
   } from "$api/controllers/payment-request-controller";
-  import { fetchUsers } from "$api/controllers/resident-controller";
   import { type PaymentRequestRecord, PaymentRequestStatus } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { pageState } from "$state/page-info.svelte";
-  import { goto } from "$app/navigation";
-  import * as AlertDialog from "$ui/alert-dialog";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
-  import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let payments = $state<PaymentRequestRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let requestToCancel = $state<string | null>(null);
-  let isCancelDialogOpen = $state(false);
-  let isCancelling = $state(false);
+  let discardRequestId = $state<string | null>(null);
   let currentResidentId = $state("");
   let searchQuery = $state("");
   let statusFilter = $state<string>("");
@@ -62,27 +56,31 @@
     }
   }
 
-  async function handleCancel() {
-    if (!requestToCancel) {
-      return;
-    }
-    isCancelling = true;
-    try {
-      await cancelPaymentRequest(requestToCancel);
-      toast.success("Payment request cancelled");
-      requestToCancel = null;
-      isCancelDialogOpen = false;
-      await loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isCancelling = false;
-    }
-  }
-
-  function confirmCancel(id: string) {
-    requestToCancel = id;
-    isCancelDialogOpen = true;
+  function confirmDiscard(id: string) {
+    discardRequestId = id;
+    globalDialog.confirm(
+      "Discard payment request?",
+      "Your pending payment request will be permanently deleted.",
+      undefined,
+      async () => {
+        if (!discardRequestId) {
+          return;
+        }
+        try {
+          await cancelPaymentRequest(discardRequestId);
+          toast.success("Payment request discarded.");
+          discardRequestId = null;
+          await loadData();
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Discard",
+        cancel: "Cancel"
+      }
+    );
   }
 
   onMount(() => {
@@ -149,7 +147,7 @@
           {columns}
           rowId="id"
           meta={{
-            onCancel: confirmCancel
+            onCancel: confirmDiscard
           }}
         />
       {:else}
@@ -171,27 +169,3 @@
     </div>
   {/if}
 </div>
-
-<AlertDialog.Root bind:open={isCancelDialogOpen}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Cancel Payment Request?</AlertDialog.Title>
-      <AlertDialog.Description>
-        This action cannot be undone. This will permanently cancel your pending payment request.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel disabled={isCancelling} onclick={() => (requestToCancel = null)}
-        >Go Back</AlertDialog.Cancel
-      >
-      <Button
-        variant="destructive"
-        onclick={handleCancel}
-        isLoading={isCancelling}
-        disabled={isCancelling}
-      >
-        Confirm
-      </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

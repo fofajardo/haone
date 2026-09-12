@@ -16,11 +16,12 @@
   import { Combobox } from "$ui/combobox";
   import { Plus, GraduationCap, Coins, Save, Calculator, CircleCheck } from "@lucide/svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
-  import * as AlertDialog from "$ui/alert-dialog";
   import { Badge } from "$ui/badge";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import EmptyView from "$components/content/EmptyView.svelte";
+  import { globalDialog } from "$state/dialog.svelte";
+  import { toast } from "svelte-sonner";
 
   let terms = $state<{ value: string; description: string }[]>([]);
   let allConstants = $state<{ key: string; value: string; rowIndex: number }[]>([]);
@@ -29,7 +30,6 @@
   let showAddDialog = $state(false);
   let errorMessage = $state("");
   let activeTermCode = $state("");
-  let confirmActiveCode = $state("");
 
   let newStartYear = $state(new Date().getFullYear());
   let newTerm = $state("1S");
@@ -173,24 +173,39 @@
   }
 
   async function setActive(value: string) {
-    const currConstant = allConstants.find((c) => c.key === "TERM_CURR");
-    isSaving = true;
-    errorMessage = "";
-
-    try {
-      if (currConstant) {
-        await updateConstant("TERM_CURR", value);
-      } else {
-        await addConstant("TERM_CURR", value, "Current Active Term");
-      }
-      uiSettings.currentTerm = value;
-      await loadTerms();
-    } catch (e) {
-      console.error(e);
-      errorMessage = "Failed to update active semester.";
-    } finally {
-      isSaving = false;
+    const activeTermConstant = allConstants.find((c) => c.key === "TERM_CURR");
+    if (activeTermConstant) {
+      await updateConstant("TERM_CURR", value);
+    } else {
+      await addConstant("TERM_CURR", value, "Active Term");
     }
+    uiSettings.currentTerm = value;
+    uiSettings.activeTerm = value;
+    await loadTerms();
+  }
+
+  function handleSetActive(id: string): any {
+    globalDialog.confirm(
+      "Change active term?",
+      `This sets ${translatePeriod(id)} as the primary academic term, updating balance calculations and default filters.`,
+      undefined,
+      async () => {
+        if (!id) {
+          return;
+        }
+        try {
+          await setActive(id);
+          toast.success("Active term updated.");
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Change term",
+        cancel: "Cancel"
+      }
+    );
   }
 </script>
 
@@ -246,7 +261,7 @@
                   variant="ghost"
                   size="sm"
                   class="h-8 gap-2 text-xs font-bold tracking-wider uppercase"
-                  onclick={() => (confirmActiveCode = term.value)}
+                  onclick={() => handleSetActive(term.value)}
                   disabled={isSaving}
                 >
                   Set Active
@@ -387,32 +402,3 @@
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
-
-<AlertDialog.Root
-  open={!!confirmActiveCode}
-  onOpenChange={(o) => {
-    if (!o) confirmActiveCode = "";
-  }}
->
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Change Active Term?</AlertDialog.Title>
-      <AlertDialog.Description>
-        This will set <strong>{translatePeriod(confirmActiveCode)}</strong> as the primary academic term
-        hall-wide. This affects balance calculations and default filters.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action
-        onclick={() => {
-          const val = confirmActiveCode;
-          confirmActiveCode = "";
-          setActive(val);
-        }}
-      >
-        Confirm Change
-      </AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

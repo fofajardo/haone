@@ -13,12 +13,9 @@
     FridgeCompartment,
     FRIDGE_TAG_LABELS
   } from "$lib/types";
-  import { Button } from "$ui/button";
-  import { Input } from "$ui/input";
   import * as InputGroup from "$ui/input-group";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
-  import * as AlertDialog from "$ui/alert-dialog";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import FridgeItemCard from "$components/residents/FridgeItemCard.svelte";
   import FilterDrawer from "$components/content/FilterDrawer.svelte";
@@ -28,6 +25,7 @@
   import { Checkbox } from "$ui/checkbox";
   import { toast } from "svelte-sonner";
   import { Refrigerator, Plus, Search } from "@lucide/svelte";
+  import { globalDialog } from "$state/dialog.svelte";
 
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -37,7 +35,6 @@
   let filterCategory = $state<string>("ALL");
   let showOnlyMine = $state(true);
   let processingId = $state<string | null>(null);
-  let isActionLoading = $state(false);
 
   const filterOptions = [
     { value: "ALL", label: "All Active Items" },
@@ -47,13 +44,6 @@
     { value: "TAKEN_OUT", label: "Taken Out" },
     { value: "DISCARDED", label: "Discarded" }
   ];
-
-  let confirmActionDialog = $state({
-    open: false,
-    title: "",
-    description: "",
-    action: async () => {}
-  });
 
   async function loadData(bypassCache = false) {
     isLoading = true;
@@ -144,11 +134,11 @@
   }
 
   function confirmDiscard(item: FridgeItemRecord) {
-    confirmActionDialog = {
-      open: true,
-      title: "Discard Item?",
-      description: `Are you sure you want to mark "${item.name}" as discarded? Its photo will be permanently deleted and it cannot be restored.`,
-      action: async () => {
+    globalDialog.confirm(
+      "Discard item?",
+      `"${item.name}" and its uploaded photo will be permanently deleted.`,
+      undefined,
+      async () => {
         processingId = item.id;
         try {
           await discardFridgeItem(item.id, currentResidentId);
@@ -159,8 +149,13 @@
         } finally {
           processingId = null;
         }
+      },
+      undefined,
+      {
+        accept: "Discard",
+        cancel: "Cancel"
       }
-    };
+    );
   }
 </script>
 
@@ -249,38 +244,3 @@
     {/if}
   {/if}
 </div>
-
-<AlertDialog.Root
-  open={confirmActionDialog.open}
-  onOpenChange={(v) => {
-    if (!isActionLoading) {
-      confirmActionDialog.open = v;
-    }
-  }}
->
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{confirmActionDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>{confirmActionDialog.description}</AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel disabled={isActionLoading}>Cancel</AlertDialog.Cancel>
-      <Button
-        variant="destructive"
-        isLoading={isActionLoading}
-        disabled={isActionLoading}
-        onclick={async () => {
-          isActionLoading = true;
-          try {
-            await confirmActionDialog.action();
-            confirmActionDialog.open = false;
-          } finally {
-            isActionLoading = false;
-          }
-        }}
-      >
-        Discard
-      </Button>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

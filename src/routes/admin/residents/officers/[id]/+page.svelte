@@ -24,12 +24,12 @@
   import { pageState } from "$state/page-info.svelte";
   import { brandingState } from "$state/branding.svelte";
   import { translatePeriod } from "$utils/translators";
+  import { globalDialog } from "$state/dialog.svelte";
 
   const { id } = page.params;
   let officer = $state<OfficerRecord | null>(null);
   let isLoading = $state(true);
   let isSaving = $state(false);
-  let showDeleteDialog = $state(false);
   let showChangePositionDialog = $state(false);
   let newPosition = $state("");
 
@@ -131,17 +131,28 @@
   }
 
   async function handleDelete() {
-    if (!officer) return;
-    isSaving = true;
-    try {
-      await deleteOfficer(officer.id);
-      toast.success("Officer removed");
-      goto("/admin/residents/officers");
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isSaving = false;
-    }
+    globalDialog.confirm(
+      "Remove officer record?",
+      "This officer record will be permanently deleted.",
+      undefined,
+      async () => {
+        try {
+          if (!officer) {
+            return;
+          }
+          await deleteOfficer(officer.id);
+          toast.success("Officer record removed.");
+          goto("/admin/residents/officers");
+        } catch (e: any) {
+          toast.error(e.message);
+        }
+      },
+      undefined,
+      {
+        accept: "Remove",
+        cancel: "Cancel"
+      }
+    );
   }
 
   const statusOptions = [
@@ -250,7 +261,7 @@
             variant="destructive"
             size="sm"
             class="mt-4"
-            onclick={() => (showDeleteDialog = true)}
+            onclick={() => handleDelete()}
             icon={Trash2}
             disabled={isImmutable}
           >
@@ -303,24 +314,3 @@
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
-
-<AlertDialog.Root bind:open={showDeleteDialog}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>Permanent Removal</AlertDialog.Title>
-      <AlertDialog.Description>
-        This will permanently delete the officer record. This action cannot be undone.
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-      <AlertDialog.Action>
-        {#snippet child({ props })}
-          <Button {...props} variant="destructive" onclick={handleDelete} isLoading={isSaving}>
-            Remove Permanently
-          </Button>
-        {/snippet}
-      </AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

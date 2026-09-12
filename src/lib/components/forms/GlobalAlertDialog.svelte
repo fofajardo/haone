@@ -1,13 +1,14 @@
 <script lang="ts">
   import * as AlertDialog from "$ui/alert-dialog";
   import { globalDialog } from "$state/dialog.svelte";
+  import { Button } from "$components/ui/button";
 </script>
 
 <AlertDialog.Root
   bind:open={globalDialog.open}
   onOpenChange={(v) => {
     if (!v) {
-      globalDialog.close();
+      globalDialog.handleClose();
     }
   }}
 >
@@ -19,7 +20,26 @@
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => globalDialog.close()}>Close</AlertDialog.Action>
+      {#if globalDialog.type === "info"}
+        <AlertDialog.Action onclick={() => globalDialog.handleClose()}>
+          {globalDialog.labels.close}
+        </AlertDialog.Action>
+      {:else if globalDialog.type === "confirm"}
+        <Button
+          onclick={() => globalDialog.handleCancel()}
+          disabled={globalDialog.isLoading}
+          variant="outline"
+        >
+          {globalDialog.labels.cancel}
+        </Button>
+        <Button
+          onclick={() => globalDialog.handleAccept()}
+          disabled={globalDialog.isLoading}
+          isLoading={globalDialog.isLoading}
+        >
+          {globalDialog.labels.accept}
+        </Button>
+      {/if}
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>
