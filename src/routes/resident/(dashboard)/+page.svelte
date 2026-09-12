@@ -211,16 +211,12 @@
   </div>
 
   <!-- Tools Section (3 cols) -->
-  <Card.Root class="mt-6 shadow-none">
-    <Card.Header>
-      <Card.Title>Tools</Card.Title>
-    </Card.Header>
-    <Card.Content>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {#each actions as tool}
-          <DashboardActionCard {...tool} />
-        {/each}
-      </div>
-    </Card.Content>
-  </Card.Root>
+  <div class="my-6 space-y-6">
+    <div class="text-xl font-semibold">Tools</div>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {#each actions as tool}
+        <DashboardActionCard {...tool} />
+      {/each}
+    </div>
+  </div>
 </div>
