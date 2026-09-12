@@ -195,19 +195,19 @@
         </StatisticCard>
       {/if}
     </div>
-
-    <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
-      <!-- Announcements Section (2 cols) -->
-      <div class="min-w-0 lg:col-span-2">
-        <AnnouncementsSection />
-      </div>
-
-      <!-- Recent Transactions (1 col) -->
-      <div class="min-w-0">
-        <RecentActivityCard transactions={status.transactions} period={status.activeTerm} />
-      </div>
-    </div>
   {/if}
+
+  <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
+    <!-- Announcements Section (2 cols) -->
+    <div class="min-w-0 lg:col-span-2">
+      <AnnouncementsSection />
+    </div>
+
+    <!-- Recent Transactions (1 col) -->
+    <div class="min-w-0">
+      <RecentActivityCard transactions={status?.transactions} period={status?.activeTerm} />
+    </div>
+  </div>
 
   <!-- Tools Section (3 cols) -->
   <Card.Root class="mt-6 shadow-none">
