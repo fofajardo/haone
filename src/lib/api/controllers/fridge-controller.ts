@@ -11,7 +11,6 @@ export async function fetchFeatureFlagFridge(bypassCache = false): Promise<boole
 
 export async function checkFeatureEnabled(bypassCache = false) {
   const fridgeEnabled = await fetchFeatureFlagFridge(bypassCache);
-  console.log("The fridge is", fridgeEnabled ? "enabled" : "disabled");
   if (!fridgeEnabled) {
     throw new Error("Access Denied: Fridge service not enabled. Check back later!");
   }
