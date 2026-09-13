@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     addLaundryReservation,
+    checkFeatureEnabled,
     validateLaundryReservation
   } from "$api/controllers/laundry-controller";
   import { Button } from "$components/ui/button";
@@ -73,6 +74,7 @@
 
     try {
       isLoading = true;
+      await checkFeatureEnabled();
       if (!currentResidentId) {
         throw new Error("Could not find your resident record.");
       }
