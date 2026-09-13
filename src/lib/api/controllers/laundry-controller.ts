@@ -1,6 +1,6 @@
 import { constantsService } from "$api/services/constants-service";
 import { laundryService } from "$api/services/laundry-service";
-import { isFeatureFlagEnabledFetch } from "$api/utils/feature-flags";
+import { fetchFeatureFlagMulti } from "$api/utils/feature-flags";
 import {
   type LaundryRecord,
   type PaginatedResponse,
@@ -128,7 +128,7 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 }
 
 export async function checkFeatureEnabled() {
-  const laundryEnabled = await isFeatureFlagEnabledFetch("FEATURE_FLAG_LAUNDRY");
+  const laundryEnabled = await fetchFeatureFlagMulti(["FEATURE_FLAG_LAUNDRY"], true);
   if (!laundryEnabled) {
     throw new Error("Access Denied: Laundry service not enabled. Check back later!");
   }

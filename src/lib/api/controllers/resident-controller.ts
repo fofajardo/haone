@@ -13,7 +13,7 @@ export { computeDisplayNames, mapRowToJournal, mapRowToResident, parseCSVAmount 
 import { constantsService } from "$api/services/constants-service";
 import { residentService } from "$api/services/resident-service";
 import { getCustomServices } from "$lib/services";
-import { isFeatureFlagEnabledFetchMulti } from "$api/utils/feature-flags";
+import { fetchFeatureFlagMulti } from "$api/utils/feature-flags";
 
 /**
  * Resolves the primary identifier (UUID) of the currently signed-in user.
@@ -92,7 +92,7 @@ export async function deleteUser(userId: string) {
 
 export async function determineAllowedAccountOptions() {
     // based on feature flag
-    return await isFeatureFlagEnabledFetchMulti(["FEATURE_FLAG_ONBOARDING_ACCTYPE_UHO", "FEATURE_FLAG_ONBOARDING_ACCTYPE_ALUM"]);
+    return await fetchFeatureFlagMulti(["FEATURE_FLAG_ONBOARDING_ACCTYPE_UHO", "FEATURE_FLAG_ONBOARDING_ACCTYPE_ALUM"], true);
   }
 
 export async function registerResident(data: Record<string, any>): Promise<void> {
