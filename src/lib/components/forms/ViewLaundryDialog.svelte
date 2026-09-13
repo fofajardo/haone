@@ -36,6 +36,7 @@
 <ResponsiveDialog.Root bind:open={isDialogOpen}>
   <ResponsiveDialog.Content class="sm:max-w-xl">
     {@const isMine = selectedReservation.residentId === auth.userId}
+    {@const showActions = isMine || isAdminView}
 
     <ResponsiveDialog.Header>
       <ResponsiveDialog.Title>Reservation Details</ResponsiveDialog.Title>
@@ -74,7 +75,7 @@
         </div>
       </div>
 
-      {#if isMine || isAdminView}
+      {#if showActions}
         <div class="space-y-2 pt-2">
           <div class="grid gap-2 md:grid-cols-2">
             <Button
@@ -99,8 +100,11 @@
       {/if}
     </div>
 
-    <ResponsiveDialog.Footer>
-      {#if isMine || isAdminView}
+    <ResponsiveDialog.Footer class={showActions ? "grid grid-cols-2 gap-2 md:flex" : ""}>
+      <ResponsiveDialog.Close>
+        <Button variant={showActions ? "outline" : "default"} class="w-full">Close</Button>
+      </ResponsiveDialog.Close>
+      {#if showActions}
         <Button
           disabled={isDetailPast}
           onclick={() => {
