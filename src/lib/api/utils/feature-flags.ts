@@ -24,10 +24,7 @@ export function getFeatureFlagValue<T>(theFeatureFlag: string, theDefault: T): T
  * @returns the values specified at each corresponding feature flag in order. it returns `theDefault` if not set in the feature list.
  */
 export function getFeatureFlagValueMulti<T>(theFeatureFlag: string[], theDefault: T): T[] {
-  console.log(featureFlags);
-  console.log(theFeatureFlag);
   const e = theFeatureFlag.map((x) => getFeatureFlagValue(x, theDefault));
-  console.log(e);
   return e;
 }
 
