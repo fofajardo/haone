@@ -30,7 +30,6 @@
     canSeeNames = true,
     onSelectSlot,
     onCancelReservation,
-    isCancelling = false,
     selectedReservation = $bindable(null)
   }: {
     reservations: LaundryRecord[];
@@ -40,7 +39,6 @@
     canSeeNames?: boolean;
     onSelectSlot?: (date: string, hour: number) => void;
     onCancelReservation?: (id: string) => void;
-    isCancelling?: boolean;
     selectedReservation?: any;
   } = $props();
 
@@ -654,7 +652,7 @@
           <Button
             variant="destructive"
             class="w-full"
-            disabled={isCancelling || isDetailPast}
+            disabled={isDetailPast}
             onclick={() => {
               const targetId = selectedReservation.id;
               selectedReservation = null;

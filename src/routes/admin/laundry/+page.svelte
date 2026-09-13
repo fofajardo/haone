@@ -43,7 +43,6 @@
   let error = $state<string | null>(null);
   let isBookingOpen = $state(false);
   let isBooking = $state(false);
-  let isCancelling = $state(false);
   let selectedReservation = $state<LaundryRecord | null>(null);
   let roomMap = $state(new Map<string, string>());
   let accountToResidentMap = $state(new Map<string, string>());
@@ -344,7 +343,6 @@
 
 <CancelLaundryDialog
   isAdmin={true}
-  isLoading={isCancelling}
   bind:this={cancelLaundryDialog}
   onSuccess={() => loadData()}
 />

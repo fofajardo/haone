@@ -11,11 +11,10 @@
 
   interface Props {
     isAdmin?: boolean;
-    isLoading?: boolean;
     onSuccess: () => void;
   }
 
-  let { isAdmin = false, isLoading = false, onSuccess }: Props = $props();
+  let { isAdmin = false, onSuccess }: Props = $props();
 
   const RESIDENT_REASONS = [
     { value: "In class or academic commitment", label: "In class or academic commitment" },
@@ -38,6 +37,7 @@
   const reasonOptions = $derived(isAdmin ? ADMIN_REASONS : RESIDENT_REASONS);
 
   let isDialogOpen = $state(false);
+  let isLoading = $state(false);
   let selectedReason = $state("");
   let customReason = $state("");
   let reservationId = $state<string | null>(null);

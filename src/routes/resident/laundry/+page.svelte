@@ -28,7 +28,6 @@
   let users = $state<UserRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let isCancelling = $state(false);
   let cancelLaundryDialog = $state<CancelLaundryDialog | null>(null);
   let bookLaundryDialog = $state<BookLaundryDialog | null>(null);
 
@@ -193,7 +192,6 @@
           cancelLaundryDialog?.open(id);
           selectedReservation = null;
         }}
-        {isCancelling}
         bind:selectedReservation
         onSelectSlot={bookLaundryDialog?.handleSelectSlot}
       />
@@ -260,7 +258,6 @@
 
 <CancelLaundryDialog
   bind:this={cancelLaundryDialog}
-  isLoading={isCancelling}
   isAdmin={false}
   onSuccess={() => loadData()}
 />
