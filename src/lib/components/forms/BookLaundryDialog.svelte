@@ -6,7 +6,7 @@
   } from "$api/controllers/laundry-controller";
   import { Button } from "$components/ui/button";
   import * as DatePicker from "$components/ui/date-picker";
-  import * as Dialog from "$components/ui/dialog";
+  import { ResponsiveDialog } from "$ui/haone";
   import { Label } from "$components/ui/label";
   import * as TimePicker from "$components/ui/time-picker";
   import { LaundryStatus, type LaundryRecord } from "$lib/types";
@@ -133,13 +133,12 @@
   }
 </script>
 
-<Dialog.Root bind:open={isDialogOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Book Laundry Slot</Dialog.Title>
-      <Dialog.Description>Select your preferred date and time.</Dialog.Description>
-    </Dialog.Header>
-    <div class="space-y-6 pb-4">
+<ResponsiveDialog.Root bind:open={isDialogOpen}>
+  <ResponsiveDialog.Content>
+    <ResponsiveDialog.Header>
+      <ResponsiveDialog.Title>Book Laundry Slot</ResponsiveDialog.Title>
+    </ResponsiveDialog.Header>
+    <div class="space-y-6 px-4 pb-4 md:px-0">
       <div class="space-y-2">
         <Label>Date</Label>
         <DatePicker.Root bind:value={newReservation.date} class="w-full" />
@@ -208,13 +207,11 @@
         </div>
       {/if}
     </div>
-    <Dialog.Footer>
-      <Button variant="outline" onclick={() => (isDialogOpen = false)} disabled={isLoading}>
-        Cancel
-      </Button>
-      <Button onclick={handleBook} isLoading={isLoading} disabled={!!validationError}>
-        Confirm
-      </Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+    <ResponsiveDialog.Footer class="grid grid-cols-2 gap-2 md:flex">
+      <ResponsiveDialog.Close>
+        <Button variant="outline" class="w-full" disabled={isLoading}>Cancel</Button>
+      </ResponsiveDialog.Close>
+      <Button onclick={handleBook} {isLoading} disabled={!!validationError}>Confirm</Button>
+    </ResponsiveDialog.Footer>
+  </ResponsiveDialog.Content>
+</ResponsiveDialog.Root>
