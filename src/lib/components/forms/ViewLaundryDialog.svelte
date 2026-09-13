@@ -1,142 +1,117 @@
 <script lang="ts">
-  import {
-    Info,
-    UserIcon,
-    ClockIcon,
-    TrashIcon,
-    CalendarPlusIcon,
-    Share2Icon,
-    CalendarIcon
-  } from "@lucide/svelte";
-  import * as Sheet from "$ui/sheet";
+  import { TrashIcon, CalendarPlusIcon, Share2Icon } from "@lucide/svelte";
   import { Button } from "$components/ui/button";
   import { checkIsPast, generateIcsFile, getGoogleCalendarUrl } from "$utils/calendar";
   import { brandingState } from "$state/branding.svelte";
+  import { ResponsiveDialog } from "$ui/haone";
+  import { auth } from "$state/auth.svelte";
+  import { formatTimeRange, formatDate } from "$utils/formatters";
+  import { uiSettings } from "$state/settings.svelte";
 
   let {
-    currentUserId = "",
     isAdminView = false,
-    onCancelReservation,
-    selectedReservation = $bindable(null)
+    onCancelReservation
   }: {
-    currentUserId?: string;
     isAdminView?: boolean;
     onCancelReservation?: (id: string) => void;
-    selectedReservation?: any;
   } = $props();
+
+  let isDialogOpen = $state(false);
+  let selectedReservation: any = $state(null);
 
   let isDetailPast = $derived(
     selectedReservation ? checkIsPast(selectedReservation.date, selectedReservation.timeEnd) : false
   );
+
+  function close() {
+    isDialogOpen = false;
+  }
+
+  export function open(reservation: any) {
+    selectedReservation = reservation;
+    isDialogOpen = true;
+  }
 </script>
 
-<Sheet.Root open={!!selectedReservation} onOpenChange={(o) => !o && (selectedReservation = null)}>
-  <Sheet.Content side="right" class="sm:max-w-md sm:rounded-l-xl">
-    {#if selectedReservation}
-      {@const isMine = selectedReservation.residentId === currentUserId}
-      <Sheet.Header>
-        <Sheet.Title class="flex items-center gap-2">
-          <Info class="h-5 w-5 text-primary" />
-          Reservation Details
-        </Sheet.Title>
-        <Sheet.Description>Information about this laundry booking.</Sheet.Description>
-      </Sheet.Header>
+<ResponsiveDialog.Root bind:open={isDialogOpen}>
+  <ResponsiveDialog.Content class="sm:max-w-xl">
+    {@const isMine = selectedReservation.residentId === auth.userId}
 
-      <div class="space-y-4 px-4">
-        <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-          <UserIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div class="space-y-0.5">
-            <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Reserved By
-            </p>
-            <p class="text-sm font-semibold">{selectedReservation.name}</p>
-            {#if selectedReservation.room}
-              <p class="text-xs text-muted-foreground">Room {selectedReservation.room}</p>
-            {/if}
-          </div>
-        </div>
+    <ResponsiveDialog.Header>
+      <ResponsiveDialog.Title>Reservation Details</ResponsiveDialog.Title>
+    </ResponsiveDialog.Header>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div class="col-span-2 flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-            <CalendarIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-            <div class="space-y-0.5">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Date</p>
-              <p class="text-sm font-semibold">{selectedReservation.date}</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-            <ClockIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-            <div class="space-y-0.5">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Starts</p>
-              <p class="text-sm font-semibold">{selectedReservation.timeStart}</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-            <ClockIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-            <div class="space-y-0.5">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Ends</p>
-              <p class="text-sm font-semibold">{selectedReservation.timeEnd}</p>
-            </div>
-          </div>
+    <div class="space-y-3 px-4 md:px-0">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <p class="font-medium">Reserved By</p>
+          <p>{selectedReservation.name}</p>
+          {#if selectedReservation.room}
+            <p class="text-xs">Room {selectedReservation.room}</p>
+          {/if}
         </div>
 
         {#if selectedReservation.creationTimestamp}
-          <div class="flex items-center gap-2 px-1 text-xs text-muted-foreground">
-            <ClockIcon class="h-3 w-3" />
-            <span>Booked on {new Date(selectedReservation.creationTimestamp).toLocaleString()}</span
+          <div class="space-y-1">
+            <p class="font-medium">Reserved on</p>
+            <p>{new Date(selectedReservation.creationTimestamp).toLocaleString()}</p>
+          </div>
+        {/if}
+
+        <div class="space-y-1">
+          <p class="font-medium">Date</p>
+          <p>{formatDate(selectedReservation.date)}</p>
+        </div>
+
+        <div class="space-y-1">
+          <p class="font-medium">Time</p>
+          <p>
+            {formatTimeRange(
+              selectedReservation.timeStart,
+              uiSettings.clockFormat
+            )}–{formatTimeRange(selectedReservation.timeEnd, uiSettings.clockFormat)}
+          </p>
+        </div>
+      </div>
+
+      {#if isMine || isAdminView}
+        <div class="space-y-2 pt-2">
+          <div class="grid gap-2 md:grid-cols-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onclick={() => generateIcsFile(selectedReservation, brandingState.profile.shortName)}
+              icon={CalendarPlusIcon}
             >
+              <span class="truncate">Download .ics</span>
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              href={getGoogleCalendarUrl(selectedReservation, brandingState.profile.shortName)}
+              target="_blank"
+              icon={Share2Icon}
+            >
+              <span class="truncate">Google Calendar</span>
+            </Button>
           </div>
-        {/if}
+        </div>
+      {/if}
+    </div>
 
-        {#if isMine || isAdminView}
-          <div class="space-y-2 pt-2">
-            <p class="px-1 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Add to Calendar
-            </p>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onclick={() =>
-                  generateIcsFile(selectedReservation, brandingState.profile.shortName)}
-                icon={CalendarPlusIcon}
-              >
-                Download .ics
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                href={getGoogleCalendarUrl(selectedReservation, brandingState.profile.shortName)}
-                target="_blank"
-                icon={Share2Icon}
-              >
-                Google Calendar
-              </Button>
-            </div>
-          </div>
-        {/if}
-      </div>
-
-      <div class="mt-6 flex flex-col gap-2 px-4">
-        {#if isMine || isAdminView}
-          <Button
-            variant="destructive"
-            class="w-full"
-            disabled={isDetailPast}
-            onclick={() => {
-              const targetId = selectedReservation.id;
-              selectedReservation = null;
-              onCancelReservation?.(targetId);
-            }}
-            icon={TrashIcon}
-          >
-            Cancel
-          </Button>
-        {/if}
-        <Button variant="outline" class="w-full" onclick={() => (selectedReservation = null)}>
-          Close
+    <ResponsiveDialog.Footer>
+      {#if isMine || isAdminView}
+        <Button
+          disabled={isDetailPast}
+          onclick={() => {
+            close();
+            onCancelReservation?.(selectedReservation.id);
+          }}
+          icon={TrashIcon}
+        >
+          Cancel
         </Button>
-      </div>
-    {/if}
-  </Sheet.Content>
-</Sheet.Root>
+      {/if}
+    </ResponsiveDialog.Footer>
+  </ResponsiveDialog.Content>
+</ResponsiveDialog.Root>

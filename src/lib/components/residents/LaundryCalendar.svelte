@@ -160,8 +160,9 @@
     selectedDate = new Date();
   }
 
+  let viewLaundryDialog = $state<ViewLaundryDialog | null>(null);
   function handleReservationClick(res: any) {
-    selectedReservation = res;
+    viewLaundryDialog?.open(res);
   }
 </script>
 
@@ -459,4 +460,4 @@
   </div>
 </div>
 
-<ViewLaundryDialog bind:selectedReservation {currentUserId} {isAdminView} {onCancelReservation} />
+<ViewLaundryDialog bind:this={viewLaundryDialog} {isAdminView} {onCancelReservation} />
