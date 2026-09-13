@@ -17,7 +17,7 @@ export function isFeatureFlagEnabledDirect(constantRows: any[][], theFeatureFlag
   if (featureFlag) {
     return ((featureFlag[CONSTANT_COL.VALUE] || "true") as string).trim().toLowerCase() === "true";
   }
-  return false;
+  return true;
 }
 
 /**
@@ -38,6 +38,8 @@ export function isFeatureFlagEnabledDirectMulti(constantRows: any[][], theFeatur
 
     if (featureFlag) {
       flags.push(((featureFlag[CONSTANT_COL.VALUE] || "true") as string).trim().toLowerCase() === "true");
+    } else {
+      flags.push(true);
     }
   });
   return flags;
@@ -76,6 +78,8 @@ export async function isFeatureFlagEnabledFetchMulti(theFeatureFlags: string[], 
 
     if (featureFlag) {
       flags.push(((featureFlag.value || "true") as string).trim().toLowerCase() === "true");
+    } else {
+      flags.push(true);
     }
   });
   return flags;
