@@ -12,13 +12,14 @@
     fetchAdminLaundryReservations,
     cancelLaundryReservation,
     addLaundryReservation,
-    validateLaundryReservation
+    validateLaundryReservation,
+    checkFeatureEnabled
   } from "$api/controllers/laundry-controller";
   import {
     computeDisplayNames,
     fetchResidents,
     fetchUsers,
-    canAccessLaundryOrFridge
+    canAccessLaundry
   } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
   import { LaundryStatus } from "$lib/types";
@@ -64,6 +65,8 @@
     isLoading = true;
     error = null;
     try {
+      await checkFeatureEnabled();
+
       const [resResult, allUsers, allResidents] = await Promise.all([
         fetchAdminLaundryReservations(true),
         fetchUsers(true),
@@ -78,7 +81,7 @@
         if (
           res.residentId &&
           res.period === uiSettings.activeTerm &&
-          canAccessLaundryOrFridge(res.type || "")
+          canAccessLaundry(res.type || "")
         ) {
           newActiveResIds.add(res.residentId);
         }
@@ -125,6 +128,7 @@
     }
     try {
       isCancelling = true;
+      await checkFeatureEnabled();
       await cancelLaundryReservation(cancelData.id, reason, "CANCELLED_BY_ADMIN");
       toast.success("Reservation cancelled");
       cancelData = null;
@@ -155,6 +159,7 @@
 
     try {
       isBooking = true;
+      await checkFeatureEnabled();
       await addLaundryReservation(
         {
           id: crypto.randomUUID(),

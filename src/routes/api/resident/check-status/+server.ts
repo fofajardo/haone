@@ -28,8 +28,15 @@ export const GET: RequestHandler = async ({ url, request }) => {
       "CURR!A:P"
     ]);
 
-    // 2. Resolve active term and user row
+    // 2. Resolve active term, user row, and feature flags
     const activeTerm = constRows.find((r: any) => r[0] === "TERM_CURR")?.[1] || "";
+    const features = (constRows
+      .filter((r: any) => ((r[0] || "") as string).startsWith("FEATURE_FLAG_"))
+      .map((r: any) => ({
+        key: r[0],
+        value: r[1],
+        label: r[2] || ""
+      })) || {});
     const userRow = userRows.find((r: any) => (r[USER_COL.EMAIL] || "").toLowerCase() === email);
     const userId = userRow ? (userRow[USER_COL.ID] || "").trim() : "";
 
@@ -168,6 +175,7 @@ export const GET: RequestHandler = async ({ url, request }) => {
       systemActiveTerm: activeTerm,
       allTerms: allTerms.sort().reverse(),
       mopTypes,
+      featureFlags: features,
       profile: userRow
         ? {
             id: userRow[USER_COL.ID],

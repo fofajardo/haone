@@ -13,6 +13,7 @@ export { computeDisplayNames, mapRowToJournal, mapRowToResident, parseCSVAmount 
 import { constantsService } from "$api/services/constants-service";
 import { residentService } from "$api/services/resident-service";
 import { getCustomServices } from "$lib/services";
+import { isFeatureFlagEnabledFetchMulti } from "$api/utils/feature-flags";
 
 /**
  * Resolves the primary identifier (UUID) of the currently signed-in user.
@@ -88,6 +89,11 @@ export async function deleteUser(userId: string) {
   }
   return residentService.deleteUser(userId);
 }
+
+export async function determineAllowedAccountOptions() {
+    // based on feature flag
+    return await isFeatureFlagEnabledFetchMulti(["FEATURE_FLAG_ONBOARDING_ACCTYPE_UHO", "FEATURE_FLAG_ONBOARDING_ACCTYPE_ALUM"]);
+  }
 
 export async function registerResident(data: Record<string, any>): Promise<void> {
   return residentService.registerResident(data);
@@ -398,7 +404,20 @@ export function matchesStatusFilter(r: ResidentRecord, filter: string): boolean 
 // FIXME: This should be replaced with a less hacky RBAC system in the future.
 //        The CASL.js pattern is already being followed here, however.
 
-export function canAccessLaundryOrFridge(accountType: string): boolean {
+export function canAccessFridge(accountType: string): boolean {
+  const type = (accountType || "").trim().toUpperCase();
+  if (
+    type === AccountType.STUDENT ||
+    type === AccountType.BOOTCAMP ||
+    type === AccountType.TRANSIENT
+  ) {
+    return true;
+  }
+  return false;
+}
+
+
+export function canAccessLaundry(accountType: string): boolean {
   const type = (accountType || "").trim().toUpperCase();
   if (
     type === AccountType.STUDENT ||
@@ -436,8 +455,12 @@ export function isResidentRouteAllowed(
 ): boolean {
   const type = (accountType || "").trim().toUpperCase();
 
-  if (urlOrHref.includes("/laundry") || urlOrHref.includes("/fridge")) {
-    return canAccessLaundryOrFridge(type);
+  if (urlOrHref.includes("/laundry")) {
+    return canAccessLaundry(type);
+  }
+
+  if (urlOrHref.includes("/fridge")) {
+    return canAccessFridge(type);
   }
 
   if (urlOrHref.includes("/achievements") || urlOrHref.includes("/leaderboards")) {
