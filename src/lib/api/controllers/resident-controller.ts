@@ -1,6 +1,6 @@
 import { goto } from "$app/navigation";
 import type { BrandingProfile } from "$lib/types";
-import { type ResidentRecord, type UserRecord, AccountType } from "$lib/types";
+import { type ResidentRecord, type UserRecord, AccountType, FeatureFlagKey } from "$lib/types";
 import { emailDispatcher } from "$state/dispatcher.svelte";
 import { ClearanceCertificateTemplate } from "$templates/clearance";
 import { PaymentStatusTemplate, StatementOfAccountTemplate } from "$templates/payment-status";
@@ -92,7 +92,7 @@ export async function deleteUser(userId: string) {
 
 export async function determineAllowedAccountOptions() {
     // based on feature flag
-    return await fetchFeatureFlagMulti(["FEATURE_FLAG_ONBOARDING_ACCTYPE_UHO", "FEATURE_FLAG_ONBOARDING_ACCTYPE_ALUM"], true);
+    return await fetchFeatureFlagMulti([FeatureFlagKey.ONBOARDING_ACCTYPE_UHO, FeatureFlagKey.ONBOARDING_ACCTYPE_ALUMNI], true);
   }
 
 export async function registerResident(data: Record<string, any>): Promise<void> {

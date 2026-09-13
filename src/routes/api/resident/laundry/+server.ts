@@ -10,7 +10,7 @@ import {
   serverError
 } from "$api/services/server-sheets-service";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { ACCOUNT_COL, LAUNDRY_COL, LaundryStatus, USER_COL } from "$lib/types";
+import { ACCOUNT_COL, FeatureFlagKey, LAUNDRY_COL, LaundryStatus, USER_COL } from "$lib/types";
 import { formatTime } from "$utils/formatters";
 import { parseTimeMinutes } from "$utils/parsers";
 import { json } from "@sveltejs/kit";
@@ -36,7 +36,7 @@ export const GET: RequestHandler = async ({ request }) => {
       "TERM_CURR"
     ]);
 
-    const isLaundryEnabled = getFeatureFlagValue("FEATURE_FLAG_LAUNDRY", true);
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY, true);
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
@@ -119,7 +119,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [accRows, activeTerm] = await fetchSheetsData(client, ["accounts!A:L", "TERM_CURR"]);
 
-    const isLaundryEnabled = getFeatureFlagValue("FEATURE_FLAG_LAUNDRY", true);
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY, true);
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
@@ -220,7 +220,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [resRows] = await fetchSheetsData(client, ["laundry!A:I"]);
 
-    const isLaundryEnabled = getFeatureFlagValue("FEATURE_FLAG_LAUNDRY", true);
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY, true);
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });

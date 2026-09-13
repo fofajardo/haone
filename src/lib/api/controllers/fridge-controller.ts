@@ -2,11 +2,11 @@ import { constantsService } from "$api/services/constants-service";
 import { fridgeService } from "$api/services/fridge-service";
 import { roomsService } from "$api/services/rooms-service";
 import { fetchFeatureFlagMulti } from "$api/utils/feature-flags";
-import { type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
+import { FeatureFlagKey, type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
 import { fetchUsers, getSignedInUserId } from "./resident-controller";
 
 export async function checkFeatureEnabled(bypassCache = false) {
-  const [ fridgeEnabled ] = await fetchFeatureFlagMulti(["FEATURE_FLAG_FRIDGE"], true);
+  const [ fridgeEnabled ] = await fetchFeatureFlagMulti([FeatureFlagKey.FRIDGE], true);
   if (!fridgeEnabled) {
     throw new Error("Access Denied: Fridge service not enabled. Check back later!");
   }

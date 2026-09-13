@@ -5,6 +5,7 @@ import {
   type LaundryRecord,
   type PaginatedResponse,
   type PaginationOptions,
+  FeatureFlagKey,
   LaundryStatus
 } from "$lib/types";
 import { residentState } from "$state/resident-state.svelte";
@@ -128,7 +129,7 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 }
 
 export async function checkFeatureEnabled() {
-  const [ laundryEnabled ] = await fetchFeatureFlagMulti(["FEATURE_FLAG_LAUNDRY"], true);
+  const [ laundryEnabled ] = await fetchFeatureFlagMulti([FeatureFlagKey.LAUNDRY], true);
   console.log(laundryEnabled);
   if (!laundryEnabled) {
     throw new Error("Access Denied: Laundry service not enabled. Check back later!");
