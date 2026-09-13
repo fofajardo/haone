@@ -10,17 +10,12 @@
   import ErrorView from "$components/content/ErrorView.svelte";
   import EmptyView from "$components/content/EmptyView.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
-  import {
-    fetchLaundryReservations,
-    cancelLaundryReservation,
-    checkFeatureEnabled
-  } from "$api/controllers/laundry-controller";
+  import { checkFeatureEnabled, fetchLaundryReservations } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
   import * as Card from "$ui/card";
   import * as Collapsible from "$ui/collapsible";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
-  import { toast } from "svelte-sonner";
   import { pageState } from "$state/page-info.svelte";
   import { ChevronDown } from "@lucide/svelte";
   import { parseTime, parseDateWeight } from "$utils/parsers";
@@ -34,10 +29,10 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let isCancelling = $state(false);
-  let cancelTargetId = $state<string | null>(null);
+  let cancelLaundryDialog = $state<CancelLaundryDialog | null>(null);
   let bookLaundryDialog = $state<BookLaundryDialog | null>(null);
 
-  let selectedRow = $state<LaundryRecord | null>(null);
+  let selectedReservation = $state<LaundryRecord | null>(null);
   let statusFilter = $state<LaundryStatus>(LaundryStatus.ACTIVE);
 
   let currentResidentId = $state("");
@@ -68,39 +63,6 @@
       error = e.message;
     } finally {
       isLoading = false;
-    }
-  }
-
-  function openCancelDialog(id: string) {
-    const res = reservations.find((r) => r.id === id);
-    if (res) {
-      const [y, m, d] = res.date.split("-").map(Number);
-      const [h, min] = res.timeEnd.split(":").map(Number);
-      if (new Date(y, m - 1, d, h, min) < new Date()) {
-        toast.error("Cannot cancel a past reservation");
-        return;
-      }
-    }
-    cancelTargetId = id;
-    selectedRow = null;
-  }
-
-  async function handleConfirmCancel(reason: string) {
-    if (!cancelTargetId) {
-      return;
-    }
-
-    try {
-      isCancelling = true;
-      await checkFeatureEnabled();
-      await cancelLaundryReservation(cancelTargetId, reason, "CANCELLED_BY_USER");
-      toast.success("Reservation cancelled");
-      cancelTargetId = null;
-      loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isCancelling = false;
     }
   }
 
@@ -227,9 +189,12 @@
         {users}
         currentUserId={currentResidentId}
         isAdminView={false}
-        onCancelReservation={openCancelDialog}
+        onCancelReservation={(id) => {
+          cancelLaundryDialog?.open(id);
+          selectedReservation = null;
+        }}
         {isCancelling}
-        bind:selectedReservation={selectedRow}
+        bind:selectedReservation
         onSelectSlot={bookLaundryDialog?.handleSelectSlot}
       />
     </div>
@@ -260,7 +225,7 @@
             data={filteredReservations}
             {columns}
             rowId="id"
-            onRowClick={(row) => (selectedRow = row)}
+            onRowClick={(row) => (selectedReservation = row)}
           />
         {:else}
           <EmptyView
@@ -294,16 +259,8 @@
 <BookLaundryDialog bind:this={bookLaundryDialog} {reservations} onSuccess={() => loadData()} />
 
 <CancelLaundryDialog
-  open={Boolean(cancelTargetId)}
-  onOpenChange={(isOpen) => {
-    if (!isOpen && !isCancelling) {
-      cancelTargetId = null;
-    }
-  }}
-  {isCancelling}
+  bind:this={cancelLaundryDialog}
+  isLoading={isCancelling}
   isAdmin={false}
-  onConfirm={handleConfirmCancel}
-  onCancel={() => {
-    cancelTargetId = null;
-  }}
+  onSuccess={() => loadData()}
 />

@@ -10,7 +10,6 @@
   import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import {
     fetchAdminLaundryReservations,
-    cancelLaundryReservation,
     addLaundryReservation,
     validateLaundryReservation,
     checkFeatureEnabled
@@ -31,7 +30,6 @@
   import { columns } from "./columns";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
-  import { Input } from "$ui/input";
   import { Label } from "$ui/label";
   import { Combobox } from "$ui/combobox";
   import { toast } from "svelte-sonner";
@@ -51,8 +49,7 @@
   let accountToResidentMap = $state(new Map<string, string>());
   let activeResidentIds = $state(new Set<string>());
   let statusFilter = $state<LaundryStatus | "">(LaundryStatus.ACTIVE);
-
-  let cancelData = $state<{ id: string; reason: string } | null>(null);
+  let cancelLaundryDialog = $state<CancelLaundryDialog | null>(null);
 
   let newReservation = $state({
     date: new Date().toISOString().split("T")[0],
@@ -119,24 +116,6 @@
       error = e.message;
     } finally {
       isLoading = false;
-    }
-  }
-
-  async function handleCancel(reason: string) {
-    if (!cancelData) {
-      return;
-    }
-    try {
-      isCancelling = true;
-      await checkFeatureEnabled();
-      await cancelLaundryReservation(cancelData.id, reason, "CANCELLED_BY_ADMIN");
-      toast.success("Reservation cancelled");
-      cancelData = null;
-      loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isCancelling = false;
     }
   }
 
@@ -265,7 +244,7 @@
         isAdminView={true}
         bind:selectedReservation
         onCancelReservation={(id) => {
-          cancelData = { id, reason: "" };
+          cancelLaundryDialog?.open(id);
           selectedReservation = null;
         }}
         onSelectSlot={(date, hour) => {
@@ -364,16 +343,8 @@
 </Dialog.Root>
 
 <CancelLaundryDialog
-  open={Boolean(cancelData)}
-  onOpenChange={(isOpen) => {
-    if (!isOpen && !isCancelling) {
-      cancelData = null;
-    }
-  }}
   isAdmin={true}
-  {isCancelling}
-  onConfirm={handleCancel}
-  onCancel={() => {
-    cancelData = null;
-  }}
+  isLoading={isCancelling}
+  bind:this={cancelLaundryDialog}
+  onSuccess={() => loadData()}
 />

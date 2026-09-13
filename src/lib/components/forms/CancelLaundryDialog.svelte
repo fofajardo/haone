@@ -5,24 +5,17 @@
   import { Input } from "$ui/input";
   import { Combobox } from "$ui/combobox";
   import { CircleX } from "@lucide/svelte";
+  import { LaundryStatus } from "$lib/types";
+  import { toast } from "svelte-sonner";
+  import { cancelLaundryReservation } from "$api/controllers/laundry-controller";
 
   interface Props {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
     isAdmin?: boolean;
-    isCancelling?: boolean;
-    onConfirm: (reason: string) => void;
-    onCancel?: () => void;
+    isLoading?: boolean;
+    onSuccess: () => void;
   }
 
-  let {
-    open = $bindable(false),
-    onOpenChange,
-    isAdmin = false,
-    isCancelling = false,
-    onConfirm,
-    onCancel
-  }: Props = $props();
+  let { isAdmin = false, isLoading = false, onSuccess }: Props = $props();
 
   const RESIDENT_REASONS = [
     { value: "In class or academic commitment", label: "In class or academic commitment" },
@@ -44,46 +37,55 @@
 
   const reasonOptions = $derived(isAdmin ? ADMIN_REASONS : RESIDENT_REASONS);
 
+  let isDialogOpen = $state(false);
   let selectedReason = $state("");
   let customReason = $state("");
+  let reservationId = $state<string | null>(null);
 
-  $effect(() => {
-    if (open) {
-      selectedReason = reasonOptions[0]?.value || "";
-      customReason = "";
-    }
-  });
-
-  function handleClose() {
-    if (isCancelling) {
+  function handleCancel() {
+    if (isLoading) {
       return;
     }
-    open = false;
-    onOpenChange?.(false);
-    onCancel?.();
+    isDialogOpen = false;
+    reservationId = null;
+    selectedReason = "";
+    customReason = "";
   }
 
-  function handleConfirm() {
+  async function handleAccept() {
     let finalReason = selectedReason;
     if (selectedReason === "CUSTOM") {
       finalReason = customReason.trim() || (isAdmin ? "Cancelled by admin" : "Cancelled by user");
     }
-    onConfirm(finalReason);
+    if (!reservationId) {
+      return;
+    }
+    try {
+      isLoading = true;
+      await cancelLaundryReservation(
+        reservationId,
+        finalReason,
+        isAdmin ? LaundryStatus.CANCELLED_BY_ADMIN : LaundryStatus.CANCELLED_BY_USER
+      );
+      toast.success("Reservation cancelled");
+      onSuccess();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      reservationId = null;
+      isLoading = false;
+    }
+  }
+
+  export function open(reservationIdToCancel: string) {
+    reservationId = reservationIdToCancel;
+    selectedReason = "";
+    customReason = "";
+    isDialogOpen = true;
   }
 </script>
 
-<Dialog.Root
-  bind:open
-  onOpenChange={(nextOpen) => {
-    if (!nextOpen && isCancelling) {
-      return;
-    }
-    onOpenChange?.(nextOpen);
-    if (!nextOpen) {
-      onCancel?.();
-    }
-  }}
->
+<Dialog.Root bind:open={isDialogOpen}>
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>Cancel Reservation?</Dialog.Title>
@@ -117,8 +119,8 @@
       {/if}
     </div>
     <Dialog.Footer>
-      <Button variant="outline" onclick={handleClose} disabled={isCancelling}>Close</Button>
-      <Button onclick={handleConfirm} isLoading={isCancelling} icon={CircleX}>Confirm</Button>
+      <Button variant="outline" onclick={handleCancel} disabled={isLoading}>Close</Button>
+      <Button onclick={handleAccept} {isLoading} icon={CircleX}>Confirm</Button>
     </Dialog.Footer>
   </Dialog.Content>
 </Dialog.Root>
