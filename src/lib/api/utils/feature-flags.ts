@@ -1,7 +1,7 @@
 import { env } from "$env/dynamic/public";
 
 type FeatureList = { [key: string]: any };
-const featureFlags: FeatureList = JSON.parse(env.PUBLIC_FEATURE_LIST)
+const featureFlags: FeatureList = JSON.parse(env.PUBLIC_FEATURE_LIST);
 
 /**
  * checks if the feature flag is enabled by searching the environment variable PUBLIC_FEATURE_LIST.
@@ -35,9 +35,12 @@ export function getFeatureFlagValueMulti<T>(theFeatureFlag: string[], theDefault
  * @param theDefault the default value to return in case of an absent value
  * @returns the value specified at each corresponding feature flag in order. it returns `theDefault` if not set in the feature list.
  */
-export async function fetchFeatureFlagMulti<T>(theFeatureFlags: string[], theDefault: T): Promise<T[]> {
-  const params = new URLSearchParams({ features: theFeatureFlags.join(";") })
-  return (JSON.parse(await 
-    (await (fetch(`/api/features?${params.toString()}`))).text()) as T[])
-    .map((x) => x === null ? theDefault : x);
+export async function fetchFeatureFlagMulti<T>(
+  theFeatureFlags: string[],
+  theDefault: T
+): Promise<T[]> {
+  const params = new URLSearchParams({ features: theFeatureFlags.join(";") });
+  return (JSON.parse(await (await fetch(`/api/features?${params.toString()}`)).text()) as T[]).map(
+    (x) => (x === null ? theDefault : x)
+  );
 }

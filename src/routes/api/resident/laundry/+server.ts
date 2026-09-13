@@ -9,13 +9,13 @@ import {
   fetchSheetsData,
   serverError
 } from "$api/services/server-sheets-service";
+import { getFeatureFlagValue } from "$api/utils/feature-flags";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
 import { ACCOUNT_COL, FeatureFlagKey, LAUNDRY_COL, LaundryStatus, USER_COL } from "$lib/types";
 import { formatTime } from "$utils/formatters";
 import { parseTimeMinutes } from "$utils/parsers";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { getFeatureFlagValue } from "$api/utils/feature-flags";
 
 /**
  * GET: Fetch all reservations + user room mapping
@@ -41,7 +41,7 @@ export const GET: RequestHandler = async ({ request }) => {
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
     }
-    
+
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
     if (!canAccessLaundry(accountType || "")) {
@@ -115,7 +115,6 @@ export const POST: RequestHandler = async ({ request }) => {
   }
 
   try {
-
     const client = await getSheetsClient();
     const [accRows, activeTerm] = await fetchSheetsData(client, ["accounts!A:L", "TERM_CURR"]);
 

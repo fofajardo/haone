@@ -10,6 +10,7 @@ import {
   serverError,
   updateSheetValue
 } from "$api/services/server-sheets-service";
+import { getFeatureFlagValue } from "$api/utils/feature-flags";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
 import {
   ACCOUNT_COL,
@@ -21,7 +22,6 @@ import {
 } from "$lib/types";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { getFeatureFlagValue } from "$api/utils/feature-flags";
 
 /**
  * GET: Fetch all fridge items + user/room mapping (Public to all logged-in residents)
@@ -41,7 +41,7 @@ export const GET: RequestHandler = async ({ request }) => {
       "users!A:P",
       "TERM_CURR"
     ]);
-    
+
     const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
 
     if (!isFridgeEnabled) {
@@ -130,7 +130,7 @@ export const POST: RequestHandler = async ({ request }) => {
     }
 
     const client = await getSheetsClient();
-    
+
     const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
 
     if (!isFridgeEnabled) {
@@ -180,7 +180,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
 
     const client = await getSheetsClient();
     const [rows] = await fetchSheetsData(client, ["fridge_items!A:M"]);
-    
+
     const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
 
     if (!isFridgeEnabled) {
@@ -254,7 +254,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
 
     const client = await getSheetsClient();
     const [rows] = await fetchSheetsData(client, ["fridge_items!A:M"]);
-    
+
     const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
 
     if (!isFridgeEnabled) {

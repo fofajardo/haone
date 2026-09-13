@@ -1,10 +1,10 @@
 import { authenticateResident, getSheetsClient } from "$api/services/auth-service";
 import { appendSheetValue, getSheetValues, serverError } from "$api/services/server-sheets-service";
+import { getFeatureFlagValueMulti } from "$api/utils/feature-flags";
 import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
 import { AccountType, CURR_COL, FeatureFlagKey, USER_COL } from "$lib/types";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { getFeatureFlagValueMulti } from "$api/utils/feature-flags";
 
 export const POST: RequestHandler = async ({ request }) => {
   const { email: authEmail, error: authError } = await authenticateResident(request);
@@ -51,18 +51,20 @@ export const POST: RequestHandler = async ({ request }) => {
       })?.[1] || "";
 
     // check if feature flags allow for specific account types
-    const [allowUHO, allowAlumni] = getFeatureFlagValueMulti([FeatureFlagKey.ONBOARDING_ACCTYPE_UHO, FeatureFlagKey.ONBOARDING_ACCTYPE_ALUMNI], true);
-    if (!allowUHO && (accountType == AccountType.STAFF || accountType == AccountType.REPS || accountType == AccountType.FACULTY)) {
-      return json(
-        { error: "Invalid account type." },
-        { status: 403 }
-      );
+    const [allowUHO, allowAlumni] = getFeatureFlagValueMulti(
+      [FeatureFlagKey.ONBOARDING_ACCTYPE_UHO, FeatureFlagKey.ONBOARDING_ACCTYPE_ALUMNI],
+      true
+    );
+    if (
+      !allowUHO &&
+      (accountType == AccountType.STAFF ||
+        accountType == AccountType.REPS ||
+        accountType == AccountType.FACULTY)
+    ) {
+      return json({ error: "Invalid account type." }, { status: 403 });
     }
     if (!allowAlumni && accountType == AccountType.ALUMNUS) {
-      return json(
-        { error: "Invalid account type." },
-        { status: 403 }
-      );
+      return json({ error: "Invalid account type." }, { status: 403 });
     }
 
     // Fetch users sheet to check if already registered

@@ -1,4 +1,3 @@
-import { constantsService } from "$api/services/constants-service";
 import { laundryService } from "$api/services/laundry-service";
 import { fetchFeatureFlagMulti } from "$api/utils/feature-flags";
 import {
@@ -129,7 +128,7 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 }
 
 export async function checkFeatureEnabled() {
-  const [ laundryEnabled ] = await fetchFeatureFlagMulti([FeatureFlagKey.LAUNDRY], true);
+  const [laundryEnabled] = await fetchFeatureFlagMulti([FeatureFlagKey.LAUNDRY], true);
   console.log(laundryEnabled);
   if (!laundryEnabled) {
     throw new Error("Access Denied: Laundry service not enabled. Check back later!");

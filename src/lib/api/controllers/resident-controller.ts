@@ -12,8 +12,8 @@ export { computeDisplayNames, mapRowToJournal, mapRowToResident, parseCSVAmount 
 
 import { constantsService } from "$api/services/constants-service";
 import { residentService } from "$api/services/resident-service";
-import { getCustomServices } from "$lib/services";
 import { fetchFeatureFlagMulti } from "$api/utils/feature-flags";
+import { getCustomServices } from "$lib/services";
 
 /**
  * Resolves the primary identifier (UUID) of the currently signed-in user.
@@ -91,9 +91,12 @@ export async function deleteUser(userId: string) {
 }
 
 export async function determineAllowedAccountOptions() {
-    // based on feature flag
-    return await fetchFeatureFlagMulti([FeatureFlagKey.ONBOARDING_ACCTYPE_UHO, FeatureFlagKey.ONBOARDING_ACCTYPE_ALUMNI], true);
-  }
+  // based on feature flag
+  return await fetchFeatureFlagMulti(
+    [FeatureFlagKey.ONBOARDING_ACCTYPE_UHO, FeatureFlagKey.ONBOARDING_ACCTYPE_ALUMNI],
+    true
+  );
+}
 
 export async function registerResident(data: Record<string, any>): Promise<void> {
   return residentService.registerResident(data);
@@ -415,7 +418,6 @@ export function canAccessFridge(accountType: string): boolean {
   }
   return false;
 }
-
 
 export function canAccessLaundry(accountType: string): boolean {
   const type = (accountType || "").trim().toUpperCase();

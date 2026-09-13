@@ -6,9 +6,7 @@
     checkOutFridgeItem,
     restoreFridgeItem,
     discardFridgeItem,
-
     checkFeatureEnabled
-
   } from "$api/controllers/fridge-controller";
   import {
     type FridgeItemRecord,

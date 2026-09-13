@@ -23,9 +23,7 @@
     addLaundryReservation,
     cancelLaundryReservation,
     validateLaundryReservation,
-
     checkFeatureEnabled
-
   } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";

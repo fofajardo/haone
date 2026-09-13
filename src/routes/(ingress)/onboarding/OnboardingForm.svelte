@@ -24,7 +24,10 @@
   import { goto } from "$app/navigation";
   import { auth } from "$state/auth.svelte";
   import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/types";
-  import { determineAllowedAccountOptions, registerResident } from "$api/controllers/resident-controller";
+  import {
+    determineAllowedAccountOptions,
+    registerResident
+  } from "$api/controllers/resident-controller";
 
   import { residentState, type ResidentStatus } from "$state/resident-state.svelte";
   import { roomsState } from "$state/rooms.svelte";
@@ -424,7 +427,7 @@
             />
             {#await determineAllowedAccountOptions()}
               <p>Please wait...</p>
-            {:then [allowUHO, allowAlumni]} 
+            {:then [allowUHO, allowAlumni]}
               {#if allowUHO}
                 <RadioGroup.Card
                   value="3"
@@ -435,14 +438,14 @@
                 />
               {/if}
               {#if allowAlumni && !residentState.forceOnboarding}
-              <RadioGroup.Card
-                value="4"
-                title="Former Resident or Alum"
-                description="Access clearances, history, and achievements."
-                icon={RotateCcwClockIcon}
-                selected={selectedOption === "4"}
-              />
-            {/if}
+                <RadioGroup.Card
+                  value="4"
+                  title="Former Resident or Alum"
+                  description="Access clearances, history, and achievements."
+                  icon={RotateCcwClockIcon}
+                  selected={selectedOption === "4"}
+                />
+              {/if}
             {/await}
           </RadioGroup.Root>
 
