@@ -129,7 +129,6 @@ export function validateLaundryReservation(options: ValidateLaundryOptions): str
 
 export async function checkFeatureEnabled() {
   const [laundryEnabled] = await fetchFeatureFlagMulti([FeatureFlagKey.LAUNDRY_SERVICE], true);
-  console.log(laundryEnabled);
   if (!laundryEnabled) {
     throw new Error("Access Denied: Laundry service not enabled. Check back later!");
   }
