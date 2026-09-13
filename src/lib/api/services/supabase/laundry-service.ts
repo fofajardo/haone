@@ -1,4 +1,4 @@
-import { canAccessLaundryOrFridge } from "$api/controllers/resident-controller";
+import { canAccessLaundry } from "$api/controllers/resident-controller";
 import type { LaundryRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
 import { LaundryStatus } from "$lib/types";
 import { auth } from "$state/auth.svelte";
@@ -134,7 +134,7 @@ export const supabaseLaundryService: LaundryServiceInterface = {
         .maybeSingle();
       const accountType = (account?.type || "").trim().toUpperCase();
 
-      if (!canAccessLaundryOrFridge(accountType)) {
+      if (!canAccessLaundry(accountType)) {
         throw new Error("Access Denied: Account type cannot book laundry");
       }
 

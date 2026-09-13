@@ -909,3 +909,11 @@ export interface CustomServiceItem {
   target: "admin" | "resident";
   isAllowed?: (accountType: string, room?: string) => boolean;
 }
+
+export enum FeatureFlagKey {
+  LAUNDRY_SERVICE = "services.laundry",
+  FRIDGE_SERVICE = "services.fridge",
+
+  ONBOARDING_ACCTYPE_UHO = "onboarding.accountType.uho",
+  ONBOARDING_ACCTYPE_ALUMNI = "onboarding.accountType.alumni"
+}

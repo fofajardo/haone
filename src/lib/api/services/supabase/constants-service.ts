@@ -24,7 +24,7 @@ export const supabaseConstantsService: ConstantsServiceInterface = {
     }));
   },
 
-  async fetchConstantByKey(key: string): Promise<string | null> {
+  async fetchConstantByKey(key: string, _bypassCache?: boolean): Promise<string | null> {
     if (!supabase) {
       return null;
     }

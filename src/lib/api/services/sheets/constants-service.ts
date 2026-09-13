@@ -22,6 +22,11 @@ export const sheetsConstantsService: ConstantsServiceInterface = {
           consts.push({ key: m.value, value: m.label, description: m.label, raw: [] });
         }
       }
+      if (Array.isArray(data.featureFlags)) {
+        for (const m of data.featureFlags) {
+          consts.push({ key: m.key, value: m.value, description: m.label, raw: [] });
+        }
+      }
       return consts;
     }
 
@@ -42,8 +47,8 @@ export const sheetsConstantsService: ConstantsServiceInterface = {
     }));
   },
 
-  async fetchConstantByKey(key: string): Promise<string | null> {
-    const all = await this.fetchConstants();
+  async fetchConstantByKey(key: string, bypassCache = false): Promise<string | null> {
+    const all = await this.fetchConstants(bypassCache);
     return all.find((c) => c.key === key)?.value ?? null;
   },
 

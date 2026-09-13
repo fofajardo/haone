@@ -15,7 +15,8 @@
   import {
     addFridgeItem,
     updateFridgeItem,
-    fetchFridgeItems
+    fetchFridgeItems,
+    checkFeatureEnabled
   } from "$api/controllers/fridge-controller";
   import { fetchResidents } from "$api/controllers/resident-controller";
   import { fetchServer } from "$utils/api-client";
@@ -82,6 +83,7 @@
     isLoading = true;
     error = null;
     try {
+      await checkFeatureEnabled();
       if (isAdmin) {
         accounts = await fetchResidents(false, uiSettings.currentTerm);
       }

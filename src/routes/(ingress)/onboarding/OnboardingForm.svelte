@@ -24,7 +24,10 @@
   import { goto } from "$app/navigation";
   import { auth } from "$state/auth.svelte";
   import { ACCOUNT_TYPE_LABELS, AccountType } from "$lib/types";
-  import { registerResident } from "$api/controllers/resident-controller";
+  import {
+    determineAllowedAccountOptions,
+    registerResident
+  } from "$api/controllers/resident-controller";
 
   import { residentState, type ResidentStatus } from "$state/resident-state.svelte";
   import { roomsState } from "$state/rooms.svelte";
@@ -422,22 +425,28 @@
               icon={Clock}
               selected={selectedOption === "2"}
             />
-            <RadioGroup.Card
-              value="3"
-              title="UHO Beneficiary"
-              description="Register as Faculty, Staff, or REPS."
-              icon={Building}
-              selected={selectedOption === "3"}
-            />
-            {#if !residentState.forceOnboarding}
-              <RadioGroup.Card
-                value="4"
-                title="Former Resident or Alum"
-                description="Access clearances, history, and achievements."
-                icon={RotateCcwClockIcon}
-                selected={selectedOption === "4"}
-              />
-            {/if}
+            {#await determineAllowedAccountOptions()}
+              <p>Please wait...</p>
+            {:then [allowUHO, allowAlumni]}
+              {#if allowUHO}
+                <RadioGroup.Card
+                  value="3"
+                  title="UHO Beneficiary"
+                  description="Register as Faculty, Staff, or REPS."
+                  icon={Building}
+                  selected={selectedOption === "3"}
+                />
+              {/if}
+              {#if allowAlumni && !residentState.forceOnboarding}
+                <RadioGroup.Card
+                  value="4"
+                  title="Former Resident or Alum"
+                  description="Access clearances, history, and achievements."
+                  icon={RotateCcwClockIcon}
+                  selected={selectedOption === "4"}
+                />
+              {/if}
+            {/await}
           </RadioGroup.Root>
 
           <div class="flex items-center justify-between pt-6">

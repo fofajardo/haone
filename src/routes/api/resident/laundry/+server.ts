@@ -1,4 +1,4 @@
-import { canAccessLaundryOrFridge, canSeeLaundryNames } from "$api/controllers/resident-controller";
+import { canAccessLaundry, canSeeLaundryNames } from "$api/controllers/resident-controller";
 import {
   authenticateResident,
   getSheetsClient,
@@ -9,8 +9,9 @@ import {
   fetchSheetsData,
   serverError
 } from "$api/services/server-sheets-service";
+import { getFeatureFlagValue } from "$api/utils/feature-flags";
 import { PUBLIC_GS_SR_ID } from "$env/static/public";
-import { ACCOUNT_COL, LAUNDRY_COL, LaundryStatus, USER_COL } from "$lib/types";
+import { ACCOUNT_COL, FeatureFlagKey, LAUNDRY_COL, LaundryStatus, USER_COL } from "$lib/types";
 import { formatTime } from "$utils/formatters";
 import { parseTimeMinutes } from "$utils/parsers";
 import { json } from "@sveltejs/kit";
@@ -35,9 +36,15 @@ export const GET: RequestHandler = async ({ request }) => {
       "TERM_CURR"
     ]);
 
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY_SERVICE, true);
+
+    if (!isLaundryEnabled) {
+      return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
+    }
+
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundryOrFridge(accountType || "")) {
+    if (!canAccessLaundry(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot access laundry" }, { status: 403 });
     }
 
@@ -111,9 +118,15 @@ export const POST: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [accRows, activeTerm] = await fetchSheetsData(client, ["accounts!A:L", "TERM_CURR"]);
 
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY_SERVICE, true);
+
+    if (!isLaundryEnabled) {
+      return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
+    }
+
     const accountType = resolveResidentAccountType(accRows, activeTerm, residentId);
 
-    if (!canAccessLaundryOrFridge(accountType || "")) {
+    if (!canAccessLaundry(accountType || "")) {
       return json({ error: "Access Denied: Account type cannot book laundry" }, { status: 403 });
     }
 
@@ -205,6 +218,12 @@ export const DELETE: RequestHandler = async ({ request }) => {
   try {
     const client = await getSheetsClient();
     const [resRows] = await fetchSheetsData(client, ["laundry!A:I"]);
+
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY_SERVICE, true);
+
+    if (!isLaundryEnabled) {
+      return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
+    }
 
     const rowIndex = resRows
       .slice(1)
