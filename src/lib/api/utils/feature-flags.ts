@@ -1,7 +1,7 @@
 import { env } from "$env/dynamic/public";
 
 type FeatureList = { [key: string]: any };
-const featureFlags: FeatureList = JSON.parse(env.PUBLIC_FEATURE_LIST);
+const featureFlags: FeatureList = JSON.parse(env.PUBLIC_FEATURE_LIST || "{}");
 
 /**
  * checks if the feature flag is enabled by searching the environment variable PUBLIC_FEATURE_LIST.
