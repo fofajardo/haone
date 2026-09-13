@@ -1,0 +1,218 @@
+<script lang="ts">
+  import {
+    addLaundryReservation,
+    validateLaundryReservation
+  } from "$api/controllers/laundry-controller";
+  import { Button } from "$components/ui/button";
+  import * as DatePicker from "$components/ui/date-picker";
+  import * as Dialog from "$components/ui/dialog";
+  import { Label } from "$components/ui/label";
+  import * as TimePicker from "$components/ui/time-picker";
+  import { LaundryStatus, type LaundryRecord } from "$lib/types";
+  import { auth } from "$state/auth.svelte";
+  import { formatTime } from "$utils/formatters";
+  import { parseTime } from "$utils/parsers";
+  import { CircleXIcon, ClockIcon, SlidersHorizontalIcon } from "@lucide/svelte";
+  import { toast } from "svelte-sonner";
+
+  let {
+    reservations,
+    onSuccess
+  }: {
+    reservations: LaundryRecord[];
+    onSuccess: () => void;
+  } = $props();
+
+  const currentResidentId = $derived(auth.userId);
+
+  let isLoading = $state(false);
+  let isDialogOpen = $state(false);
+
+  let newReservation = $state({
+    date: new Date().toISOString().split("T")[0],
+    timeStart: "05:00",
+    timeEnd: "07:00"
+  });
+
+  function calculateEndTime(start: string, durationMinutes: number): string {
+    const parts = (start || "05:00").split(":");
+    const startM = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+    const endM = Math.min(startM + durationMinutes, 24 * 60);
+    const h = Math.floor(endM / 60);
+    const m = endM % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+  }
+
+  $effect(() => {
+    const start = newReservation.timeStart;
+    if (durationMode === "1hr") {
+      newReservation.timeEnd = calculateEndTime(start, 60);
+    } else if (durationMode === "2hrs") {
+      newReservation.timeEnd = calculateEndTime(start, 120);
+    }
+  });
+
+  let durationMode = $state<"1hr" | "2hrs" | "custom">("2hrs");
+
+  const validationError = $derived.by(() => {
+    return validateLaundryReservation({
+      date: newReservation.date,
+      timeStart: newReservation.timeStart,
+      timeEnd: newReservation.timeEnd,
+      residentId: currentResidentId,
+      isAdmin: false,
+      existingReservations: reservations
+    });
+  });
+
+  async function handleBook() {
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    try {
+      isLoading = true;
+      if (!currentResidentId) {
+        throw new Error("Could not find your resident record.");
+      }
+
+      await addLaundryReservation({
+        id: crypto.randomUUID(),
+        residentId: currentResidentId,
+        date: newReservation.date,
+        timeStart: formatTime(newReservation.timeStart),
+        timeEnd: formatTime(newReservation.timeEnd),
+        status: LaundryStatus.ACTIVE,
+        cancelReason: ""
+      });
+      toast.success("Reservation successful");
+      isDialogOpen = false;
+      onSuccess();
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function handleDurationSelect(mode: "1hr" | "2hrs" | "custom") {
+    durationMode = mode;
+    if (mode === "1hr") {
+      newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 60);
+    } else if (mode === "2hrs") {
+      newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 120);
+    }
+  }
+
+  export function open() {
+    isDialogOpen = true;
+  }
+
+  export function handleSelectSlot(date: string, hour: number) {
+    // Check if already occupied
+    const isOccupied = reservations.some((r: LaundryRecord) => {
+      if (r.status !== "ACTIVE" || r.date !== date) return false;
+      const start = parseTime(r.timeStart);
+      const end = parseTime(r.timeEnd);
+      return hour >= start && hour < end;
+    });
+
+    if (isOccupied) {
+      toast.error("This slot is already booked.");
+      return;
+    }
+
+    newReservation.date = date;
+    newReservation.timeStart = `${hour.toString().padStart(2, "0")}:00`;
+    durationMode = "1hr";
+    newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 60);
+    open();
+  }
+</script>
+
+<Dialog.Root bind:open={isDialogOpen}>
+  <Dialog.Content>
+    <Dialog.Header>
+      <Dialog.Title>Book Laundry Slot</Dialog.Title>
+      <Dialog.Description>Select your preferred date and time.</Dialog.Description>
+    </Dialog.Header>
+    <div class="space-y-6 pb-4">
+      <div class="space-y-2">
+        <Label>Date</Label>
+        <DatePicker.Root bind:value={newReservation.date} class="w-full" />
+      </div>
+
+      <div class="space-y-4">
+        <div class="space-y-2">
+          <Label>Start Time</Label>
+          <TimePicker.Root bind:value={newReservation.timeStart} class="w-full" />
+        </div>
+
+        <div class="space-y-2">
+          <Label class="text-sm">Duration</Label>
+          <div class="grid grid-cols-3 gap-2">
+            <Button
+              type="button"
+              variant={durationMode === "1hr" ? "default" : "outline"}
+              size="default"
+              class="h-10 text-sm font-medium"
+              onclick={() => handleDurationSelect("1hr")}
+              icon={ClockIcon}
+            >
+              1 Hour
+            </Button>
+            <Button
+              type="button"
+              variant={durationMode === "2hrs" ? "default" : "outline"}
+              size="default"
+              class="h-10 text-sm font-medium"
+              onclick={() => handleDurationSelect("2hrs")}
+              icon={ClockIcon}
+            >
+              2 Hours
+            </Button>
+            <Button
+              type="button"
+              variant={durationMode === "custom" ? "default" : "outline"}
+              size="default"
+              class="h-10 text-sm font-medium"
+              onclick={() => handleDurationSelect("custom")}
+              icon={SlidersHorizontalIcon}
+            >
+              Custom
+            </Button>
+          </div>
+        </div>
+
+        {#if durationMode === "custom"}
+          <div class="space-y-2">
+            <Label class="text-sm">End Time</Label>
+            <TimePicker.Root bind:value={newReservation.timeEnd} class="w-full" />
+          </div>
+        {:else}
+          <div
+            class="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm"
+          >
+            <span class="font-medium text-muted-foreground">End Time</span>
+            <span class="font-semibold text-foreground">{formatTime(newReservation.timeEnd)}</span>
+          </div>
+        {/if}
+      </div>
+      {#if validationError}
+        <div class="flex items-center gap-2 px-1 text-xs font-bold text-destructive uppercase">
+          <CircleXIcon class="h-4 w-4" />
+          {validationError}
+        </div>
+      {/if}
+    </div>
+    <Dialog.Footer>
+      <Button variant="outline" onclick={() => (isDialogOpen = false)} disabled={isLoading}>
+        Cancel
+      </Button>
+      <Button onclick={handleBook} isLoading={isLoading} disabled={!!validationError}>
+        Confirm
+      </Button>
+    </Dialog.Footer>
+  </Dialog.Content>
+</Dialog.Root>

@@ -4,15 +4,7 @@
   import { brandingState } from "$state/branding.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import {
-    RefreshCcw,
-    Plus,
-    Info,
-    Funnel,
-    CircleX,
-    Clock,
-    SlidersHorizontal
-  } from "@lucide/svelte";
+  import { RefreshCcw, Plus, Info, Funnel, CircleX } from "@lucide/svelte";
   import * as NativeSelect from "$ui/native-select";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
@@ -20,72 +12,30 @@
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import {
     fetchLaundryReservations,
-    addLaundryReservation,
     cancelLaundryReservation,
-    validateLaundryReservation,
     checkFeatureEnabled
   } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
   import * as Card from "$ui/card";
-  import { Label } from "$ui/label";
-  import * as Dialog from "$ui/dialog";
   import * as Collapsible from "$ui/collapsible";
-  import * as DatePicker from "$ui/date-picker";
-  import * as TimePicker from "$ui/time-picker";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
   import { toast } from "svelte-sonner";
   import { pageState } from "$state/page-info.svelte";
   import { ChevronDown } from "@lucide/svelte";
   import { parseTime, parseDateWeight } from "$utils/parsers";
-  import { formatTime } from "$utils/formatters";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
+  import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<UserRecord[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let isBookingOpen = $state(false);
-  let isBooking = $state(false);
   let isCancelling = $state(false);
   let cancelTargetId = $state<string | null>(null);
-
-  let newReservation = $state({
-    date: new Date().toISOString().split("T")[0],
-    timeStart: "05:00",
-    timeEnd: "07:00"
-  });
-
-  let durationMode = $state<"1hr" | "2hrs" | "custom">("2hrs");
-
-  function calculateEndTime(start: string, durationMinutes: number): string {
-    const parts = (start || "05:00").split(":");
-    const startM = (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
-    const endM = Math.min(startM + durationMinutes, 24 * 60);
-    const h = Math.floor(endM / 60);
-    const m = endM % 60;
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-  }
-
-  $effect(() => {
-    const start = newReservation.timeStart;
-    if (durationMode === "1hr") {
-      newReservation.timeEnd = calculateEndTime(start, 60);
-    } else if (durationMode === "2hrs") {
-      newReservation.timeEnd = calculateEndTime(start, 120);
-    }
-  });
-
-  function handleDurationSelect(mode: "1hr" | "2hrs" | "custom") {
-    durationMode = mode;
-    if (mode === "1hr") {
-      newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 60);
-    } else if (mode === "2hrs") {
-      newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 120);
-    }
-  }
+  let bookLaundryDialog = $state<BookLaundryDialog | null>(null);
 
   let selectedRow = $state<LaundryRecord | null>(null);
   let statusFilter = $state<LaundryStatus>(LaundryStatus.ACTIVE);
@@ -118,49 +68,6 @@
       error = e.message;
     } finally {
       isLoading = false;
-    }
-  }
-
-  const validationError = $derived.by(() => {
-    return validateLaundryReservation({
-      date: newReservation.date,
-      timeStart: newReservation.timeStart,
-      timeEnd: newReservation.timeEnd,
-      residentId: currentResidentId,
-      isAdmin: false,
-      existingReservations: reservations
-    });
-  });
-
-  async function handleBook() {
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    try {
-      isBooking = true;
-      await checkFeatureEnabled();
-      if (!currentResidentId) {
-        throw new Error("Could not find your resident record.");
-      }
-
-      await addLaundryReservation({
-        id: crypto.randomUUID(),
-        residentId: currentResidentId,
-        date: newReservation.date,
-        timeStart: formatTime(newReservation.timeStart),
-        timeEnd: formatTime(newReservation.timeEnd),
-        status: LaundryStatus.ACTIVE,
-        cancelReason: ""
-      });
-      toast.success("Reservation successful");
-      isBookingOpen = false;
-      loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isBooking = false;
     }
   }
 
@@ -267,7 +174,7 @@
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-    actions={[{ label: "Book Slot", onclick: () => (isBookingOpen = true), icon: Plus }]}
+    actions={[{ label: "Book Slot", onclick: () => bookLaundryDialog?.open(), icon: Plus }]}
   />
 
   <Card.Root
@@ -323,26 +230,7 @@
         onCancelReservation={openCancelDialog}
         {isCancelling}
         bind:selectedReservation={selectedRow}
-        onSelectSlot={(date, hour) => {
-          // Check if already occupied
-          const isOccupied = reservations.some((r: LaundryRecord) => {
-            if (r.status !== "ACTIVE" || r.date !== date) return false;
-            const start = parseTime(r.timeStart);
-            const end = parseTime(r.timeEnd);
-            return hour >= start && hour < end;
-          });
-
-          if (isOccupied) {
-            toast.error("This slot is already booked.");
-            return;
-          }
-
-          newReservation.date = date;
-          newReservation.timeStart = `${hour.toString().padStart(2, "0")}:00`;
-          durationMode = "1hr";
-          newReservation.timeEnd = calculateEndTime(newReservation.timeStart, 60);
-          isBookingOpen = true;
-        }}
+        onSelectSlot={bookLaundryDialog?.handleSelectSlot}
       />
     </div>
 
@@ -403,91 +291,7 @@
   {/if}
 </div>
 
-<Dialog.Root bind:open={isBookingOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Book Laundry Slot</Dialog.Title>
-      <Dialog.Description>Select your preferred date and time.</Dialog.Description>
-    </Dialog.Header>
-    <div class="space-y-6 pb-4">
-      <div class="space-y-2">
-        <Label>Date</Label>
-        <DatePicker.Root bind:value={newReservation.date} class="w-full" />
-      </div>
-
-      <div class="space-y-4">
-        <div class="space-y-2">
-          <Label>Start Time</Label>
-          <TimePicker.Root bind:value={newReservation.timeStart} class="w-full" />
-        </div>
-
-        <div class="space-y-2">
-          <Label class="text-sm">Duration</Label>
-          <div class="grid grid-cols-3 gap-2">
-            <Button
-              type="button"
-              variant={durationMode === "1hr" ? "default" : "outline"}
-              size="default"
-              class="h-10 text-sm font-medium"
-              onclick={() => handleDurationSelect("1hr")}
-              icon={Clock}
-            >
-              1 Hour
-            </Button>
-            <Button
-              type="button"
-              variant={durationMode === "2hrs" ? "default" : "outline"}
-              size="default"
-              class="h-10 text-sm font-medium"
-              onclick={() => handleDurationSelect("2hrs")}
-              icon={Clock}
-            >
-              2 Hours
-            </Button>
-            <Button
-              type="button"
-              variant={durationMode === "custom" ? "default" : "outline"}
-              size="default"
-              class="h-10 text-sm font-medium"
-              onclick={() => handleDurationSelect("custom")}
-              icon={SlidersHorizontal}
-            >
-              Custom
-            </Button>
-          </div>
-        </div>
-
-        {#if durationMode === "custom"}
-          <div class="space-y-2">
-            <Label class="text-sm">End Time</Label>
-            <TimePicker.Root bind:value={newReservation.timeEnd} class="w-full" />
-          </div>
-        {:else}
-          <div
-            class="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm"
-          >
-            <span class="font-medium text-muted-foreground">End Time</span>
-            <span class="font-semibold text-foreground">{formatTime(newReservation.timeEnd)}</span>
-          </div>
-        {/if}
-      </div>
-      {#if validationError}
-        <div class="flex items-center gap-2 px-1 text-xs font-bold text-destructive uppercase">
-          <CircleX class="h-4 w-4" />
-          {validationError}
-        </div>
-      {/if}
-    </div>
-    <Dialog.Footer>
-      <Button variant="outline" onclick={() => (isBookingOpen = false)} disabled={isBooking}>
-        Cancel
-      </Button>
-      <Button onclick={handleBook} isLoading={isBooking} disabled={!!validationError}>
-        Confirm
-      </Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<BookLaundryDialog bind:this={bookLaundryDialog} {reservations} onSuccess={() => loadData()} />
 
 <CancelLaundryDialog
   open={Boolean(cancelTargetId)}
