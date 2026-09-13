@@ -1,7 +1,8 @@
 import { LaundryStatus, type LaundryRecord } from "$lib/types";
+import { uiSettings } from "$state/settings.svelte";
 import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
 import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
-import { formatDate } from "$utils/formatters";
+import { formatDate, formatTimeRange } from "$utils/formatters";
 import { parseTime } from "$utils/parsers";
 import { createRawSnippet } from "svelte";
 
@@ -52,7 +53,9 @@ export const columns: ColumnDef<LaundryRecord>[] = [
         render: () => `
           <div class="flex flex-col">
             <span class="font-medium">${p().date}</span>
-            <span>${p().start}–${p().end}</span>
+            <span>
+              ${formatTimeRange(p().start, uiSettings.clockFormat)}–${formatTimeRange(p().end, uiSettings.clockFormat)}
+            </span>
           </div>
         `
       }));
