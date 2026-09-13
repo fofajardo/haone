@@ -76,6 +76,7 @@
       reservationId = null;
       isLoading = false;
     }
+    isDialogOpen = false;
   }
 
   export function open(reservationIdToCancel: string) {
