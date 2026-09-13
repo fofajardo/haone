@@ -6,21 +6,14 @@
     ChevronRight,
     ChevronDown,
     BookmarkIcon,
-    CalendarIcon,
-    Info,
-    UserIcon,
-    ClockIcon,
-    TrashIcon,
-    CalendarPlusIcon,
-    Share2Icon
+    CalendarIcon
   } from "@lucide/svelte";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import * as Tooltip from "$ui/tooltip";
   import { Button } from "$ui/button";
   import { parseTime } from "$utils/parsers";
-  import * as Sheet from "$ui/sheet";
-  import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
+  import ViewLaundryDialog from "$components/forms/ViewLaundryDialog.svelte";
 
   let {
     reservations,
@@ -169,93 +162,6 @@
 
   function handleReservationClick(res: any) {
     selectedReservation = res;
-  }
-
-  function checkIsPast(date: string, timeEnd: string) {
-    if (!date || !timeEnd) return false;
-    try {
-      const [y, m, d] = date.split(/[-/]/).map(Number);
-      const timeParts = timeEnd.split(/[:\s]/);
-      let h = parseInt(timeParts[0]);
-      const min = parseInt(timeParts[1]);
-
-      if (timeEnd.toLowerCase().includes("pm") && h < 12) h += 12;
-      if (timeEnd.toLowerCase().includes("am") && h === 12) h = 0;
-
-      const endTime = new Date(y, m - 1, d, h, min);
-      return endTime.getTime() <= now.getTime();
-    } catch {
-      return false;
-    }
-  }
-
-  let isDetailPast = $derived(
-    selectedReservation ? checkIsPast(selectedReservation.date, selectedReservation.timeEnd) : false
-  );
-
-  function formatCalendarTime(resDate: string, resTime: string) {
-    const dateClean = resDate.replace(/[-/]/g, "");
-    const str = resTime.trim().toUpperCase();
-    const match = str.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/);
-
-    let h = 0;
-    let m = "00";
-
-    if (match) {
-      h = parseInt(match[1]);
-      m = match[2];
-      const ampm = match[3];
-      if (ampm === "PM" && h < 12) h += 12;
-      if (ampm === "AM" && h === 12) h = 0;
-    } else {
-      const parts = resTime.split(":");
-      h = parseInt(parts[0]) || 0;
-      m = parts[1]?.split(" ")[0] || "00";
-    }
-
-    const hStr = h.toString().padStart(2, "0");
-    const mStr = m.padStart(2, "0");
-    return dateClean + "T" + hStr + mStr + "00";
-  }
-
-  function generateIcsFile(res: any) {
-    const start = formatCalendarTime(res.date, res.timeStart);
-    const end = formatCalendarTime(res.date, res.timeEnd);
-
-    const content = [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//HAOne/NONSGML//EN",
-      "BEGIN:VEVENT",
-      `UID:${res.id}@haone.uplb.edu.ph`,
-      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
-      `SUMMARY:${brandingState.profile.shortName} | Laundry Reservation (${res.name})`,
-      `DTSTART:${start}`,
-      `DTEND:${end}`,
-      `DESCRIPTION:Laundry slot for ${res.name} (Room ${res.room})`,
-      `LOCATION:Laundry Area`,
-      "END:VEVENT",
-      "END:VCALENDAR"
-    ].join("\r\n");
-
-    const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `laundry-${res.date}-${res.timeStart.replace(":", "")}.ics`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }
-
-  function getGoogleCalendarUrl(res: any) {
-    const start = formatCalendarTime(res.date, res.timeStart);
-    const end = formatCalendarTime(res.date, res.timeEnd);
-    const details = `Laundry slot for ${res.name} (Room ${res.room})`;
-    const title = `${brandingState.profile.shortName} | Laundry Reservation`;
-    const timezone = "Asia/Manila";
-    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}&details=${encodeURIComponent(details)}&location=${encodeURIComponent("Laundry Area")}&ctz=${timezone}`;
   }
 </script>
 
@@ -553,112 +459,4 @@
   </div>
 </div>
 
-<Sheet.Root open={!!selectedReservation} onOpenChange={(o) => !o && (selectedReservation = null)}>
-  <Sheet.Content side="right" class="sm:max-w-md sm:rounded-l-xl">
-    {#if selectedReservation}
-      {@const isMine = selectedReservation.residentId === currentUserId}
-      <Sheet.Header>
-        <Sheet.Title class="flex items-center gap-2">
-          <Info class="h-5 w-5 text-primary" />
-          Reservation Details
-        </Sheet.Title>
-        <Sheet.Description>Information about this laundry booking.</Sheet.Description>
-      </Sheet.Header>
-
-      <div class="space-y-4 px-4">
-        <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-          <UserIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-          <div class="space-y-0.5">
-            <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Reserved By
-            </p>
-            <p class="text-sm font-semibold">{selectedReservation.name}</p>
-            {#if selectedReservation.room}
-              <p class="text-xs text-muted-foreground">Room {selectedReservation.room}</p>
-            {/if}
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="col-span-2 flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-            <CalendarIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-            <div class="space-y-0.5">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Date</p>
-              <p class="text-sm font-semibold">{selectedReservation.date}</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-            <ClockIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-            <div class="space-y-0.5">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Starts</p>
-              <p class="text-sm font-semibold">{selectedReservation.timeStart}</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-            <ClockIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
-            <div class="space-y-0.5">
-              <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Ends</p>
-              <p class="text-sm font-semibold">{selectedReservation.timeEnd}</p>
-            </div>
-          </div>
-        </div>
-
-        {#if selectedReservation.creationTimestamp}
-          <div class="flex items-center gap-2 px-1 text-xs text-muted-foreground">
-            <ClockIcon class="h-3 w-3" />
-            <span>Booked on {new Date(selectedReservation.creationTimestamp).toLocaleString()}</span
-            >
-          </div>
-        {/if}
-
-        {#if isMine || isAdminView}
-          <div class="space-y-2 pt-2">
-            <p class="px-1 text-xs font-bold tracking-wider text-muted-foreground uppercase">
-              Add to Calendar
-            </p>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onclick={() => generateIcsFile(selectedReservation)}
-                icon={CalendarPlusIcon}
-              >
-                Download .ics
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                href={getGoogleCalendarUrl(selectedReservation)}
-                target="_blank"
-                icon={Share2Icon}
-              >
-                Google Calendar
-              </Button>
-            </div>
-          </div>
-        {/if}
-      </div>
-
-      <div class="mt-6 flex flex-col gap-2 px-4">
-        {#if isMine || isAdminView}
-          <Button
-            variant="destructive"
-            class="w-full"
-            disabled={isDetailPast}
-            onclick={() => {
-              const targetId = selectedReservation.id;
-              selectedReservation = null;
-              onCancelReservation?.(targetId);
-            }}
-            icon={TrashIcon}
-          >
-            Cancel
-          </Button>
-        {/if}
-        <Button variant="outline" class="w-full" onclick={() => (selectedReservation = null)}>
-          Close
-        </Button>
-      </div>
-    {/if}
-  </Sheet.Content>
-</Sheet.Root>
+<ViewLaundryDialog bind:selectedReservation {currentUserId} {isAdminView} {onCancelReservation} />
