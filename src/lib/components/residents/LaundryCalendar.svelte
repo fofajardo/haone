@@ -1,7 +1,19 @@
 <script lang="ts">
   import type { LaundryRecord, UserRecord } from "$lib/types";
   import { cn } from "$lib/utils";
-  import { ChevronLeft, ChevronRight, ChevronDown, BookmarkIcon } from "@lucide/svelte";
+  import {
+    ChevronLeft,
+    ChevronRight,
+    ChevronDown,
+    BookmarkIcon,
+    CalendarIcon,
+    Info,
+    UserIcon,
+    ClockIcon,
+    TrashIcon,
+    CalendarPlusIcon,
+    Share2Icon
+  } from "@lucide/svelte";
   import * as DropdownMenu from "$ui/dropdown-menu";
   import * as Tooltip from "$ui/tooltip";
   import { Button } from "$ui/button";
@@ -9,15 +21,6 @@
   import * as Sheet from "$ui/sheet";
   import { brandingState } from "$state/branding.svelte";
   import { uiSettings } from "$state/settings.svelte";
-  import {
-    Info,
-    User as UserIcon,
-    Calendar as CalendarIconSmall,
-    Clock as ClockIcon,
-    Trash2,
-    CalendarPlus,
-    Share2
-  } from "@lucide/svelte";
 
   let {
     reservations,
@@ -278,7 +281,7 @@
             onclick={goToToday}
             aria-label="Today"
           >
-            <CalendarIconSmall class="h-4 w-4" />
+            <CalendarIcon class="h-4 w-4" />
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content side="bottom">
@@ -588,7 +591,7 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div class="col-span-2 flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
-            <CalendarIconSmall class="mt-0.5 h-4 w-4 text-muted-foreground" />
+            <CalendarIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div class="space-y-0.5">
               <p class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Date</p>
               <p class="text-sm font-semibold">{selectedReservation.date}</p>
@@ -628,7 +631,7 @@
                 variant="outline"
                 size="sm"
                 onclick={() => generateIcsFile(selectedReservation)}
-                icon={CalendarPlus}
+                icon={CalendarPlusIcon}
               >
                 Download .ics
               </Button>
@@ -637,7 +640,7 @@
                 size="sm"
                 href={getGoogleCalendarUrl(selectedReservation)}
                 target="_blank"
-                icon={Share2}
+                icon={Share2Icon}
               >
                 Google Calendar
               </Button>
@@ -657,7 +660,7 @@
               selectedReservation = null;
               onCancelReservation?.(targetId);
             }}
-            icon={Trash2}
+            icon={TrashIcon}
           >
             Cancel
           </Button>
@@ -669,7 +672,3 @@
     {/if}
   </Sheet.Content>
 </Sheet.Root>
-
-<style>
-  /* Ensure the dialog doesn't close too fast if we want to show the spinner */
-</style>
