@@ -162,8 +162,14 @@
 
   let viewLaundryDialog = $state<ViewLaundryDialog | null>(null);
   function handleReservationClick(res: any) {
-    viewLaundryDialog?.open(res);
+    selectedReservation = res;
   }
+
+  $effect(() => {
+    if (selectedReservation && viewLaundryDialog) {
+      viewLaundryDialog.open(selectedReservation);
+    }
+  });
 </script>
 
 <div class="flex flex-col gap-4">
