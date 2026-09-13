@@ -167,17 +167,9 @@
     selectedDate = new Date();
   }
 
-  let isCancelConfirmOpen = $state(false);
-
   function handleReservationClick(res: any) {
     selectedReservation = res;
   }
-
-  $effect(() => {
-    if (selectedReservation === null) {
-      isCancelConfirmOpen = false;
-    }
-  });
 
   function checkIsPast(date: string, timeEnd: string) {
     if (!date || !timeEnd) return false;
