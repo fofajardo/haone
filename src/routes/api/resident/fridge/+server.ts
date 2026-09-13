@@ -42,7 +42,7 @@ export const GET: RequestHandler = async ({ request }) => {
       "TERM_CURR"
     ]);
 
-    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
+    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE_SERVICE, true);
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
@@ -131,7 +131,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     const client = await getSheetsClient();
 
-    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
+    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE_SERVICE, true);
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
@@ -181,7 +181,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [rows] = await fetchSheetsData(client, ["fridge_items!A:M"]);
 
-    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
+    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE_SERVICE, true);
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });
@@ -255,7 +255,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [rows] = await fetchSheetsData(client, ["fridge_items!A:M"]);
 
-    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE, true);
+    const isFridgeEnabled = getFeatureFlagValue(FeatureFlagKey.FRIDGE_SERVICE, true);
 
     if (!isFridgeEnabled) {
       return json({ error: "Access Denied: Fridge service is disabled" }, { status: 403 });

@@ -142,6 +142,7 @@ export const POST: RequestHandler = async ({ request }) => {
       credentialJwt
     } satisfies TokenExchangeResponse);
   } catch (e: any) {
+    console.error(e);
     return json({ error: "server_error", error_description: e.message }, { status: 500 });
   }
 };

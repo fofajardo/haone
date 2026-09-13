@@ -911,8 +911,9 @@ export interface CustomServiceItem {
 }
 
 export enum FeatureFlagKey {
-  LAUNDRY = "FF_LAUNDRY",
-  FRIDGE = "FF_FRIDGE",
-  ONBOARDING_ACCTYPE_UHO = "FF_ONBOARD_ACCTYPE_UHO",
-  ONBOARDING_ACCTYPE_ALUMNI = "FF_ONBOARD_ACCTYPE_ALUM"
+  LAUNDRY_SERVICE = "services.laundry",
+  FRIDGE_SERVICE = "services.fridge",
+
+  ONBOARDING_ACCTYPE_UHO = "onboarding.accountType.uho",
+  ONBOARDING_ACCTYPE_ALUMNI = "onboarding.accountType.alumni"
 }

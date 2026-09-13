@@ -36,7 +36,7 @@ export const GET: RequestHandler = async ({ request }) => {
       "TERM_CURR"
     ]);
 
-    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY, true);
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY_SERVICE, true);
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
@@ -118,7 +118,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [accRows, activeTerm] = await fetchSheetsData(client, ["accounts!A:L", "TERM_CURR"]);
 
-    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY, true);
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY_SERVICE, true);
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });
@@ -219,7 +219,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
     const client = await getSheetsClient();
     const [resRows] = await fetchSheetsData(client, ["laundry!A:I"]);
 
-    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY, true);
+    const isLaundryEnabled = getFeatureFlagValue(FeatureFlagKey.LAUNDRY_SERVICE, true);
 
     if (!isLaundryEnabled) {
       return json({ error: "Access Denied: Laundry service is disabled" }, { status: 403 });

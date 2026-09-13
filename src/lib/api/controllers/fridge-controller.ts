@@ -5,7 +5,7 @@ import { FeatureFlagKey, type FridgeItemRecord, FridgeItemStatus } from "$lib/ty
 import { fetchUsers, getSignedInUserId } from "./resident-controller";
 
 export async function checkFeatureEnabled(bypassCache = false) {
-  const [fridgeEnabled] = await fetchFeatureFlagMulti([FeatureFlagKey.FRIDGE], true);
+  const [fridgeEnabled] = await fetchFeatureFlagMulti([FeatureFlagKey.FRIDGE_SERVICE], true);
   if (!fridgeEnabled) {
     throw new Error("Access Denied: Fridge service not enabled. Check back later!");
   }
