@@ -8,6 +8,6 @@ export const GET: RequestHandler = async (event: RequestEvent) => {
         return new Response(JSON.stringify([]));
     }
 
-    const theResponse = new Response(JSON.stringify(getFeatureFlagValueMulti(params.split(";"), undefined)));
+    const theResponse = new Response(JSON.stringify(getFeatureFlagValueMulti(params.split(";"), null)));
     return theResponse;
 };

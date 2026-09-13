@@ -6,7 +6,7 @@ import { type FridgeItemRecord, FridgeItemStatus } from "$lib/types";
 import { fetchUsers, getSignedInUserId } from "./resident-controller";
 
 export async function checkFeatureEnabled(bypassCache = false) {
-  const fridgeEnabled = await fetchFeatureFlagMulti(["FEATURE_FLAG_FRIDGE"], true);
+  const [ fridgeEnabled ] = await fetchFeatureFlagMulti(["FEATURE_FLAG_FRIDGE"], true);
   if (!fridgeEnabled) {
     throw new Error("Access Denied: Fridge service not enabled. Check back later!");
   }

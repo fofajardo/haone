@@ -22,7 +22,10 @@
     fetchLaundryReservations,
     addLaundryReservation,
     cancelLaundryReservation,
-    validateLaundryReservation
+    validateLaundryReservation,
+
+    checkFeatureEnabled
+
   } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
@@ -95,6 +98,8 @@
     isLoading = true;
     error = null;
     try {
+      await checkFeatureEnabled();
+
       const [resResult, userData] = await Promise.all([
         fetchLaundryReservations(true),
         fetchUsers(true)
@@ -137,6 +142,7 @@
 
     try {
       isBooking = true;
+      await checkFeatureEnabled();
       if (!currentResidentId) {
         throw new Error("Could not find your resident record.");
       }
@@ -181,6 +187,7 @@
 
     try {
       isCancelling = true;
+      await checkFeatureEnabled();
       await cancelLaundryReservation(cancelTargetId, reason, "CANCELLED_BY_USER");
       toast.success("Reservation cancelled");
       cancelTargetId = null;

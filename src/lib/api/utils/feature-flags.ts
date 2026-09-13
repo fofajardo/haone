@@ -39,5 +39,5 @@ export async function fetchFeatureFlagMulti<T>(theFeatureFlags: string[], theDef
   const params = new URLSearchParams({ features: theFeatureFlags.join(";") })
   return (JSON.parse(await 
     (await (fetch(`/api/features?${params.toString()}`))).text()) as T[])
-    .map((x) => x || theDefault);
+    .map((x) => x === null ? theDefault : x);
 }
