@@ -139,7 +139,7 @@
   });
 </script>
 
-<div class="mx-auto max-w-7xl space-y-3">
+<div class="mx-auto max-w-7xl space-y-8">
   <!-- Header Section -->
   <div class="mb-5 flex items-start justify-between">
     <div>
@@ -163,49 +163,51 @@
     />
   </div>
 
-  {#if error}
-    <ErrorView {error}>
-      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
-    </ErrorView>
-  {:else if status}
-    <!-- Quick Stats Grid -->
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {#if status.account && status.currEntry?.accountType !== AccountType.ALUMNUS}
-        <StatisticCard
-          title="Amount Due"
-          value={formatCurrency(status.account?.bal || 0)}
-          {isLoading}
-        >
-          {#snippet icon()}<Wallet class="h-6 w-6" />{/snippet}
-        </StatisticCard>
+  <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
+    <!-- Recent Transactions (1 col) -->
+    <div class="min-w-0">
+      <RecentActivityCard {status} />
 
-        <StatisticCard title="Payment Status" value="" {isLoading}>
-          {#snippet icon()}<ShieldCheck class="h-6 w-6" />{/snippet}
-          <StatusBadge account={status.account} textOnly={true} />
-        </StatisticCard>
+      {#if error}
+        <ErrorView {error}>
+          <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}
+            >Retry</Button
+          >
+        </ErrorView>
+      {:else if status}
+        <!-- Quick Stats Grid -->
+        <div class="mt-6 grid gap-6">
+          <h2 class="h2-base">Finance</h2>
+          {#if status.account && status.currEntry?.accountType !== AccountType.ALUMNUS}
+            <StatisticCard
+              title="Amount Due"
+              value={formatCurrency(status.account?.bal || 0)}
+              {isLoading}
+            >
+              {#snippet icon()}<Wallet class="h-6 w-6" />{/snippet}
+            </StatisticCard>
 
-        <StatisticCard
-          title="Room"
-          value={status.account.bed
-            ? `${status.account.room}-${status.account.bed}`
-            : `${status.account.room}`}
-          {isLoading}
-        >
-          {#snippet icon()}<MapPin class="h-6 w-6" />{/snippet}
-        </StatisticCard>
+            <StatisticCard title="Payment Status" value="" {isLoading}>
+              {#snippet icon()}<ShieldCheck class="h-6 w-6" />{/snippet}
+              <StatusBadge account={status.account} textOnly={true} />
+            </StatisticCard>
+
+            <StatisticCard
+              title="Room"
+              value={status.account.bed
+                ? `${status.account.room}-${status.account.bed}`
+                : `${status.account.room}`}
+              {isLoading}
+            >
+              {#snippet icon()}<MapPin class="h-6 w-6" />{/snippet}
+            </StatisticCard>
+          {/if}
+        </div>
       {/if}
     </div>
-  {/if}
-
-  <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
     <!-- Announcements Section (2 cols) -->
     <div class="min-w-0 lg:col-span-2">
       <AnnouncementsSection />
-    </div>
-
-    <!-- Recent Transactions (1 col) -->
-    <div class="min-w-0">
-      <RecentActivityCard transactions={status?.transactions} period={status?.activeTerm} />
     </div>
   </div>
 

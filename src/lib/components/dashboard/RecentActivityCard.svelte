@@ -21,14 +21,16 @@
   import { settings } from "$state/settings.svelte";
   import ActivityItem from "$components/dashboard/ActivityItem.svelte";
   import Skeleton from "$components/ui/skeleton/skeleton.svelte";
+  import type { ResidentStatus } from "$state/resident-state.svelte";
 
   let {
-    transactions = [],
-    period = ""
+    status = null
   }: {
-    transactions?: any[];
-    period?: string;
+    status?: ResidentStatus | null;
   } = $props();
+
+  const transactions = $derived(status?.transactions || []);
+  const period = $derived(status?.activeTerm || "");
 
   const filteredTransactions = $derived(
     transactions.filter((t: any) => t.period === period).slice(0, 5)
