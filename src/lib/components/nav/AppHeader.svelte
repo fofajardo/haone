@@ -58,8 +58,8 @@
         icon: Mail
       },
       {
-        title: "Database Sync",
-        url: "/admin/database-sync",
+        title: "DB Migration",
+        url: "/admin/db-migration",
         icon: Database,
         hide: !dev || env.PUBLIC_DB_PROVIDER !== "supabase"
       },

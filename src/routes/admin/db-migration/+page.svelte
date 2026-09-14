@@ -121,8 +121,8 @@
 
 <div class="space-y-3">
   <ContentHeader
-    title="Database Sync"
-    isTopLevel={true}
+    title="DB Migration"
+    isTopLevel={false}
     onRefresh={loadStatus}
     isRefreshing={loading}
     actions={[
