@@ -3,19 +3,16 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$state/settings.svelte";
   import { globalDialog } from "$state/dialog.svelte";
   import {
     fetchJournalEntries,
     deleteJournalEntry,
-    updateJournalEntry,
     batchAuditEntries
   } from "$api/controllers/journal-controller";
   import { formatCurrency, formatAccounting, formatDate } from "$utils/formatters";
   import { translateMop, translateTransactionType, translatePeriod } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
   import * as Card from "$ui/card";
-  import * as AlertDialog from "$ui/alert-dialog";
   import { Button } from "$ui/button";
   import { Badge } from "$ui/badge";
   import { Label } from "$ui/label";
@@ -25,13 +22,10 @@
     ExternalLink,
     Pencil,
     Trash2,
-    Banknote,
-    Smartphone,
     ListFilter as ListFilterIcon,
     Hash,
     Info,
-    Lock,
-    TriangleAlert
+    Lock
   } from "@lucide/svelte";
   import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
@@ -39,9 +33,10 @@
 
   const id = $derived(page.params.id);
 
-  import { JOURNAL_COL as JOR, type JournalRecord, TransactionType } from "$lib/types";
-  import { mapRowToJournal, fetchResidents } from "$api/controllers/resident-controller";
+  import { type JournalRecord } from "$lib/types";
+  import { fetchResidents } from "$api/controllers/resident-controller";
   import { toast } from "svelte-sonner";
+  import Banner from "$components/content/Banner.svelte";
 
   let transaction = $state<JournalRecord | null>(null);
   let creatorResidentId = $state<string | null>(null);
@@ -51,7 +46,6 @@
   let isDeleting = $state(false);
   let error = $state<string | null>(null);
   let rowIndex = $state<number | null>(null);
-  let isDialogOpen = $state(false);
 
   function showSystemAccountAlert() {
     globalDialog.show(
@@ -127,20 +121,35 @@
     }
   }
 
-  async function handleDelete() {
-    if (!transaction?.id) return;
-
-    isDialogOpen = false;
-    isDeleting = true;
-    try {
-      await deleteJournalEntry(transaction.id);
-      goto("/admin/transactions");
-    } catch (e: any) {
-      error = `Deletion failed: ${e.message}`;
-      window.scrollTo(0, 0);
-    } finally {
-      isDeleting = false;
+  function confirmDelete() {
+    if (!transaction?.id) {
+      return;
     }
+
+    globalDialog.confirm(
+      "Delete transaction?",
+      deleteDescription,
+      undefined,
+      async () => {
+        if (!transaction?.id) {
+          return;
+        }
+        isDeleting = true;
+        try {
+          await deleteJournalEntry(transaction.id);
+          goto("/admin/transactions");
+        } catch (e: any) {
+          toast.error(e.message || "Failed to delete transaction.");
+        } finally {
+          isDeleting = false;
+        }
+      },
+      undefined,
+      {
+        accept: "Delete",
+        cancel: "Cancel"
+      }
+    );
   }
 
   onMount(() => {
@@ -166,7 +175,9 @@
       return false;
     }
     const type = transaction.type.toUpperCase();
-    return type === "TRANSFER_FROM" || type === "TRANSFER_TO" || type === "CARRYOVER";
+    return (
+      type === "TRANSFER_FROM" || type === "TRANSFER_TO" || type === "CARRYOVER" || type === "EOS"
+    );
   });
 
   const headerColors = $derived(() => {
@@ -177,6 +188,16 @@
     return "bg-muted/5";
   });
 </script>
+
+{#snippet deleteDescription()}
+  <span>This transaction record will be permanently deleted from the journal.</span>
+  {#if isSpecialType}
+    <Banner variant="warning" class="mt-3">
+      This is a special transaction type. Related or balancing entries must be manually deleted to
+      maintain consistency.
+    </Banner>
+  {/if}
+{/snippet}
 
 <div class="mx-auto max-w-7xl space-y-3">
   <ContentHeader
@@ -202,9 +223,7 @@
             {
               label: "Delete",
               variant: "outline",
-              onclick: () => {
-                isDialogOpen = true;
-              },
+              onclick: confirmDelete,
               isLoading: isDeleting,
               icon: Trash2
             }
@@ -228,41 +247,6 @@
       {/if}
     {/snippet}
   </ContentHeader>
-
-  <AlertDialog.Root bind:open={isDialogOpen}>
-    <AlertDialog.Content>
-      <AlertDialog.Header>
-        <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
-        <AlertDialog.Description class="space-y-3">
-          <span
-            >This will permanently delete this transaction record from the ledger. This action
-            cannot be undone.</span
-          >
-          {#if isSpecialType}
-            <div
-              class="mt-2 flex animate-in items-start gap-2 rounded-lg border border-border bg-muted/50 p-3 text-xs text-foreground duration-200 fade-in slide-in-from-top-1"
-            >
-              <TriangleAlert class="mt-0.5 h-4 w-4 shrink-0" />
-              <div>
-                <p class="mb-1 font-bold tracking-wider uppercase">Special Transaction Type</p>
-                This is a special transaction type ({transaction?.type}). Deleting this row requires
-                manually deleting any related or balancing ledger entries to maintain consistency.
-              </div>
-            </div>
-          {/if}
-        </AlertDialog.Description>
-      </AlertDialog.Header>
-      <AlertDialog.Footer>
-        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-        <AlertDialog.Action
-          onclick={handleDelete}
-          class="bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          Proceed
-        </AlertDialog.Action>
-      </AlertDialog.Footer>
-    </AlertDialog.Content>
-  </AlertDialog.Root>
 
   {#if isLoading}
     <LoadingView />
