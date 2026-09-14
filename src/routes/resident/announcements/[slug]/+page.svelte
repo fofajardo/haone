@@ -73,7 +73,7 @@
 
     <div class="mx-auto max-w-4xl px-6 pb-12">
       <RichTextRenderer
-        bind:content={announcement.content}
+        content={announcement.content}
         class="prose prose-slate dark:prose-invert max-w-none"
       />
 
