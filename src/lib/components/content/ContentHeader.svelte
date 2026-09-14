@@ -52,6 +52,22 @@
   onMount(() => {
     pageState.isTopLevel = isTopLevel;
   });
+
+  // This check is a mouthful due to nested dropdowns. Simply put, if there are
+  // 1 or 2 actions with no refresh and none of them have sub-items, display
+  // them directly. Otherwise, show a dropdown menu.
+  const oneStandaloneAction = $derived(
+    actions.length === 1 && (!actions[0].items || actions[0].items.length === 0)
+  );
+  const twoStandaloneActions = $derived(
+    actions.length === 2 &&
+      (!actions[0].items || actions[0].items.length === 0) &&
+      (!actions[1].items || actions[1].items.length === 0)
+  );
+  const collapseToDropdown = $derived(
+    oneStandaloneAction ||
+      (twoStandaloneActions && ((!onRefresh && hasFilter) || (onRefresh && !hasFilter)))
+  );
 </script>
 
 {#snippet filterTrigger()}
@@ -79,8 +95,7 @@
 {/snippet}
 
 {#snippet mobileActions()}
-  <!-- This check is a mouthful due to nested dropdowns. Simply put, if there are 1 or 2 actions with no refresh and none of them have sub-items, display them directly. Otherwise, show a dropdown menu. -->
-  {#if (actions.length === 1 && (!actions[0].items || actions[0].items.length === 0)) || (!onRefresh && actions.length === 2 && (!actions[0].items || actions[0].items.length === 0) && (!actions[1].items || actions[1].items.length === 0))}
+  {#if collapseToDropdown}
     {#each actions as action}
       {@const { label, children, items: _items, icon: ActionIcon, disabled, ...rest } = action}
       <Button
