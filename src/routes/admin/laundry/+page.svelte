@@ -2,12 +2,10 @@
   import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, CircleX, Funnel } from "@lucide/svelte";
-  import * as NativeSelect from "$ui/native-select";
+  import { RefreshCcw, Plus } from "@lucide/svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
-  import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import {
     fetchAdminLaundryReservations,
     checkFeatureEnabled
@@ -19,16 +17,12 @@
     canAccessLaundry
   } from "$api/controllers/resident-controller";
   import { uiSettings } from "$state/settings.svelte";
-  import { LaundryStatus } from "$lib/types";
   import type { LaundryRecord } from "$lib/types";
-  import DataTable from "$ui/data-table/data-table.svelte";
-  import { columns } from "./columns";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
+  import LaundryReservationHistory from "$components/residents/LaundryReservationHistory.svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
   import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
-  import { toast } from "svelte-sonner";
   import { pageState } from "$state/page-info.svelte";
-  import { parseTime, parseDateWeight } from "$utils/parsers";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<any[]>([]);
@@ -39,7 +33,6 @@
   let roomMap = $state(new Map<string, string>());
   let accountToResidentMap = $state(new Map<string, string>());
   let activeResidentIds = $state(new Set<string>());
-  let statusFilter = $state<LaundryStatus | "">(LaundryStatus.ACTIVE);
   let cancelLaundryDialog = $state<CancelLaundryDialog | null>(null);
 
   async function loadData() {
@@ -120,45 +113,20 @@
 
   const activeUsers = $derived(users.filter((u) => activeResidentIds.has(u.id)));
 
-  const filteredReservations = $derived.by(() => {
-    // 1. Map and pre-calculate sort key
-    const mapped = reservations.map((r) => {
+  const mappedReservations = $derived.by(() => {
+    return reservations.map((r) => {
       let rid = (r.residentId || "").trim();
       if (!userMap.has(rid) && accountToResidentMap.has(rid)) {
         rid = accountToResidentMap.get(rid) || rid;
       }
       const user = userMap.get(rid) || userMap.get(rid.toLowerCase());
 
-      let sortKey = parseDateWeight(r.creationTimestamp);
-      if (sortKey === 0) {
-        sortKey = parseDateWeight(`${r.date} ${r.timeStart}`);
-      }
-
-      let effectiveStatus = r.status;
-      if (r.status === LaundryStatus.ACTIVE) {
-        if (r.date && r.timeEnd) {
-          const [y, m, day] = r.date.split("-").map(Number);
-          const h = parseTime(r.timeEnd);
-          const endDt = new Date(y, m - 1, day, h, 0);
-          if (!isNaN(endDt.getTime()) && endDt < new Date()) {
-            effectiveStatus = LaundryStatus.COMPLETED;
-          }
-        }
-      }
-
       return {
         ...r,
         displayName: user?.displayName || rid,
-        room: user?.room || roomMap.get(rid) || roomMap.get(rid.toLowerCase()) || "",
-        _sortKey: sortKey,
-        _effectiveStatus: effectiveStatus
+        room: user?.room || roomMap.get(rid) || roomMap.get(rid.toLowerCase()) || ""
       };
     });
-
-    // 2. Filter and Sort
-    return mapped
-      .filter((r) => !statusFilter || r._effectiveStatus === statusFilter)
-      .sort((a, b) => b._sortKey - a._sortKey);
   });
 </script>
 
@@ -191,36 +159,11 @@
         }}
         onSelectSlot={bookLaundryDialog?.handleSelectSlot}
       />
-      <div class="space-y-4">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h3 class="text-sm font-bold tracking-wider text-muted-foreground uppercase">
-            Reservation History
-          </h3>
-          <FilterDrawer activeCount={Number(statusFilter !== "")}>
-            <div class="flex items-center gap-2">
-              <Funnel class="h-4 w-4 text-muted-foreground" />
-              <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-35">
-                <NativeSelect.Option value="">All Status</NativeSelect.Option>
-                <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
-                <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
-                <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
-                  >Cancelled (Admin)</NativeSelect.Option
-                >
-                <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
-                  >Cancelled (User)</NativeSelect.Option
-                >
-              </NativeSelect.Root>
-            </div>
-          </FilterDrawer>
-        </div>
-
-        <DataTable
-          data={filteredReservations}
-          {columns}
-          rowId="id"
-          onRowClick={(row) => (selectedReservation = row)}
-        />
-      </div>
+      <LaundryReservationHistory
+        reservations={mappedReservations}
+        isAdmin={true}
+        bind:selectedReservation
+      />
     </div>
   {/if}
 </div>

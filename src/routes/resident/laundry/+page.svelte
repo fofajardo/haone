@@ -4,26 +4,22 @@
   import { brandingState } from "$state/branding.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus, Info, Funnel, CircleX } from "@lucide/svelte";
-  import * as NativeSelect from "$ui/native-select";
+  import { RefreshCcw, Plus, Info } from "@lucide/svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
-  import EmptyView from "$components/content/EmptyView.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import {
     checkFeatureEnabled,
     fetchLaundryReservations
   } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
-  import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
+  import { type LaundryRecord, type UserRecord } from "$lib/types";
   import * as Card from "$ui/card";
   import * as Collapsible from "$ui/collapsible";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
+  import LaundryReservationHistory from "$components/residents/LaundryReservationHistory.svelte";
   import { pageState } from "$state/page-info.svelte";
   import { ChevronDown } from "@lucide/svelte";
-  import { parseTime, parseDateWeight } from "$utils/parsers";
-  import DataTable from "$ui/data-table/data-table.svelte";
-  import { columns } from "./columns";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
   import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
 
@@ -35,7 +31,6 @@
   let bookLaundryDialog = $state<BookLaundryDialog | null>(null);
 
   let selectedReservation = $state<LaundryRecord | null>(null);
-  let statusFilter = $state<LaundryStatus>(LaundryStatus.ACTIVE);
 
   let currentResidentId = $state("");
 
@@ -94,39 +89,17 @@
     )
   );
 
-  let filteredReservations = $derived.by(() => {
-    return userReservations
-      .map((r) => {
-        let effectiveStatus = r.status;
-        if (r.status === LaundryStatus.ACTIVE) {
-          if (r.date && r.timeEnd) {
-            const [y, m, day] = r.date.split("-").map(Number);
-            const h = parseTime(r.timeEnd);
-            const endDt = new Date(y, m - 1, day, h, 0);
-            if (!isNaN(endDt.getTime()) && endDt < new Date()) {
-              effectiveStatus = LaundryStatus.COMPLETED;
-            }
-          }
-        }
+  let mappedUserReservations = $derived.by(() => {
+    return userReservations.map((r) => {
+      const resId = (r.residentId || "").trim();
+      const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
 
-        let sortKey = parseDateWeight(r.creationTimestamp);
-        if (sortKey === 0) {
-          sortKey = parseDateWeight(`${r.date} ${r.timeStart}`);
-        }
-
-        const resId = (r.residentId || "").trim();
-        const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
-
-        return {
-          ...r,
-          name: (user as any)?.name || r.displayName || "Resident",
-          room: (user as any)?.room || r.room || "",
-          _sortKey: sortKey,
-          _effectiveStatus: effectiveStatus
-        };
-      })
-      .filter((r) => !statusFilter || r._effectiveStatus === statusFilter)
-      .sort((a, b) => b._sortKey - a._sortKey);
+      return {
+        ...r,
+        name: (user as any)?.name || r.displayName || "Resident",
+        room: (user as any)?.room || r.room || ""
+      };
+    });
   });
 
   let isRulesOpen = $state(false);
@@ -198,62 +171,12 @@
         bind:selectedReservation
         onSelectSlot={bookLaundryDialog?.handleSelectSlot}
       />
+      <LaundryReservationHistory
+        reservations={mappedUserReservations}
+        isAdmin={false}
+        bind:selectedReservation
+      />
     </div>
-
-    {#if userReservations.length > 0}
-      <div class="space-y-4">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h3 class="text-sm font-bold tracking-wider text-muted-foreground uppercase">
-            Reservation History
-          </h3>
-          <div class="flex items-center gap-2">
-            <Funnel class="h-4 w-4 text-muted-foreground" />
-            <NativeSelect.Root bind:value={statusFilter} class="h-9 w-35 text-xs">
-              <NativeSelect.Option value="">All Status</NativeSelect.Option>
-              <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
-              <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
-              <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
-                >Cancelled (User)</NativeSelect.Option
-              >
-              <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
-                >Cancelled (Admin)</NativeSelect.Option
-              >
-            </NativeSelect.Root>
-          </div>
-        </div>
-        {#if filteredReservations.length > 0}
-          <DataTable
-            data={filteredReservations}
-            {columns}
-            rowId="id"
-            onRowClick={(row) => (selectedReservation = row)}
-          />
-        {:else}
-          <EmptyView
-            title="No matching reservations"
-            description="No reservations match the selected status filter."
-          >
-            {#snippet icon()}
-              <CircleX class="h-10 w-10 text-muted-foreground/40" />
-            {/snippet}
-          </EmptyView>
-        {/if}
-      </div>
-    {:else}
-      <div class="space-y-4">
-        <h3 class="text-sm font-bold tracking-wider text-muted-foreground uppercase">
-          Reservation History
-        </h3>
-        <EmptyView
-          title="No reservations found"
-          description="Your laundry reservation history will appear here once you start booking slots."
-        >
-          {#snippet icon()}
-            <Plus class="h-10 w-10 text-muted-foreground/40" />
-          {/snippet}
-        </EmptyView>
-      </div>
-    {/if}
   {/if}
 </div>
 
