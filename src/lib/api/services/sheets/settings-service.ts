@@ -49,7 +49,7 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       isReducedMotion: (found[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE",
       clockFormat: found[USER_SETTINGS_COL.CLOCK_FORMAT] || "12h",
       calendarView:
-        (found[USER_SETTINGS_COL.CALENDAR_VIEW] as "month" | "week" | "day" | "history") || "month",
+        (found[USER_SETTINGS_COL.CALENDAR_VIEW] as "month" | "week" | "day" | "history") || "week",
       raw: found
     };
   },
@@ -150,7 +150,7 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       data.calendarView !== undefined
         ? data.calendarView
         : (currentRecord[USER_SETTINGS_COL.CALENDAR_VIEW] as
-            "month" | "week" | "day" | "history") || "month";
+            "month" | "week" | "day" | "history") || "week";
 
     const finalValues = [
       residentId,

@@ -71,8 +71,8 @@ export const GET: RequestHandler = async ({ request }) => {
       clockFormat: settings ? settings[USER_SETTINGS_COL.CLOCK_FORMAT] || "12h" : "12h",
       calendarView: settings
         ? (settings[USER_SETTINGS_COL.CALENDAR_VIEW] as "month" | "week" | "day" | "history") ||
-          "month"
-        : "month"
+          "week"
+        : "week"
     });
   } catch (e: any) {
     return serverError(e, "Settings fetch");
@@ -143,7 +143,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
       calendarView !== undefined
         ? calendarView
         : (currentRecord[USER_SETTINGS_COL.CALENDAR_VIEW] as
-            "month" | "week" | "day" | "history") || "month";
+            "month" | "week" | "day" | "history") || "week";
 
     const finalValues = [
       isPublicVal,

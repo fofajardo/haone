@@ -39,7 +39,7 @@
   } = $props();
 
   let selectedDate = $state(new Date());
-  let viewMode = $state<"month" | "week" | "day" | "history">(settings.calendarView || "month");
+  let viewMode = $state<"month" | "week" | "day" | "history">(settings.calendarView || "week");
 
   const startHour = 0;
   const opStartHour = 5;

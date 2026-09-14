@@ -22,7 +22,7 @@ class Settings {
   #residentNavIds = $state<string[]>(["home", "finance", "laundry"]);
   #adminNavIds = $state<string[]>(["dashboard", "history", "residents", "officers"]);
   #clockFormat = $state<"12h" | "24h">("12h");
-  #calendarView = $state<"month" | "week" | "day" | "history">("month");
+  #calendarView = $state<"month" | "week" | "day" | "history">("week");
   #showAllTimeAchievements = $state(true);
 
   #currentTerm = $state<string>("");
@@ -47,7 +47,7 @@ class Settings {
       this.#clockFormat = (localStorage.getItem(LS_KEYS.UI_CLOCK_FORMAT) as "12h" | "24h") || "12h";
       this.#calendarView =
         (localStorage.getItem(LS_KEYS.UI_CALENDAR_VIEW) as "month" | "week" | "day" | "history") ||
-        "month";
+        "week";
 
       const spa = localStorage.getItem(LS_KEYS.UI_IS_PUBLIC_ACHIEVEMENTS);
       this.#isPublicAchievementList = spa === null ? true : spa === "true";

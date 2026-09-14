@@ -35,7 +35,7 @@ export const supabaseSettingsService: SettingsServiceInterface = {
       theme: data.theme || "system",
       isReducedMotion: data.is_reduced_motion ?? false,
       clockFormat: data.clock_format || "12h",
-      calendarView: data.calendar_view || "month",
+      calendarView: data.calendar_view || "week",
       raw: data
     };
   },

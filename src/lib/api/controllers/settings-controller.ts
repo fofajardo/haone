@@ -25,7 +25,7 @@ export async function fetchUserSettings(_bypassCache = false): Promise<UserSetti
       theme: "system",
       isReducedMotion: false,
       clockFormat: "12h",
-      calendarView: "month",
+      calendarView: "week",
       raw: []
     }
   ];
