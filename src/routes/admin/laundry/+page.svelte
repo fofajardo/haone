@@ -2,7 +2,7 @@
   import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import { RefreshCcw, Plus } from "@lucide/svelte";
+  import { RefreshCcw, Plus, Info } from "@lucide/svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
@@ -21,6 +21,7 @@
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
   import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
+  import LaundryRulesDialog from "$components/dialogs/LaundryRulesDialog.svelte";
   import { pageState } from "$state/page-info.svelte";
 
   let reservations = $state<LaundryRecord[]>([]);
@@ -32,6 +33,7 @@
   let accountToResidentMap = $state(new Map<string, string>());
   let activeResidentIds = $state(new Set<string>());
   let cancelLaundryDialog = $state<CancelLaundryDialog | null>(null);
+  let laundryRulesDialog = $state<LaundryRulesDialog | null>(null);
 
   async function loadData() {
     isLoading = true;
@@ -138,7 +140,19 @@
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-    actions={[{ label: "Book Slot", onclick: () => bookLaundryDialog?.open(), icon: Plus }]}
+    actions={[
+      {
+        label: "Rules",
+        onclick: () => laundryRulesDialog?.open(),
+        icon: Info,
+        variant: "outline"
+      },
+      {
+        label: "Book Slot",
+        onclick: () => bookLaundryDialog?.open(),
+        icon: Plus
+      }
+    ]}
   />
 
   {#if isLoading}
@@ -171,3 +185,5 @@
 />
 
 <CancelLaundryDialog isAdmin={true} bind:this={cancelLaundryDialog} onSuccess={() => loadData()} />
+
+<LaundryRulesDialog bind:this={laundryRulesDialog} />

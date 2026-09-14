@@ -14,13 +14,11 @@
   } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord } from "$lib/types";
-  import * as Card from "$ui/card";
-  import * as Collapsible from "$ui/collapsible";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
   import { pageState } from "$state/page-info.svelte";
-  import { ChevronDown } from "@lucide/svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
   import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
+  import LaundryRulesDialog from "$components/dialogs/LaundryRulesDialog.svelte";
   import { settings } from "$state/settings.svelte";
 
   let reservations = $state<LaundryRecord[]>([]);
@@ -99,7 +97,7 @@
     });
   });
 
-  let isRulesOpen = $state(false);
+  let laundryRulesDialog = $state<LaundryRulesDialog | null>(null);
 </script>
 
 <div class="mx-auto max-w-7xl space-y-3">
@@ -108,45 +106,20 @@
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-    actions={[{ label: "Book Slot", onclick: () => bookLaundryDialog?.open(), icon: Plus }]}
+    actions={[
+      {
+        label: "Rules",
+        onclick: () => laundryRulesDialog?.open(),
+        icon: Info,
+        variant: "outline"
+      },
+      {
+        label: "Book Slot",
+        onclick: () => bookLaundryDialog?.open(),
+        icon: Plus
+      }
+    ]}
   />
-
-  <Card.Root
-    class="overflow-hidden bg-blue-50/50 p-0 ring-0 dark:border-blue-800 dark:bg-blue-900/10"
-  >
-    <Collapsible.Root bind:open={isRulesOpen}>
-      <div class="flex items-center justify-between pr-2 pl-4">
-        <h4
-          class="flex items-center gap-2 text-sm font-bold text-blue-900 uppercase dark:text-blue-100"
-        >
-          <Info class="h-4 w-4" /> Laundry Rules & Guidelines
-        </h4>
-        <Collapsible.Trigger>
-          {#snippet child({ props })}
-            <Button
-              variant="ghost"
-              size="sm"
-              class="h-8 w-8 rounded-full p-0"
-              {...props}
-              icon={ChevronDown}
-              iconClass={cn("transition-transform duration-200", isRulesOpen && "rotate-180")}
-            >
-              <span class="sr-only">Toggle</span>
-            </Button>
-          {/snippet}
-        </Collapsible.Trigger>
-      </div>
-      <Collapsible.Content>
-        <ul
-          class="list-disc space-y-1.5 border-t border-blue-100 px-8 py-4 text-sm text-blue-900/70 dark:border-blue-800 dark:text-blue-100/70"
-        >
-          {#each brandingState.profile.laundryRules || [] as rule}
-            <li>{rule}</li>
-          {/each}
-        </ul>
-      </Collapsible.Content>
-    </Collapsible.Root>
-  </Card.Root>
 
   {#if isLoading}
     <LoadingView />
@@ -172,3 +145,5 @@
 <BookLaundryDialog bind:this={bookLaundryDialog} {reservations} onSuccess={() => loadData()} />
 
 <CancelLaundryDialog bind:this={cancelLaundryDialog} isAdmin={false} onSuccess={() => loadData()} />
+
+<LaundryRulesDialog bind:this={laundryRulesDialog} />
