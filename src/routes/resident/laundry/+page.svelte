@@ -31,8 +31,6 @@
 
   let selectedReservation = $state<LaundryRecord | null>(null);
 
-  let currentResidentId = $state("");
-
   async function loadData() {
     isLoading = true;
     error = null;
@@ -48,13 +46,8 @@
         reservations = resResult;
       } else {
         reservations = resResult.reservations;
-        currentResidentId = resResult.currentResidentId;
       }
       users = userData;
-
-      if (!currentResidentId && auth.user) {
-        currentResidentId = auth.userId;
-      }
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -68,8 +61,10 @@
   });
 
   let userReservations = $derived.by(() => {
-    if (!currentResidentId) return [];
-    return reservations.filter((r) => r.residentId === currentResidentId);
+    if (!auth.userId) {
+      return [];
+    }
+    return reservations.filter((r) => r.residentId === auth.userId);
   });
 
   const userMap = $derived(
@@ -161,7 +156,7 @@
       {reservations}
       deprecatedMappedReservations={mappedUserReservations}
       {users}
-      currentUserId={currentResidentId}
+      currentUserId={auth.userId}
       isAdminView={false}
       onCancelReservation={(id) => {
         cancelLaundryDialog?.open(id);
