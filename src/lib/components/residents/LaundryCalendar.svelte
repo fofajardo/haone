@@ -26,8 +26,7 @@
     isAdminView = false,
     canSeeNames = true,
     onSelectSlot,
-    onCancelReservation,
-    selectedReservation = $bindable(null)
+    onCancelReservation
   }: {
     reservations: LaundryRecord[];
     deprecatedMappedReservations: LaundryRecord[];
@@ -37,7 +36,6 @@
     canSeeNames?: boolean;
     onSelectSlot?: (date: string, hour: number) => void;
     onCancelReservation?: (id: string) => void;
-    selectedReservation?: any;
   } = $props();
 
   let selectedDate = $state(new Date());
@@ -207,14 +205,8 @@
 
   let viewLaundryDialog = $state<ViewLaundryDialog | null>(null);
   function handleReservationClick(res: any) {
-    selectedReservation = res;
+    viewLaundryDialog?.open(res);
   }
-
-  $effect(() => {
-    if (selectedReservation && viewLaundryDialog) {
-      viewLaundryDialog.open(selectedReservation);
-    }
-  });
 
   const legendItems = [
     { color: "bg-brand", label: "My Reservation" },
@@ -659,7 +651,7 @@
     <LaundryReservationHistory
       reservations={deprecatedMappedReservations}
       isAdmin={isAdminView}
-      bind:selectedReservation
+      onRowClick={(row) => handleReservationClick(row)}
     />
   {:else if viewMode === "month"}
     {@render monthCalendar()}

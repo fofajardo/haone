@@ -28,7 +28,6 @@
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let bookLaundryDialog = $state<BookLaundryDialog | null>(null);
-  let selectedReservation = $state<LaundryRecord | null>(null);
   let roomMap = $state(new Map<string, string>());
   let accountToResidentMap = $state(new Map<string, string>());
   let activeResidentIds = $state(new Set<string>());
@@ -151,10 +150,8 @@
       users={users as any[]}
       currentUserId={auth.userId}
       isAdminView={true}
-      bind:selectedReservation
       onCancelReservation={(id) => {
         cancelLaundryDialog?.open(id);
-        selectedReservation = null;
       }}
       onSelectSlot={bookLaundryDialog?.handleSelectSlot}
     />

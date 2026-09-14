@@ -15,12 +15,10 @@
   let {
     reservations = [],
     isAdmin = false,
-    selectedReservation = $bindable(null),
     onRowClick
   }: {
     reservations: LaundryRecord[];
     isAdmin?: boolean;
-    selectedReservation?: LaundryRecord | null;
     onRowClick?: (row: LaundryRecord) => void;
   } = $props();
 
@@ -177,7 +175,6 @@
   });
 
   function handleRowClick(row: LaundryRecord) {
-    selectedReservation = row;
     if (onRowClick) {
       onRowClick(row);
     }

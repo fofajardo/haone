@@ -29,8 +29,6 @@
   let cancelLaundryDialog = $state<CancelLaundryDialog | null>(null);
   let bookLaundryDialog = $state<BookLaundryDialog | null>(null);
 
-  let selectedReservation = $state<LaundryRecord | null>(null);
-
   async function loadData() {
     isLoading = true;
     error = null;
@@ -160,9 +158,7 @@
       isAdminView={false}
       onCancelReservation={(id) => {
         cancelLaundryDialog?.open(id);
-        selectedReservation = null;
       }}
-      bind:selectedReservation
       onSelectSlot={bookLaundryDialog?.handleSelectSlot}
     />
   {/if}
