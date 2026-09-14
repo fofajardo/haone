@@ -26,6 +26,7 @@
     type SyncResult
   } from "$api/services/database-sync-service";
   import { Database, RefreshCcw, ArrowRightLeft, CircleCheck, CircleAlert } from "@lucide/svelte";
+  import Banner from "$components/content/Banner.svelte";
 
   if (!dev) {
     throw error(404, "Not Found");
@@ -146,11 +147,14 @@
   {#if loading && status.length === 0}
     <LoadingView />
   {:else}
+    <Banner variant="warning">
+      Syncing is performant but <strong>destructive</strong> in the target database. Values will be overwritten
+      if the IDs match.
+    </Banner>
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <Card class="lg:col-span-2">
         <CardHeader>
           <CardTitle>Entity Status</CardTitle>
-          <CardDescription>Compare record counts across providers.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -217,12 +221,11 @@
       <div class="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Sync Logs</CardTitle>
-            <CardDescription>Results of latest operations.</CardDescription>
+            <CardTitle>Logs</CardTitle>
           </CardHeader>
           <CardContent class="space-y-4">
             {#if lastResults.length === 0}
-              <div class="py-8 text-center text-sm text-muted-foreground italic">
+              <div class="py-8 text-center text-sm text-muted-foreground">
                 No operations performed in this session.
               </div>
             {:else}
@@ -253,22 +256,6 @@
                 </div>
               {/each}
             {/if}
-          </CardContent>
-        </Card>
-
-        <Card class="border-amber-200 bg-amber-50">
-          <CardHeader class="pb-2">
-            <CardTitle class="flex items-center text-sm text-amber-800">
-              <CircleAlert class="mr-2 h-4 w-4" />
-              Developer Warning
-            </CardTitle>
-          </CardHeader>
-          <CardContent class="space-y-2 text-xs text-amber-700">
-            <p>
-              Syncing is performant but <strong>destructive</strong> in the target database. Values will
-              be overwritten if the IDs match.
-            </p>
-            <p>This module is strictly disabled in production.</p>
           </CardContent>
         </Card>
       </div>
