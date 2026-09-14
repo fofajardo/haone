@@ -7,7 +7,10 @@
   import { CircleX } from "@lucide/svelte";
   import { LaundryStatus } from "$lib/types";
   import { toast } from "svelte-sonner";
-  import { cancelLaundryReservation, checkFeatureEnabled } from "$api/controllers/laundry-controller";
+  import {
+    cancelLaundryReservation,
+    checkFeatureEnabled
+  } from "$api/controllers/laundry-controller";
 
   interface Props {
     isAdmin?: boolean;

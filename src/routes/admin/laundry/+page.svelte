@@ -341,8 +341,4 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<CancelLaundryDialog
-  isAdmin={true}
-  bind:this={cancelLaundryDialog}
-  onSuccess={() => loadData()}
-/>
+<CancelLaundryDialog isAdmin={true} bind:this={cancelLaundryDialog} onSuccess={() => loadData()} />

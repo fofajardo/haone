@@ -10,7 +10,10 @@
   import ErrorView from "$components/content/ErrorView.svelte";
   import EmptyView from "$components/content/EmptyView.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
-  import { checkFeatureEnabled, fetchLaundryReservations } from "$api/controllers/laundry-controller";
+  import {
+    checkFeatureEnabled,
+    fetchLaundryReservations
+  } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { type LaundryRecord, type UserRecord, LaundryStatus } from "$lib/types";
   import * as Card from "$ui/card";
@@ -256,8 +259,4 @@
 
 <BookLaundryDialog bind:this={bookLaundryDialog} {reservations} onSuccess={() => loadData()} />
 
-<CancelLaundryDialog
-  bind:this={cancelLaundryDialog}
-  isAdmin={false}
-  onSuccess={() => loadData()}
-/>
+<CancelLaundryDialog bind:this={cancelLaundryDialog} isAdmin={false} onSuccess={() => loadData()} />
