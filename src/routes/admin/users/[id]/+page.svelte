@@ -233,6 +233,11 @@
     onRefresh={() => loadUserProfile(true)}
     isRefreshing={isLoading}
     actions={[
+      {
+        label: "Edit",
+        icon: UserCog,
+        href: `/admin/users/${userId}/edit`
+      },
       ...(currentAccount
         ? [
             {
@@ -258,11 +263,6 @@
             }
           ]
         : []),
-      {
-        label: "Edit",
-        icon: UserCog,
-        href: `/admin/users/${userId}/edit`
-      },
       ...(accounts.length === 0
         ? [
             {
