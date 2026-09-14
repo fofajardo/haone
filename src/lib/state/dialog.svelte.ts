@@ -1,14 +1,17 @@
+import type { Snippet } from "svelte";
+
 const DEFAULT_LABELS: { accept?: string; close?: string; cancel?: string } = {
   accept: "Accept",
   close: "Close",
   cancel: "Cancel"
 };
 type Callback = () => void | Promise<void>;
+export type DialogContent = string | Snippet;
 
 class DialogState {
   open = $state(false);
   title = $state("");
-  description = $state("");
+  description = $state<DialogContent>("");
   onClose = $state<Callback | undefined>(undefined);
   onCancel = $state<Callback | undefined>(undefined);
   onAccept = $state<Callback | undefined>(undefined);
@@ -16,7 +19,12 @@ class DialogState {
   labels = $state<typeof DEFAULT_LABELS>(DEFAULT_LABELS);
   isLoading = $state(false);
 
-  show(title: string, description: string, onClose?: () => void, labels?: typeof DEFAULT_LABELS) {
+  show(
+    title: string,
+    description: DialogContent,
+    onClose?: () => void,
+    labels?: typeof DEFAULT_LABELS
+  ) {
     this.title = title;
     this.description = description;
     this.onClose = onClose;
@@ -28,7 +36,7 @@ class DialogState {
 
   confirm(
     title: string,
-    description: string,
+    description: DialogContent,
     onClose?: () => void,
     onAccept?: () => void,
     onCancel?: () => void,

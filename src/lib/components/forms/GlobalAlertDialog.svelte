@@ -16,7 +16,11 @@
     <AlertDialog.Header>
       <AlertDialog.Title>{globalDialog.title}</AlertDialog.Title>
       <AlertDialog.Description>
-        {@html globalDialog.description}
+        {#if typeof globalDialog.description === "string"}
+          {@html globalDialog.description}
+        {:else if globalDialog.description}
+          {@render globalDialog.description()}
+        {/if}
       </AlertDialog.Description>
     </AlertDialog.Header>
     <AlertDialog.Footer>
