@@ -170,91 +170,101 @@
       viewLaundryDialog.open(selectedReservation);
     }
   });
+
+  const legendItems = [
+    { color: "bg-brand", label: "My Reservation" },
+    { color: "bg-emerald-700 dark:bg-emerald-900", label: "Others" },
+    { color: "bg-emerald-100 dark:bg-emerald-950", label: "Past" },
+    { color: "border border-dashed", label: "Available" },
+    {
+      color:
+        "border border-border bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,var(--color-border)_2px,var(--color-border)_3px)] opacity-50",
+      label: "Closed"
+    }
+  ];
 </script>
 
-<div class="flex flex-col gap-4">
-  <div class="flex items-center justify-between">
-    <div class="flex min-w-0 items-center gap-2">
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          <Button
-            variant="secondary"
-            size="icon"
-            class="h-8 w-8 rounded-full"
-            onclick={goToToday}
-            aria-label="Today"
-          >
-            <CalendarIcon class="h-4 w-4" />
-          </Button>
-        </Tooltip.Trigger>
-        <Tooltip.Content side="bottom">
-          <p>Today</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
+{#snippet headerMain()}
+  <Tooltip.Root>
+    <Tooltip.Trigger>
+      <Button
+        variant="secondary"
+        size="icon"
+        class="h-8 w-8 rounded-full"
+        onclick={goToToday}
+        aria-label="Today"
+      >
+        <CalendarIcon class="h-4 w-4" />
+      </Button>
+    </Tooltip.Trigger>
+    <Tooltip.Content side="bottom">
+      <p>Today</p>
+    </Tooltip.Content>
+  </Tooltip.Root>
 
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          <Button
-            variant="secondary"
-            size="icon"
-            class="h-8 w-8 rounded-full"
-            onclick={prev}
-            aria-label={viewMode === "week" ? "Previous week" : "Previous day"}
-          >
-            <ChevronLeft class="h-4 w-4" />
-          </Button>
-        </Tooltip.Trigger>
-        <Tooltip.Content side="bottom">
-          <p>{viewMode === "week" ? "Previous week" : "Previous day"}</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
+  <Tooltip.Root>
+    <Tooltip.Trigger>
+      <Button
+        variant="secondary"
+        size="icon"
+        class="h-8 w-8 rounded-full"
+        onclick={prev}
+        aria-label={viewMode === "week" ? "Previous week" : "Previous day"}
+      >
+        <ChevronLeft class="h-4 w-4" />
+      </Button>
+    </Tooltip.Trigger>
+    <Tooltip.Content side="bottom">
+      <p>{viewMode === "week" ? "Previous week" : "Previous day"}</p>
+    </Tooltip.Content>
+  </Tooltip.Root>
 
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          <Button
-            variant="secondary"
-            size="icon"
-            class="h-8 w-8 rounded-full"
-            onclick={next}
-            aria-label={viewMode === "week" ? "Next week" : "Next day"}
-          >
-            <ChevronRight class="h-4 w-4" />
-          </Button>
-        </Tooltip.Trigger>
-        <Tooltip.Content side="bottom">
-          <p>{viewMode === "week" ? "Next week" : "Next day"}</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
+  <Tooltip.Root>
+    <Tooltip.Trigger>
+      <Button
+        variant="secondary"
+        size="icon"
+        class="h-8 w-8 rounded-full"
+        onclick={next}
+        aria-label={viewMode === "week" ? "Next week" : "Next day"}
+      >
+        <ChevronRight class="h-4 w-4" />
+      </Button>
+    </Tooltip.Trigger>
+    <Tooltip.Content side="bottom">
+      <p>{viewMode === "week" ? "Next week" : "Next day"}</p>
+    </Tooltip.Content>
+  </Tooltip.Root>
 
-      <h2 class="ml-2 truncate text-xl font-medium tracking-tight">
-        {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-      </h2>
-    </div>
+  <h2 class="ml-2 truncate text-xl font-medium tracking-tight">
+    {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+  </h2>
+{/snippet}
 
-    <div class="flex items-center gap-2">
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
-          {#snippet child({ props })}
-            <Button
-              variant="secondary"
-              size="sm"
-              class="h-9 rounded-full"
-              icon={ChevronDown}
-              iconPosition="right"
-              {...props}
-            >
-              <span class="capitalize">{viewMode}</span>
-            </Button>
-          {/snippet}
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content align="end" class="w-32 rounded-xl">
-          <DropdownMenu.Item onclick={() => (viewMode = "day")}>Day</DropdownMenu.Item>
-          <DropdownMenu.Item onclick={() => (viewMode = "week")}>Week</DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
-    </div>
-  </div>
+{#snippet headerSwitcher()}
+  <DropdownMenu.Root>
+    <DropdownMenu.Trigger>
+      {#snippet child({ props })}
+        <Button
+          variant="secondary"
+          size="sm"
+          class="h-9 rounded-full"
+          icon={ChevronDown}
+          iconPosition="right"
+          {...props}
+        >
+          <span class="capitalize">{viewMode}</span>
+        </Button>
+      {/snippet}
+    </DropdownMenu.Trigger>
+    <DropdownMenu.Content align="end" class="w-32 rounded-xl">
+      <DropdownMenu.Item onclick={() => (viewMode = "day")}>Day</DropdownMenu.Item>
+      <DropdownMenu.Item onclick={() => (viewMode = "week")}>Week</DropdownMenu.Item>
+    </DropdownMenu.Content>
+  </DropdownMenu.Root>
+{/snippet}
 
+{#snippet calendar()}
   <div class="overflow-x-auto">
     <div class={cn(viewMode === "week" ? "min-w-200" : "w-full")}>
       <!-- Unified Grid Container -->
@@ -441,29 +451,27 @@
   <div
     class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
   >
-    <div class="flex items-center gap-1.5">
-      <div class="h-3 w-3 rounded-sm bg-brand"></div>
-      <span>My Reservation</span>
+    {#each legendItems as item}
+      <div class="flex items-center gap-1.5">
+        <div class={cn("h-3 w-3 rounded-sm", item.color)}></div>
+        <span>{item.label}</span>
+      </div>
+    {/each}
+  </div>
+{/snippet}
+
+<div class="flex flex-col gap-4">
+  <div class="flex items-center justify-between">
+    <div class="flex min-w-0 items-center gap-2">
+      {@render headerMain()}
     </div>
-    <div class="flex items-center gap-1.5">
-      <div class="h-3 w-3 rounded-sm bg-emerald-700 dark:bg-emerald-900"></div>
-      <span>Others</span>
-    </div>
-    <div class="flex items-center gap-1.5">
-      <div class="h-3 w-3 rounded-sm bg-emerald-100 dark:bg-emerald-950"></div>
-      <span>Past</span>
-    </div>
-    <div class="flex items-center gap-1.5">
-      <div class="h-3 w-3 rounded-sm border border-dashed"></div>
-      <span>Available</span>
-    </div>
-    <div class="flex items-center gap-1.5">
-      <div
-        class="h-3 w-3 rounded-sm border border-border bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,var(--color-border)_2px,var(--color-border)_3px)] opacity-50"
-      ></div>
-      <span>Closed</span>
+
+    <div class="flex items-center gap-2">
+      {@render headerSwitcher()}
     </div>
   </div>
+
+  {@render calendar()}
 </div>
 
 <ViewLaundryDialog bind:this={viewLaundryDialog} {isAdminView} {onCancelReservation} />
