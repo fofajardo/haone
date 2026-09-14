@@ -17,6 +17,16 @@ const config = {
       $srcPrivate: "src-private",
       $services: "src/lib/services",
       $api: "src/lib/api"
+    },
+    typescript: {
+      config: (config) => {
+        config.include = config.include.concat([
+          "../src-private/**/*.js",
+          "../src-private/**/*.ts",
+          "../src-private/**/*.svelte"
+        ]);
+        return config;
+      }
     }
   },
   preprocess: [mdsvex()],
