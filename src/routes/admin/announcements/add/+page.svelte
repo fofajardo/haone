@@ -3,20 +3,12 @@
   import { pageState } from "$state/page-info.svelte";
   import dayjs from "dayjs";
   import { auth } from "$state/auth.svelte";
-  import { Button } from "$ui/button";
-  import { Input } from "$ui/input";
-  import { Label } from "$ui/label";
-  import { Checkbox } from "$ui/checkbox";
-  import { ChevronLeft, Save } from "@lucide/svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
-  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import { addAnnouncement } from "$api/controllers/announcement-controller";
-  import { fetchUsers } from "$api/controllers/resident-controller";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-  import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";
-  import { TagsInput } from "$ui/tags-input";
   import slugify from "slug";
+  import AnnouncementForm from "$components/forms/AnnouncementForm.svelte";
 
   let isSubmitting = $state(false);
   let tagList = $state<string[]>([]);
@@ -87,95 +79,14 @@
 
 <div class="mx-auto max-w-7xl space-y-3">
   <ContentHeader title="Add Announcement" />
-
   <div class="mx-auto max-w-3xl">
-    <div class="space-y-6 rounded-xl border bg-card p-6">
-      <div class="space-y-2">
-        <Label for="title">Title</Label>
-        <Input
-          id="title"
-          bind:value={formData.title}
-          placeholder="Announcement Title"
-          disabled={isSubmitting}
-        />
-      </div>
-
-      <div class="space-y-2">
-        <Label for="slug">Slug</Label>
-        <Input
-          id="slug"
-          bind:value={formData.slug}
-          placeholder="announcement-slug"
-          disabled={isSubmitting}
-          oninput={() => (isSlugManuallyEdited = true)}
-        />
-        <p class="text-xs text-muted-foreground">This will be used for the announcement URL.</p>
-      </div>
-
-      <div class="space-y-2">
-        <Label for="content">Content</Label>
-        <RichTextEditor
-          bind:content={formData.content}
-          bind:actions={editorActions}
-          placeholder="Announcement Details..."
-          editable={!isSubmitting}
-        />
-      </div>
-
-      <div class="grid gap-6 md:grid-cols-2">
-        <div class="space-y-2">
-          <Label for="start">Start Date & Time</Label>
-          <Input
-            type="datetime-local"
-            id="start"
-            bind:value={formData.startDate}
-            disabled={isSubmitting}
-          />
-        </div>
-        {#if !formData.isIndefinite}
-          <div class="space-y-2">
-            <Label for="end">Expiry Date & Time</Label>
-            <Input
-              type="datetime-local"
-              id="end"
-              bind:value={formData.expiryDate}
-              disabled={isSubmitting}
-            />
-          </div>
-        {/if}
-      </div>
-
-      <div class="flex items-center gap-8 py-2">
-        <div class="flex items-center gap-2">
-          <Checkbox id="indefinite" bind:checked={formData.isIndefinite} disabled={isSubmitting} />
-          <Label for="indefinite" class="cursor-pointer font-bold">Indefinite</Label>
-        </div>
-        <div class="flex items-center gap-2">
-          <Checkbox id="adminOnly" bind:checked={formData.isAdminOnly} disabled={isSubmitting} />
-          <Label for="adminOnly" class="cursor-pointer font-bold">Admin Only</Label>
-        </div>
-        <div class="flex items-center gap-2">
-          <Checkbox id="unlisted" bind:checked={formData.isUnlisted} disabled={isSubmitting} />
-          <Label for="unlisted" class="cursor-pointer font-bold">Unlisted</Label>
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <Label for="tags">Tags</Label>
-        <TagsInput
-          id="tags"
-          bind:value={tagList}
-          suggestions={ANNOUNCEMENT_TAG_LIST}
-          placeholder="Add tags…"
-          disabled={isSubmitting}
-        />
-      </div>
-
-      <div class="flex justify-end gap-3 border-t pt-6">
-        <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-35">
-          Save
-        </Button>
-      </div>
-    </div>
+    <AnnouncementForm
+      bind:formData
+      bind:tagList
+      bind:editorActions
+      {isSubmitting}
+      onSave={handleSave}
+      submitLabel="Save"
+    />
   </div>
 </div>

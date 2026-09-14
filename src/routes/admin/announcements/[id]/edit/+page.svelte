@@ -3,13 +3,8 @@
   import dayjs from "dayjs";
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { Button } from "$ui/button";
-  import { Input } from "$ui/input";
-  import { Label } from "$ui/label";
-  import { Checkbox } from "$ui/checkbox";
-  import { Save, Archive, Trash2 } from "@lucide/svelte";
+  import { Archive, Trash2 } from "@lucide/svelte";
   import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
-  import RichTextEditor from "$components/editor/RichTextEditor.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import {
@@ -22,9 +17,8 @@
   import { AnnouncementStatus, type AnnouncementRecord } from "$lib/types";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-  import { ANNOUNCEMENT_TAG_LIST } from "$lib/types";
-  import { TagsInput } from "$ui/tags-input";
   import { globalDialog } from "$state/dialog.svelte";
+  import AnnouncementForm from "$components/forms/AnnouncementForm.svelte";
 
   let isLoading = $state(true);
   let isSubmitting = $state(false);
@@ -101,7 +95,9 @@
       return;
     }
     const id = page.params.id;
-    if (!id) return;
+    if (!id) {
+      return;
+    }
 
     isSubmitting = true;
     try {
@@ -145,10 +141,7 @@
         }
       },
       undefined,
-      {
-        accept: "Expire",
-        cancel: "Cancel"
-      }
+      { accept: "Expire", cancel: "Cancel" }
     );
   }
 
@@ -173,10 +166,7 @@
         }
       },
       undefined,
-      {
-        accept: "Delete",
-        cancel: "Cancel"
-      }
+      { accept: "Delete", cancel: "Cancel" }
     );
   }
 </script>
@@ -188,14 +178,7 @@
     href="/admin/announcements"
     actions={[
       ...(!isLoading && !error && isActive
-        ? [
-            {
-              label: "Expire",
-              variant: "secondary",
-              onclick: () => confirmExpire(),
-              icon: Archive
-            }
-          ]
+        ? [{ label: "Expire", variant: "secondary", onclick: () => confirmExpire(), icon: Archive }]
         : []),
       ...(!isLoading && !error
         ? [
@@ -216,113 +199,14 @@
     {:else if error}
       <ErrorView {error} />
     {:else}
-      <div class="space-y-6 rounded-xl border bg-card p-6">
-        <div class="space-y-2">
-          <Label
-            for="title"
-            class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Title</Label
-          >
-          <Input
-            id="title"
-            bind:value={formData.title}
-            placeholder="Announcement Title"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div class="space-y-2">
-          <Label>Slug</Label>
-          <Input
-            id="slug"
-            bind:value={formData.slug}
-            placeholder="announcement-slug"
-            disabled={isSubmitting}
-          />
-          <p class="text-xs text-muted-foreground">This will be used for the announcement URL.</p>
-        </div>
-
-        <div class="space-y-2">
-          <Label
-            for="content"
-            class="text-xs font-bold tracking-wider text-muted-foreground uppercase">Content</Label
-          >
-          <RichTextEditor
-            bind:content={formData.content}
-            bind:actions={editorActions}
-            placeholder="Announcement Details..."
-            editable={!isSubmitting}
-          />
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-2">
-          <div class="space-y-2">
-            <Label
-              for="start"
-              class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-              >Start Date & Time</Label
-            >
-            <Input
-              type="datetime-local"
-              id="start"
-              bind:value={formData.startDate}
-              disabled={isSubmitting}
-            />
-          </div>
-          {#if !formData.isIndefinite}
-            <div class="space-y-2">
-              <Label
-                for="end"
-                class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-                >Expiry Date & Time</Label
-              >
-              <Input
-                type="datetime-local"
-                id="end"
-                bind:value={formData.expiryDate}
-                disabled={isSubmitting}
-              />
-            </div>
-          {/if}
-        </div>
-
-        <div class="flex items-center gap-8 py-2">
-          <div class="flex items-center gap-2">
-            <Checkbox
-              id="indefinite"
-              bind:checked={formData.isIndefinite}
-              disabled={isSubmitting}
-            />
-            <Label for="indefinite" class="cursor-pointer font-bold">Indefinite</Label>
-          </div>
-          <div class="flex items-center gap-2">
-            <Checkbox id="adminOnly" bind:checked={formData.isAdminOnly} disabled={isSubmitting} />
-            <Label for="adminOnly" class="cursor-pointer font-bold">Admin Only</Label>
-          </div>
-          <div class="flex items-center gap-2">
-            <Checkbox id="unlisted" bind:checked={formData.isUnlisted} disabled={isSubmitting} />
-            <Label for="unlisted" class="cursor-pointer font-bold">Unlisted</Label>
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <Label for="tags" class="text-xs font-bold tracking-wider text-muted-foreground uppercase"
-            >Tags</Label
-          >
-          <TagsInput
-            id="tags"
-            bind:value={tagList}
-            suggestions={ANNOUNCEMENT_TAG_LIST}
-            placeholder="Add tags…"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div class="flex justify-end gap-3 border-t pt-6">
-          <Button onclick={handleSave} isLoading={isSubmitting} icon={Save} class="min-w-35">
-            Update
-          </Button>
-        </div>
-      </div>
+      <AnnouncementForm
+        bind:formData
+        bind:tagList
+        bind:editorActions
+        {isSubmitting}
+        onSave={handleSave}
+        submitLabel="Update"
+      />
     {/if}
   </div>
 </div>
