@@ -39,7 +39,7 @@
     isLoading = true;
     error = null;
     try {
-      const [p, r, t] = await Promise.all([
+      const [p, r] = await Promise.all([
         fetchAdminPaymentRequests(bypassCache),
         fetchResidents(bypassCache)
       ]);
