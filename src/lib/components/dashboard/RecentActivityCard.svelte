@@ -18,15 +18,14 @@
   );
 </script>
 
-<Card.Root class="overflow-hidden bg-card shadow-none">
-  <Card.Header class="flex flex-row items-center justify-between pb-0">
-    <Card.Title>Recent Activity</Card.Title>
-    <Card.Action>
-      <Button variant="ghost" href="/resident/finance" title="View All" icon={ArrowRight} />
-    </Card.Action>
-  </Card.Header>
-  <Card.Content class="p-0">
-    {#if filteredTransactions.length > 0}
+{#if filteredTransactions.length > 0}
+  <div class="mb-6 flex flex-row items-center justify-between pb-0">
+    <h2 class="h2-base">Recent Transactions</h2>
+    <Button variant="ghost" size="sm" href="/resident/finance" title="View All" icon={ArrowRight} />
+  </div>
+
+  <Card.Root class="overflow-hidden p-0">
+    <Card.Content class="p-0">
       {#each filteredTransactions as tx}
         <div
           class="group flex items-start gap-3 px-5 py-3 transition-colors hover:bg-muted/50 sm:items-center sm:gap-4"
@@ -64,11 +63,6 @@
           </div>
         </div>
       {/each}
-    {:else}
-      <div class="flex h-40 flex-col items-center justify-center p-8 text-center">
-        <RotateCcwClockIcon class="mb-2 h-8 w-8 text-muted-foreground/30" />
-        <p class="text-sm font-medium text-muted-foreground">No recent transactions</p>
-      </div>
-    {/if}
-  </Card.Content>
-</Card.Root>
+    </Card.Content>
+  </Card.Root>
+{/if}
