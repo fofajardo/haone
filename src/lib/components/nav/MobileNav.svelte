@@ -105,12 +105,6 @@
   function isActive(href: string) {
     return activeHref === href;
   }
-
-  onMount(() => {
-    if (auth.accessToken) {
-      settings.syncFromServer().catch(console.error);
-    }
-  });
 </script>
 
 <div

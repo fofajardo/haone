@@ -22,18 +22,22 @@
         console.error("SW registration failed:", err);
       });
     }
+  });
 
-    if (auth.accessToken) {
-      try {
-        await settings.syncFromServer();
+  $effect(() => {
+    if (!auth.accessToken) {
+      return;
+    }
+    try {
+      settings.syncFromServer().then(() => {
         if (settings.theme === "system") {
           resetMode();
         } else {
           setMode(settings.theme as any);
         }
-      } catch (e) {
-        console.error("Failed to sync settings:", e);
-      }
+      });
+    } catch (e) {
+      console.error("Failed to sync settings:", e);
     }
   });
 
