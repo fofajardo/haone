@@ -73,12 +73,12 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       return [];
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       return [];
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:P", bypassCache);
+    const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "CURR!A:P", bypassCache);
     return rows.slice(1).map((r, idx) => ({
       timestamp: (r[CURR_COL.TIMESTAMP] || "").trim(),
       email: (r[CURR_COL.EMAIL] || "").trim().toLowerCase(),
@@ -105,21 +105,21 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     if (auth.isResident) {
       return [];
     }
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       return [];
     }
-    const rows = await fetchAccountRows(uiSettings.accountingWorkbookId, bypassCache);
+    const rows = await fetchAccountRows(settings.accountingWorkbookId, bypassCache);
     return rows.slice(1).map(mapAccountRow);
   },
 
   async updateAccounts(updates: AccountUpdate[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
 
-    const rows = await fetchAccountRows(uiSettings.accountingWorkbookId);
+    const rows = await fetchAccountRows(settings.accountingWorkbookId);
     const batch: { range: string; values: any[][] }[] = [];
 
     for (const update of updates) {
@@ -144,17 +144,17 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     }
 
     if (batch.length > 0) {
-      await batchUpdateValues(uiSettings.accountingWorkbookId, batch);
+      await batchUpdateValues(settings.accountingWorkbookId, batch);
     }
   },
 
   async appendAccounts(accounts: AccountRow[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
     await appendSheetRow(
-      uiSettings.accountingWorkbookId,
+      settings.accountingWorkbookId,
       "accounts!A:L",
       accounts.map(accountToRowArray)
     );
@@ -163,8 +163,8 @@ export const sheetsRoomsService: RoomsServiceInterface = {
   async markCurrEvaluated(
     entries: { email: string; term: string; rowId?: string | number }[]
   ): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
 
@@ -174,7 +174,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       if (entry.rowId !== undefined && typeof entry.rowId === "number") {
         batch.push({ range: `CURR!K${entry.rowId}`, values: [["TRUE"]] });
       } else {
-        const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:P");
+        const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "CURR!A:P");
         const targetEmail = entry.email.trim().toLowerCase();
         rows.forEach((r, idx) => {
           const email = (r[CURR_COL.EMAIL] || "").trim().toLowerCase();
@@ -188,7 +188,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     }
 
     if (batch.length > 0) {
-      await batchUpdateValues(uiSettings.residentRecordsId, batch);
+      await batchUpdateValues(settings.residentRecordsId, batch);
     }
   },
 
@@ -198,8 +198,8 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     reason: string,
     rowId?: string | number
   ): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
 
@@ -215,7 +215,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
         values: [[reason]]
       });
     } else {
-      const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "CURR!A:P");
+      const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "CURR!A:P");
       const targetEmail = email.trim().toLowerCase();
       rows.forEach((r, idx) => {
         const rowEmail = (r[CURR_COL.EMAIL] || "").trim().toLowerCase();
@@ -235,7 +235,7 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     }
 
     if (batch.length > 0) {
-      await batchUpdateValues(uiSettings.residentRecordsId, batch);
+      await batchUpdateValues(settings.residentRecordsId, batch);
     }
   },
 
@@ -245,13 +245,13 @@ export const sheetsRoomsService: RoomsServiceInterface = {
     room: string,
     bed: string
   ): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
 
     const { rowIndex } = await findAccountRowIndex(
-      uiSettings.accountingWorkbookId,
+      settings.accountingWorkbookId,
       residentId,
       period
     );
@@ -259,48 +259,46 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       throw new Error("Account record not found.");
     }
     const actualRow = rowIndex + 1;
-    await updateSheetValue(
-      uiSettings.accountingWorkbookId,
-      `accounts!D${actualRow}:E${actualRow}`,
-      [[room, bed]]
-    );
+    await updateSheetValue(settings.accountingWorkbookId, `accounts!D${actualRow}:E${actualRow}`, [
+      [room, bed]
+    ]);
   },
 
   async addAccount(account: AccountRow): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    await appendSheetRow(uiSettings.accountingWorkbookId, "accounts!A:L", [
+    await appendSheetRow(settings.accountingWorkbookId, "accounts!A:L", [
       accountToRowArray(account)
     ]);
   },
 
   async deleteAccountRow(residentId: string, period: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
 
     const { rowIndex } = await findAccountRowIndex(
-      uiSettings.accountingWorkbookId,
+      settings.accountingWorkbookId,
       residentId,
       period
     );
     if (rowIndex === -1) {
       throw new Error("Account record not found.");
     }
-    await deleteSheetRow(uiSettings.accountingWorkbookId, "accounts", rowIndex);
+    await deleteSheetRow(settings.accountingWorkbookId, "accounts", rowIndex);
   },
 
   async updateAccountBed(residentId: string, period: string, bed: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
 
     const { rowIndex } = await findAccountRowIndex(
-      uiSettings.accountingWorkbookId,
+      settings.accountingWorkbookId,
       residentId,
       period
     );
@@ -308,6 +306,6 @@ export const sheetsRoomsService: RoomsServiceInterface = {
       throw new Error("Account record not found.");
     }
     const actualRow = rowIndex + 1;
-    await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!E${actualRow}`, [[bed]]);
+    await updateSheetValue(settings.accountingWorkbookId, `accounts!E${actualRow}`, [[bed]]);
   }
 };

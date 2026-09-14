@@ -75,9 +75,9 @@ export const sheetsJournalService: JournalServiceInterface = {
       return items;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    const spreadsheetId = uiSettings.accountingWorkbookId;
-    const residentRecordsId = uiSettings.residentRecordsId;
+    const { settings } = await import("$state/settings.svelte");
+    const spreadsheetId = settings.accountingWorkbookId;
+    const residentRecordsId = settings.residentRecordsId;
     if (!spreadsheetId) {
       return [];
     }
@@ -147,8 +147,8 @@ export const sheetsJournalService: JournalServiceInterface = {
   },
 
   async addJournalEntry(data: Partial<JournalRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    const spreadsheetId = uiSettings.accountingWorkbookId;
+    const { settings } = await import("$state/settings.svelte");
+    const spreadsheetId = settings.accountingWorkbookId;
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }
@@ -179,8 +179,8 @@ export const sheetsJournalService: JournalServiceInterface = {
   },
 
   async updateJournalEntry(id: string, data: Partial<JournalRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    const spreadsheetId = uiSettings.accountingWorkbookId;
+    const { settings } = await import("$state/settings.svelte");
+    const spreadsheetId = settings.accountingWorkbookId;
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }
@@ -251,8 +251,8 @@ export const sheetsJournalService: JournalServiceInterface = {
   },
 
   async deleteJournalEntry(id: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    const spreadsheetId = uiSettings.accountingWorkbookId;
+    const { settings } = await import("$state/settings.svelte");
+    const spreadsheetId = settings.accountingWorkbookId;
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }
@@ -265,8 +265,8 @@ export const sheetsJournalService: JournalServiceInterface = {
   },
 
   async batchAuditEntries(ids: string[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    const spreadsheetId = uiSettings.accountingWorkbookId;
+    const { settings } = await import("$state/settings.svelte");
+    const spreadsheetId = settings.accountingWorkbookId;
     if (!spreadsheetId) {
       throw new Error("Accounting workbook ID not configured");
     }

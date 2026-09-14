@@ -2,7 +2,7 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
   import { AccountCombobox } from "$components/ui/haone";
   import ContentHeader from "$components/content/ContentHeader.svelte";
@@ -148,7 +148,7 @@
 
       const joinedLabels = labels.length > 3 ? "Consolidated" : labels.join(" & ");
 
-      const semester = translatePeriod(uiSettings.currentTerm);
+      const semester = translatePeriod(settings.currentTerm);
       const shortName = brandingState.profile.shortName;
       newSheetTitle = `[${shortName}] Resident List (${joinedLabels}) - ${semester}`;
     }
@@ -230,7 +230,7 @@
           const key = `${r.room_number.toUpperCase()}-${bed.toUpperCase()}`;
           slotMap.set(key, {
             email: "",
-            period: uiSettings.currentTerm,
+            period: settings.currentTerm,
             room: r.room_number.toUpperCase(),
             bed: bed.toUpperCase(),
             name: "",
@@ -311,7 +311,7 @@
     }
 
     if (selectedCategories.includes("officers")) {
-      const currentTerm = uiSettings.currentTerm.trim();
+      const currentTerm = settings.currentTerm.trim();
       const activeOfficers = officers.filter(
         (o) => o.status === OfficerStatus.ACTIVE && o.term === currentTerm
       );
@@ -381,13 +381,13 @@
       ]);
 
       allAccounts = mapped;
-      residents = mapped.filter((r) => r.period === uiSettings.currentTerm);
+      residents = mapped.filter((r) => r.period === settings.currentTerm);
       officers = officerList;
       rawUsers = usersList;
 
       // Auto-Period
       const entries = await fetchJournalEntries(
-        { term: uiSettings.currentTerm },
+        { term: settings.currentTerm },
         undefined,
         bypassCache
       );
@@ -422,7 +422,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 
@@ -457,7 +457,7 @@
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `report_${selectedCategories.join("_")}_${uiSettings.currentTerm}.csv`;
+    link.download = `report_${selectedCategories.join("_")}_${settings.currentTerm}.csv`;
     link.click();
   }
 
@@ -525,7 +525,7 @@
   async function syncToSheets() {
     isProcessing = true;
     try {
-      const baseName = `REPORT_${selectedCategories.join("_")}_${uiSettings.currentTerm}`;
+      const baseName = `REPORT_${selectedCategories.join("_")}_${settings.currentTerm}`;
       const sheetName = (isPublic ? `PUBLIC_${baseName}` : baseName).toUpperCase().slice(0, 31);
 
       const isOfficerReport =
@@ -600,7 +600,7 @@
         await exportReportPDF({
           residents: filteredResidents,
           categoryLabel: combinedCategoryLabel,
-          semester: translatePeriod(uiSettings.currentTerm),
+          semester: translatePeriod(settings.currentTerm),
           brandingKey: brandingState.selectedKey,
           isPublic: isPublic,
           isOfficerReport,
@@ -758,7 +758,7 @@
           <div class="flex flex-col gap-8">
             <div class="space-y-2">
               <Label>Academic Term</Label>
-              <Input value={translatePeriod(uiSettings.currentTerm)} readonly />
+              <Input value={translatePeriod(settings.currentTerm)} readonly />
             </div>
             <div class="grid gap-6 sm:grid-cols-2">
               <div class="space-y-2">
@@ -927,7 +927,7 @@
               label="Issued By"
               accounts={allAccounts}
               bind:value={issuedBy}
-              filter={(a) => a.period === uiSettings.currentTerm}
+              filter={(a) => a.period === settings.currentTerm}
               onSelect={(a) => {
                 issuedBy = a.name;
                 issuedByEmail = a.email;
@@ -941,7 +941,7 @@
               label="Assessed By"
               accounts={allAccounts}
               bind:value={assessedBy}
-              filter={(a) => a.period === uiSettings.currentTerm}
+              filter={(a) => a.period === settings.currentTerm}
               onSelect={(a) => {
                 assessedBy = a.name;
                 assessedByEmail = a.email;
@@ -955,7 +955,7 @@
               label="Certified By"
               accounts={allAccounts}
               bind:value={certifiedBy}
-              filter={(a) => a.period === uiSettings.currentTerm}
+              filter={(a) => a.period === settings.currentTerm}
               onSelect={(a) => {
                 certifiedBy = a.name;
                 certifiedByEmail = a.email;

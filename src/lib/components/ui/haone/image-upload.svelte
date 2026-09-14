@@ -10,7 +10,7 @@
   } from "$ui/attachment";
   import { Label } from "$ui/label";
   import * as InputGroup from "$ui/input-group";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { compressImage, transformGoogleDriveLink } from "$utils/image-utils";
   import { toast } from "svelte-sonner";
   import { Upload, X } from "@lucide/svelte";
@@ -160,7 +160,7 @@
           }}
           disabled={disabled || isProcessing}
         />
-        {#if uiSettings.firebaseEnabled}
+        {#if settings.firebaseEnabled}
           <InputGroup.Addon align="inline-end">
             <InputGroup.Button
               aria-label="Upload image"

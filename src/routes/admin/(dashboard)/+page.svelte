@@ -22,7 +22,7 @@
     ListOrdered
   } from "@lucide/svelte";
   import { auth } from "$state/auth.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
   import { fetchResidents } from "$api/controllers/resident-controller";
   import { formatCurrency } from "$utils/formatters";
@@ -168,7 +168,7 @@
       // Stats from Accounts
       const accounts = allResidents.filter((r) => {
         return (
-          r.period === uiSettings.currentTerm &&
+          r.period === settings.currentTerm &&
           r.email &&
           r.email !== "_vacant" &&
           !(r.bed || "").includes("(")
@@ -185,7 +185,7 @@
       const journalData = journals;
       const pending = journalData.filter((r) => {
         return (
-          r.period === uiSettings.currentTerm &&
+          r.period === settings.currentTerm &&
           (!r.prDateIssued || r.prDateIssued === "#N/A") &&
           r.prRefNo !== "N/A" &&
           r.prRefNo !== "#N/A"
@@ -209,7 +209,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>
@@ -222,7 +222,7 @@
     </h1>
     <div>
       Manage residents, track collections, and automate communications for <span
-        class="font-semibold">{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
+        class="font-semibold">{translatePeriod(settings.currentTerm) || "Active Term"}</span
       >.
     </div>
   </div>

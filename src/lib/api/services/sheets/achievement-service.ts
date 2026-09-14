@@ -36,12 +36,12 @@ export const sheetsAchievementService: AchievementServiceInterface = {
       return data.achievements || [];
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       return [];
     }
     const rows = await fetchSheetRowsRaw(
-      uiSettings.sharedRecordsId,
+      settings.sharedRecordsId,
       "achievements!A:H",
       shouldRefresh
     );
@@ -68,12 +68,12 @@ export const sheetsAchievementService: AchievementServiceInterface = {
       const data = await fetchResidentAchievements(shouldRefresh);
       return data.logs || [];
     }
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       return [];
     }
     const rows = await fetchSheetRowsRaw(
-      uiSettings.sharedRecordsId,
+      settings.sharedRecordsId,
       "achievement_records!A:F",
       shouldRefresh
     );
@@ -93,8 +93,8 @@ export const sheetsAchievementService: AchievementServiceInterface = {
   },
 
   async addAchievement(data: Partial<AchievementRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const row = new Array(8).fill("");
@@ -106,15 +106,15 @@ export const sheetsAchievementService: AchievementServiceInterface = {
     row[ACHIEVEMENT_COL.EXTRA_URL] = data.extraUrl || "";
     row[ACHIEVEMENT_COL.TERM] = data.term || "";
     row[ACHIEVEMENT_COL.POINTS] = String(data.points || 0);
-    await appendSheetRow(uiSettings.sharedRecordsId, "achievements!A:H", [row]);
+    await appendSheetRow(settings.sharedRecordsId, "achievements!A:H", [row]);
   },
 
   async updateAchievement(id: string, data: Partial<AchievementRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "achievements!A:H");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "achievements!A:H");
     const rowIndex = rows.findIndex((r) => (r[ACHIEVEMENT_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Achievement not found");
@@ -142,27 +142,27 @@ export const sheetsAchievementService: AchievementServiceInterface = {
     if (data.points !== undefined) {
       newRow[ACHIEVEMENT_COL.POINTS] = String(data.points);
     }
-    await updateSheetValue(uiSettings.sharedRecordsId, `achievements!A${actualRow}:H${actualRow}`, [
+    await updateSheetValue(settings.sharedRecordsId, `achievements!A${actualRow}:H${actualRow}`, [
       newRow
     ]);
   },
 
   async deleteAchievement(id: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "achievements!A:H");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "achievements!A:H");
     const rowIndex = rows.findIndex((r) => (r[ACHIEVEMENT_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Achievement not found");
     }
-    await deleteSheetRow(uiSettings.sharedRecordsId, "achievements", rowIndex);
+    await deleteSheetRow(settings.sharedRecordsId, "achievements", rowIndex);
   },
 
   async awardAchievement(data: Partial<AchievementLogRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const row = new Array(6).fill("");
@@ -172,25 +172,25 @@ export const sheetsAchievementService: AchievementServiceInterface = {
     row[ACHIEVEMENT_RECORD_COL.DATE] = data.date || getLocalDateString();
     row[ACHIEVEMENT_RECORD_COL.ACHIEVEMENT_ID] = data.achievementId || "";
     row[ACHIEVEMENT_RECORD_COL.TERM] = data.term || "";
-    await appendSheetRow(uiSettings.sharedRecordsId, "achievement_records!A:F", [row]);
+    await appendSheetRow(settings.sharedRecordsId, "achievement_records!A:F", [row]);
   },
 
   async revokeAchievement(logId: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "achievement_records!A:F");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "achievement_records!A:F");
     const rowIndex = rows.findIndex((r) => (r[ACHIEVEMENT_RECORD_COL.ID] || "").trim() === logId);
     if (rowIndex === -1) {
       throw new Error("Achievement log not found");
     }
-    await deleteSheetRow(uiSettings.sharedRecordsId, "achievement_records", rowIndex);
+    await deleteSheetRow(settings.sharedRecordsId, "achievement_records", rowIndex);
   },
 
   async awardAchievementBatch(records: Partial<AchievementLogRecord>[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const rows = records.map((data) => {
@@ -203,6 +203,6 @@ export const sheetsAchievementService: AchievementServiceInterface = {
       row[ACHIEVEMENT_RECORD_COL.TERM] = data.term || "";
       return row;
     });
-    await appendSheetRow(uiSettings.sharedRecordsId, "achievement_records!A:F", rows);
+    await appendSheetRow(settings.sharedRecordsId, "achievement_records!A:F", rows);
   }
 };

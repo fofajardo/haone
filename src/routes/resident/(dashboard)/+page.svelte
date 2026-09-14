@@ -35,7 +35,7 @@
   } from "$api/controllers/resident-controller";
   import { getCustomServices } from "$lib/services";
   import { namecase } from "@compwright/namecase";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
@@ -45,7 +45,7 @@
     isLoading = true;
     error = null;
     try {
-      status = await fetchResidentStatus(uiSettings.currentTerm, bypassCache);
+      status = await fetchResidentStatus(settings.currentTerm, bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -134,7 +134,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>
@@ -148,7 +148,7 @@
       </h1>
       <div>
         View your profile, track your financial standing, and manage your clearance for <span
-          class="font-semibold">{translatePeriod(uiSettings.currentTerm) || "Active Term"}</span
+          class="font-semibold">{translatePeriod(settings.currentTerm) || "Active Term"}</span
         >.
       </div>
     </div>

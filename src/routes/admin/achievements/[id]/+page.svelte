@@ -16,7 +16,7 @@
   import type { AchievementRecord } from "$lib/types";
   import AchievementDetailsView from "$components/residents/AchievementDetailsView.svelte";
   import { shareAchievementStory } from "$components/residents/story-share";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import AchievementFormDialog from "$components/forms/AchievementFormDialog.svelte";
 
   const id = page.params.id;
@@ -64,7 +64,7 @@
     icon: "🏆",
     extraUrl: "",
     points: 10,
-    term: uiSettings.currentTerm,
+    term: settings.currentTerm,
     creatorId: "",
     isIndefinite: false
   });

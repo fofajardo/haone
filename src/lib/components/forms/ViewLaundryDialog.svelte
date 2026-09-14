@@ -6,7 +6,7 @@
   import { ResponsiveDialog } from "$ui/haone";
   import { auth } from "$state/auth.svelte";
   import { formatTimeRange, formatDate } from "$utils/formatters";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
 
   let {
     isAdminView = false,
@@ -67,10 +67,10 @@
         <div class="space-y-1">
           <p class="font-medium">Time</p>
           <p>
-            {formatTimeRange(
-              selectedReservation.timeStart,
-              uiSettings.clockFormat
-            )}–{formatTimeRange(selectedReservation.timeEnd, uiSettings.clockFormat)}
+            {formatTimeRange(selectedReservation.timeStart, settings.clockFormat)}–{formatTimeRange(
+              selectedReservation.timeEnd,
+              settings.clockFormat
+            )}
           </p>
         </div>
       </div>

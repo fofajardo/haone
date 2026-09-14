@@ -30,12 +30,12 @@ export const sheetsConstantsService: ConstantsServiceInterface = {
       return consts;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       return [];
     }
     const rows = await fetchSheetRowsRaw(
-      uiSettings.accountingWorkbookId,
+      settings.accountingWorkbookId,
       "constants!A:C",
       bypassCache
     );
@@ -53,34 +53,34 @@ export const sheetsConstantsService: ConstantsServiceInterface = {
   },
 
   async addConstant(key: string, value: string, description = ""): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    await appendSheetRow(uiSettings.accountingWorkbookId, "constants!A:C", [
+    await appendSheetRow(settings.accountingWorkbookId, "constants!A:C", [
       [key, value, description]
     ]);
   },
 
   async updateConstant(key: string, value: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C");
+    const rows = await fetchSheetRowsRaw(settings.accountingWorkbookId, "constants!A:C");
     const rowIndex = rows.findIndex((r) => (r[CONSTANT_COL.KEY] || "").trim() === key);
     if (rowIndex === -1) {
       throw new Error(`Constant "${key}" not found`);
     }
     const actualRow = rowIndex + 1;
-    await updateSheetValue(uiSettings.accountingWorkbookId, `constants!B${actualRow}`, [[value]]);
+    await updateSheetValue(settings.accountingWorkbookId, `constants!B${actualRow}`, [[value]]);
   },
 
   async batchUpdateConstants(updates: { range: string; values: any[][] }[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
-    await batchUpdateValues(uiSettings.accountingWorkbookId, updates);
+    await batchUpdateValues(settings.accountingWorkbookId, updates);
   }
 };

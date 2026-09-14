@@ -6,7 +6,7 @@
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
   import { brandingState } from "$state/branding.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import {
     fetchJournalEntries,
     updateJournalReceiptInfo
@@ -68,7 +68,7 @@
         }))
         .filter((r) => {
           return (
-            r.period === uiSettings.currentTerm &&
+            r.period === settings.currentTerm &&
             (!r.prDateIssued || r.prDateIssued === "#N/A") &&
             r.prRefNo !== "N/A" &&
             r.prRefNo !== "#N/A"
@@ -86,7 +86,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 

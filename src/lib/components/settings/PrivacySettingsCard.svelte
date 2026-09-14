@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Card from "$ui/card";
   import { Trophy } from "@lucide/svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import SettingsSwitchItem from "$components/settings/SettingsSwitchItem.svelte";
 </script>
 
@@ -16,7 +16,7 @@
       title="Public Achievements and Leaderboards"
       description="Allow others to see your name in achievement earner lists and leaderboards."
       icon={Trophy}
-      bind:checked={uiSettings.isPublicAchievementList}
+      bind:checked={settings.isPublicAchievementList}
     />
   </Card.Content>
 </Card.Root>

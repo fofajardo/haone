@@ -16,7 +16,7 @@
   import AdminResidentsTabs from "$components/tabs/AdminResidentsTabs.svelte";
   import { goto } from "$app/navigation";
   import { pageState } from "$state/page-info.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
 
   let officers = $state<OfficerRecord[]>([]);
   let isLoading = $state(true);
@@ -45,7 +45,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 
@@ -59,7 +59,7 @@
         o.name.toLowerCase().includes(search) ||
         o.email.toLowerCase().includes(search) ||
         o.position.toLowerCase().includes(search);
-      const matchesTerm = o.term === uiSettings.currentTerm;
+      const matchesTerm = o.term === settings.currentTerm;
 
       return matchesSearch && matchesTerm;
     });

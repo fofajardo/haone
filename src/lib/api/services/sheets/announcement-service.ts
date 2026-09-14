@@ -22,12 +22,12 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
       return fetchServer("/api/resident/announcements", {}, shouldRefresh);
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       return [];
     }
     const rows = await fetchSheetRowsRaw(
-      uiSettings.sharedRecordsId,
+      settings.sharedRecordsId,
       "announcements!A:M",
       shouldRefresh
     );
@@ -91,8 +91,8 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
   },
 
   async addAnnouncement(data: Partial<AnnouncementRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const row = new Array(13).fill("");
@@ -109,15 +109,15 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
     row[ANNOUNCEMENT_COL.TITLE] = data.title || "";
     row[ANNOUNCEMENT_COL.CONTENT] = data.content || "";
     row[ANNOUNCEMENT_COL.BROADCAST_COUNT] = "0";
-    await appendSheetRow(uiSettings.sharedRecordsId, "announcements!A:M", [row]);
+    await appendSheetRow(settings.sharedRecordsId, "announcements!A:M", [row]);
   },
 
   async updateAnnouncement(id: string, data: Partial<AnnouncementRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "announcements!A:M");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "announcements!A:M");
     const rowIndex = rows.findIndex((r) => (r[ANNOUNCEMENT_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Announcement not found");
@@ -154,11 +154,9 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
     if (data.broadcastCount !== undefined) {
       newRow[ANNOUNCEMENT_COL.BROADCAST_COUNT] = String(data.broadcastCount);
     }
-    await updateSheetValue(
-      uiSettings.sharedRecordsId,
-      `announcements!A${actualRow}:M${actualRow}`,
-      [newRow]
-    );
+    await updateSheetValue(settings.sharedRecordsId, `announcements!A${actualRow}:M${actualRow}`, [
+      newRow
+    ]);
   },
 
   async expireAnnouncement(id: string): Promise<void> {
@@ -167,15 +165,15 @@ export const sheetsAnnouncementService: AnnouncementServiceInterface = {
   },
 
   async deleteAnnouncement(id: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "announcements!A:M");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "announcements!A:M");
     const rowIndex = rows.findIndex((r) => (r[ANNOUNCEMENT_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Announcement not found");
     }
-    await deleteSheetRow(uiSettings.sharedRecordsId, "announcements", rowIndex);
+    await deleteSheetRow(settings.sharedRecordsId, "announcements", rowIndex);
   }
 };

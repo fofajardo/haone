@@ -4,11 +4,11 @@
   import { Input } from "$ui/input";
   import { Button } from "$ui/button";
   import { TriangleAlert, ExternalLink } from "@lucide/svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID, PUBLIC_GS_SR_ID } from "$env/static/public";
 </script>
 
-{#if uiSettings.isDev}
+{#if settings.isDev}
   <!-- Development Configuration -->
   <Card.Root>
     <Card.Header>
@@ -28,19 +28,19 @@
           <div class="flex gap-2">
             <Input
               placeholder="Enter Accounting Workbook ID (GS_AW_ID)"
-              bind:value={uiSettings.accountingWorkbookId}
+              bind:value={settings.accountingWorkbookId}
             />
             <Button
               variant="outline"
               size="icon"
-              disabled={!uiSettings.accountingWorkbookId}
-              href={`https://docs.google.com/spreadsheets/d/${uiSettings.accountingWorkbookId}/edit`}
+              disabled={!settings.accountingWorkbookId}
+              href={`https://docs.google.com/spreadsheets/d/${settings.accountingWorkbookId}/edit`}
               target="_blank"
               rel="noopener noreferrer"
               icon={ExternalLink}
             />
           </div>
-          {#if uiSettings.accountingWorkbookId && uiSettings.accountingWorkbookId !== PUBLIC_GS_AW_ID}
+          {#if settings.accountingWorkbookId && settings.accountingWorkbookId !== PUBLIC_GS_AW_ID}
             <div
               class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
             >
@@ -60,19 +60,19 @@
           <div class="flex gap-2">
             <Input
               placeholder="Enter Resident Records ID (GS_RR_ID)"
-              bind:value={uiSettings.residentRecordsId}
+              bind:value={settings.residentRecordsId}
             />
             <Button
               variant="outline"
               size="icon"
-              disabled={!uiSettings.residentRecordsId}
-              href={`https://docs.google.com/spreadsheets/d/${uiSettings.residentRecordsId}/edit`}
+              disabled={!settings.residentRecordsId}
+              href={`https://docs.google.com/spreadsheets/d/${settings.residentRecordsId}/edit`}
               target="_blank"
               rel="noopener noreferrer"
               icon={ExternalLink}
             />
           </div>
-          {#if uiSettings.residentRecordsId && uiSettings.residentRecordsId !== PUBLIC_GS_RR_ID}
+          {#if settings.residentRecordsId && settings.residentRecordsId !== PUBLIC_GS_RR_ID}
             <div
               class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
             >
@@ -92,19 +92,19 @@
           <div class="flex gap-2">
             <Input
               placeholder="Enter Shared Records ID (GS_SR_ID)"
-              bind:value={uiSettings.sharedRecordsId}
+              bind:value={settings.sharedRecordsId}
             />
             <Button
               variant="outline"
               size="icon"
-              disabled={!uiSettings.sharedRecordsId}
-              href={`https://docs.google.com/spreadsheets/d/${uiSettings.sharedRecordsId}/edit`}
+              disabled={!settings.sharedRecordsId}
+              href={`https://docs.google.com/spreadsheets/d/${settings.sharedRecordsId}/edit`}
               target="_blank"
               rel="noopener noreferrer"
               icon={ExternalLink}
             />
           </div>
-          {#if uiSettings.sharedRecordsId && uiSettings.sharedRecordsId !== PUBLIC_GS_SR_ID}
+          {#if settings.sharedRecordsId && settings.sharedRecordsId !== PUBLIC_GS_SR_ID}
             <div
               class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs text-amber-600"
             >

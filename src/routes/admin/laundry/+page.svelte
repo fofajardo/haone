@@ -16,7 +16,7 @@
     fetchUsers,
     canAccessLaundry
   } from "$api/controllers/resident-controller";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import type { LaundryRecord } from "$lib/types";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
@@ -52,7 +52,7 @@
       allResidents.forEach((res) => {
         if (
           res.residentId &&
-          res.period === uiSettings.activeTerm &&
+          res.period === settings.activeTerm &&
           canAccessLaundry(res.type || "")
         ) {
           newActiveResIds.add(res.residentId);

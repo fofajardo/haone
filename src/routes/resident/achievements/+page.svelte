@@ -10,7 +10,7 @@
   import { Checkbox } from "$ui/checkbox";
   import { Label } from "$ui/label";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import {
     fetchAchievements,
     calculateAchievementPercentage
@@ -49,7 +49,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 
@@ -73,9 +73,9 @@
       }
       const isIndefinite = !a.term;
       if (isIndefinite) {
-        return uiSettings.showAllTimeAchievements;
+        return settings.showAllTimeAchievements;
       }
-      return a.term === uiSettings.currentTerm;
+      return a.term === settings.currentTerm;
     })
   );
 
@@ -122,7 +122,7 @@
       <FilterDrawer>
         <div class="flex flex-wrap items-end justify-between gap-4">
           <div class="flex items-center space-x-2 pb-1.5">
-            <Checkbox id="show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
+            <Checkbox id="show-all-time" bind:checked={settings.showAllTimeAchievements} />
             <Label for="show-all-time" class="cursor-pointer text-xs font-medium">
               Show all-time achievements
             </Label>

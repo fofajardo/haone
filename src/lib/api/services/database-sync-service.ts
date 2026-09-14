@@ -196,8 +196,8 @@ export async function syncUsers(direction: SyncDirection): Promise<SyncResult> {
       async () => extractList(await supabaseResidentService.fetchUsers()),
       async () => extractList(await sheetsResidentService.fetchUsers(true)),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.residentRecordsId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.residentRecordsId;
         if (!spreadsheetId) {
           throw new Error("Resident records ID not configured");
         }
@@ -321,8 +321,8 @@ export async function syncAccounts(direction: SyncDirection): Promise<SyncResult
       async () => extractList(await supabaseResidentService.fetchResidents()),
       async () => extractList(await sheetsResidentService.fetchResidents(true)),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.accountingWorkbookId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.accountingWorkbookId;
         if (!spreadsheetId) {
           throw new Error("Accounting workbook ID not configured");
         }
@@ -409,8 +409,8 @@ export async function syncJournal(direction: SyncDirection): Promise<SyncResult>
       async () => fetchAllJournalEntries(supabaseJournalService),
       async () => fetchAllJournalEntries(sheetsJournalService),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.accountingWorkbookId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.accountingWorkbookId;
         if (!spreadsheetId) {
           throw new Error("Accounting workbook ID not configured");
         }
@@ -527,8 +527,8 @@ export async function syncAnnouncements(direction: SyncDirection): Promise<SyncR
       async () => extractList(await supabaseAnnouncementService.fetchAnnouncements()),
       async () => extractList(await sheetsAnnouncementService.fetchAnnouncements()),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.sharedRecordsId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.sharedRecordsId;
         if (!spreadsheetId) {
           throw new Error("Shared records ID not configured");
         }
@@ -609,8 +609,8 @@ export async function syncConstants(direction: SyncDirection): Promise<SyncResul
       async () =>
         (await sheetsConstantsService.fetchConstants(true)).map((c) => ({ ...c, id: c.key })),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.accountingWorkbookId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.accountingWorkbookId;
         if (!spreadsheetId) {
           throw new Error("Accounting workbook ID not configured");
         }
@@ -696,8 +696,8 @@ export async function syncLaundry(direction: SyncDirection): Promise<SyncResult>
       async () => extractList(await supabaseLaundryService.fetchReservations()),
       async () => extractList(await sheetsLaundryService.fetchReservations()),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.sharedRecordsId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.sharedRecordsId;
         if (!spreadsheetId) {
           throw new Error("Shared records ID not configured");
         }
@@ -798,8 +798,8 @@ export async function syncPaymentRequests(direction: SyncDirection): Promise<Syn
       async () => extractList(await supabasePaymentRequestService.fetchPaymentRequests()),
       async () => extractList(await sheetsPaymentRequestService.fetchPaymentRequests()),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.sharedRecordsId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.sharedRecordsId;
         if (!spreadsheetId) {
           throw new Error("Shared records ID not configured");
         }
@@ -902,8 +902,8 @@ export async function syncAchievements(direction: SyncDirection): Promise<SyncRe
       async () => extractList(await supabaseAchievementService.fetchAchievements()),
       async () => extractList(await sheetsAchievementService.fetchAchievements()),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.sharedRecordsId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.sharedRecordsId;
         if (!spreadsheetId) {
           throw new Error("Shared records ID not configured");
         }
@@ -1011,8 +1011,8 @@ export async function syncAwards(direction: SyncDirection): Promise<SyncResult> 
       async () => extractList(await supabaseAchievementService.fetchAchievementLogs()),
       async () => extractList(await sheetsAchievementService.fetchAchievementLogs()),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
-        const spreadsheetId = uiSettings.sharedRecordsId;
+        const { settings } = await import("$state/settings.svelte");
+        const spreadsheetId = settings.sharedRecordsId;
         if (!spreadsheetId) {
           throw new Error("Shared records ID not configured");
         }
@@ -1089,10 +1089,10 @@ export async function syncOfficers(direction: SyncDirection): Promise<SyncResult
       async () => extractList(await supabaseOfficerService.fetchOfficers()),
       async () => extractList(await sheetsOfficerService.fetchOfficers()),
       async (items) => {
-        const { uiSettings } = await import("$state/settings.svelte");
+        const { settings } = await import("$state/settings.svelte");
         // The live sheets officer service uses the "directory" sheet in the
         // RESIDENT RECORDS workbook, not "officers" in shared records.
-        const spreadsheetId = uiSettings.residentRecordsId;
+        const spreadsheetId = settings.residentRecordsId;
         if (!spreadsheetId) {
           throw new Error("Resident records ID not configured");
         }

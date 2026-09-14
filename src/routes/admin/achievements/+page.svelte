@@ -19,7 +19,7 @@
   import { Label } from "$ui/label";
   import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/residents/AchievementCard.svelte";
   import AchievementFormDialog from "$components/forms/AchievementFormDialog.svelte";
@@ -42,7 +42,7 @@
     icon: "🏆",
     extraUrl: "",
     points: 10,
-    term: uiSettings.currentTerm,
+    term: settings.currentTerm,
     isIndefinite: false
   });
 
@@ -53,9 +53,9 @@
       }
       const isIndefinite = !a.term;
       if (isIndefinite) {
-        return uiSettings.showAllTimeAchievements;
+        return settings.showAllTimeAchievements;
       }
-      return a.term === uiSettings.currentTerm;
+      return a.term === settings.currentTerm;
     })
   );
 
@@ -114,7 +114,7 @@
         icon: "🏆",
         extraUrl: "",
         points: 10,
-        term: uiSettings.currentTerm,
+        term: settings.currentTerm,
         isIndefinite: false
       };
       loadData();
@@ -124,7 +124,7 @@
   }
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>
@@ -162,7 +162,7 @@
       <FilterDrawer>
         <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
           <div class="flex items-center space-x-2 pb-1.5">
-            <Checkbox id="admin-show-all-time" bind:checked={uiSettings.showAllTimeAchievements} />
+            <Checkbox id="admin-show-all-time" bind:checked={settings.showAllTimeAchievements} />
             <Label for="admin-show-all-time" class="cursor-pointer text-xs font-medium">
               Show all-time achievements
             </Label>

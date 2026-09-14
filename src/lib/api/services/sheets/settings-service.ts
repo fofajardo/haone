@@ -28,11 +28,11 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       return { residentId, ...data, raw: [] };
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       return null;
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "settings!A:I");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "settings!A:I");
     const found = rows.find((r) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId);
     if (!found) {
       return null;
@@ -62,11 +62,11 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       return;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "settings!A:I");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "settings!A:I");
     const rowIndex = rows.findIndex(
       (r) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
@@ -107,7 +107,7 @@ export const sheetsSettingsService: SettingsServiceInterface = {
         updates.push({ range: `settings!I${actualRow}`, values: [[data.clockFormat]] });
       }
       if (updates.length > 0) {
-        await batchUpdateValues(uiSettings.sharedRecordsId, updates);
+        await batchUpdateValues(settings.sharedRecordsId, updates);
       }
       return;
     }
@@ -154,13 +154,13 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       clockFormatVal
     ];
 
-    await appendSheetRow(uiSettings.sharedRecordsId, "settings!A:I", [finalValues]);
+    await appendSheetRow(settings.sharedRecordsId, "settings!A:I", [finalValues]);
   },
 
   async verifyAccess(explicitToken?: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
+    const { settings } = await import("$state/settings.svelte");
     const targetSheetId =
-      uiSettings.residentRecordsId || uiSettings.accountingWorkbookId || uiSettings.sharedRecordsId;
+      settings.residentRecordsId || settings.accountingWorkbookId || settings.sharedRecordsId;
 
     if (targetSheetId) {
       await verifySpreadsheetAccess(targetSheetId, explicitToken);

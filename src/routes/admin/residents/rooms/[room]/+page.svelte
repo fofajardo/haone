@@ -11,7 +11,7 @@
   import { RefreshCcw, Users, Bed, Info } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
-  import { uiSettings } from "$state/settings.svelte.js";
+  import { settings } from "$state/settings.svelte.js";
 
   let { data } = $props();
   const roomNumber = $derived(data.roomNumber);
@@ -26,7 +26,7 @@
   let error = $state<string | null>(null);
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 
@@ -38,12 +38,10 @@
         fetchResidents(bypassCache),
         fetchUsers(bypassCache)
       ]);
-      if (!uiSettings.currentTerm) {
+      if (!settings.currentTerm) {
         throw new Error("Active academic term (TERM_CURR) not found in constants.");
       }
-      residents = resData.filter(
-        (r) => r.period === uiSettings.currentTerm && r.room === roomNumber
-      );
+      residents = resData.filter((r) => r.period === settings.currentTerm && r.room === roomNumber);
       users = userData;
     } catch (e: any) {
       error = e.message;
@@ -238,7 +236,7 @@
   bind:bed={assignmentDialog.bed}
   bind:userId={assignmentDialog.userId}
   isOccupied={assignmentDialog.isOccupied}
-  activeTerm={uiSettings.currentTerm}
+  activeTerm={settings.currentTerm}
   {userOptions}
   {availableBedOptions}
   onSuccess={() => loadData(true)}

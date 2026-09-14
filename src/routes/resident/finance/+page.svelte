@@ -14,13 +14,13 @@
   let status = $state<any>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
 
   async function loadData(bypassCache = false) {
     isLoading = true;
     error = null;
     try {
-      status = await fetchResidentStatus(uiSettings.currentTerm, bypassCache);
+      status = await fetchResidentStatus(settings.currentTerm, bypassCache);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -33,7 +33,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>

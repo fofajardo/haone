@@ -22,7 +22,7 @@
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import { PaymentRequestStatus, JOURNAL_COL as JOR, TransactionType } from "$lib/types";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { formatAmount, formatDate } from "$utils/formatters";
   import { translateMop } from "$utils/translators";
@@ -69,7 +69,7 @@
           assoc: p.assocFee,
           misc: p.misc,
           mop: p.mop,
-          period: uiSettings.activeTerm,
+          period: settings.activeTerm,
           type:
             p.type !== TransactionType.COLLECTION && p.type !== TransactionType.COLLECTION_OTHERS
               ? TransactionType.COLLECTION

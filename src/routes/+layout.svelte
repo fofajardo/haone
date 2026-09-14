@@ -7,7 +7,7 @@
 
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
   import UIProvider from "$components/UIProvider.svelte";
   import GlobalAlertDialog from "$components/forms/GlobalAlertDialog.svelte";
@@ -25,11 +25,11 @@
 
     if (auth.accessToken) {
       try {
-        await uiSettings.syncFromServer();
-        if (uiSettings.theme === "system") {
+        await settings.syncFromServer();
+        if (settings.theme === "system") {
           resetMode();
         } else {
-          setMode(uiSettings.theme as any);
+          setMode(settings.theme as any);
         }
       } catch (e) {
         console.error("Failed to sync settings:", e);

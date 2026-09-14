@@ -20,7 +20,7 @@
   } from "$api/controllers/fridge-controller";
   import { fetchResidents } from "$api/controllers/resident-controller";
   import { fetchServer } from "$utils/api-client";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
   import { TagsInput } from "$ui/tags-input";
@@ -85,7 +85,7 @@
     try {
       await checkFeatureEnabled();
       if (isAdmin) {
-        accounts = await fetchResidents(false, uiSettings.currentTerm);
+        accounts = await fetchResidents(false, settings.currentTerm);
       }
 
       if (itemId) {
@@ -211,7 +211,7 @@
                   label="Owner"
                   placeholder="Search resident email or name…"
                   {accounts}
-                  filter={(a) => !uiSettings.currentTerm || a.period === uiSettings.currentTerm}
+                  filter={(a) => !settings.currentTerm || a.period === settings.currentTerm}
                   bind:value={residentSearch}
                   onSelect={selectAccount}
                   disabled={isSubmitting}
@@ -340,7 +340,7 @@
               <FileText class="h-3.5 w-3.5" /> Additional Details
             </Label>
 
-            {#if uiSettings.firebaseEnabled}
+            {#if settings.firebaseEnabled}
               <ImageUpload
                 label="Item Photo"
                 bind:value={formData.photoUrl}

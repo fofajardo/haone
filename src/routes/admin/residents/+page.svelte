@@ -2,7 +2,7 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { type ResidentRecord as Resident } from "$lib/types";
   import {
     fetchResidents,
@@ -63,7 +63,7 @@
     error = null;
     selectedIndices = new Set();
     try {
-      residents = await fetchResidents(bypassCache, uiSettings.currentTerm);
+      residents = await fetchResidents(bypassCache, settings.currentTerm);
     } catch (e: any) {
       error = e.message;
     } finally {
@@ -76,7 +76,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 

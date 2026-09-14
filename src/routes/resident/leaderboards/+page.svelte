@@ -8,7 +8,7 @@
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import AchievementLeaderboard from "$components/residents/AchievementLeaderboard.svelte";
   import { fetchAchievements } from "$api/controllers/achievement-controller";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
   import { pageState } from "$state/page-info.svelte";
 
@@ -41,7 +41,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>
@@ -72,6 +72,6 @@
       >
     </ErrorView>
   {:else}
-    <AchievementLeaderboard {achievements} {logs} term={uiSettings.currentTerm} {isGlobal} />
+    <AchievementLeaderboard {achievements} {logs} term={settings.currentTerm} {isGlobal} />
   {/if}
 </div>

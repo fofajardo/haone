@@ -17,7 +17,7 @@
   let error = $state<string | null>(null);
 
   import { fetchResidentStatus, fetchResidents } from "$api/controllers/resident-controller";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
 
   async function loadData(bypassCache = false) {
     if (!auth.accessToken) return;
@@ -83,7 +83,7 @@
         <OccupancyHistoryCard
           accounts={occupancyData}
           onRowClick={(r) => {
-            uiSettings.currentTerm = r.period;
+            settings.currentTerm = r.period;
             goto(`/resident/finance`);
           }}
         />

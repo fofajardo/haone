@@ -2,7 +2,7 @@
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { globalDialog } from "$state/dialog.svelte";
   import { translateCollege, translateProgram } from "$utils/translators";
   import { pluralize } from "$utils/formatters";
@@ -81,9 +81,7 @@
   let residentsToClear = $state<ResidentRecord[]>([]);
   let isChangingType = $state(false);
 
-  const currentAccount = $derived(
-    accounts.find((a) => a.period === uiSettings.currentTerm) || null
-  );
+  const currentAccount = $derived(accounts.find((a) => a.period === settings.currentTerm) || null);
 
   const qualifications = $derived(
     user
@@ -135,7 +133,7 @@
             (user?.email && r.account.trim().toLowerCase() === user.email.toLowerCase()) ||
             (user?.studentNo && r.stno.trim() === user.studentNo)
         )
-        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
+        .filter((r) => !settings.currentTerm || r.period === settings.currentTerm)
         .map((journal) => ({
           ...journal,
           dateWeight: parseDateWeight(journal.date)
@@ -222,7 +220,7 @@
   }
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadUserProfile();
   });
 </script>
@@ -584,7 +582,7 @@
 
       <!-- (2) Occupancy Tab -->
       <Tabs.Content value="occupancy" class="space-y-4">
-        <OccupancyHistoryCard {accounts} onRowClick={(r) => (uiSettings.currentTerm = r.period)} />
+        <OccupancyHistoryCard {accounts} onRowClick={(r) => (settings.currentTerm = r.period)} />
       </Tabs.Content>
 
       <!-- (3) Officership Tab -->
@@ -606,7 +604,7 @@
     bed={currentAccount.bed}
     userId={currentAccount.residentId}
     isOccupied={true}
-    activeTerm={uiSettings.currentTerm}
+    activeTerm={settings.currentTerm}
     userOptions={[]}
     availableBedOptions={[]}
     onSuccess={async () => {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
@@ -67,10 +67,10 @@
   let reportData = $derived(
     computeFinancialReportData(
       allJournal.filter((j) => {
-        return j.period === uiSettings.currentTerm.trim() && j.type !== "EOS";
+        return j.period === settings.currentTerm.trim() && j.type !== "EOS";
       }),
       allAccounts.filter((r) => {
-        return r.period === uiSettings.currentTerm.trim();
+        return r.period === settings.currentTerm.trim();
       }),
       availableMops
     )
@@ -191,7 +191,7 @@
   // Settlement status of residents for the term
   let settlementStatusData = $derived.by(() => {
     const currentAccounts = allAccounts.filter((r) => {
-      return r.period === uiSettings.currentTerm.trim();
+      return r.period === settings.currentTerm.trim();
     });
     const totalResidents = currentAccounts.length;
     if (totalResidents === 0) {
@@ -274,7 +274,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>

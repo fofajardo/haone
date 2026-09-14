@@ -25,7 +25,7 @@
     ChevronDown,
     X
   } from "@lucide/svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { page } from "$app/state";
 
   const isAdminView = $derived(page.url.pathname.startsWith("/admin"));
@@ -92,12 +92,12 @@
             Resident Navigation
           </h4>
           <span class="text-xs text-muted-foreground"
-            >{uiSettings.residentNavIds.length} / 4 items</span
+            >{settings.residentNavIds.length} / 4 items</span
           >
         </div>
 
         <div class="flex min-h-13 flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
-          {#each uiSettings.residentNavIds as itemId, i}
+          {#each settings.residentNavIds as itemId, i}
             {@const item = ALL_RESIDENT_ITEMS.find((it) => it.id === itemId)}
             {#if item}
               <Badge variant="secondary" class="flex items-center gap-1.5 px-2.5 py-1 text-sm">
@@ -107,7 +107,7 @@
                   <button
                     class="hover:text-primary disabled:opacity-30"
                     onclick={() =>
-                      (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, -1))}
+                      (settings.residentNavIds = moveItem(settings.residentNavIds, i, -1))}
                     disabled={i === 0}
                   >
                     <ChevronUp class="h-3 w-3" />
@@ -115,15 +115,15 @@
                   <button
                     class="hover:text-primary disabled:opacity-30"
                     onclick={() =>
-                      (uiSettings.residentNavIds = moveItem(uiSettings.residentNavIds, i, 1))}
-                    disabled={i === uiSettings.residentNavIds.length - 1}
+                      (settings.residentNavIds = moveItem(settings.residentNavIds, i, 1))}
+                    disabled={i === settings.residentNavIds.length - 1}
                   >
                     <ChevronDown class="h-3 w-3" />
                   </button>
                   <button
                     class="ml-0.5 hover:text-destructive"
                     onclick={() =>
-                      (uiSettings.residentNavIds = uiSettings.residentNavIds.filter(
+                      (settings.residentNavIds = settings.residentNavIds.filter(
                         (id) => id !== itemId
                       ))}
                   >
@@ -133,21 +133,21 @@
               </Badge>
             {/if}
           {/each}
-          {#if uiSettings.residentNavIds.length === 0}
+          {#if settings.residentNavIds.length === 0}
             <span class="py-1 text-sm text-muted-foreground italic">No items selected.</span>
           {/if}
         </div>
 
         <div class="flex flex-wrap gap-2">
           {#each ALL_RESIDENT_ITEMS as item}
-            {@const selected = uiSettings.residentNavIds.includes(item.id)}
+            {@const selected = settings.residentNavIds.includes(item.id)}
             <Button
               variant={selected ? "default" : "outline"}
               size="sm"
               class="h-8 gap-1.5"
               onclick={() =>
-                (uiSettings.residentNavIds = toggleItem(uiSettings.residentNavIds, item.id))}
-              disabled={!selected && uiSettings.residentNavIds.length >= 4}
+                (settings.residentNavIds = toggleItem(settings.residentNavIds, item.id))}
+              disabled={!selected && settings.residentNavIds.length >= 4}
               icon={item.icon}
             >
               {item.label}
@@ -164,13 +164,11 @@
           <h4 class="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
             Admin Navigation
           </h4>
-          <span class="text-xs text-muted-foreground"
-            >{uiSettings.adminNavIds.length} / 4 items</span
-          >
+          <span class="text-xs text-muted-foreground">{settings.adminNavIds.length} / 4 items</span>
         </div>
 
         <div class="flex min-h-13 flex-wrap gap-2 rounded-lg border bg-muted/30 p-3">
-          {#each uiSettings.adminNavIds as itemId, i}
+          {#each settings.adminNavIds as itemId, i}
             {@const item = ALL_ADMIN_ITEMS.find((it) => it.id === itemId)}
             {#if item}
               <Badge variant="secondary" class="flex items-center gap-1.5 px-2.5 py-1 text-sm">
@@ -179,26 +177,22 @@
                 <div class="ml-1 flex items-center gap-0.5 border-l pl-1">
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() =>
-                      (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, -1))}
+                    onclick={() => (settings.adminNavIds = moveItem(settings.adminNavIds, i, -1))}
                     disabled={i === 0}
                   >
                     <ChevronUp class="h-3 w-3" />
                   </button>
                   <button
                     class="hover:text-primary disabled:opacity-30"
-                    onclick={() =>
-                      (uiSettings.adminNavIds = moveItem(uiSettings.adminNavIds, i, 1))}
-                    disabled={i === uiSettings.adminNavIds.length - 1}
+                    onclick={() => (settings.adminNavIds = moveItem(settings.adminNavIds, i, 1))}
+                    disabled={i === settings.adminNavIds.length - 1}
                   >
                     <ChevronDown class="h-3 w-3" />
                   </button>
                   <button
                     class="ml-0.5 hover:text-destructive"
                     onclick={() =>
-                      (uiSettings.adminNavIds = uiSettings.adminNavIds.filter(
-                        (id) => id !== itemId
-                      ))}
+                      (settings.adminNavIds = settings.adminNavIds.filter((id) => id !== itemId))}
                   >
                     <X class="h-3 w-3" />
                   </button>
@@ -206,20 +200,20 @@
               </Badge>
             {/if}
           {/each}
-          {#if uiSettings.adminNavIds.length === 0}
+          {#if settings.adminNavIds.length === 0}
             <span class="py-1 text-sm text-muted-foreground italic">No items selected.</span>
           {/if}
         </div>
 
         <div class="flex flex-wrap gap-2">
           {#each ALL_ADMIN_ITEMS as item}
-            {@const selected = uiSettings.adminNavIds.includes(item.id)}
+            {@const selected = settings.adminNavIds.includes(item.id)}
             <Button
               variant={selected ? "default" : "outline"}
               size="sm"
               class="h-8 gap-1.5"
-              onclick={() => (uiSettings.adminNavIds = toggleItem(uiSettings.adminNavIds, item.id))}
-              disabled={!selected && uiSettings.adminNavIds.length >= 4}
+              onclick={() => (settings.adminNavIds = toggleItem(settings.adminNavIds, item.id))}
+              disabled={!selected && settings.adminNavIds.length >= 4}
               icon={item.icon}
             >
               {item.label}

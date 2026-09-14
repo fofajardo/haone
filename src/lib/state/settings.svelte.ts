@@ -13,7 +13,7 @@ import { auth } from "$state/auth.svelte";
 export type UIFont = "default" | "archivo" | "shantell";
 export type DisplayDensity = "default" | "compact" | "comfortable";
 
-class UISettings {
+class Settings {
   #fontFamily = $state<UIFont>("default");
   #reducedMotion = $state(false);
   #displayDensity = $state<DisplayDensity>("default");
@@ -288,4 +288,4 @@ class UISettings {
   }
 }
 
-export const uiSettings = new UISettings();
+export const settings = new Settings();

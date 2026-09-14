@@ -23,11 +23,11 @@ export const sheetsLaundryService: LaundryServiceInterface = {
       return Array.isArray(data) ? data : data.reservations || [];
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "laundry!A:I", shouldRefresh);
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "laundry!A:I", shouldRefresh);
     let items = rows.slice(1).map((row) => ({
       id: (row[LAUNDRY_COL.ID] || "").trim(),
       residentId: (row[LAUNDRY_COL.RESIDENT_ID] || "").trim(),
@@ -56,8 +56,8 @@ export const sheetsLaundryService: LaundryServiceInterface = {
       return;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const row = new Array(9).fill("");
@@ -70,12 +70,12 @@ export const sheetsLaundryService: LaundryServiceInterface = {
     row[LAUNDRY_COL.CANCEL_REASON] = data.cancelReason || "";
     row[LAUNDRY_COL.CREATION_TIMESTAMP] = data.creationTimestamp || new Date().toISOString();
     row[LAUNDRY_COL.CANCEL_TIMESTAMP] = data.cancelTimestamp || "";
-    await appendSheetRow(uiSettings.sharedRecordsId, "laundry!A:I", [row]);
+    await appendSheetRow(settings.sharedRecordsId, "laundry!A:I", [row]);
   },
 
   async addReservationsBatch(entries: Partial<LaundryRecord>[]): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const rows = entries.map((data) => {
@@ -91,7 +91,7 @@ export const sheetsLaundryService: LaundryServiceInterface = {
       row[LAUNDRY_COL.CANCEL_TIMESTAMP] = data.cancelTimestamp || "";
       return row;
     });
-    await appendSheetRow(uiSettings.sharedRecordsId, "laundry!A:I", rows);
+    await appendSheetRow(settings.sharedRecordsId, "laundry!A:I", rows);
   },
 
   async cancelReservation(id: string, reason: string): Promise<void> {
@@ -104,11 +104,11 @@ export const sheetsLaundryService: LaundryServiceInterface = {
       return;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "laundry!A:I");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "laundry!A:I");
     const rowIndex = rows.findIndex((r) => (r[LAUNDRY_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Reservation not found");
@@ -116,11 +116,11 @@ export const sheetsLaundryService: LaundryServiceInterface = {
     const actualRow = rowIndex + 1;
     const nowStr = new Date().toISOString();
     await Promise.all([
-      updateSheetValue(uiSettings.sharedRecordsId, `laundry!F${actualRow}`, [
+      updateSheetValue(settings.sharedRecordsId, `laundry!F${actualRow}`, [
         [LaundryStatus.CANCELLED_BY_ADMIN]
       ]),
-      updateSheetValue(uiSettings.sharedRecordsId, `laundry!G${actualRow}`, [[reason]]),
-      updateSheetValue(uiSettings.sharedRecordsId, `laundry!I${actualRow}`, [[nowStr]])
+      updateSheetValue(settings.sharedRecordsId, `laundry!G${actualRow}`, [[reason]]),
+      updateSheetValue(settings.sharedRecordsId, `laundry!I${actualRow}`, [[nowStr]])
     ]);
   }
 };

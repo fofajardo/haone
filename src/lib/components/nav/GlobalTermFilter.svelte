@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import {
     fetchActiveTerm,
     fetchConstants,
@@ -11,7 +11,7 @@
   import { Combobox } from "$ui/combobox";
   import Skeleton from "../ui/skeleton/skeleton.svelte";
 
-  let activeTerm = $derived(uiSettings.currentTerm);
+  let activeTerm = $derived(settings.currentTerm);
 
   interface TermOption {
     value: string;
@@ -37,8 +37,8 @@
       if (records.length === 0) return;
 
       const allTerms = await fetchTerms();
-      if (!uiSettings.activeTerm && allTerms.length > 0) {
-        uiSettings.activeTerm = await fetchActiveTerm();
+      if (!settings.activeTerm && allTerms.length > 0) {
+        settings.activeTerm = await fetchActiveTerm();
       }
 
       const sortedValues = sortPeriods(allTerms.map((t) => t.value));
@@ -54,7 +54,7 @@
       const termCurr = records.find((r) => r.key === "TERM_CURR")?.value || "";
 
       if (!activeTerm && terms.length > 0) {
-        uiSettings.currentTerm = termCurr || terms[0].value;
+        settings.currentTerm = termCurr || terms[0].value;
       }
     } catch (e) {
       console.error("Failed to load terms:", e);
@@ -67,7 +67,7 @@
 
   function handleChange(val: string | undefined) {
     if (val) {
-      uiSettings.currentTerm = val;
+      settings.currentTerm = val;
     }
   }
 </script>

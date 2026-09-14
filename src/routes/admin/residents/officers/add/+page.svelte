@@ -19,7 +19,7 @@
   import * as Card from "$ui/card";
 
   import { translatePeriod } from "$utils/translators";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let officers = $state<OfficerRecord[]>([]);
@@ -51,7 +51,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 
@@ -62,7 +62,7 @@
   const availablePositions = $derived.by(() => {
     return positions.map((p) => {
       const currentCount = officers.filter(
-        (o) => o.position === p.title && o.term === uiSettings.currentTerm
+        (o) => o.position === p.title && o.term === settings.currentTerm
       ).length;
       const isFull = p.limit > 0 && currentCount >= p.limit;
       return {
@@ -75,7 +75,7 @@
 
   const residentOptions = $derived(
     residents
-      .filter((r) => r.period === uiSettings.currentTerm)
+      .filter((r) => r.period === settings.currentTerm)
       .map((r) => ({
         label: `${r.name} (${r.room}${r.bed})`,
         value: r.residentId
@@ -116,7 +116,7 @@
         nickname: newOfficerData.nickname,
         email: resident.email,
         fbLink: newOfficerData.fbLink,
-        term: uiSettings.currentTerm,
+        term: settings.currentTerm,
         committee: newOfficerData.committee,
         birthday: newOfficerData.birthday,
         id: "",
@@ -143,7 +143,7 @@
         <Card.Title>Officer Details</Card.Title>
         <Card.Description
           >Assign a resident to an officer position for {translatePeriod(
-            uiSettings.currentTerm
+            settings.currentTerm
           )}.</Card.Description
         >
       </Card.Header>

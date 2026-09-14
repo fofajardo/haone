@@ -27,12 +27,12 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
       return Array.isArray(data) ? data : data.requests || [];
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       return [];
     }
     const rows = await fetchSheetRowsRaw(
-      uiSettings.sharedRecordsId,
+      settings.sharedRecordsId,
       "payment_requests!A:L",
       shouldRefresh
     );
@@ -68,8 +68,8 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
       });
       return;
     }
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const row = new Array(12).fill("");
@@ -85,16 +85,16 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
     row[PAYMENT_REQUEST_COL.STATUS] = data.status || PaymentRequestStatus.PENDING;
     row[PAYMENT_REQUEST_COL.NOTES] = data.notes || "";
     row[PAYMENT_REQUEST_COL.STATUS_REASON] = data.statusReason || "";
-    await appendSheetRow(uiSettings.sharedRecordsId, "payment_requests!A:L", [row]);
+    await appendSheetRow(settings.sharedRecordsId, "payment_requests!A:L", [row]);
   },
 
   async approvePaymentRequest(
     paymentId: string,
     journalData: Partial<JournalRecord>
   ): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    const srId = uiSettings.sharedRecordsId;
-    const awId = uiSettings.accountingWorkbookId;
+    const { settings } = await import("$state/settings.svelte");
+    const srId = settings.sharedRecordsId;
+    const awId = settings.accountingWorkbookId;
     if (!srId || !awId) {
       throw new Error("Spreadsheet IDs not configured");
     }
@@ -139,12 +139,12 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
   },
 
   async declinePaymentRequest(paymentId: string, reason: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "payment_requests!A:L");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "payment_requests!A:L");
     const rowIndex = rows.findIndex((r) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === paymentId);
     if (rowIndex === -1) {
       throw new Error("Payment record not found");
@@ -152,10 +152,10 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
 
     const actualRow = rowIndex + 1;
     await Promise.all([
-      updateSheetValue(uiSettings.sharedRecordsId, `payment_requests!J${actualRow}`, [
+      updateSheetValue(settings.sharedRecordsId, `payment_requests!J${actualRow}`, [
         [PaymentRequestStatus.DECLINED]
       ]),
-      updateSheetValue(uiSettings.sharedRecordsId, `payment_requests!L${actualRow}`, [[reason]])
+      updateSheetValue(settings.sharedRecordsId, `payment_requests!L${actualRow}`, [[reason]])
     ]);
   },
 
@@ -169,19 +169,19 @@ export const sheetsPaymentRequestService: PaymentRequestServiceInterface = {
       return;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "payment_requests!A:L");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "payment_requests!A:L");
     const rowIndex = rows.findIndex((r) => (r[PAYMENT_REQUEST_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Payment request not found");
     }
 
     const actualRow = rowIndex + 1;
-    await updateSheetValue(uiSettings.sharedRecordsId, `payment_requests!J${actualRow}`, [
+    await updateSheetValue(settings.sharedRecordsId, `payment_requests!J${actualRow}`, [
       [PaymentRequestStatus.CANCELLED]
     ]);
   }

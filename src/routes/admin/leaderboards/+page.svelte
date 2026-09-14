@@ -13,7 +13,7 @@
   } from "$api/controllers/achievement-controller";
   import { fetchUserSettings } from "$api/controllers/settings-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { pageState } from "$state/page-info.svelte";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
 
@@ -69,7 +69,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>
@@ -100,6 +100,6 @@
       >
     </ErrorView>
   {:else}
-    <AchievementLeaderboard {achievements} {logs} term={uiSettings.currentTerm} {isGlobal} />
+    <AchievementLeaderboard {achievements} {logs} term={settings.currentTerm} {isGlobal} />
   {/if}
 </div>

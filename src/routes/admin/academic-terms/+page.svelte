@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import {
     fetchConstants,
     addConstant,
@@ -177,8 +177,8 @@
     } else {
       await addConstant("TERM_CURR", value, "Active Term");
     }
-    uiSettings.currentTerm = value;
-    uiSettings.activeTerm = value;
+    settings.currentTerm = value;
+    settings.activeTerm = value;
     await loadTerms();
   }
 

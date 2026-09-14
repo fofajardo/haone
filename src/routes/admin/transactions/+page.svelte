@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { fetchJournalEntries, batchAuditEntries } from "$api/controllers/journal-controller";
   import { fetchMopTypes } from "$api/controllers/constants-controller";
   import { parseDateWeight } from "$utils/parsers";
@@ -57,7 +57,7 @@
           ...res,
           dateWeight: parseDateWeight(res.date)
         }))
-        .filter((r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm)
+        .filter((r) => !settings.currentTerm || r.period === settings.currentTerm)
         .sort(
           (a, b) =>
             (b.dateWeight ?? 0) - (a.dateWeight ?? 0) || (b.ledgerIndex ?? 0) - (a.ledgerIndex ?? 0)
@@ -124,7 +124,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 

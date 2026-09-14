@@ -24,12 +24,12 @@ export const sheetsFridgeService: FridgeServiceInterface = {
       return Array.isArray(data) ? data : data.items || [];
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       return [];
     }
     const rows = await fetchSheetRowsRaw(
-      uiSettings.sharedRecordsId,
+      settings.sharedRecordsId,
       "fridge_items!A:M",
       shouldRefresh
     );
@@ -65,8 +65,8 @@ export const sheetsFridgeService: FridgeServiceInterface = {
       return;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
     const row = new Array(13).fill("");
@@ -83,7 +83,7 @@ export const sheetsFridgeService: FridgeServiceInterface = {
     row[FRIDGE_ITEM_COL.CHECK_OUT_DATE] = data.checkOutDate || "";
     row[FRIDGE_ITEM_COL.TAGS] = Array.isArray(data.tags) ? data.tags.join(",") : data.tags || "";
     row[FRIDGE_ITEM_COL.ACTION_BY] = data.actionBy || "";
-    await appendSheetRow(uiSettings.sharedRecordsId, "fridge_items!A:M", [row]);
+    await appendSheetRow(settings.sharedRecordsId, "fridge_items!A:M", [row]);
   },
 
   async updateFridgeItem(id: string, updates: Partial<FridgeItemRecord>): Promise<void> {
@@ -96,11 +96,11 @@ export const sheetsFridgeService: FridgeServiceInterface = {
       return;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "fridge_items!A:M");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "fridge_items!A:M");
     const rowIndex = rows.findIndex((r) => (r[FRIDGE_ITEM_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Fridge item not found");
@@ -144,7 +144,7 @@ export const sheetsFridgeService: FridgeServiceInterface = {
     }
 
     if (batch.length > 0) {
-      await batchUpdateValues(uiSettings.sharedRecordsId, batch);
+      await batchUpdateValues(settings.sharedRecordsId, batch);
     }
   },
 
@@ -158,11 +158,11 @@ export const sheetsFridgeService: FridgeServiceInterface = {
       return;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.sharedRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.sharedRecordsId, "fridge_items!A:M");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "fridge_items!A:M");
     const rowIndex = rows.findIndex((r) => (r[FRIDGE_ITEM_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Fridge item not found");
@@ -188,6 +188,6 @@ export const sheetsFridgeService: FridgeServiceInterface = {
     if (actionBy) {
       batch.push({ range: `fridge_items!M${actualRow}`, values: [[actionBy]] });
     }
-    await batchUpdateValues(uiSettings.sharedRecordsId, batch);
+    await batchUpdateValues(settings.sharedRecordsId, batch);
   }
 };

@@ -20,16 +20,16 @@ export const sheetsResidentService: ResidentServiceInterface = {
       return data.accounts;
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId || !uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId || !settings.residentRecordsId) {
       return [];
     }
 
     const [accRows, userRows, journalRows, constRows] = await Promise.all([
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L", bypassCache),
-      fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P", bypassCache),
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "journal_general!A:V", bypassCache),
-      fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "constants!A:C", bypassCache)
+      fetchSheetRowsRaw(settings.accountingWorkbookId, "accounts!A:L", bypassCache),
+      fetchSheetRowsRaw(settings.residentRecordsId, "users!A:P", bypassCache),
+      fetchSheetRowsRaw(settings.accountingWorkbookId, "journal_general!A:V", bypassCache),
+      fetchSheetRowsRaw(settings.accountingWorkbookId, "constants!A:C", bypassCache)
     ]);
 
     const userMap = new Map<string, string[]>();
@@ -118,12 +118,12 @@ export const sheetsResidentService: ResidentServiceInterface = {
   },
 
   async changeAccountType(residentId: string, period: string, newType: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
 
-    const accRows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:L");
+    const accRows = await fetchSheetRowsRaw(settings.accountingWorkbookId, "accounts!A:L");
     const rowIndex = accRows.findIndex(
       (r) =>
         (r[ACCOUNT_COL.RESIDENT_ID] || "").trim() === residentId &&
@@ -133,7 +133,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
       throw new Error("Account row not found in spreadsheet.");
     }
     const actualRow = rowIndex + 1;
-    await updateSheetValue(uiSettings.accountingWorkbookId, `accounts!L${actualRow}`, [[newType]]);
+    await updateSheetValue(settings.accountingWorkbookId, `accounts!L${actualRow}`, [[newType]]);
   },
 
   async fetchUsers(bypassCache = false): Promise<UserRecord[]> {
@@ -141,16 +141,12 @@ export const sheetsResidentService: ResidentServiceInterface = {
       return [];
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       return [];
     }
 
-    const userRows = await fetchSheetRowsRaw(
-      uiSettings.residentRecordsId,
-      "users!A:P",
-      bypassCache
-    );
+    const userRows = await fetchSheetRowsRaw(settings.residentRecordsId, "users!A:P", bypassCache);
 
     return userRows
       .slice(1)
@@ -177,12 +173,12 @@ export const sheetsResidentService: ResidentServiceInterface = {
   },
 
   async updateUser(userId: string, data: Partial<UserRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P");
+    const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "users!A:P");
     const rowIndex = rows.findIndex((r) => (r[USER_COL.ID] || "").trim() === userId);
     if (rowIndex === -1) {
       throw new Error("User not found");
@@ -243,14 +239,14 @@ export const sheetsResidentService: ResidentServiceInterface = {
       newRow[USER_COL.NOTES] = data.notes;
     }
 
-    await updateSheetValue(uiSettings.residentRecordsId, `users!A${actualRow}:P${actualRow}`, [
+    await updateSheetValue(settings.residentRecordsId, `users!A${actualRow}:P${actualRow}`, [
       newRow
     ]);
   },
 
   async addUser(data: Partial<UserRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
 
@@ -275,22 +271,22 @@ export const sheetsResidentService: ResidentServiceInterface = {
     row[USER_COL.NOTES] = data.notes || "";
     row[USER_COL.ID] = data.id || crypto.randomUUID();
 
-    await appendSheetRow(uiSettings.residentRecordsId, "users!A:P", [row]);
+    await appendSheetRow(settings.residentRecordsId, "users!A:P", [row]);
   },
 
   async deleteUser(userId: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "users!A:P");
+    const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "users!A:P");
     const rowIndex = rows.findIndex((r) => (r[USER_COL.ID] || "").trim() === userId);
     if (rowIndex === -1) {
       throw new Error("User not found in spreadsheet");
     }
 
-    await deleteSheetRow(uiSettings.residentRecordsId, "users", rowIndex);
+    await deleteSheetRow(settings.residentRecordsId, "users", rowIndex);
   },
 
   async updateClearance(
@@ -298,12 +294,12 @@ export const sheetsResidentService: ResidentServiceInterface = {
     period: string,
     data: { refNo: string; dateString: string; publicLink: string; issuerId: string }
   ): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.accountingWorkbookId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.accountingWorkbookId) {
       throw new Error("Accounting workbook ID not configured");
     }
 
-    const rows = await fetchSheetRowsRaw(uiSettings.accountingWorkbookId, "accounts!A:C");
+    const rows = await fetchSheetRowsRaw(settings.accountingWorkbookId, "accounts!A:C");
     const rowIndex = rows.findIndex(
       (r) =>
         r[ACCOUNT_COL.RESIDENT_ID]?.trim() === residentId &&
@@ -316,7 +312,7 @@ export const sheetsResidentService: ResidentServiceInterface = {
 
     const actualRow = rowIndex + 1;
 
-    await batchUpdateValues(uiSettings.accountingWorkbookId, [
+    await batchUpdateValues(settings.accountingWorkbookId, [
       { range: `accounts!F${actualRow}`, values: [[data.refNo]] },
       { range: `accounts!G${actualRow}`, values: [[data.dateString]] },
       { range: `accounts!H${actualRow}`, values: [[data.publicLink]] },

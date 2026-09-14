@@ -22,7 +22,7 @@
     Refrigerator
   } from "@lucide/svelte";
   import { page } from "$app/state";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { residentState } from "$state/resident-state.svelte";
@@ -68,7 +68,7 @@
   const isAdmin = $derived(page.url.pathname.startsWith("/admin"));
 
   const navItems = $derived.by(() => {
-    const ids = isAdmin ? uiSettings.adminNavIds : uiSettings.residentNavIds;
+    const ids = isAdmin ? settings.adminNavIds : settings.residentNavIds;
     const map = isAdmin ? MAP_ADMIN : MAP_RESIDENT;
     const items = ids.map((id) => map[id]).filter(Boolean);
 
@@ -108,7 +108,7 @@
 
   onMount(() => {
     if (auth.accessToken) {
-      uiSettings.syncFromServer().catch(console.error);
+      settings.syncFromServer().catch(console.error);
     }
   });
 </script>

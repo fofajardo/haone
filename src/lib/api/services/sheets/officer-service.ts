@@ -11,15 +11,11 @@ export const sheetsOfficerService: OfficerServiceInterface = {
       return fetchServer("/api/resident/officers", {}, bypassCache);
     }
 
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       return [];
     }
-    const rows = await fetchSheetRowsRaw(
-      uiSettings.residentRecordsId,
-      "directory!A:J",
-      bypassCache
-    );
+    const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "directory!A:J", bypassCache);
     return rows
       .slice(1)
       .filter((row) => (row[OFFICER_COL.EMAIL] || "").trim() !== "")
@@ -39,8 +35,8 @@ export const sheetsOfficerService: OfficerServiceInterface = {
   },
 
   async addOfficer(data: Partial<OfficerRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
     const row = new Array(10).fill("");
@@ -54,15 +50,15 @@ export const sheetsOfficerService: OfficerServiceInterface = {
     row[OFFICER_COL.BIRTHDAY] = data.birthday || "";
     row[OFFICER_COL.ID] = data.id || crypto.randomUUID();
     row[OFFICER_COL.STATUS] = data.status || OfficerStatus.ACTIVE;
-    await appendSheetRow(uiSettings.residentRecordsId, "directory!A:J", [row]);
+    await appendSheetRow(settings.residentRecordsId, "directory!A:J", [row]);
   },
 
   async updateOfficer(id: string, data: Partial<OfficerRecord>): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "directory!A:J");
+    const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "directory!A:J");
     const rowIndex = rows.findIndex((r) => (r[OFFICER_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Officer not found");
@@ -96,21 +92,21 @@ export const sheetsOfficerService: OfficerServiceInterface = {
     if (data.status !== undefined) {
       newRow[OFFICER_COL.STATUS] = data.status;
     }
-    await updateSheetValue(uiSettings.residentRecordsId, `directory!A${actualRow}:J${actualRow}`, [
+    await updateSheetValue(settings.residentRecordsId, `directory!A${actualRow}:J${actualRow}`, [
       newRow
     ]);
   },
 
   async deleteOfficer(id: string): Promise<void> {
-    const { uiSettings } = await import("$state/settings.svelte");
-    if (!uiSettings.residentRecordsId) {
+    const { settings } = await import("$state/settings.svelte");
+    if (!settings.residentRecordsId) {
       throw new Error("Resident Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(uiSettings.residentRecordsId, "directory!A:J");
+    const rows = await fetchSheetRowsRaw(settings.residentRecordsId, "directory!A:J");
     const rowIndex = rows.findIndex((r) => (r[OFFICER_COL.ID] || "").trim() === id);
     if (rowIndex === -1) {
       throw new Error("Officer not found");
     }
-    await deleteSheetRow(uiSettings.residentRecordsId, "directory", rowIndex);
+    await deleteSheetRow(settings.residentRecordsId, "directory", rowIndex);
   }
 };

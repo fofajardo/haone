@@ -13,7 +13,7 @@
   import { Button } from "$ui/button";
   import { parseTime } from "$utils/parsers";
   import { formatTimeRange } from "$utils/formatters";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import ViewLaundryDialog from "$components/forms/ViewLaundryDialog.svelte";
   import { twMerge } from "tailwind-merge";
   import LaundryReservationHistory from "./LaundryReservationHistory.svelte";
@@ -388,7 +388,7 @@
                 class="absolute inset-x-0 top-0 z-20 flex -translate-y-1/2 items-center justify-center"
               >
                 <span class="bg-background px-1 text-muted-foreground">
-                  {uiSettings.clockFormat === "12h"
+                  {settings.clockFormat === "12h"
                     ? `${hour % 12 || 12} ${hour >= 12 ? "PM" : "AM"}`
                     : `${hour.toString().padStart(2, "0")}:00`}
                 </span>
@@ -595,7 +595,7 @@
                         <BookmarkIcon class="h-3 w-3 shrink-0" />
                       {/if}
                       <span class="flex-1 truncate font-medium">
-                        {formatTimeRange(`${res.timeStart}-${res.timeEnd}`, uiSettings.clockFormat)}
+                        {formatTimeRange(`${res.timeStart}-${res.timeEnd}`, settings.clockFormat)}
                       </span>
                       <span class="flex-2 truncate">
                         {res.name}

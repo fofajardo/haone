@@ -3,7 +3,7 @@
   import { auth } from "$state/auth.svelte";
   import { page } from "$app/state";
   import { brandingState } from "$state/branding.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
   import { fetchConstants } from "$api/controllers/constants-controller";
@@ -95,7 +95,7 @@
     miscFee: "0",
     mop: "CASH",
     mopTo: "CASH",
-    period: uiSettings.currentTerm || "",
+    period: settings.currentTerm || "",
     type: TransactionType.COLLECTION,
     notes: "",
     notesPrivate: "",
@@ -154,7 +154,7 @@
   $effect(() => {
     if (isEos && formData.mop) {
       fetchJournalEntries().then((entries) => {
-        const currentTerm = formData.period || uiSettings.currentTerm;
+        const currentTerm = formData.period || settings.currentTerm;
         const journal = Array.isArray(entries) ? entries : entries.items;
 
         // 1. Filter out j.type === "EOS" to match financial report page filtering
@@ -458,7 +458,7 @@
   function confirmSubmitForInactiveTerm() {
     globalDialog.confirm(
       "Record transaction for inactive term?",
-      `This transaction will be recorded under ${translatePeriod(formData.period)} instead of the active term (${translatePeriod(uiSettings.activeTerm)}).`,
+      `This transaction will be recorded under ${translatePeriod(formData.period)} instead of the active term (${translatePeriod(settings.activeTerm)}).`,
       undefined,
       async () => {
         try {
@@ -517,7 +517,7 @@
       }
     }
 
-    if (formData.period !== uiSettings.currentTerm && !hasConfirmedTerm) {
+    if (formData.period !== settings.currentTerm && !hasConfirmedTerm) {
       confirmSubmitForInactiveTerm();
       return;
     }
@@ -742,7 +742,7 @@
               <div class="space-y-2">
                 <Label>Academic Term</Label>
                 <Combobox bind:value={formData.period} options={academicTerms} class="w-full" />
-                {#if formData.period !== uiSettings.currentTerm}
+                {#if formData.period !== settings.currentTerm}
                   <div
                     class="mt-2 flex items-center gap-2 rounded-md bg-amber-500/10 p-2 text-xs font-bold text-amber-600 uppercase dark:bg-amber-500/20 dark:text-amber-500"
                   >

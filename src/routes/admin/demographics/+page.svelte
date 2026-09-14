@@ -13,7 +13,7 @@
     RotateCcwClockIcon
   } from "@lucide/svelte";
   import { Button } from "$ui/button";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import * as Tabs from "$ui/tabs";
   import * as Card from "$ui/card";
   import * as Chart from "$ui/chart";
@@ -96,7 +96,7 @@
     try {
       const allResidents = await fetchResidents(bypassCache);
       const accounts = allResidents.filter(
-        (r) => !uiSettings.currentTerm || r.period === uiSettings.currentTerm
+        (r) => !settings.currentTerm || r.period === settings.currentTerm
       );
 
       const totalResidents = accounts.length;
@@ -259,7 +259,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 </script>

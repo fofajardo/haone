@@ -30,7 +30,7 @@
     ChevronRight,
     DownloadIcon
   } from "@lucide/svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
 
   let residents = $state<ResidentRecord[]>([]);
   let users = $state<UserRecord[]>([]);
@@ -48,10 +48,10 @@
         fetchResidents(bypassCache),
         fetchUsers(bypassCache)
       ]);
-      if (!uiSettings.currentTerm) {
+      if (!settings.currentTerm) {
         throw new Error("Active academic term (TERM_CURR) not found in constants.");
       }
-      residents = resData.filter((r) => r.period === uiSettings.currentTerm);
+      residents = resData.filter((r) => r.period === settings.currentTerm);
       users = userData;
     } catch (e: any) {
       error = e.message;
@@ -61,7 +61,7 @@
   }
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 
@@ -365,7 +365,7 @@
   bind:bed={assignmentDialog.bed}
   bind:userId={assignmentDialog.userId}
   isOccupied={assignmentDialog.isOccupied}
-  activeTerm={uiSettings.currentTerm}
+  activeTerm={settings.currentTerm}
   {userOptions}
   {availableBedOptions}
   onSuccess={() => loadData(true)}

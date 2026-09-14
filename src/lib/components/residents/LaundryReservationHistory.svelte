@@ -1,6 +1,6 @@
 <script lang="ts">
   import { LaundryStatus, type LaundryRecord } from "$lib/types";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import DataTableColumnHeader from "$ui/data-table/data-table-column-header.svelte";
   import { renderComponent, renderSnippet, type ColumnDef } from "$ui/data-table/index.js";
   import { formatDate, formatTimeRange } from "$utils/formatters";
@@ -81,7 +81,7 @@
               <div class="flex flex-col">
                 <span class="font-medium">${p().date}</span>
                 <span>
-                  ${formatTimeRange(p().start, uiSettings.clockFormat)}–${formatTimeRange(p().end, uiSettings.clockFormat)}
+                  ${formatTimeRange(p().start, settings.clockFormat)}–${formatTimeRange(p().end, settings.clockFormat)}
                 </span>
               </div>
             `

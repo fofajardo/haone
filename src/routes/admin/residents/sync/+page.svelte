@@ -1,7 +1,7 @@
 <script lang="ts">
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { globalDialog } from "$state/dialog.svelte";
   import {
     getSyncPreview,
@@ -79,11 +79,11 @@
     isLoading = true;
     error = null;
     try {
-      if (!uiSettings.activeTerm) {
+      if (!settings.activeTerm) {
         error = "Active academic term (TERM_CURR) not found.";
         return;
       }
-      previewActions = await getSyncPreview(uiSettings.activeTerm);
+      previewActions = await getSyncPreview(settings.activeTerm);
       selectedGroups = new Set(previewActions.map((a) => a.currIndex ?? -1));
     } catch (e: any) {
       error = e.message || "Failed to load sync preview.";
@@ -99,7 +99,7 @@
     }
     isSyncing = true;
     try {
-      const result = await applySync(selectedActions, uiSettings.activeTerm);
+      const result = await applySync(selectedActions, settings.activeTerm);
       globalDialog.show(
         "Sync Complete",
         `${pluralize(result.usersCreated, "user profile", "user profiles")} and ${pluralize(result.accountsCreated, "assignment", "assignments")} created. ${pluralize(result.usersUpdated, "user profile", "user profiles")} and ${pluralize(result.accountsUpdated, "assignment", "assignments")} updated. Evaluated ${pluralize(result.evaluated || 0, "registration", "registrations")}.`
@@ -115,7 +115,7 @@
   async function handleApproveSingle(group: { currIndex: number; actions: SyncPreviewAction[] }) {
     processingIndex = group.currIndex;
     try {
-      await applySync(group.actions, uiSettings.activeTerm);
+      await applySync(group.actions, settings.activeTerm);
       toast.success(`Approved registration for ${group.actions[0]?.residentName || "resident"}`);
       await loadPreview();
     } catch (e: any) {
@@ -144,7 +144,7 @@
     try {
       await declineRegistration(
         declineDialog.email,
-        uiSettings.activeTerm,
+        settings.activeTerm,
         declineDialog.reason.trim(),
         declineDialog.currIndex
       );
@@ -184,11 +184,11 @@
     {/snippet}
   </ContentHeader>
 
-  {#if uiSettings.currentTerm !== uiSettings.activeTerm}
+  {#if settings.currentTerm !== settings.activeTerm}
     <Banner variant="warning">
       <p>
-        The selected term is <strong>{translatePeriod(uiSettings.currentTerm)}</strong>, but changes
-        only apply to the active term (<strong>{translatePeriod(uiSettings.activeTerm)}</strong>).
+        The selected term is <strong>{translatePeriod(settings.currentTerm)}</strong>, but changes
+        only apply to the active term (<strong>{translatePeriod(settings.activeTerm)}</strong>).
         Switch to the active term in settings to proceed.
       </p>
     </Banner>

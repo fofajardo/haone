@@ -2,7 +2,7 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { brandingState } from "$state/branding.svelte";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { auth } from "$state/auth.svelte";
   import { AccountCombobox } from "$components/ui/haone";
   import ContentHeader from "$components/content/ContentHeader.svelte";
@@ -28,12 +28,12 @@
   let allAccounts = $state<ResidentRecord[]>([]);
   let journal = $derived(
     allJournal.filter((j) => {
-      return j.period === uiSettings.currentTerm.trim() && j.type !== "EOS";
+      return j.period === settings.currentTerm.trim() && j.type !== "EOS";
     })
   );
   let accounts = $derived(
     allAccounts.filter((r) => {
-      return r.period === uiSettings.currentTerm.trim();
+      return r.period === settings.currentTerm.trim();
     })
   );
   let allAccountsForAutocomplete = $state<ResidentRecord[]>([]);
@@ -89,7 +89,7 @@
   });
 
   $effect(() => {
-    uiSettings.currentTerm;
+    settings.currentTerm;
     loadData();
   });
 
@@ -110,7 +110,7 @@
       await exportFinancialReportPDF({
         journal,
         accounts,
-        semester: translatePeriod(uiSettings.currentTerm),
+        semester: translatePeriod(settings.currentTerm),
         brandingKey: brandingState.selectedKey,
         issuedBy: issuedBy ? `${issuedBy} <${issuedByEmail}>` : "—",
         assessedBy: assessedBy ? `${assessedBy} <${assessedByEmail}>` : "—",
@@ -158,7 +158,7 @@
           <div class="space-y-4">
             <div class="space-y-2">
               <Label>Academic Term</Label>
-              <Input value={translatePeriod(uiSettings.currentTerm)} readonly />
+              <Input value={translatePeriod(settings.currentTerm)} readonly />
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="space-y-2">
@@ -195,7 +195,7 @@
               accounts={allAccountsForAutocomplete}
               bind:value={issuedBy}
               filter={(a) => {
-                return a.period === uiSettings.currentTerm;
+                return a.period === settings.currentTerm;
               }}
               onSelect={(a) => {
                 issuedBy = a.name;
@@ -211,7 +211,7 @@
               accounts={allAccountsForAutocomplete}
               bind:value={assessedBy}
               filter={(a) => {
-                return a.period === uiSettings.currentTerm;
+                return a.period === settings.currentTerm;
               }}
               onSelect={(a) => {
                 assessedBy = a.name;
@@ -227,7 +227,7 @@
               accounts={allAccountsForAutocomplete}
               bind:value={certifiedBy}
               filter={(a) => {
-                return a.period === uiSettings.currentTerm;
+                return a.period === settings.currentTerm;
               }}
               onSelect={(a) => {
                 certifiedBy = a.name;

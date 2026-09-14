@@ -2,7 +2,7 @@
   import { pageState } from "$state/page-info.svelte";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { uiSettings } from "$state/settings.svelte";
+  import { settings } from "$state/settings.svelte";
   import { UserTag, type UserRecord as User } from "$lib/types";
   import { fetchUsers } from "$api/controllers/resident-controller";
   import { TableSync } from "$ui/data-table/table-sync.svelte";
