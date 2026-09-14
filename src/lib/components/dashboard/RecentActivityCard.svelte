@@ -9,19 +9,23 @@
     RotateCcwClockIcon,
     WashingMachine,
     Calendar,
-    Clock
+    Clock,
+    WalletIcon,
+    ShieldCheckIcon,
+    MapPinIcon
   } from "@lucide/svelte";
   import { formatCurrency, formatDate, formatTimeRange } from "$utils/formatters";
   import { parseTime } from "$utils/parsers";
   import { translateTransactionType } from "$utils/translators";
   import { fetchLaundryReservations } from "$api/controllers/laundry-controller";
   import { fetchUsers } from "$api/controllers/resident-controller";
-  import type { LaundryRecord, UserRecord } from "$lib/types";
+  import { AccountType, type LaundryRecord, type UserRecord } from "$lib/types";
   import { auth } from "$state/auth.svelte";
   import { settings } from "$state/settings.svelte";
   import ActivityItem from "$components/dashboard/ActivityItem.svelte";
   import Skeleton from "$components/ui/skeleton/skeleton.svelte";
   import type { ResidentStatus } from "$state/resident-state.svelte";
+  import StatusBadge from "$components/residents/StatusBadge.svelte";
 
   let {
     status = null
@@ -239,6 +243,48 @@
       </Card.Content>
     </Card.Root>
   </div>
+
+  <!-- Status -->
+  {#if !status || (status.account && status.currEntry?.accountType !== AccountType.ALUMNUS)}
+    <div>
+      <h2 class="h2-base">Status</h2>
+      <Card.Root class="mt-6 overflow-hidden p-0">
+        <Card.Content class="divide-y p-0">
+          <ActivityItem icon={MapPinIcon} title="Room">
+            {#snippet right()}
+              {#if status?.account}
+                {status.account?.bed
+                  ? `${status.account?.room}-${status.account?.bed}`
+                  : status.account?.room}
+              {:else}
+                <Skeleton class="h-4 w-16" />
+              {/if}
+            {/snippet}
+          </ActivityItem>
+          <ActivityItem icon={ShieldCheckIcon} title="Payment Status">
+            {#snippet right()}
+              {#if status?.account}
+                <StatusBadge account={status.account} textOnly={true} />
+              {:else}
+                <Skeleton class="h-4 w-16" />
+              {/if}
+            {/snippet}
+          </ActivityItem>
+          <ActivityItem icon={WalletIcon} title="Amount Due">
+            {#snippet right()}
+              {#if status?.account}
+                <p class="font-mono text-sm font-bold text-foreground tabular-nums">
+                  {formatCurrency(status.account.bal || 0)}
+                </p>
+              {:else}
+                <Skeleton class="h-4 w-16" />
+              {/if}
+            {/snippet}
+          </ActivityItem>
+        </Card.Content>
+      </Card.Root>
+    </div>
+  {/if}
 
   <!-- Recent Transactions (Second) -->
   {#if filteredTransactions.length > 0}

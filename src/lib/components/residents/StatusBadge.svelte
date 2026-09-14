@@ -28,7 +28,7 @@
   };
 
   const textColors: Record<string, string> = {
-    CLEARED: "text-foreground",
+    CLEARED: "text-green-600 dark:text-green-400",
     OVERPAID: "text-blue-600 dark:text-blue-400",
     FULLY_PAID: "text-emerald-600 dark:text-emerald-400",
     HALF_FULLY_PAID: "text-amber-600 dark:text-amber-400",
@@ -39,10 +39,7 @@
 </script>
 
 {#if textOnly}
-  <p
-    class="text-3xl font-semibold tracking-tight uppercase {textColors[status] ||
-      textColors.NO_RECORD}"
-  >
+  <p class="font-semibold {textColors[status] || textColors.NO_RECORD}">
     {labels[status] || status}
   </p>
 {:else}

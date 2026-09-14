@@ -2,12 +2,9 @@
   import { auth } from "$state/auth.svelte";
   import { onMount } from "svelte";
   import { Button } from "$ui/button";
-  import * as Card from "$ui/card";
   import {
     RefreshCcw,
     Wallet,
-    ShieldCheck,
-    MapPin,
     WashingMachine,
     Banknote,
     Trophy,
@@ -20,15 +17,10 @@
   } from "@lucide/svelte";
   import AnnouncementsSection from "$components/dashboard/AnnouncementsSection.svelte";
   import RecentActivityCard from "$components/dashboard/RecentActivityCard.svelte";
-  import ErrorView from "$components/content/ErrorView.svelte";
-  import { formatCurrency } from "$utils/formatters";
   import { translatePeriod } from "$utils/translators";
   import { pageState } from "$state/page-info.svelte";
-  import StatusBadge from "$components/residents/StatusBadge.svelte";
   import DashboardActionCard from "$components/dashboard/DashboardActionCard.svelte";
   import type { ResidentStatus } from "$state/resident-state.svelte";
-  import { AccountType } from "$lib/types";
-  import { StatisticCard } from "$components/ui/haone";
   import {
     fetchResidentStatus,
     isResidentRouteAllowed
@@ -36,6 +28,7 @@
   import { getCustomServices } from "$lib/services";
   import { namecase } from "@compwright/namecase";
   import { settings } from "$state/settings.svelte";
+  import ErrorView from "$components/content/ErrorView.svelte";
 
   let status = $state<ResidentStatus | null>(null);
   let isLoading = $state(true);
@@ -163,47 +156,16 @@
     />
   </div>
 
+  {#if error}
+    <ErrorView {error}>
+      <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
+    </ErrorView>
+  {/if}
+
   <div class="mt-6 grid min-w-0 gap-8 lg:grid-cols-3">
     <!-- Recent Transactions (1 col) -->
     <div class="min-w-0">
       <RecentActivityCard {status} />
-
-      {#if error}
-        <ErrorView {error}>
-          <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}
-            >Retry</Button
-          >
-        </ErrorView>
-      {:else if status}
-        <!-- Quick Stats Grid -->
-        <div class="mt-6 grid gap-6">
-          <h2 class="h2-base">Finance</h2>
-          {#if status.account && status.currEntry?.accountType !== AccountType.ALUMNUS}
-            <StatisticCard
-              title="Amount Due"
-              value={formatCurrency(status.account?.bal || 0)}
-              {isLoading}
-            >
-              {#snippet icon()}<Wallet class="h-6 w-6" />{/snippet}
-            </StatisticCard>
-
-            <StatisticCard title="Payment Status" value="" {isLoading}>
-              {#snippet icon()}<ShieldCheck class="h-6 w-6" />{/snippet}
-              <StatusBadge account={status.account} textOnly={true} />
-            </StatisticCard>
-
-            <StatisticCard
-              title="Room"
-              value={status.account.bed
-                ? `${status.account.room}-${status.account.bed}`
-                : `${status.account.room}`}
-              {isLoading}
-            >
-              {#snippet icon()}<MapPin class="h-6 w-6" />{/snippet}
-            </StatisticCard>
-          {/if}
-        </div>
-      {/if}
     </div>
     <!-- Announcements Section (2 cols) -->
     <div class="min-w-0 lg:col-span-2">
