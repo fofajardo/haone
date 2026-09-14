@@ -9,6 +9,7 @@
   import { ResponsiveDialog } from "$ui/haone";
   import { Label } from "$components/ui/label";
   import * as TimePicker from "$components/ui/time-picker";
+  import { Combobox } from "$ui/combobox";
   import { LaundryStatus, type LaundryRecord } from "$lib/types";
   import { auth } from "$state/auth.svelte";
   import { formatTime } from "$utils/formatters";
@@ -18,13 +19,15 @@
 
   let {
     reservations,
-    onSuccess
+    onSuccess,
+    isAdmin = false,
+    activeUsers = []
   }: {
     reservations: LaundryRecord[];
     onSuccess: () => void;
+    isAdmin?: boolean;
+    activeUsers?: { id: string; displayName: string; room?: string }[];
   } = $props();
-
-  const currentResidentId = $derived(auth.userId);
 
   let isLoading = $state(false);
   let isDialogOpen = $state(false);
@@ -32,8 +35,11 @@
   let newReservation = $state({
     date: new Date().toISOString().split("T")[0],
     timeStart: "05:00",
-    timeEnd: "07:00"
+    timeEnd: "07:00",
+    residentId: ""
   });
+
+  const targetUserId = $derived(isAdmin ? newReservation.residentId : auth.userId);
 
   function calculateEndTime(start: string, durationMinutes: number): string {
     const parts = (start || "05:00").split(":");
@@ -60,8 +66,8 @@
       date: newReservation.date,
       timeStart: newReservation.timeStart,
       timeEnd: newReservation.timeEnd,
-      residentId: currentResidentId,
-      isAdmin: false,
+      residentId: targetUserId,
+      isAdmin,
       existingReservations: reservations
     });
   });
@@ -75,19 +81,25 @@
     try {
       isLoading = true;
       await checkFeatureEnabled();
-      if (!currentResidentId) {
-        throw new Error("Could not find your resident record.");
+
+      if (!targetUserId) {
+        throw new Error(
+          isAdmin ? "Please select a resident." : "Could not find your resident record."
+        );
       }
 
-      await addLaundryReservation({
-        id: crypto.randomUUID(),
-        residentId: currentResidentId,
-        date: newReservation.date,
-        timeStart: formatTime(newReservation.timeStart),
-        timeEnd: formatTime(newReservation.timeEnd),
-        status: LaundryStatus.ACTIVE,
-        cancelReason: ""
-      });
+      await addLaundryReservation(
+        {
+          id: crypto.randomUUID(),
+          residentId: targetUserId,
+          date: newReservation.date,
+          timeStart: formatTime(newReservation.timeStart),
+          timeEnd: formatTime(newReservation.timeEnd),
+          status: LaundryStatus.ACTIVE,
+          cancelReason: ""
+        },
+        isAdmin
+      );
       toast.success("Reservation successful");
       isDialogOpen = false;
       onSuccess();
@@ -139,6 +151,21 @@
       <ResponsiveDialog.Title>Book Laundry Slot</ResponsiveDialog.Title>
     </ResponsiveDialog.Header>
     <div class="space-y-6 px-4 pb-4 md:px-0">
+      {#if isAdmin}
+        <div class="space-y-2">
+          <Label>Resident</Label>
+          <Combobox
+            bind:value={newReservation.residentId}
+            options={activeUsers.map((u) => ({
+              value: u.id,
+              label: `${u.displayName} (${u.room || "No Room"})`
+            }))}
+            placeholder="Select a resident..."
+            searchPlaceholder="Search by name..."
+          />
+        </div>
+      {/if}
+
       <div class="space-y-2">
         <Label>Date</Label>
         <DatePicker.Root bind:value={newReservation.date} class="w-full" />

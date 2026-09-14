@@ -10,8 +10,6 @@
   import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import {
     fetchAdminLaundryReservations,
-    addLaundryReservation,
-    validateLaundryReservation,
     checkFeatureEnabled
   } from "$api/controllers/laundry-controller";
   import {
@@ -23,39 +21,26 @@
   import { uiSettings } from "$state/settings.svelte";
   import { LaundryStatus } from "$lib/types";
   import type { LaundryRecord } from "$lib/types";
-  import * as Dialog from "$ui/dialog";
-  import * as DatePicker from "$ui/date-picker";
-  import * as TimePicker from "$ui/time-picker";
   import DataTable from "$ui/data-table/data-table.svelte";
   import { columns } from "./columns";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
-  import { Label } from "$ui/label";
-  import { Combobox } from "$ui/combobox";
+  import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
   import { toast } from "svelte-sonner";
   import { pageState } from "$state/page-info.svelte";
   import { parseTime, parseDateWeight } from "$utils/parsers";
-  import { formatTime } from "$utils/formatters";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<any[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let isBookingOpen = $state(false);
-  let isBooking = $state(false);
+  let bookLaundryDialog = $state<BookLaundryDialog | null>(null);
   let selectedReservation = $state<LaundryRecord | null>(null);
   let roomMap = $state(new Map<string, string>());
   let accountToResidentMap = $state(new Map<string, string>());
   let activeResidentIds = $state(new Set<string>());
   let statusFilter = $state<LaundryStatus | "">(LaundryStatus.ACTIVE);
   let cancelLaundryDialog = $state<CancelLaundryDialog | null>(null);
-
-  let newReservation = $state({
-    date: new Date().toISOString().split("T")[0],
-    timeStart: "05:00",
-    timeEnd: "07:00",
-    residentId: ""
-  });
 
   async function loadData() {
     isLoading = true;
@@ -115,48 +100,6 @@
       error = e.message;
     } finally {
       isLoading = false;
-    }
-  }
-
-  const validationError = $derived.by(() => {
-    return validateLaundryReservation({
-      date: newReservation.date,
-      timeStart: newReservation.timeStart,
-      timeEnd: newReservation.timeEnd,
-      residentId: newReservation.residentId,
-      isAdmin: true,
-      existingReservations: reservations
-    });
-  });
-
-  async function handleBook() {
-    if (validationError) {
-      toast.error(validationError);
-      return;
-    }
-
-    try {
-      isBooking = true;
-      await checkFeatureEnabled();
-      await addLaundryReservation(
-        {
-          id: crypto.randomUUID(),
-          residentId: newReservation.residentId,
-          date: newReservation.date,
-          timeStart: formatTime(newReservation.timeStart),
-          timeEnd: formatTime(newReservation.timeEnd),
-          status: LaundryStatus.ACTIVE,
-          cancelReason: ""
-        },
-        true
-      );
-      toast.success("Reservation successful");
-      isBookingOpen = false;
-      loadData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      isBooking = false;
     }
   }
 
@@ -225,7 +168,7 @@
     isTopLevel={true}
     onRefresh={() => loadData()}
     isRefreshing={isLoading}
-    actions={[{ label: "Book Slot", onclick: () => (isBookingOpen = true), icon: Plus }]}
+    actions={[{ label: "Book Slot", onclick: () => bookLaundryDialog?.open(), icon: Plus }]}
   />
 
   {#if isLoading}
@@ -246,12 +189,7 @@
           cancelLaundryDialog?.open(id);
           selectedReservation = null;
         }}
-        onSelectSlot={(date, hour) => {
-          newReservation.date = date;
-          newReservation.timeStart = `${hour.toString().padStart(2, "0")}:00`;
-          newReservation.timeEnd = `${(hour + 1).toString().padStart(2, "0")}:00`;
-          isBookingOpen = true;
-        }}
+        onSelectSlot={bookLaundryDialog?.handleSelectSlot}
       />
       <div class="space-y-4">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -287,58 +225,12 @@
   {/if}
 </div>
 
-<Dialog.Root bind:open={isBookingOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Manual Laundry Booking</Dialog.Title>
-      <Dialog.Description>Create a reservation for a resident.</Dialog.Description>
-    </Dialog.Header>
-    <div class="space-y-6 pb-4">
-      <div class="space-y-2">
-        <Label>Resident</Label>
-        <Combobox
-          bind:value={newReservation.residentId}
-          options={activeUsers.map((u) => ({
-            value: u.id,
-            label: `${u.displayName} (${u.room || "No Room"})`
-          }))}
-          placeholder="Select a resident..."
-          searchPlaceholder="Search by name..."
-        />
-      </div>
-
-      <div class="space-y-2">
-        <Label>Date</Label>
-        <DatePicker.Root bind:value={newReservation.date} class="w-full" />
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-2">
-          <Label>Start Time</Label>
-          <TimePicker.Root bind:value={newReservation.timeStart} class="w-full" />
-        </div>
-
-        <div class="space-y-2">
-          <Label>End Time</Label>
-          <TimePicker.Root bind:value={newReservation.timeEnd} class="w-full" />
-        </div>
-      </div>
-      {#if validationError}
-        <div class="flex items-center gap-2 px-1 text-xs font-bold text-destructive uppercase">
-          <CircleX class="h-4 w-4" />
-          {validationError}
-        </div>
-      {/if}
-    </div>
-    <Dialog.Footer>
-      <Button variant="outline" onclick={() => (isBookingOpen = false)} disabled={isBooking}>
-        Cancel
-      </Button>
-      <Button onclick={handleBook} isLoading={isBooking} disabled={!!validationError} icon={Plus}>
-        Confirm Booking
-      </Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<BookLaundryDialog
+  bind:this={bookLaundryDialog}
+  {reservations}
+  isAdmin={true}
+  {activeUsers}
+  onSuccess={() => loadData()}
+/>
 
 <CancelLaundryDialog isAdmin={true} bind:this={cancelLaundryDialog} onSuccess={() => loadData()} />
