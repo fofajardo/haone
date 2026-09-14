@@ -12,6 +12,7 @@
   import * as Tooltip from "$ui/tooltip";
   import { Button } from "$ui/button";
   import { parseTime } from "$utils/parsers";
+  import { formatTimeRange } from "$utils/formatters";
   import { uiSettings } from "$state/settings.svelte";
   import ViewLaundryDialog from "$components/forms/ViewLaundryDialog.svelte";
   import { twMerge } from "tailwind-merge";
@@ -40,7 +41,7 @@
   } = $props();
 
   let selectedDate = $state(new Date());
-  let viewMode = $state<"week" | "day" | "history">("week");
+  let viewMode = $state<"month" | "week" | "day" | "history">("week");
 
   const startHour = 0;
   const opStartHour = 5;
@@ -88,6 +89,30 @@
     return days;
   });
 
+  const monthWeeks = $derived.by(() => {
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startSunday = new Date(firstDayOfMonth);
+    startSunday.setDate(firstDayOfMonth.getDate() - firstDayOfMonth.getDay());
+    startSunday.setHours(0, 0, 0, 0);
+
+    const weeks: Date[][] = [];
+    const curr = new Date(startSunday);
+    while (true) {
+      const week: Date[] = [];
+      for (let i = 0; i < 7; i++) {
+        week.push(new Date(curr));
+        curr.setDate(curr.getDate() + 1);
+      }
+      weeks.push(week);
+      if (curr.getMonth() !== month && curr.getDay() === 0) {
+        break;
+      }
+    }
+    return weeks;
+  });
+
   const userMap = $derived(
     new Map(
       users.flatMap((u: any) => {
@@ -126,37 +151,53 @@
   });
 
   function getActiveReservationsForDay(date: string) {
-    return (reservationsByDate.get(date) || []).map((r: LaundryRecord) => {
-      const start = parseTime(r.timeStart);
-      const end = parseTime(r.timeEnd);
-      const resId = (r.residentId || "").trim();
-      // Lookup by ID (UUID) or email (legacy)
-      const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
+    return (reservationsByDate.get(date) || [])
+      .map((r: LaundryRecord) => {
+        const start = parseTime(r.timeStart);
+        const end = parseTime(r.timeEnd);
+        const resId = (r.residentId || "").trim();
+        // Lookup by ID (UUID) or email (legacy)
+        const user = userMap.get(resId) || userMap.get(resId.toLowerCase());
 
-      const isMine = resId === currentUserId;
-      const rawName = (user as any)?.name || r.displayName || "Resident";
-      const rawRoom = (user as any)?.room || r.room || "";
+        const isMine = resId === currentUserId;
+        const rawName = (user as any)?.name || r.displayName || "Resident";
+        const rawRoom = (user as any)?.room || r.room || "";
 
-      return {
-        ...r,
-        startHour: start,
-        endHour: end,
-        duration: end - start,
-        name: !canSeeNames && !isMine ? "Reserved" : rawName,
-        room: !canSeeNames && !isMine ? "" : rawRoom
-      };
-    });
+        return {
+          ...r,
+          startHour: start,
+          endHour: end,
+          duration: end - start,
+          name: !canSeeNames && !isMine ? "Reserved" : rawName,
+          room: !canSeeNames && !isMine ? "" : rawRoom
+        };
+      })
+      .sort((a, b) => {
+        return a.startHour - b.startHour;
+      });
   }
 
   function next() {
     const d = new Date(selectedDate);
-    d.setDate(d.getDate() + (viewMode === "week" ? 7 : 1));
+    if (viewMode === "month") {
+      d.setMonth(d.getMonth() + 1);
+    } else if (viewMode === "week") {
+      d.setDate(d.getDate() + 7);
+    } else {
+      d.setDate(d.getDate() + 1);
+    }
     selectedDate = d;
   }
 
   function prev() {
     const d = new Date(selectedDate);
-    d.setDate(d.getDate() - (viewMode === "week" ? 7 : 1));
+    if (viewMode === "month") {
+      d.setMonth(d.getMonth() - 1);
+    } else if (viewMode === "week") {
+      d.setDate(d.getDate() - 7);
+    } else {
+      d.setDate(d.getDate() - 1);
+    }
     selectedDate = d;
   }
 
@@ -213,13 +254,23 @@
         size="icon"
         class="h-8 w-8 rounded-full"
         onclick={prev}
-        aria-label={viewMode === "week" ? "Previous week" : "Previous day"}
+        aria-label={viewMode === "month"
+          ? "Previous month"
+          : viewMode === "week"
+            ? "Previous week"
+            : "Previous day"}
       >
         <ChevronLeft class="h-4 w-4" />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content side="bottom">
-      <p>{viewMode === "week" ? "Previous week" : "Previous day"}</p>
+      <p>
+        {viewMode === "month"
+          ? "Previous month"
+          : viewMode === "week"
+            ? "Previous week"
+            : "Previous day"}
+      </p>
     </Tooltip.Content>
   </Tooltip.Root>
 
@@ -230,13 +281,19 @@
         size="icon"
         class="h-8 w-8 rounded-full"
         onclick={next}
-        aria-label={viewMode === "week" ? "Next week" : "Next day"}
+        aria-label={viewMode === "month"
+          ? "Next month"
+          : viewMode === "week"
+            ? "Next week"
+            : "Next day"}
       >
         <ChevronRight class="h-4 w-4" />
       </Button>
     </Tooltip.Trigger>
     <Tooltip.Content side="bottom">
-      <p>{viewMode === "week" ? "Next week" : "Next day"}</p>
+      <p>
+        {viewMode === "month" ? "Next month" : viewMode === "week" ? "Next week" : "Next day"}
+      </p>
     </Tooltip.Content>
   </Tooltip.Root>
 {/snippet}
@@ -260,9 +317,23 @@
     <DropdownMenu.Content align="end" class="w-32 rounded-xl">
       <DropdownMenu.Item onclick={() => (viewMode = "day")}>Day</DropdownMenu.Item>
       <DropdownMenu.Item onclick={() => (viewMode = "week")}>Week</DropdownMenu.Item>
+      <DropdownMenu.Item onclick={() => (viewMode = "month")}>Month</DropdownMenu.Item>
       <DropdownMenu.Item onclick={() => (viewMode = "history")}>History</DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
+{/snippet}
+
+{#snippet legend()}
+  <div class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest uppercase">
+    {#each legendItems as item}
+      <div class="flex items-center gap-1.5">
+        <div
+          class={twMerge("h-5 w-5 rounded-xl border-2 border-black dark:border-white", item.color)}
+        ></div>
+        <span>{item.label}</span>
+      </div>
+    {/each}
+  </div>
 {/snippet}
 
 {#snippet calendar()}
@@ -449,16 +520,119 @@
     </div>
   </div>
 
-  <div class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest uppercase">
-    {#each legendItems as item}
-      <div class="flex items-center gap-1.5">
-        <div
-          class={twMerge("h-5 w-5 rounded-xl border-2 border-black dark:border-white", item.color)}
-        ></div>
-        <span>{item.label}</span>
+  {@render legend()}
+{/snippet}
+
+{#snippet monthCalendar()}
+  <div class="overflow-x-auto">
+    <div class="min-w-200">
+      <div class="overflow-hidden rounded-xl border bg-background">
+        <!-- Day-of-week header -->
+        <div class="grid grid-cols-7 border-b bg-muted/30 text-center">
+          {#each ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as dayLabel}
+            <div class="p-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              {dayLabel}
+            </div>
+          {/each}
+        </div>
+
+        <!-- Month Grid (weeks x 7 days) -->
+        <div class="grid grid-cols-7 divide-x divide-y border-t border-muted/30">
+          {#each monthWeeks as week}
+            {#each week as day}
+              {@const dateStr = formatDate(day)}
+              {@const isCurrentMonth = day.getMonth() === selectedDate.getMonth()}
+              {@const isToday = dateStr === formatDate(now)}
+              {@const dayReservations = getActiveReservationsForDay(dateStr)}
+              {@const maxVisible = 3}
+              {@const remainingCount = dayReservations.length - maxVisible}
+              <div
+                class={cn(
+                  "flex min-h-32 flex-col p-2 transition-colors",
+                  !isCurrentMonth && "bg-muted/10 opacity-40",
+                  isCurrentMonth && "hover:bg-muted/5"
+                )}
+              >
+                <!-- Day Header -->
+                <div class="flex items-center justify-between pb-1">
+                  <button
+                    type="button"
+                    class={cn(
+                      "flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors hover:bg-muted",
+                      isToday && "bg-primary font-bold text-primary-foreground hover:bg-primary/90"
+                    )}
+                    onclick={() => {
+                      selectedDate = day;
+                      viewMode = "day";
+                    }}
+                    title="View day"
+                  >
+                    {day.getDate()}
+                  </button>
+
+                  {#if onSelectSlot && isCurrentMonth}
+                    <button
+                      type="button"
+                      class="text-[10px] font-semibold text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-primary focus:opacity-100"
+                      onclick={() => onSelectSlot?.(dateStr, opStartHour)}
+                    >
+                      + Book
+                    </button>
+                  {/if}
+                </div>
+
+                <!-- Reservations List -->
+                <div class="flex flex-1 flex-col gap-1 overflow-hidden">
+                  {#each dayReservations.slice(0, maxVisible) as res}
+                    {@const isMine = res.residentId === currentUserId}
+                    {@const resEndTime = day.getTime() + res.endHour * 3600000}
+                    {@const isPast = resEndTime <= now.getTime()}
+                    <button
+                      type="button"
+                      class={cn(
+                        "flex w-full items-center gap-1 rounded px-1.5 py-0.5 text-left text-xs transition-all",
+                        isPast
+                          ? "bg-emerald-100 text-muted-foreground dark:bg-emerald-950"
+                          : isMine
+                            ? "bg-brand text-white"
+                            : "bg-emerald-700 text-white dark:bg-emerald-900"
+                      )}
+                      onclick={() => handleReservationClick(res)}
+                    >
+                      {#if isMine}
+                        <BookmarkIcon class="h-3 w-3 shrink-0" />
+                      {/if}
+                      <span class="flex-1 truncate font-medium">
+                        {formatTimeRange(`${res.timeStart}-${res.timeEnd}`, uiSettings.clockFormat)}
+                      </span>
+                      <span class="flex-2 truncate">
+                        {res.name}
+                      </span>
+                    </button>
+                  {/each}
+
+                  {#if remainingCount > 0}
+                    <button
+                      type="button"
+                      class="mt-auto text-left text-xs font-medium text-muted-foreground hover:text-foreground"
+                      onclick={() => {
+                        selectedDate = day;
+                        viewMode = "day";
+                      }}
+                    >
+                      {remainingCount} more
+                    </button>
+                  {/if}
+                </div>
+              </div>
+            {/each}
+          {/each}
+        </div>
       </div>
-    {/each}
+    </div>
   </div>
+
+  {@render legend()}
 {/snippet}
 
 <div class="flex flex-col gap-4">
@@ -487,6 +661,8 @@
       isAdmin={isAdminView}
       bind:selectedReservation
     />
+  {:else if viewMode === "month"}
+    {@render monthCalendar()}
   {:else}
     {@render calendar()}
   {/if}
