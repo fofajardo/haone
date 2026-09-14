@@ -9,6 +9,7 @@
   import { pageState, filterState } from "$state/page-info.svelte";
 
   import type { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
+  import { ButtonGroup } from "$components/ui/button-group";
 
   export type HeaderActionItem = DropdownMenuPrimitive.ItemProps & {
     label?: string;
@@ -332,7 +333,9 @@
       {#if actions.length > 0}
         <!-- Desktop Buttons -->
         <div class="hidden sm:flex sm:items-center sm:gap-2">
-          {@render desktopActions()}
+          <ButtonGroup>
+            {@render desktopActions()}
+          </ButtonGroup>
         </div>
       {/if}
     </div>
