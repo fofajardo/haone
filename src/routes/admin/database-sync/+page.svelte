@@ -21,6 +21,8 @@
     syncAchievements,
     syncAwards,
     syncOfficers,
+    syncFridgeItems,
+    syncUserSettings,
     type SyncResult
   } from "$api/services/database-sync-service";
   import { Database, RefreshCcw, ArrowRightLeft, CircleCheck, CircleAlert } from "@lucide/svelte";
@@ -57,7 +59,9 @@
     "Payment Requests": syncPaymentRequests,
     Achievements: syncAchievements,
     Awards: syncAwards,
-    Officers: syncOfficers
+    Officers: syncOfficers,
+    "Fridge Items": syncFridgeItems,
+    Settings: syncUserSettings
   };
 
   async function handleSync(entity: string, direction: "toSupabase" | "toGSheets") {

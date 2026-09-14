@@ -79,6 +79,7 @@ export const supabaseFridgeService: FridgeServiceInterface = {
       status: d.status || FridgeItemStatus.STORED,
       notes: d.notes || "",
       checkOutDate: d.check_out_date || "",
+      tags: d.tags || [],
       actionBy: d.action_by || "",
       raw: []
     }));
@@ -117,6 +118,7 @@ export const supabaseFridgeService: FridgeServiceInterface = {
       status: data.status || FridgeItemStatus.STORED,
       notes: data.notes || "",
       check_out_date: data.checkOutDate || null,
+      tags: data.tags || [],
       action_by: data.actionBy || null
     });
 
@@ -130,16 +132,39 @@ export const supabaseFridgeService: FridgeServiceInterface = {
       return;
     }
     const payload: any = {};
-    if (updates.name !== undefined) payload.name = updates.name;
-    if (updates.compartment !== undefined) payload.compartment = updates.compartment;
-    if (updates.locationDetails !== undefined) payload.location_details = updates.locationDetails;
-    if (updates.dateStored !== undefined) payload.date_stored = updates.dateStored;
-    if (updates.expiryDate !== undefined) payload.expiry_date = updates.expiryDate || null;
-    if (updates.photoUrl !== undefined) payload.photo_url = updates.photoUrl || null;
-    if (updates.status !== undefined) payload.status = updates.status;
-    if (updates.notes !== undefined) payload.notes = updates.notes;
-    if (updates.checkOutDate !== undefined) payload.check_out_date = updates.checkOutDate || null;
-    if (updates.actionBy !== undefined) payload.action_by = updates.actionBy || null;
+    if (updates.name !== undefined) {
+      payload.name = updates.name;
+    }
+    if (updates.compartment !== undefined) {
+      payload.compartment = updates.compartment;
+    }
+    if (updates.locationDetails !== undefined) {
+      payload.location_details = updates.locationDetails;
+    }
+    if (updates.dateStored !== undefined) {
+      payload.date_stored = updates.dateStored;
+    }
+    if (updates.expiryDate !== undefined) {
+      payload.expiry_date = updates.expiryDate || null;
+    }
+    if (updates.photoUrl !== undefined) {
+      payload.photo_url = updates.photoUrl || null;
+    }
+    if (updates.status !== undefined) {
+      payload.status = updates.status;
+    }
+    if (updates.notes !== undefined) {
+      payload.notes = updates.notes;
+    }
+    if (updates.checkOutDate !== undefined) {
+      payload.check_out_date = updates.checkOutDate || null;
+    }
+    if (updates.tags !== undefined) {
+      payload.tags = updates.tags;
+    }
+    if (updates.actionBy !== undefined) {
+      payload.action_by = updates.actionBy || null;
+    }
 
     const { error } = await supabase.from("fridge_items").update(payload).eq("id", id);
     if (error) {
