@@ -21,7 +21,6 @@
     IdCard,
     AwardIcon,
     Contact,
-    UserCog,
     StickyNote,
     Trash2,
     Info,
@@ -29,7 +28,8 @@
     FileCheck,
     Banknote,
     Bed,
-    BookUser
+    BookUser,
+    Pencil
   } from "@lucide/svelte";
   import {
     type UserRecord,
@@ -235,7 +235,7 @@
     actions={[
       {
         label: "Edit",
-        icon: UserCog,
+        icon: Pencil,
         href: `/admin/users/${userId}/edit`
       },
       ...(currentAccount
