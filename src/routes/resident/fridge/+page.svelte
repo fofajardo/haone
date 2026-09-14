@@ -23,7 +23,6 @@
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import EmptyView from "$components/content/EmptyView.svelte";
-  import { Checkbox } from "$ui/checkbox";
   import { toast } from "svelte-sonner";
   import { Refrigerator, Plus, Search } from "@lucide/svelte";
   import { globalDialog } from "$state/dialog.svelte";
@@ -34,7 +33,6 @@
   let currentResidentId = $state("");
   let searchQuery = $state("");
   let filterCategory = $state<string>("ALL");
-  let showOnlyMine = $state(true);
   let processingId = $state<string | null>(null);
 
   const filterOptions = [
@@ -89,10 +87,6 @@
       list = items.filter((i) => i.status === FridgeItemStatus.DISCARDED);
     }
 
-    if (showOnlyMine && currentResidentId) {
-      list = list.filter((i) => i.residentId === currentResidentId);
-    }
-
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -107,6 +101,20 @@
     }
 
     return list;
+  });
+
+  const filteredUserItems = $derived.by(() => {
+    if (!currentResidentId) {
+      return [];
+    }
+    return filteredItems.filter((i) => i.residentId === currentResidentId);
+  });
+
+  const filteredOtherItems = $derived.by(() => {
+    if (!currentResidentId) {
+      return filteredItems;
+    }
+    return filteredItems.filter((i) => i.residentId !== currentResidentId);
   });
 
   async function handleTakeOut(item: FridgeItemRecord) {
@@ -164,6 +172,22 @@
   }
 </script>
 
+{#snippet fridgeItemGrid(items: FridgeItemRecord[])}
+  <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    {#each items as item (item.id)}
+      <FridgeItemCard
+        {item}
+        {currentResidentId}
+        isAdmin={false}
+        {processingId}
+        onTakeOut={handleTakeOut}
+        onPutBack={handlePutBack}
+        onDiscard={confirmDiscard}
+      />
+    {/each}
+  </div>
+{/snippet}
+
 <div class="mx-auto max-w-7xl space-y-4 pb-16">
   <ContentHeader
     title="Fridge"
@@ -179,13 +203,9 @@
   {:else if error}
     <ErrorView {error} />
   {:else}
-    <FilterDrawer
-      activeCount={Number(searchQuery !== "") +
-        Number(filterCategory !== "ALL") +
-        Number(!showOnlyMine)}
-    >
+    <FilterDrawer activeCount={Number(searchQuery !== "") + Number(filterCategory !== "ALL")}>
       <div class="grid items-end gap-4 lg:grid-cols-12">
-        <div class="space-y-1 lg:col-span-5">
+        <div class="space-y-1 lg:col-span-8">
           <Label>Search</Label>
           <InputGroup.Root class="h-9">
             <InputGroup.Input
@@ -207,16 +227,6 @@
             class="h-9"
           />
         </div>
-
-        <div class="flex h-9 items-center space-x-2 lg:col-span-3 lg:justify-end">
-          <Checkbox id="show-only-mine" bind:checked={showOnlyMine} />
-          <Label
-            for="show-only-mine"
-            class="cursor-pointer text-sm leading-none font-medium select-none"
-          >
-            Show only my items
-          </Label>
-        </div>
       </div>
     </FilterDrawer>
 
@@ -233,19 +243,37 @@
         {/snippet}
       </EmptyView>
     {:else}
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {#each filteredItems as item (item.id)}
-          <FridgeItemCard
-            {item}
-            {currentResidentId}
-            isAdmin={false}
-            {processingId}
-            onTakeOut={handleTakeOut}
-            onPutBack={handlePutBack}
-            onDiscard={confirmDiscard}
-          />
-        {/each}
-      </div>
+      <h2 class="text-lg font-semibold text-foreground/80">My Items</h2>
+      {#if filteredUserItems.length === 0}
+        <EmptyView
+          title="No fridge items found"
+          description={searchQuery || filterCategory !== "ALL"
+            ? "Try adjusting your search query or category filter."
+            : "Items you have stored in the refrigerator or freezer will appear here."}
+        >
+          {#snippet icon()}
+            <Refrigerator class="h-10 w-10 text-muted-foreground" />
+          {/snippet}
+        </EmptyView>
+      {:else}
+        {@render fridgeItemGrid(filteredUserItems)}
+      {/if}
+
+      <h2 class="text-lg font-semibold text-foreground/80">Other Items</h2>
+      {#if filteredOtherItems.length === 0}
+        <EmptyView
+          title="No fridge items found"
+          description={searchQuery || filterCategory !== "ALL"
+            ? "Try adjusting your search query or category filter."
+            : "Items stored in the refrigerator or freezer by other residents will appear here."}
+        >
+          {#snippet icon()}
+            <Refrigerator class="h-10 w-10 text-muted-foreground" />
+          {/snippet}
+        </EmptyView>
+      {:else}
+        {@render fridgeItemGrid(filteredOtherItems)}
+      {/if}
     {/if}
   {/if}
 </div>
