@@ -10,11 +10,7 @@
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
   import { Button } from "$ui/button";
-  import * as Dialog from "$ui/dialog";
-  import { Input } from "$ui/input";
-  import { Label } from "$ui/label";
-  import { Combobox } from "$ui/combobox";
-  import { Plus, GraduationCap, Coins, Save, Calculator, CircleCheck } from "@lucide/svelte";
+  import { Plus, GraduationCap, Coins, CircleCheck } from "@lucide/svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import { Badge } from "$ui/badge";
   import LoadingView from "$components/content/LoadingView.svelte";
@@ -22,6 +18,8 @@
   import EmptyView from "$components/content/EmptyView.svelte";
   import { globalDialog } from "$state/dialog.svelte";
   import { toast } from "svelte-sonner";
+  import AddAcademicTermDialog from "$components/forms/AddAcademicTermDialog.svelte";
+  import EditTermFeesDialog from "$components/forms/EditTermFeesDialog.svelte";
 
   let terms = $state<{ value: string; description: string }[]>([]);
   let allConstants = $state<{ key: string; value: string; rowIndex: number }[]>([]);
@@ -283,122 +281,22 @@
   </div>
 </div>
 
-<!-- Add Term Dialog -->
-<Dialog.Root bind:open={showAddDialog}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Add New Academic Term</Dialog.Title>
-      <Dialog.Description>
-        This will create a new semester code and append it to the constants sheet.
-      </Dialog.Description>
-    </Dialog.Header>
+<AddAcademicTermDialog
+  bind:open={showAddDialog}
+  bind:newStartYear
+  bind:newTerm
+  {termOptions}
+  {errorMessage}
+  {isSaving}
+  onAdd={handleAdd}
+  onCancel={() => (showAddDialog = false)}
+/>
 
-    <div class="space-y-4 pb-4">
-      {#if errorMessage}
-        <div class="rounded-lg bg-destructive/10 p-3 text-xs font-medium text-destructive">
-          {errorMessage}
-        </div>
-      {/if}
-
-      <div class="space-y-2">
-        <Label for="startYear">Academic Year Start</Label>
-        <div class="flex items-center gap-3">
-          <Input
-            id="startYear"
-            type="number"
-            bind:value={newStartYear}
-            min="2020"
-            max="2100"
-            class="flex-1"
-          />
-          <span class="text-sm text-muted-foreground">to {newStartYear + 1}</span>
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <Label>Term Type</Label>
-        <Combobox bind:value={newTerm} options={termOptions} class="w-full" />
-      </div>
-    </div>
-
-    <Dialog.Footer>
-      <Button variant="outline" onclick={() => (showAddDialog = false)} disabled={isSaving}
-        >Cancel</Button
-      >
-      <Button onclick={handleAdd} isLoading={isSaving} icon={Plus}>Create</Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
-
-<!-- Edit Fees Dialog -->
-<Dialog.Root
-  open={!!editingFeesFor}
-  onOpenChange={(o) => {
-    if (!o) editingFeesFor = null;
-  }}
->
-  <Dialog.Content class="max-w-md">
-    <Dialog.Header>
-      <Dialog.Title>Customize Fees</Dialog.Title>
-      <Dialog.Description>
-        Configure association and water fees for <strong>{editingFeesFor?.label}</strong>.
-      </Dialog.Description>
-    </Dialog.Header>
-
-    <div class="space-y-6 py-4">
-      {#if errorMessage}
-        <div class="rounded-lg bg-destructive/10 p-3 text-xs font-medium text-destructive">
-          {errorMessage}
-        </div>
-      {/if}
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="space-y-2">
-          <Label>Association Fee</Label>
-          <Input type="number" bind:value={feeData.assoc} step="0.01" />
-        </div>
-        <div class="space-y-2">
-          <Label>Water Fee</Label>
-          <Input type="number" bind:value={feeData.water} step="0.01" />
-        </div>
-      </div>
-
-      <div class="rounded-xl border bg-muted/30 p-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2 text-muted-foreground">
-            <Calculator class="h-4 w-4" />
-            <span class="text-xs font-medium tracking-wider uppercase">Total Fee</span>
-          </div>
-          <span class="text-xl font-black text-foreground"
-            >₱{feeData.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span
-          >
-        </div>
-      </div>
-
-      <div class="h-px bg-border/50"></div>
-
-      <div class="space-y-4">
-        <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
-          >Collection Periods (Times per Term)</Label
-        >
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-2">
-            <Label class="text-xs">Association Fee</Label>
-            <Input type="number" bind:value={feeData.assoc_cp} />
-          </div>
-          <div class="space-y-2">
-            <Label class="text-xs">Water Fee</Label>
-            <Input type="number" bind:value={feeData.water_cp} />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <Dialog.Footer>
-      <Button variant="outline" onclick={() => (editingFeesFor = null)} disabled={isSaving}
-        >Cancel</Button
-      >
-      <Button onclick={saveFees} isLoading={isSaving} icon={Save}>Save</Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<EditTermFeesDialog
+  bind:editingFeesFor
+  bind:feeData
+  {errorMessage}
+  {isSaving}
+  onSave={saveFees}
+  onCancel={() => (editingFeesFor = null)}
+/>

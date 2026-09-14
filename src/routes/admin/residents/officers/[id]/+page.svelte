@@ -20,11 +20,11 @@
   import { goto } from "$app/navigation";
   import * as Card from "$ui/card";
   import * as AlertDialog from "$ui/alert-dialog";
-  import * as Dialog from "$ui/dialog";
   import { pageState } from "$state/page-info.svelte";
   import { brandingState } from "$state/branding.svelte";
   import { translatePeriod } from "$utils/translators";
   import { globalDialog } from "$state/dialog.svelte";
+  import ChangeOfficerPositionDialog from "$components/forms/ChangeOfficerPositionDialog.svelte";
 
   const { id } = page.params;
   let officer = $state<OfficerRecord | null>(null);
@@ -278,39 +278,11 @@
   {/if}
 </div>
 
-<Dialog.Root bind:open={showChangePositionDialog}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Change Officer Position</Dialog.Title>
-      <Dialog.Description>
-        Selecting a new position will mark the current record as "Changed Position" and create a new
-        active record for this officer.
-      </Dialog.Description>
-    </Dialog.Header>
-    <div class="space-y-4 py-4">
-      <div class="space-y-2">
-        <Label>New Position</Label>
-        <Select.Root
-          type="single"
-          bind:value={newPosition}
-          onValueChange={(v) => (newPosition = v)}
-        >
-          <Select.Trigger class="w-full">
-            {newPosition || "Select a new position…"}
-          </Select.Trigger>
-          <Select.Content>
-            {#each availablePositions as pos}
-              <Select.Item value={pos.title} label={pos.title}>
-                {pos.title}
-              </Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-      </div>
-    </div>
-    <Dialog.Footer>
-      <Button variant="ghost" onclick={() => (showChangePositionDialog = false)}>Cancel</Button>
-      <Button onclick={handleChangePosition} isLoading={isSaving}>Transition Role</Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<ChangeOfficerPositionDialog
+  bind:open={showChangePositionDialog}
+  bind:newPosition
+  {availablePositions}
+  {isSaving}
+  onChangePosition={handleChangePosition}
+  onCancel={() => (showChangePositionDialog = false)}
+/>
