@@ -14,6 +14,7 @@
   import { parseTime } from "$utils/parsers";
   import { uiSettings } from "$state/settings.svelte";
   import ViewLaundryDialog from "$components/forms/ViewLaundryDialog.svelte";
+  import { twMerge } from "tailwind-merge";
 
   let {
     reservations,
@@ -175,10 +176,10 @@
     { color: "bg-brand", label: "My Reservation" },
     { color: "bg-emerald-700 dark:bg-emerald-900", label: "Others" },
     { color: "bg-emerald-100 dark:bg-emerald-950", label: "Past" },
-    { color: "border border-dashed", label: "Available" },
+    { color: "border-dashed", label: "Available" },
     {
       color:
-        "border border-border bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,var(--color-border)_2px,var(--color-border)_3px)] opacity-50",
+        "bg-muted/40 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,var(--color-border)_2px,var(--color-border)_3px)] opacity-50",
       label: "Closed"
     }
   ];
@@ -448,12 +449,12 @@
     </div>
   </div>
 
-  <div
-    class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase"
-  >
+  <div class="flex flex-wrap items-center gap-4 text-xs font-semibold tracking-widest uppercase">
     {#each legendItems as item}
       <div class="flex items-center gap-1.5">
-        <div class={cn("h-3 w-3 rounded-sm", item.color)}></div>
+        <div
+          class={twMerge("h-5 w-5 rounded-xl border-2 border-black dark:border-white", item.color)}
+        ></div>
         <span>{item.label}</span>
       </div>
     {/each}
