@@ -37,7 +37,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
     const sb = supabase;
     const data = await fetchAllSupabaseRows(() =>
       sb
-        .from("curr")
+        .from("registrations")
         .select("*")
         .order("timestamp", { ascending: true })
         .order("id", { ascending: true })
@@ -140,7 +140,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
       return;
     }
     for (const entry of entries) {
-      let query = supabase.from("curr").update({ evaluated: true });
+      let query = supabase.from("registrations").update({ evaluated: true });
       if (entry.rowId !== undefined && typeof entry.rowId === "string") {
         query = query.eq("id", entry.rowId);
       } else {
@@ -165,7 +165,7 @@ export const supabaseRoomsService: RoomsServiceInterface = {
     if (!supabase) {
       return;
     }
-    let query = supabase.from("curr").update({ evaluated: true, decline_reason: reason });
+    let query = supabase.from("registrations").update({ evaluated: true, decline_reason: reason });
     if (rowId !== undefined && typeof rowId === "string") {
       query = query.eq("id", rowId);
     } else {

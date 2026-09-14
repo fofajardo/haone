@@ -257,7 +257,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
           )
         : Promise.resolve([]),
       supabase
-        .from("curr")
+        .from("registrations")
         .select("*")
         .ilike("email", email)
         .eq("term", activeTerm)
@@ -571,7 +571,7 @@ export const supabaseResidentService: ResidentServiceInterface = {
 
     const evaluated = resolvedAccountType === AccountType.ALUMNUS && isAlreadyRegistered;
 
-    const { error: currErr } = await supabase.from("curr").insert({
+    const { error: currErr } = await supabase.from("registrations").insert({
       email: targetEmail,
       room: data.room || "",
       bed: data.bed || "",
