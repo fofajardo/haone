@@ -10,6 +10,7 @@
   import { ANNOUNCEMENT_TAG_COLORS } from "$lib/types";
   import { goto } from "$app/navigation";
   import { Skeleton } from "$components/ui/skeleton";
+  import { computeDaysAgo } from "$utils/calendar";
 
   let announcements = $state<AnnouncementRecord[]>([]);
   let isLoading = $state(true);
@@ -39,57 +40,70 @@
 {#if isLoading}
   <Skeleton class="h-175 w-full" />
 {:else if announcements.length > 0}
-  <Card.Root class="relative mx-auto flex h-175 w-full max-w-full flex-col overflow-hidden">
-    <Card.Header class="flex flex-row items-center justify-between">
-      <Card.Title>Announcements</Card.Title>
-      {#if announcements.length > 1}
-        <Card.Action class="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            class="h-8 w-8"
-            onclick={prevSlide}
-            title="Previous"
-            aria-label="Previous announcement"
-          >
-            <ChevronLeft class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="h-8 w-8"
-            onclick={nextSlide}
-            title="Next"
-            aria-label="Next announcement"
-          >
-            <ChevronRight class="h-4 w-4" />
-          </Button>
-        </Card.Action>
-      {/if}
-    </Card.Header>
-
-    <div
-      class="flex min-h-0 flex-1 cursor-pointer flex-col transition-colors hover:bg-muted/30"
-      onclick={() => goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
-      onkeydown={(e) => {
-        if (e.key === "Enter") {
-          goto(`/resident/announcements/${announcements[activeIndex].slug}`);
-        }
-      }}
-      role="button"
-      tabindex="0"
+  <div class="flex flex-row items-center justify-between">
+    <h2 class="h2-base">Announcements</h2>
+    {#if announcements.length > 1}
+      <div class="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          onclick={prevSlide}
+          title="Previous"
+          aria-label="Previous announcement"
+        >
+          <ChevronLeft class="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          onclick={nextSlide}
+          title="Next"
+          aria-label="Next announcement"
+        >
+          <ChevronRight class="h-4 w-4" />
+        </Button>
+      </div>
+    {/if}
+  </div>
+  <div
+    onclick={() => goto(`/resident/announcements/${announcements[activeIndex].slug}`)}
+    onkeydown={(e) => {
+      if (e.key === "Enter") {
+        goto(`/resident/announcements/${announcements[activeIndex].slug}`);
+      }
+    }}
+    role="button"
+    tabindex="0"
+  >
+    <Card.Root
+      class="relative mx-auto mt-6 flex h-175 w-full max-w-full cursor-pointer flex-col overflow-hidden transition-colors hover:bg-muted/60"
     >
       <div
         class="flex min-h-0 flex-1 transition-transform duration-300 ease-out"
         style="transform: translateX(-{activeIndex * 100}%);"
       >
         {#each announcements as a}
+          {@const startDate = new Date(
+            announcements[activeIndex].startDate || announcements[activeIndex].dateCreated
+          )}
+          {@const daysAgo = computeDaysAgo(startDate, new Date())}
           <div class="relative flex h-full w-full shrink-0 flex-col overflow-hidden">
+            <Card.Title class="px-6 pb-4">
+              <div>{a.title}</div>
+              <span class="text-xs text-muted-foreground">
+                {startDate.toLocaleString(undefined, {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit"
+                })}, {daysAgo === 0 ? "Today" : daysAgo === 1 ? "Yesterday" : `${daysAgo} days ago`}
+              </span>
+            </Card.Title>
             <Card.Content class="overflow-hidden">
-              <div class="space-y-2">
-                <h3 class="text-xl font-bold text-foreground">{a.title}</h3>
-                <RichTextRenderer bind:content={a.content} />
-              </div>
+              <RichTextRenderer bind:content={a.content} />
             </Card.Content>
 
             <!-- Gradient Fade Overlay -->
@@ -101,45 +115,22 @@
       </div>
 
       <!-- Fixed Footer Block -->
-      <div
-        class="flex shrink-0 items-center justify-between border-t border-border bg-card p-6 pb-0"
-      >
-        <div class="flex flex-col gap-5">
-          <div class="flex flex-col">
-            <span class="text-sm font-medium text-foreground"
-              >{announcements[activeIndex].creatorName || "Officer"}</span
+      {#if announcements[activeIndex].tags}
+        <div class="flex flex-wrap gap-1 px-6">
+          {#each announcements[activeIndex].tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean) as tag}
+            <Badge
+              variant="secondary"
+              class="px-2 py-0.5 text-xs {ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
+                ANNOUNCEMENT_TAG_COLORS.DEFAULT}"
             >
-            <span class="text-xs text-muted-foreground">
-              {new Date(
-                announcements[activeIndex].startDate || announcements[activeIndex].dateCreated
-              ).toLocaleString(undefined, {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                hour: "numeric",
-                minute: "2-digit"
-              })}
-            </span>
-          </div>
+              {tag}
+            </Badge>
+          {/each}
         </div>
-
-        {#if announcements[activeIndex].tags}
-          <div class="flex flex-wrap gap-1">
-            {#each announcements[activeIndex].tags
-              .split(",")
-              .map((t) => t.trim())
-              .filter(Boolean) as tag}
-              <Badge
-                variant="secondary"
-                class="px-2 py-0.5 text-xs {ANNOUNCEMENT_TAG_COLORS[tag.toUpperCase()] ||
-                  ANNOUNCEMENT_TAG_COLORS.DEFAULT}"
-              >
-                {tag}
-              </Badge>
-            {/each}
-          </div>
-        {/if}
-      </div>
-    </div>
-  </Card.Root>
+      {/if}
+    </Card.Root>
+  </div>
 {/if}
