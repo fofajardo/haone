@@ -25,6 +25,7 @@ export async function fetchUserSettings(_bypassCache = false): Promise<UserSetti
       theme: "system",
       isReducedMotion: false,
       clockFormat: "12h",
+      calendarView: "month",
       raw: []
     }
   ];
@@ -41,6 +42,7 @@ export async function updateUserSettings(
     theme?: string;
     isReducedMotion?: boolean;
     clockFormat?: string;
+    calendarView?: "month" | "week" | "day" | "history";
   }
 ): Promise<any> {
   const payload: Partial<UserSettingsRecord> = {};
@@ -67,6 +69,9 @@ export async function updateUserSettings(
   }
   if (data.clockFormat !== undefined) {
     payload.clockFormat = data.clockFormat;
+  }
+  if (data.calendarView !== undefined) {
+    payload.calendarView = data.calendarView;
   }
 
   return await settingsService.updateUserSettings(residentId, payload);

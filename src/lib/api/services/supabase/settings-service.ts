@@ -35,6 +35,7 @@ export const supabaseSettingsService: SettingsServiceInterface = {
       theme: data.theme || "system",
       isReducedMotion: data.is_reduced_motion ?? false,
       clockFormat: data.clock_format || "12h",
+      calendarView: data.calendar_view || "month",
       raw: data
     };
   },
@@ -67,6 +68,9 @@ export const supabaseSettingsService: SettingsServiceInterface = {
     }
     if (data.clockFormat !== undefined) {
       payload.clock_format = data.clockFormat;
+    }
+    if (data.calendarView !== undefined) {
+      payload.calendar_view = data.calendarView;
     }
 
     const { error } = await supabase

@@ -2,7 +2,16 @@
   import * as Card from "$ui/card";
   import { Button } from "$ui/button";
   import { Label } from "$ui/label";
-  import { Monitor, Sun, Moon } from "@lucide/svelte";
+  import {
+    Monitor,
+    Sun,
+    Moon,
+    Clock,
+    Calendar,
+    CalendarDays,
+    CalendarRange,
+    History
+  } from "@lucide/svelte";
   import { settings } from "$state/settings.svelte";
   import { setMode, resetMode } from "mode-watcher";
   import SettingsSwitchItem from "$components/settings/SettingsSwitchItem.svelte";
@@ -132,14 +141,52 @@
         <Button
           variant={settings.clockFormat === "12h" ? "default" : "outline"}
           onclick={() => (settings.clockFormat = "12h")}
+          icon={Clock}
         >
           12-hour (AM/PM)
         </Button>
         <Button
           variant={settings.clockFormat === "24h" ? "default" : "outline"}
           onclick={() => (settings.clockFormat = "24h")}
+          icon={Clock}
         >
           24-hour
+        </Button>
+      </div>
+    </div>
+
+    <div class="h-px bg-border/50"></div>
+
+    <div class="space-y-3">
+      <Label>Default Laundry Calendar View</Label>
+      <div class="grid grid-cols-2 gap-2">
+        <Button
+          variant={settings.calendarView === "month" ? "default" : "outline"}
+          onclick={() => (settings.calendarView = "month")}
+          icon={CalendarRange}
+        >
+          Month
+        </Button>
+        <Button
+          variant={settings.calendarView === "week" ? "default" : "outline"}
+          onclick={() => (settings.calendarView = "week")}
+          icon={CalendarDays}
+        >
+          Week
+        </Button>
+        <Button
+          variant={settings.calendarView === "day" ? "default" : "outline"}
+          onclick={() => (settings.calendarView = "day")}
+          icon={Calendar}
+        >
+          Day
+        </Button>
+        <Button
+          variant={settings.calendarView === "history" ? "default" : "outline"}
+          onclick={() => (settings.calendarView = "history")}
+          icon={History}
+        >
+          History
         </Button>
       </div>
     </div>

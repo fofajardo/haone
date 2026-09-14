@@ -22,6 +22,7 @@ export const LS_KEYS = {
   UI_CURRENT_TERM: "halsk.ui.current_term",
   UI_SHOW_ALL_TIME_ACHIEVEMENTS: "halsk.ui.show_all_time_achievements",
   UI_CLOCK_FORMAT: "halsk.ui.clock_format",
+  UI_CALENDAR_VIEW: "halsk.ui.calendar_view",
   UI_IS_PUBLIC_ACHIEVEMENTS: "halsk.ui.is_public_achievements",
   UI_NAV_RESIDENT: "halsk.ui.nav.res",
   UI_NAV_ADMIN: "halsk.ui.nav.adm"

@@ -43,7 +43,7 @@ export const GET: RequestHandler = async ({ request }) => {
       );
     }
 
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:I");
+    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:J");
     const settings = rows.find(
       (r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
@@ -68,7 +68,11 @@ export const GET: RequestHandler = async ({ request }) => {
       isReducedMotion: settings
         ? (settings[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE"
         : false,
-      clockFormat: settings ? settings[USER_SETTINGS_COL.CLOCK_FORMAT] || "12h" : "12h"
+      clockFormat: settings ? settings[USER_SETTINGS_COL.CLOCK_FORMAT] || "12h" : "12h",
+      calendarView: settings
+        ? (settings[USER_SETTINGS_COL.CALENDAR_VIEW] as "month" | "week" | "day" | "history") ||
+          "month"
+        : "month"
     });
   } catch (e: any) {
     return serverError(e, "Settings fetch");
@@ -94,7 +98,8 @@ export const PATCH: RequestHandler = async ({ request }) => {
       typography,
       theme,
       isReducedMotion,
-      clockFormat
+      clockFormat,
+      calendarView
     } = data;
 
     const client = await getSheetsClient();
@@ -106,7 +111,7 @@ export const PATCH: RequestHandler = async ({ request }) => {
     }
     const residentId = user[USER_COL.ID];
 
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:I");
+    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "settings!A:J");
     const rowIndex = rows.findIndex(
       (r: any) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
@@ -134,6 +139,11 @@ export const PATCH: RequestHandler = async ({ request }) => {
       clockFormat !== undefined
         ? clockFormat
         : currentRecord[USER_SETTINGS_COL.CLOCK_FORMAT] || "24h";
+    const calendarViewVal =
+      calendarView !== undefined
+        ? calendarView
+        : (currentRecord[USER_SETTINGS_COL.CALENDAR_VIEW] as
+            "month" | "week" | "day" | "history") || "month";
 
     const finalValues = [
       isPublicVal,
@@ -143,16 +153,17 @@ export const PATCH: RequestHandler = async ({ request }) => {
       typographyVal,
       themeVal,
       reducedMotionVal,
-      clockFormatVal
+      clockFormatVal,
+      calendarViewVal
     ];
 
     if (rowIndex === -1) {
-      await appendSheetValue(client, PUBLIC_GS_SR_ID, "settings!A:I", [
+      await appendSheetValue(client, PUBLIC_GS_SR_ID, "settings!A:J", [
         [residentId, ...finalValues]
       ]);
     } else {
       const actualRow = rowIndex + 1;
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/settings!B${actualRow}:I${actualRow}?valueInputOption=USER_ENTERED`;
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${PUBLIC_GS_SR_ID}/values/settings!B${actualRow}:J${actualRow}?valueInputOption=USER_ENTERED`;
 
       await fetch(url, {
         method: "PUT",

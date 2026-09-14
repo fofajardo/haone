@@ -22,6 +22,7 @@ class Settings {
   #residentNavIds = $state<string[]>(["home", "finance", "laundry"]);
   #adminNavIds = $state<string[]>(["dashboard", "history", "residents", "officers"]);
   #clockFormat = $state<"12h" | "24h">("12h");
+  #calendarView = $state<"month" | "week" | "day" | "history">("month");
   #showAllTimeAchievements = $state(true);
 
   #currentTerm = $state<string>("");
@@ -44,6 +45,9 @@ class Settings {
       this.#residentRecordsId = localStorage.getItem(LS_KEYS.GS_RR_ID) || PUBLIC_GS_RR_ID || "";
       this.#sharedRecordsId = localStorage.getItem(LS_KEYS.GS_SR_ID) || PUBLIC_GS_SR_ID || "";
       this.#clockFormat = (localStorage.getItem(LS_KEYS.UI_CLOCK_FORMAT) as "12h" | "24h") || "12h";
+      this.#calendarView =
+        (localStorage.getItem(LS_KEYS.UI_CALENDAR_VIEW) as "month" | "week" | "day" | "history") ||
+        "month";
 
       const spa = localStorage.getItem(LS_KEYS.UI_IS_PUBLIC_ACHIEVEMENTS);
       this.#isPublicAchievementList = spa === null ? true : spa === "true";
@@ -147,6 +151,17 @@ class Settings {
     this.scheduleAutoSave();
   }
 
+  get calendarView() {
+    return this.#calendarView;
+  }
+  set calendarView(v: "month" | "week" | "day" | "history") {
+    this.#calendarView = v;
+    if (browser) {
+      localStorage.setItem(LS_KEYS.UI_CALENDAR_VIEW, v);
+    }
+    this.scheduleAutoSave();
+  }
+
   get showAllTimeAchievements() {
     return this.#showAllTimeAchievements;
   }
@@ -230,6 +245,9 @@ class Settings {
         if (my.clockFormat) {
           this.clockFormat = my.clockFormat as "12h" | "24h";
         }
+        if (my.calendarView) {
+          this.calendarView = my.calendarView as "month" | "week" | "day" | "history";
+        }
         this.reducedMotion = !!my.isReducedMotion;
         this.isPublicAchievementList = my.isPublicAchievementList !== false;
 
@@ -283,7 +301,8 @@ class Settings {
       isPublic: this.isPublicAchievementList,
       residentNav: this.residentNavIds.join(","),
       adminNav: this.adminNavIds.join(","),
-      clockFormat: this.clockFormat
+      clockFormat: this.clockFormat,
+      calendarView: this.calendarView
     });
   }
 }

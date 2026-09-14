@@ -288,7 +288,8 @@ export const USER_SETTINGS_COL = {
   TYPOGRAPHY: 5,
   THEME: 6,
   IS_REDUCED_MOTION: 7,
-  CLOCK_FORMAT: 8
+  CLOCK_FORMAT: 8,
+  CALENDAR_VIEW: 9
 } as const;
 
 export const CONSTANT_COL = {
@@ -503,6 +504,7 @@ export interface UserSettingsRecord {
   theme: string;
   isReducedMotion: boolean;
   clockFormat: string;
+  calendarView: "month" | "week" | "day" | "history";
   raw: string[];
 }
 

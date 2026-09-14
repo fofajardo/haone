@@ -32,7 +32,7 @@ export const sheetsSettingsService: SettingsServiceInterface = {
     if (!settings.sharedRecordsId) {
       return null;
     }
-    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "settings!A:I");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "settings!A:J");
     const found = rows.find((r) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId);
     if (!found) {
       return null;
@@ -48,6 +48,8 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       theme: found[USER_SETTINGS_COL.THEME] || "system",
       isReducedMotion: (found[USER_SETTINGS_COL.IS_REDUCED_MOTION] || "").toUpperCase() === "TRUE",
       clockFormat: found[USER_SETTINGS_COL.CLOCK_FORMAT] || "12h",
+      calendarView:
+        (found[USER_SETTINGS_COL.CALENDAR_VIEW] as "month" | "week" | "day" | "history") || "month",
       raw: found
     };
   },
@@ -66,7 +68,7 @@ export const sheetsSettingsService: SettingsServiceInterface = {
     if (!settings.sharedRecordsId) {
       throw new Error("Shared Records ID not configured");
     }
-    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "settings!A:I");
+    const rows = await fetchSheetRowsRaw(settings.sharedRecordsId, "settings!A:J");
     const rowIndex = rows.findIndex(
       (r) => (r[USER_SETTINGS_COL.RESIDENT_ID] || "").trim() === residentId
     );
@@ -106,6 +108,9 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       if (data.clockFormat !== undefined) {
         updates.push({ range: `settings!I${actualRow}`, values: [[data.clockFormat]] });
       }
+      if (data.calendarView !== undefined) {
+        updates.push({ range: `settings!J${actualRow}`, values: [[data.calendarView]] });
+      }
       if (updates.length > 0) {
         await batchUpdateValues(settings.sharedRecordsId, updates);
       }
@@ -141,6 +146,11 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       data.clockFormat !== undefined
         ? data.clockFormat
         : currentRecord[USER_SETTINGS_COL.CLOCK_FORMAT] || "12h";
+    const calendarViewVal =
+      data.calendarView !== undefined
+        ? data.calendarView
+        : (currentRecord[USER_SETTINGS_COL.CALENDAR_VIEW] as
+            "month" | "week" | "day" | "history") || "month";
 
     const finalValues = [
       residentId,
@@ -151,10 +161,11 @@ export const sheetsSettingsService: SettingsServiceInterface = {
       typographyVal,
       themeVal,
       reducedMotionVal,
-      clockFormatVal
+      clockFormatVal,
+      calendarViewVal
     ];
 
-    await appendSheetRow(settings.sharedRecordsId, "settings!A:I", [finalValues]);
+    await appendSheetRow(settings.sharedRecordsId, "settings!A:J", [finalValues]);
   },
 
   async verifyAccess(explicitToken?: string): Promise<void> {
