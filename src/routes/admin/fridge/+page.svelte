@@ -8,43 +8,20 @@
     discardFridgeItem,
     checkFeatureEnabled
   } from "$api/controllers/fridge-controller";
-  import {
-    type FridgeItemRecord,
-    FridgeItemStatus,
-    FridgeCompartment,
-    FRIDGE_TAG_LABELS
-  } from "$lib/types";
-  import * as InputGroup from "$ui/input-group";
-  import { Label } from "$ui/label";
-  import { Combobox } from "$ui/combobox";
+  import { type FridgeItemRecord } from "$lib/types";
   import ContentHeader from "$components/content/ContentHeader.svelte";
-  import FridgeItemCard from "$components/residents/FridgeItemCard.svelte";
-  import FilterDrawer from "$components/content/FilterDrawer.svelte";
+  import FridgeView from "$components/residents/FridgeView.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
-  import EmptyView from "$components/content/EmptyView.svelte";
-  import { Checkbox } from "$ui/checkbox";
   import { toast } from "svelte-sonner";
-  import { Refrigerator, Plus, Search } from "@lucide/svelte";
+  import { Plus } from "@lucide/svelte";
   import { globalDialog } from "$state/dialog.svelte";
 
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let items = $state<FridgeItemRecord[]>([]);
   let currentResidentId = $state("");
-  let searchQuery = $state("");
-  let filterCategory = $state<string>("ALL");
-  let showOnlyMine = $state(true);
   let processingId = $state<string | null>(null);
-
-  const filterOptions = [
-    { value: "ALL", label: "All Active Items" },
-    { value: "REFRIGERATOR", label: "Refrigerator" },
-    { value: "FREEZER", label: "Freezer" },
-    { value: "EXPIRED", label: "Expired Soon/Expired" },
-    { value: "TAKEN_OUT", label: "Taken Out" },
-    { value: "DISCARDED", label: "Discarded" }
-  ];
 
   async function loadData(bypassCache = false) {
     isLoading = true;
@@ -64,49 +41,6 @@
   onMount(() => {
     pageState.title = "Fridge";
     loadData();
-  });
-
-  const activeItems = $derived(items.filter((i) => i.status === FridgeItemStatus.STORED));
-
-  const filteredItems = $derived.by(() => {
-    let list = activeItems;
-
-    if (filterCategory === "REFRIGERATOR") {
-      list = activeItems.filter((i) => i.compartment === FridgeCompartment.REFRIGERATOR);
-    } else if (filterCategory === "FREEZER") {
-      list = activeItems.filter((i) => i.compartment === FridgeCompartment.FREEZER);
-    } else if (filterCategory === "EXPIRED") {
-      list = activeItems.filter((i) => {
-        if (!i.expiryDate) return false;
-        const exp = new Date(i.expiryDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return exp <= today || (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) <= 3;
-      });
-    } else if (filterCategory === "TAKEN_OUT") {
-      list = items.filter((i) => i.status === FridgeItemStatus.CHECKED_OUT);
-    } else if (filterCategory === "DISCARDED") {
-      list = items.filter((i) => i.status === FridgeItemStatus.DISCARDED);
-    }
-
-    if (showOnlyMine && currentResidentId) {
-      list = list.filter((i) => i.residentId === currentResidentId);
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (i) =>
-          i.name.toLowerCase().includes(q) ||
-          (i.residentName || "").toLowerCase().includes(q) ||
-          (i.room || "").toLowerCase().includes(q) ||
-          (i.locationDetails || "").toLowerCase().includes(q) ||
-          (i.notes || "").toLowerCase().includes(q) ||
-          (i.tags || []).some((t) => (FRIDGE_TAG_LABELS[t] || t).toLowerCase().includes(q))
-      );
-    }
-
-    return list;
   });
 
   async function handleTakeOut(item: FridgeItemRecord) {
@@ -171,6 +105,7 @@
     onRefresh={() => loadData(true)}
     isRefreshing={isLoading}
     actions={[{ label: "Add", href: "/admin/fridge/add", icon: Plus }]}
+    hasFilter={true}
   />
 
   {#if isLoading}
@@ -178,72 +113,14 @@
   {:else if error}
     <ErrorView {error} />
   {:else}
-    <FilterDrawer
-      activeCount={Number(searchQuery !== "") +
-        Number(filterCategory !== "ALL") +
-        Number(!showOnlyMine)}
-    >
-      <div class="grid items-end gap-4 lg:grid-cols-12">
-        <div class="space-y-1 lg:col-span-5">
-          <Label>Search</Label>
-          <InputGroup.Root class="h-9">
-            <InputGroup.Input
-              bind:value={searchQuery}
-              placeholder="Search items, resident, room, tags, location…"
-            />
-            <InputGroup.Addon>
-              <Search />
-            </InputGroup.Addon>
-          </InputGroup.Root>
-        </div>
-
-        <div class="space-y-1 lg:col-span-4">
-          <Label>Category</Label>
-          <Combobox
-            bind:value={filterCategory}
-            options={filterOptions}
-            placeholder="Select category..."
-            class="h-9"
-          />
-        </div>
-
-        <div class="flex h-9 items-center space-x-2 lg:col-span-3 lg:justify-end">
-          <Checkbox id="admin-show-only-mine" bind:checked={showOnlyMine} />
-          <Label
-            for="admin-show-only-mine"
-            class="cursor-pointer text-sm leading-none font-medium select-none"
-          >
-            Show only my items
-          </Label>
-        </div>
-      </div>
-    </FilterDrawer>
-
-    <!-- Items Grid -->
-    {#if filteredItems.length === 0}
-      <EmptyView
-        title="No fridge items found"
-        description={searchQuery || filterCategory !== "ALL"
-          ? "Try adjusting your search query or category filter."
-          : "Items stored in the refrigerator or freezer will appear here."}
-      >
-        {#snippet icon()}
-          <Refrigerator class="h-10 w-10 text-muted-foreground" />
-        {/snippet}
-      </EmptyView>
-    {:else}
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {#each filteredItems as item (item.id)}
-          <FridgeItemCard
-            {item}
-            isAdmin={true}
-            {processingId}
-            onTakeOut={handleTakeOut}
-            onPutBack={handlePutBack}
-            onDiscard={confirmDiscard}
-          />
-        {/each}
-      </div>
-    {/if}
+    <FridgeView
+      {items}
+      {currentResidentId}
+      isAdmin={true}
+      {processingId}
+      onTakeOut={handleTakeOut}
+      onPutBack={handlePutBack}
+      onDiscard={confirmDiscard}
+    />
   {/if}
 </div>
