@@ -32,28 +32,34 @@
   } = $props();
 
   let searchQuery = $state("");
-  let filterCategory = $state<string>("ALL");
+  let filterCompartment = $state<string>("ALL");
+  let filterStatus = $state<string>("ACTIVE");
 
-  const filterOptions = [
-    { value: "ALL", label: "All Active Items" },
+  const compartmentOptions = [
+    { value: "ALL", label: "All Compartments" },
     { value: "REFRIGERATOR", label: "Refrigerator" },
-    { value: "FREEZER", label: "Freezer" },
-    { value: "EXPIRED", label: "Expired Soon/Expired" },
-    { value: "TAKEN_OUT", label: "Taken Out" },
-    { value: "DISCARDED", label: "Discarded" }
+    { value: "FREEZER", label: "Freezer" }
   ];
 
-  const activeItems = $derived(items.filter((i) => i.status === FridgeItemStatus.STORED));
+  const statusOptions = [
+    { value: "ACTIVE", label: "All Stored Items" },
+    { value: "EXPIRED", label: "Expired Soon / Expired" },
+    { value: "TAKEN_OUT", label: "Taken Out" },
+    { value: "DISCARDED", label: "Discarded" },
+    { value: "ALL", label: "All Statuses" }
+  ];
 
   const filteredItems = $derived.by(() => {
-    let list = activeItems;
+    let list = items;
 
-    if (filterCategory === "REFRIGERATOR") {
-      list = activeItems.filter((i) => i.compartment === FridgeCompartment.REFRIGERATOR);
-    } else if (filterCategory === "FREEZER") {
-      list = activeItems.filter((i) => i.compartment === FridgeCompartment.FREEZER);
-    } else if (filterCategory === "EXPIRED") {
-      list = activeItems.filter((i) => {
+    // Status filter
+    if (filterStatus === "ACTIVE") {
+      list = list.filter((i) => i.status === FridgeItemStatus.STORED);
+    } else if (filterStatus === "EXPIRED") {
+      list = list.filter((i) => {
+        if (i.status !== FridgeItemStatus.STORED) {
+          return false;
+        }
         if (!i.expiryDate) {
           return false;
         }
@@ -62,10 +68,17 @@
         today.setHours(0, 0, 0, 0);
         return exp <= today || (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) <= 3;
       });
-    } else if (filterCategory === "TAKEN_OUT") {
-      list = items.filter((i) => i.status === FridgeItemStatus.CHECKED_OUT);
-    } else if (filterCategory === "DISCARDED") {
-      list = items.filter((i) => i.status === FridgeItemStatus.DISCARDED);
+    } else if (filterStatus === "TAKEN_OUT") {
+      list = list.filter((i) => i.status === FridgeItemStatus.CHECKED_OUT);
+    } else if (filterStatus === "DISCARDED") {
+      list = list.filter((i) => i.status === FridgeItemStatus.DISCARDED);
+    }
+
+    // Compartment filter
+    if (filterCompartment === "REFRIGERATOR") {
+      list = list.filter((i) => i.compartment === FridgeCompartment.REFRIGERATOR);
+    } else if (filterCompartment === "FREEZER") {
+      list = list.filter((i) => i.compartment === FridgeCompartment.FREEZER);
     }
 
     if (searchQuery.trim()) {
@@ -115,9 +128,13 @@
   </div>
 {/snippet}
 
-<FilterDrawer activeCount={Number(searchQuery !== "") + Number(filterCategory !== "ALL")}>
+<FilterDrawer
+  activeCount={Number(searchQuery !== "") +
+    Number(filterCompartment !== "ALL") +
+    Number(filterStatus !== "ACTIVE")}
+>
   <div class="grid items-end gap-4 lg:grid-cols-12">
-    <div class="space-y-1 lg:col-span-8">
+    <div class="space-y-1 lg:col-span-6">
       <Label>Search</Label>
       <InputGroup.Root class="h-9">
         <InputGroup.Input
@@ -130,12 +147,22 @@
       </InputGroup.Root>
     </div>
 
-    <div class="space-y-1 lg:col-span-4">
-      <Label>Category</Label>
+    <div class="space-y-1 lg:col-span-3">
+      <Label>Compartment</Label>
       <Combobox
-        bind:value={filterCategory}
-        options={filterOptions}
-        placeholder="Select category..."
+        bind:value={filterCompartment}
+        options={compartmentOptions}
+        placeholder="Select compartment..."
+        class="h-9"
+      />
+    </div>
+
+    <div class="space-y-1 lg:col-span-3">
+      <Label>Status</Label>
+      <Combobox
+        bind:value={filterStatus}
+        options={statusOptions}
+        placeholder="Select status..."
         class="h-9"
       />
     </div>
@@ -146,8 +173,8 @@
 {#if filteredItems.length === 0}
   <EmptyView
     title="No fridge items found"
-    description={searchQuery || filterCategory !== "ALL"
-      ? "Try adjusting your search query or category filter."
+    description={searchQuery || filterCompartment !== "ALL" || filterStatus !== "ACTIVE"
+      ? "Try adjusting your search query or filters."
       : "Items stored in the refrigerator or freezer will appear here."}
   >
     {#snippet icon()}
@@ -159,8 +186,8 @@
   {#if filteredUserItems.length === 0}
     <EmptyView
       title="No fridge items found"
-      description={searchQuery || filterCategory !== "ALL"
-        ? "Try adjusting your search query or category filter."
+      description={searchQuery || filterCompartment !== "ALL" || filterStatus !== "ACTIVE"
+        ? "Try adjusting your search query or filters."
         : "Items you have stored in the refrigerator or freezer will appear here."}
     >
       {#snippet icon()}
@@ -175,8 +202,8 @@
   {#if filteredOtherItems.length === 0}
     <EmptyView
       title="No fridge items found"
-      description={searchQuery || filterCategory !== "ALL"
-        ? "Try adjusting your search query or category filter."
+      description={searchQuery || filterCompartment !== "ALL" || filterStatus !== "ACTIVE"
+        ? "Try adjusting your search query or filters."
         : "Items stored in the refrigerator or freezer by other residents will appear here."}
     >
       {#snippet icon()}
