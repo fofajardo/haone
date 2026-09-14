@@ -6,11 +6,6 @@
   import ContentHeader, { type HeaderAction } from "$components/content/ContentHeader.svelte";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
-  import * as Dialog from "$ui/dialog";
-  import { Input } from "$ui/input";
-  import { Label } from "$ui/label";
-  import { Textarea } from "$ui/textarea";
-  import { Checkbox } from "$ui/checkbox";
   import { toast } from "svelte-sonner";
   import {
     fetchAdminAchievements,
@@ -21,8 +16,8 @@
   import type { AchievementRecord } from "$lib/types";
   import AchievementDetailsView from "$components/residents/AchievementDetailsView.svelte";
   import { shareAchievementStory } from "$components/residents/story-share";
-  import { TermCombobox } from "$components/ui/haone";
   import { uiSettings } from "$state/settings.svelte";
+  import AchievementFormDialog from "$components/forms/AchievementFormDialog.svelte";
 
   const id = page.params.id;
 
@@ -214,54 +209,12 @@
   {/if}
 </div>
 
-<Dialog.Root bind:open={isEditorOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Edit Achievement</Dialog.Title>
-    </Dialog.Header>
-    <div class="space-y-4 py-4">
-      <div class="grid grid-cols-4 gap-4">
-        <div class="space-y-2">
-          <Label for="edit-icon">Icon/Emoji</Label>
-          <Input id="edit-icon" bind:value={editData.icon} />
-        </div>
-        <div class="col-span-3 space-y-2">
-          <Label for="edit-name">Name</Label>
-          <Input id="edit-name" bind:value={editData.name} />
-        </div>
-      </div>
-      <div class="space-y-2">
-        <Label for="edit-desc">Description</Label>
-        <Textarea id="edit-desc" bind:value={editData.description} />
-      </div>
-      <div class="space-y-2">
-        <Label for="edit-url">Extra URL (optional)</Label>
-        <Input id="edit-url" bind:value={editData.extraUrl} placeholder="https://..." />
-      </div>
-      <div class="space-y-2">
-        <Label for="edit-points">XP</Label>
-        <Input id="edit-points" type="number" min="0" bind:value={editData.points} />
-      </div>
-      <div class="flex items-center space-x-2 py-2">
-        <Checkbox id="edit-is-indefinite" bind:checked={editData.isIndefinite} />
-        <Label for="edit-is-indefinite" class="cursor-pointer text-sm leading-none font-medium"
-          >Indefinite unlocking period</Label
-        >
-      </div>
-      {#if !editData.isIndefinite}
-        <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <TermCombobox bind:value={editData.term} />
-        </div>
-      {/if}
-    </div>
-    <Dialog.Footer>
-      <Button
-        variant="outline"
-        onclick={() => {
-          isEditorOpen = false;
-        }}>Cancel</Button
-      >
-      <Button onclick={handleUpdate} isLoading={isSaving}>Save Changes</Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<AchievementFormDialog
+  bind:open={isEditorOpen}
+  title="Edit Achievement"
+  bind:data={editData}
+  isLoading={isSaving}
+  submitLabel="Save Changes"
+  onSubmit={handleUpdate}
+  onCancel={() => (isEditorOpen = false)}
+/>

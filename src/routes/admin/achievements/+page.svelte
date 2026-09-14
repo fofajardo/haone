@@ -14,18 +14,15 @@
   } from "$api/controllers/achievement-controller";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import type { AchievementLogRecord, AchievementRecord } from "$lib/types";
-  import * as Dialog from "$ui/dialog";
-  import { Input } from "$ui/input";
-  import { Label } from "$ui/label";
-  import { Textarea } from "$ui/textarea";
   import { toast } from "svelte-sonner";
   import { Checkbox } from "$ui/checkbox";
+  import { Label } from "$ui/label";
   import FilterDrawer from "$components/content/FilterDrawer.svelte";
   import AchievementTabs from "$components/tabs/AchievementTabs.svelte";
   import { uiSettings } from "$state/settings.svelte";
   import { calculateAchievementPercentage } from "$api/controllers/achievement-controller";
   import AchievementCard from "$components/residents/AchievementCard.svelte";
-  import { TermCombobox } from "$components/ui/haone";
+  import AchievementFormDialog from "$components/forms/AchievementFormDialog.svelte";
 
   let achievements = $state<AchievementRecord[]>([]);
   let logs = $state<AchievementLogRecord[]>([]);
@@ -205,54 +202,11 @@
   {/if}
 </div>
 
-<Dialog.Root bind:open={isCreatorOpen}>
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>New Achievement</Dialog.Title>
-    </Dialog.Header>
-    <div class="space-y-4 py-4">
-      <div class="grid grid-cols-4 gap-4">
-        <div class="space-y-2">
-          <Label for="icon">Icon/Emoji</Label>
-          <Input id="icon" bind:value={newAchievement.icon} />
-        </div>
-        <div class="col-span-3 space-y-2">
-          <Label for="name">Name</Label>
-          <Input id="name" bind:value={newAchievement.name} />
-        </div>
-      </div>
-      <div class="space-y-2">
-        <Label for="desc">Description</Label>
-        <Textarea id="desc" bind:value={newAchievement.description} />
-      </div>
-      <div class="space-y-2">
-        <Label for="url">Extra URL (optional)</Label>
-        <Input id="url" bind:value={newAchievement.extraUrl} placeholder="https://..." />
-      </div>
-      <div class="space-y-2">
-        <Label for="points">XP</Label>
-        <Input id="points" type="number" min="0" bind:value={newAchievement.points} />
-      </div>
-      <div class="flex items-center space-x-2 py-2">
-        <Checkbox id="is-indefinite" bind:checked={newAchievement.isIndefinite} />
-        <Label for="is-indefinite" class="cursor-pointer text-sm leading-none font-medium"
-          >Indefinite unlocking period</Label
-        >
-      </div>
-      {#if !newAchievement.isIndefinite}
-        <div class="animate-in space-y-2 duration-200 fade-in-50">
-          <TermCombobox bind:value={newAchievement.term} />
-        </div>
-      {/if}
-    </div>
-    <Dialog.Footer>
-      <Button
-        variant="outline"
-        onclick={() => {
-          isCreatorOpen = false;
-        }}>Cancel</Button
-      >
-      <Button onclick={handleCreate} {isLoading} icon={Plus}>Create</Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<AchievementFormDialog
+  bind:open={isCreatorOpen}
+  title="New Achievement"
+  bind:data={newAchievement}
+  submitLabel="Create"
+  onSubmit={handleCreate}
+  onCancel={() => (isCreatorOpen = false)}
+/>
