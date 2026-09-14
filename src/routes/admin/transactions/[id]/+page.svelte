@@ -186,26 +186,27 @@
       ...(transaction && !transaction.wasAudited
         ? [
             {
-              label: "Delete",
-              variant: "destructive",
-              onclick: () => {
-                isDialogOpen = true;
-              },
-              isLoading: isDeleting,
-              icon: Trash2
-            },
-            {
-              label: "Mark as Audited",
-              variant: "outline",
-              onclick: confirmMarkAudited,
-              icon: ShieldCheck
-            },
-            {
               label: "Edit",
               variant: transaction?.receiptUrl ? "secondary" : "default",
               href: `/admin/transactions/${id}/edit`,
               disabled: isDeleting,
               icon: Pencil
+            },
+            {
+              label: "Mark as Audited",
+              variant: "outline",
+              onclick: confirmMarkAudited,
+              disabled: isDeleting,
+              icon: ShieldCheck
+            },
+            {
+              label: "Delete",
+              variant: "outline",
+              onclick: () => {
+                isDialogOpen = true;
+              },
+              isLoading: isDeleting,
+              icon: Trash2
             }
           ]
         : []),
