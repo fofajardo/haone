@@ -1,3 +1,8 @@
+export function computeDaysAgo(a: Date, b: Date) {
+  const diffTime = Math.abs(b.getTime() - a.getTime());
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+}
+
 export function checkIsPast(date: string, timeEnd: string) {
   if (!date || !timeEnd) {
     return false;
