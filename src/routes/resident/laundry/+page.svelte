@@ -21,6 +21,7 @@
   import { ChevronDown } from "@lucide/svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
   import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
+  import { settings } from "$state/settings.svelte";
 
   let reservations = $state<LaundryRecord[]>([]);
   let users = $state<UserRecord[]>([]);
@@ -55,6 +56,10 @@
 
   onMount(() => {
     pageState.title = "Laundry";
+  });
+
+  $effect(() => {
+    settings.clockFormat;
     loadData();
   });
 

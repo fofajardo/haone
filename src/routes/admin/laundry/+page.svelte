@@ -96,6 +96,10 @@
 
   onMount(() => {
     pageState.title = "Laundry";
+  });
+
+  $effect(() => {
+    settings.clockFormat;
     loadData();
   });
 
