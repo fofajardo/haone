@@ -182,7 +182,7 @@
     {/snippet}
   </EmptyView>
 {:else}
-  <h2 class="text-lg font-semibold text-foreground/80">My Items</h2>
+  <h2 class="h2-base">My Items</h2>
   {#if filteredUserItems.length === 0}
     <EmptyView
       title="No fridge items found"
@@ -198,7 +198,7 @@
     {@render fridgeItemGrid(filteredUserItems)}
   {/if}
 
-  <h2 class="text-lg font-semibold text-foreground/80">Other Items</h2>
+  <h2 class="h2-base">Other Items</h2>
   {#if filteredOtherItems.length === 0}
     <EmptyView
       title="No fridge items found"

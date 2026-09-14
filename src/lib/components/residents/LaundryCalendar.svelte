@@ -633,7 +633,7 @@
       {#if viewMode !== "history"}
         {@render headerMain()}
       {/if}
-      <h2 class="truncate text-xl font-medium tracking-tight">
+      <h2 class="h2-base truncate">
         {#if viewMode === "history"}
           Reservation History
         {:else}

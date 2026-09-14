@@ -211,7 +211,7 @@
 
   <!-- Tools Section (3 cols) -->
   <div class="my-6 space-y-6">
-    <div class="text-xl font-semibold">Tools</div>
+    <h2 class="h2-base">Tools</h2>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {#each actions as tool}
         <DashboardActionCard {...tool} />
