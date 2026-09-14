@@ -15,9 +15,11 @@
   import { uiSettings } from "$state/settings.svelte";
   import ViewLaundryDialog from "$components/forms/ViewLaundryDialog.svelte";
   import { twMerge } from "tailwind-merge";
+  import LaundryReservationHistory from "./LaundryReservationHistory.svelte";
 
   let {
     reservations,
+    deprecatedMappedReservations,
     users = [],
     currentUserId = "",
     isAdminView = false,
@@ -27,6 +29,7 @@
     selectedReservation = $bindable(null)
   }: {
     reservations: LaundryRecord[];
+    deprecatedMappedReservations: LaundryRecord[];
     users: (UserRecord & { room?: string })[];
     currentUserId?: string;
     isAdminView?: boolean;
@@ -37,7 +40,7 @@
   } = $props();
 
   let selectedDate = $state(new Date());
-  let viewMode = $state<"week" | "day">("week");
+  let viewMode = $state<"week" | "day" | "history">("week");
 
   const startHour = 0;
   const opStartHour = 5;
@@ -236,10 +239,6 @@
       <p>{viewMode === "week" ? "Next week" : "Next day"}</p>
     </Tooltip.Content>
   </Tooltip.Root>
-
-  <h2 class="ml-2 truncate text-xl font-medium tracking-tight">
-    {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-  </h2>
 {/snippet}
 
 {#snippet headerSwitcher()}
@@ -261,6 +260,7 @@
     <DropdownMenu.Content align="end" class="w-32 rounded-xl">
       <DropdownMenu.Item onclick={() => (viewMode = "day")}>Day</DropdownMenu.Item>
       <DropdownMenu.Item onclick={() => (viewMode = "week")}>Week</DropdownMenu.Item>
+      <DropdownMenu.Item onclick={() => (viewMode = "history")}>History</DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 {/snippet}
@@ -464,7 +464,16 @@
 <div class="flex flex-col gap-4">
   <div class="flex items-center justify-between">
     <div class="flex min-w-0 items-center gap-2">
-      {@render headerMain()}
+      {#if viewMode !== "history"}
+        {@render headerMain()}
+      {/if}
+      <h2 class="truncate text-xl font-medium tracking-tight">
+        {#if viewMode === "history"}
+          Reservation History
+        {:else}
+          {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+        {/if}
+      </h2>
     </div>
 
     <div class="flex items-center gap-2">
@@ -472,7 +481,15 @@
     </div>
   </div>
 
-  {@render calendar()}
+  {#if viewMode === "history"}
+    <LaundryReservationHistory
+      reservations={deprecatedMappedReservations}
+      isAdmin={isAdminView}
+      bind:selectedReservation
+    />
+  {:else}
+    {@render calendar()}
+  {/if}
 </div>
 
 <ViewLaundryDialog bind:this={viewLaundryDialog} {isAdminView} {onCancelReservation} />

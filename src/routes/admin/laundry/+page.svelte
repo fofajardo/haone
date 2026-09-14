@@ -19,7 +19,6 @@
   import { uiSettings } from "$state/settings.svelte";
   import type { LaundryRecord } from "$lib/types";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
-  import LaundryReservationHistory from "$components/residents/LaundryReservationHistory.svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
   import BookLaundryDialog from "$components/forms/BookLaundryDialog.svelte";
   import { pageState } from "$state/page-info.svelte";
@@ -146,25 +145,19 @@
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
-    <div class="space-y-6">
-      <LaundryCalendar
-        {reservations}
-        users={users as any[]}
-        currentUserId={auth.userId}
-        isAdminView={true}
-        bind:selectedReservation
-        onCancelReservation={(id) => {
-          cancelLaundryDialog?.open(id);
-          selectedReservation = null;
-        }}
-        onSelectSlot={bookLaundryDialog?.handleSelectSlot}
-      />
-      <LaundryReservationHistory
-        reservations={mappedReservations}
-        isAdmin={true}
-        bind:selectedReservation
-      />
-    </div>
+    <LaundryCalendar
+      {reservations}
+      deprecatedMappedReservations={mappedReservations}
+      users={users as any[]}
+      currentUserId={auth.userId}
+      isAdminView={true}
+      bind:selectedReservation
+      onCancelReservation={(id) => {
+        cancelLaundryDialog?.open(id);
+        selectedReservation = null;
+      }}
+      onSelectSlot={bookLaundryDialog?.handleSelectSlot}
+    />
   {/if}
 </div>
 

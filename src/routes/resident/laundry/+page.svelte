@@ -17,7 +17,6 @@
   import * as Card from "$ui/card";
   import * as Collapsible from "$ui/collapsible";
   import LaundryCalendar from "$components/residents/LaundryCalendar.svelte";
-  import LaundryReservationHistory from "$components/residents/LaundryReservationHistory.svelte";
   import { pageState } from "$state/page-info.svelte";
   import { ChevronDown } from "@lucide/svelte";
   import CancelLaundryDialog from "$components/forms/CancelLaundryDialog.svelte";
@@ -158,25 +157,19 @@
       <Button onclick={() => loadData()} class="mt-4" {isLoading} icon={RefreshCcw}>Retry</Button>
     </ErrorView>
   {:else}
-    <div class="space-y-6">
-      <LaundryCalendar
-        {reservations}
-        {users}
-        currentUserId={currentResidentId}
-        isAdminView={false}
-        onCancelReservation={(id) => {
-          cancelLaundryDialog?.open(id);
-          selectedReservation = null;
-        }}
-        bind:selectedReservation
-        onSelectSlot={bookLaundryDialog?.handleSelectSlot}
-      />
-      <LaundryReservationHistory
-        reservations={mappedUserReservations}
-        isAdmin={false}
-        bind:selectedReservation
-      />
-    </div>
+    <LaundryCalendar
+      {reservations}
+      deprecatedMappedReservations={mappedUserReservations}
+      {users}
+      currentUserId={currentResidentId}
+      isAdminView={false}
+      onCancelReservation={(id) => {
+        cancelLaundryDialog?.open(id);
+        selectedReservation = null;
+      }}
+      bind:selectedReservation
+      onSelectSlot={bookLaundryDialog?.handleSelectSlot}
+    />
   {/if}
 </div>
 

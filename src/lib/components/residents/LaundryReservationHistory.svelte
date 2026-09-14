@@ -185,34 +185,31 @@
 </script>
 
 <div class="space-y-4">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <h3>Reservation History</h3>
-    <FilterDrawer activeCount={Number(statusFilter !== "")}>
-      <div class="flex items-center gap-2">
-        <Funnel class="h-4 w-4 text-muted-foreground" />
-        <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-35">
-          <NativeSelect.Option value="">All Status</NativeSelect.Option>
-          <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
-          <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
-          {#if isAdmin}
-            <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
-              >Cancelled (Admin)</NativeSelect.Option
-            >
-            <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
-              >Cancelled (User)</NativeSelect.Option
-            >
-          {:else}
-            <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
-              >Cancelled (User)</NativeSelect.Option
-            >
-            <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
-              >Cancelled (Admin)</NativeSelect.Option
-            >
-          {/if}
-        </NativeSelect.Root>
-      </div>
-    </FilterDrawer>
-  </div>
+  <FilterDrawer activeCount={Number(statusFilter !== "")}>
+    <div class="flex items-center gap-2">
+      <Funnel class="h-4 w-4 text-muted-foreground" />
+      <NativeSelect.Root bind:value={statusFilter} class="h-9 w-full text-xs sm:w-35">
+        <NativeSelect.Option value="">All Status</NativeSelect.Option>
+        <NativeSelect.Option value={LaundryStatus.ACTIVE}>Active</NativeSelect.Option>
+        <NativeSelect.Option value={LaundryStatus.COMPLETED}>Completed</NativeSelect.Option>
+        {#if isAdmin}
+          <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
+            >Cancelled (Admin)</NativeSelect.Option
+          >
+          <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
+            >Cancelled (User)</NativeSelect.Option
+          >
+        {:else}
+          <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_USER}
+            >Cancelled (User)</NativeSelect.Option
+          >
+          <NativeSelect.Option value={LaundryStatus.CANCELLED_BY_ADMIN}
+            >Cancelled (Admin)</NativeSelect.Option
+          >
+        {/if}
+      </NativeSelect.Root>
+    </div>
+  </FilterDrawer>
 
   {#if reservations.length > 0}
     {#if filteredReservations.length > 0}
