@@ -20,9 +20,9 @@
       <ResponsiveDialog.Title>Laundry Rules & Guidelines</ResponsiveDialog.Title>
     </ResponsiveDialog.Header>
 
-    <div class="px-8 md:px-4">
+    <div class="px-4 md:px-0">
       {#if (brandingState.profile.laundryRules || []).length > 0}
-        <ul class="list-disc space-y-2">
+        <ul class="list-inside list-disc space-y-2">
           {#each brandingState.profile.laundryRules || [] as rule}
             <li>{rule}</li>
           {/each}
