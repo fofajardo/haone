@@ -18,7 +18,7 @@
 
 <div class={twMerge("flex items-start gap-3 rounded-lg border", typeClasses[variant], className)}>
   <TriangleAlertIcon class="mt-0.5 h-5 w-5 shrink-0" />
-  <div class="space-y-1 font-medium">
+  <div class="space-y-1 font-medium text-left">
     {@render children()}
   </div>
 </div>
