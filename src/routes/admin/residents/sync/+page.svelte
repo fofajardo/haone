@@ -168,7 +168,12 @@
 
   onMount(() => {
     pageState.title = "Sync Registrations";
-    loadPreview();
+  });
+
+  $effect(() => {
+    if (settings.activeTerm) {
+      loadPreview();
+    }
   });
 </script>
 

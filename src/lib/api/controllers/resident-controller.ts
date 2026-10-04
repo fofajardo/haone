@@ -27,14 +27,14 @@ export async function getSignedInUserId(): Promise<string> {
 }
 
 /**
- * Fetches resident status (dashboard context) via direct DB in Supabase mode or API route in Sheets mode.
+ * Fetches resident status (dashboard context).
  */
 export async function fetchResidentStatus(term?: string, bypassCache = false): Promise<any> {
   return residentService.fetchResidentStatus(term, bypassCache);
 }
 
 /**
- * Fetches joined resident data from Accounts and ResidentRecords spreadsheets/database.
+ * Fetches joined resident data from Accounts and Resident records.
  */
 export async function fetchResidents(
   bypassCache = false,
@@ -64,7 +64,7 @@ export async function fetchUserById(id: string, bypassCache = false): Promise<Us
 }
 
 /**
- * Updates a user record in the ResidentRecords spreadsheet/database.
+ * Updates a user record in the database.
  */
 export async function updateUser(userId: string, data: Partial<UserRecord>) {
   return residentService.updateUser(userId, data);
@@ -325,7 +325,7 @@ function mapResidentToStagedClearance(resident: ResidentRecord, branding: Brandi
 }
 
 /**
- * Clears a resident by generating a clearance link and updating the spreadsheet.
+ * Clears a resident by generating a clearance link and updating the database.
  */
 export async function clearResident(resident: ResidentRecord, issuerId: string) {
   const now = new Date();

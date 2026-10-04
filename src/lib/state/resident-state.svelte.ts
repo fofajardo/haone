@@ -63,6 +63,8 @@ export interface ConstantOption {
 export interface ResidentStatus {
   /** User has previously registered in the system */
   isRegistered: boolean;
+  /** User has one or more accounts in the system */
+  hasExistingAccounts: boolean;
   /** User has an active account for the current term */
   hasActiveAccount: boolean;
   /** User has a pending confirmation for their account */

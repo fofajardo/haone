@@ -1,5 +1,5 @@
 import { getFirebaseToken } from "$api/services/auth-service";
-import { fetchGoogleAPI } from "$api/services/server-sheets-service";
+import { fetchGoogleAPI } from "$api/services/server-google-service";
 import { GOOGLE_SERVICE_ACCOUNT_JSON } from "$env/static/private";
 
 const FIRESTORE_UPLOADS_COLLECTION = "uploads";

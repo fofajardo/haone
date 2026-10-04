@@ -14,26 +14,15 @@
   import * as RadioGroup from "$ui/radio-group";
   import {
     FileText,
-    FileSpreadsheet,
     Download,
-    RefreshCcw,
     CircleAlert,
-    Trash2,
-    ExternalLink,
-    Copy,
     BookUser,
     ClipboardCheck,
     CreditCard,
     CheckCheck,
     X
   } from "@lucide/svelte";
-  import {
-    exportReportToSheet,
-    createNewSpreadsheet,
-    ensureSheetExists
-  } from "$api/controllers/reports-controller";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
-  import { loadGapiScript } from "$api/services/gmail-service";
   import {
     matchesStatusFilter,
     fetchResidents,
@@ -42,7 +31,6 @@
   import type { ResidentRecord, OfficerRecord, UserRecord } from "$lib/types";
   import { translatePeriod } from "$utils/translators";
   import { exportReportPDF } from "$reports/report-pdf";
-  import * as AlertDialog from "$ui/alert-dialog";
   import { fetchOfficers } from "$api/controllers/officer-controller";
   import { OfficerStatus } from "$lib/types";
 
@@ -73,18 +61,6 @@
   let hideSignatoryEmails = $state(false);
   let useLegalName = $state(true);
   let selectedUnit = $state("all");
-
-  // Sheets specific
-  let sheetsTarget = $state("new"); // "new", "existing"
-  let existingSheetId = $state("");
-  let selectedSheetName = $state("");
-  let newSheetTitle = $state("");
-  let successDialog = $state({
-    open: false,
-    title: "",
-    message: "",
-    url: ""
-  });
 
   const reportTypes = [
     {
@@ -138,21 +114,6 @@
   const isExportBlocked = $derived(
     reportType === "payment_status" && selectedPaymentCategories.length === 0
   );
-
-  // Auto-generate title based on scope
-  $effect(() => {
-    if (sheetsTarget === "new" && selectedCategories.length > 0) {
-      const labels = selectedCategories
-        .map((id) => allTypeDefinitions.find((c) => c.id === id)?.label)
-        .filter(Boolean);
-
-      const joinedLabels = labels.length > 3 ? "Consolidated" : labels.join(" & ");
-
-      const semester = translatePeriod(settings.currentTerm);
-      const shortName = brandingState.profile.shortName;
-      newSheetTitle = `[${shortName}] Resident List (${joinedLabels}) - ${semester}`;
-    }
-  });
 
   const combinedCategoryLabel = $derived(
     allTypeDefinitions
@@ -465,127 +426,8 @@
     // Logic moved into categories
   }
 
-  async function openPicker() {
-    try {
-      if (!(window as any).gapi) {
-        await loadGapiScript();
-      }
-
-      return new Promise<void>((resolve) => {
-        (window as any).gapi.load("picker", {
-          callback: () => {
-            const view = new (window as any).google.picker.View(
-              (window as any).google.picker.ViewId.SPREADSHEETS
-            );
-            const picker = new (window as any).google.picker.PickerBuilder()
-              .enableFeature((window as any).google.picker.Feature.NAV_HIDDEN)
-              .setAppId(brandingState.profile.googleClientId.split("-")[0])
-              .setOAuthToken(auth.accessToken)
-              .addView(view)
-              .setCallback((data: any) => {
-                if (data.action === (window as any).google.picker.Action.PICKED) {
-                  const doc = data.docs[0];
-                  existingSheetId = doc.id;
-                  selectedSheetName = doc.name;
-                  sheetsTarget = "existing";
-                }
-                if (
-                  data.action === (window as any).google.picker.Action.CANCEL ||
-                  data.action === (window as any).google.picker.Action.PICKED
-                ) {
-                  document
-                    .querySelectorAll(".picker-dialog, .picker-dialog-bg")
-                    .forEach((el) => el.remove());
-                  resolve();
-                }
-              })
-              .build();
-            picker.setVisible(true);
-
-            // Force manual positioning after a small delay
-            setTimeout(() => {
-              const dialog = document.querySelector(".picker-dialog") as HTMLElement;
-              if (dialog) {
-                const top = Math.max(0, window.innerHeight / 2 - dialog.clientHeight / 2);
-                const left = Math.max(0, window.innerWidth / 2 - dialog.clientWidth / 2);
-                dialog.style.zIndex = "100000";
-                dialog.style.left = `${left}px`;
-                dialog.style.top = `${top}px`;
-                dialog.style.position = "fixed";
-              }
-            }, 50);
-          }
-        });
-      });
-    } catch (e: any) {
-      alert("Failed to open picker: " + e.message);
-    }
-  }
-
-  async function syncToSheets() {
-    isProcessing = true;
-    try {
-      const baseName = `REPORT_${selectedCategories.join("_")}_${settings.currentTerm}`;
-      const sheetName = (isPublic ? `PUBLIC_${baseName}` : baseName).toUpperCase().slice(0, 31);
-
-      const isOfficerReport =
-        selectedCategories.length === 1 && selectedCategories.includes("officers");
-      const isAttendanceReport =
-        selectedCategories.length === 1 && selectedCategories.includes("attendance");
-
-      let targetId = "";
-      if (sheetsTarget === "new") {
-        if (!newSheetTitle) throw new Error("Please provide a title for the new sheet");
-        const createResp = await createNewSpreadsheet(newSheetTitle);
-        targetId = createResp;
-      } else {
-        if (!existingSheetId) throw new Error("Please provide a spreadsheet ID");
-        targetId = existingSheetId;
-        await ensureSheetExists(targetId, sheetName);
-      }
-
-      let headers = [];
-      if (isAttendanceReport) {
-        headers = ["ROOM", "BED", "RESIDENT NAME", "SIGNATURE"];
-      } else if (isOfficerReport) {
-        headers = ["POSITION", "NAME", "ROOM"];
-      } else {
-        headers = isPublic
-          ? ["NAME", "ROOM", "BED"]
-          : ["NAME", "EMAIL", "ROOM", "BED", "BASE", "PAID", "WAIVED", "BALANCE"];
-      }
-
-      const rows = filteredResidents.map((r) => {
-        if (isAttendanceReport) return [r.room, r.bed, r.name, ""];
-        if (isOfficerReport) return [r.position, r.name, r.room];
-        if (isPublic) return [r.name, r.room, r.bed];
-        return [r.name, r.email, r.room, r.bed, r.totalBase, r.paid, r.waived, r.bal];
-      });
-
-      await exportReportToSheet(targetId, sheetName, headers, rows);
-
-      const targetName = sheetsTarget === "new" ? newSheetTitle : selectedSheetName;
-
-      successDialog = {
-        open: true,
-        title: "Sync Successful",
-        message: `Your report with ${filteredResidents.length} residents has been successfully synced to "${targetName}".`,
-        url: `https://docs.google.com/spreadsheets/d/${targetId}`
-      };
-    } catch (e: any) {
-      error = "Sync failed: " + e.message;
-    } finally {
-      isProcessing = false;
-    }
-  }
-
   async function handleAction() {
     if (isExportBlocked) {
-      return;
-    }
-
-    if (exportFormat === "sheets") {
-      await syncToSheets();
       return;
     }
 
@@ -828,7 +670,7 @@
         <Label class="text-xs font-bold tracking-widest text-muted-foreground uppercase"
           >3. Export Format</Label
         >
-        <RadioGroup.Root bind:value={exportFormat} class="grid gap-3 sm:grid-cols-3">
+        <RadioGroup.Root bind:value={exportFormat} class="grid gap-3 sm:grid-cols-2">
           <RadioGroup.Card
             value="pdf"
             title="PDF"
@@ -843,77 +685,7 @@
             icon={Download}
             selected={exportFormat === "csv"}
           />
-          <RadioGroup.Card
-            value="sheets"
-            title="Google Sheets"
-            description="Sync directly to new or existing Google Spreadsheet"
-            icon={FileSpreadsheet}
-            selected={exportFormat === "sheets"}
-          />
         </RadioGroup.Root>
-
-        {#if exportFormat === "sheets"}
-          <div
-            in:fly={{ y: 8, duration: 150, easing: cubicOut }}
-            out:fade={{ duration: 100 }}
-            class="mt-4 grid gap-6 rounded-2xl border bg-muted/30 p-6"
-          >
-            <div class="space-y-3">
-              <Label>Destination</Label>
-              <RadioGroup.Root bind:value={sheetsTarget} class="flex flex-col gap-3">
-                <div class="flex items-center space-x-2">
-                  <RadioGroup.Item value="new" id="dest-new" />
-                  <Label for="dest-new" class="cursor-pointer font-medium"
-                    >Create a new spreadsheet</Label
-                  >
-                </div>
-                <div class="flex items-center space-x-2">
-                  <RadioGroup.Item value="existing" id="dest-existing" />
-                  <Label for="dest-existing" class="cursor-pointer font-medium"
-                    >Use an existing spreadsheet</Label
-                  >
-                </div>
-              </RadioGroup.Root>
-            </div>
-
-            {#if sheetsTarget === "new"}
-              <div class="animate-in space-y-2 fade-in slide-in-from-top-1">
-                <Label>New Spreadsheet Title</Label>
-                <Input placeholder="e.g., Resident List" bind:value={newSheetTitle} />
-              </div>
-            {:else if sheetsTarget === "existing"}
-              <div class="animate-in space-y-3 fade-in slide-in-from-top-1">
-                <div class="flex items-center justify-between">
-                  <Label>Target Spreadsheet</Label>
-                  {#if existingSheetId}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      class="font-bold text-muted-foreground hover:bg-muted hover:text-foreground"
-                      onclick={() => {
-                        existingSheetId = "";
-                        selectedSheetName = "";
-                      }}
-                      icon={Trash2}
-                    >
-                      Reset Selection
-                    </Button>
-                  {/if}
-                </div>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  class="w-full gap-3 border-dashed bg-background font-bold transition-all hover:border-primary/50 hover:bg-primary/5"
-                  onclick={openPicker}
-                  icon={FileSpreadsheet}
-                  iconClass="text-muted-foreground"
-                >
-                  {selectedSheetName || "Select from Google Drive…"}
-                </Button>
-              </div>
-            {/if}
-          </div>
-        {/if}
       </section>
 
       <section class="space-y-4">
@@ -972,13 +744,9 @@
           onclick={handleAction}
           isLoading={isProcessing}
           disabled={isExportBlocked}
-          icon={exportFormat === "sheets" ? RefreshCcw : Download}
+          icon={Download}
         >
-          {#if exportFormat === "sheets"}
-            Sync to Google Sheets
-          {:else}
-            Generate {exportFormat.toUpperCase()}
-          {/if}
+          Generate {exportFormat.toUpperCase()}
         </Button>
         {#if isExportBlocked}
           <p class="mt-3 text-center text-xs font-medium text-destructive">
@@ -993,30 +761,3 @@
     </div>
   {/if}
 </div>
-
-<AlertDialog.Root bind:open={successDialog.open}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{successDialog.title}</AlertDialog.Title>
-      <AlertDialog.Description>
-        {successDialog.message}
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Cancel>Close</AlertDialog.Cancel>
-      <Button
-        variant="outline"
-        onclick={() => {
-          navigator.clipboard.writeText(successDialog.url);
-        }}
-        icon={Copy}
-      >
-        Copy Link
-      </Button>
-      <AlertDialog.Action onclick={() => window.open(successDialog.url, "_blank")} class="gap-2">
-        <ExternalLink class="h-4 w-4" />
-        Open Spreadsheet
-      </AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

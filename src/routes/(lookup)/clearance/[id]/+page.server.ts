@@ -1,7 +1,6 @@
-import { getSheetsClient } from "$api/services/auth-service";
-import { getSheetValues } from "$api/services/server-sheets-service";
-import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
-import { ACCOUNT_COL, OFFICER_COL, USER_COL } from "$lib/types";
+import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+import { OfficerStatus } from "$lib/types";
+import { createClient } from "@supabase/supabase-js";
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -25,58 +24,81 @@ export const actions: Actions = {
     }
 
     try {
-      const client = await getSheetsClient();
-      const accRows = await getSheetValues(client, PUBLIC_GS_AW_ID, "accounts!A:K");
-      const row = accRows.slice(1).find((r: any) => r[ACCOUNT_COL.CE_REFNO] === id);
+      const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+
+      const { data: row, error: accErr } = await supabase
+        .from("accounts")
+        .select("*")
+        .eq("ce_ref_no", id)
+        .maybeSingle();
+
+      if (accErr) {
+        console.error("Clearance account query failed:", accErr);
+        return fail(500, { error: "Internal verification error" });
+      }
 
       if (!row) {
         return fail(404, { error: "Clearance record not found" });
       }
 
-      const resId = row[ACCOUNT_COL.RESIDENT_ID];
-      const userRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P");
-      const user = userRows.find((u: any) => u[USER_COL.ID] === resId);
+      const resId = row.resident_id;
+      const { data: user, error: userErr } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", resId)
+        .maybeSingle();
+
+      if (userErr) {
+        console.error("Clearance user query failed:", userErr);
+        return fail(500, { error: "Internal verification error" });
+      }
 
       if (!user) {
         return fail(404, { error: "Resident profile not found" });
       }
 
-      const correctStNo = (user[USER_COL.STUDENT_NO] || "").toString().trim();
+      const correctStNo = (user.student_no || "").toString().trim();
       if (stno === correctStNo) {
-        // Resolve Signatory Info
-        const issuerId = row[9]; // Column J (ISSUER_ID)
-        const period = row[ACCOUNT_COL.PERIOD];
+        const issuerId = row.issuer_id;
+        const period = row.period || "";
 
         let signatory = "HOUSE COUNCIL OFFICER";
         let signatoryTitle = "Officer";
 
         if (issuerId) {
-          const issuerUser = userRows.find((u: any) => u[USER_COL.ID] === issuerId);
+          const { data: issuerUser } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", issuerId)
+            .maybeSingle();
+
           if (issuerUser) {
-            signatory = issuerUser[USER_COL.DISPLAY_NAME_FL] || issuerUser[USER_COL.DISPLAY_NAME];
+            signatory =
+              issuerUser.display_name_fl || issuerUser.display_name || "HOUSE COUNCIL OFFICER";
 
-            // Cross-reference Directory for Position
-            const issuerEmail = (issuerUser[USER_COL.EMAIL] || "").toLowerCase();
-            const directoryRows = await getSheetValues(client, PUBLIC_GS_RR_ID, "directory!A:J");
-            const officer = directoryRows.find(
-              (r: any) =>
-                (r[OFFICER_COL.EMAIL] || "").toLowerCase() === issuerEmail &&
-                r[OFFICER_COL.TERM] === period
-            );
+            const issuerEmail = (issuerUser.email || "").toLowerCase().trim();
+            if (issuerEmail) {
+              const { data: officer } = await supabase
+                .from("officers")
+                .select("*")
+                .ilike("email", issuerEmail)
+                .eq("term", period)
+                .eq("status", OfficerStatus.ACTIVE)
+                .maybeSingle();
 
-            if (officer) {
-              signatoryTitle = officer[OFFICER_COL.POSITION];
+              if (officer && officer.position) {
+                signatoryTitle = officer.position;
+              }
             }
           }
         }
 
-        // Build clearance data
         const clearanceData = {
-          name: user[USER_COL.DISPLAY_NAME_FL] || user[USER_COL.DISPLAY_NAME],
+          name: user.display_name_fl || user.display_name,
           stno: correctStNo,
           period: period,
-          dateIssued: row[ACCOUNT_COL.CE_ISSUED],
-          refNo: row[ACCOUNT_COL.CE_REFNO],
+          dateIssued: row.ce_issued || "",
+          refNo: row.ce_ref_no || "",
           branding: "default",
           signatory,
           signatoryTitle

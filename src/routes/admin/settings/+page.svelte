@@ -6,7 +6,6 @@
   import NavSettingsCard from "$components/settings/NavSettingsCard.svelte";
   import PrivacySettingsCard from "$components/settings/PrivacySettingsCard.svelte";
   import NotificationSettingsCard from "$components/settings/NotificationSettingsCard.svelte";
-  import DevConfigCard from "$components/settings/DevConfigCard.svelte";
   import VersionCard from "$components/settings/VersionCard.svelte";
 
   onMount(() => {
@@ -25,7 +24,6 @@
       <NavSettingsCard />
       <PrivacySettingsCard />
       <NotificationSettingsCard />
-      <DevConfigCard />
     </div>
     <VersionCard />
   </div>

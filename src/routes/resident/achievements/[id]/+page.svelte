@@ -68,9 +68,9 @@
       earners = logsForThis.map((l) => {
         return {
           residentId: l.accountId,
-          name: l.accountName,
+          name: l.displayName || "Anonymous",
           date: l.date,
-          isPublic: l.isPublic
+          isPublic: l.isPublic ?? true
         };
       });
     } catch (e: any) {

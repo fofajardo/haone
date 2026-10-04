@@ -1,12 +1,6 @@
 import { fetchUserSettings, updateUserSettings } from "$api/controllers/settings-controller";
 import { browser, dev } from "$app/environment";
-import {
-  PUBLIC_APP_ENV,
-  PUBLIC_APP_FIREBASE_ENABLED,
-  PUBLIC_GS_AW_ID,
-  PUBLIC_GS_RR_ID,
-  PUBLIC_GS_SR_ID
-} from "$env/static/public";
+import { PUBLIC_APP_ENV, PUBLIC_APP_FIREBASE_ENABLED } from "$env/static/public";
 import { LS_KEYS } from "$lib/constants";
 import { auth } from "$state/auth.svelte";
 
@@ -27,9 +21,6 @@ class Settings {
 
   #currentTerm = $state<string>("");
   activeTerm = $state<string>("");
-  #accountingWorkbookId = $state<string>(PUBLIC_GS_AW_ID || "");
-  #residentRecordsId = $state<string>(PUBLIC_GS_RR_ID || "");
-  #sharedRecordsId = $state<string>(PUBLIC_GS_SR_ID || "");
 
   constructor() {
     if (browser) {
@@ -41,9 +32,6 @@ class Settings {
       this.#displayDensity =
         (localStorage.getItem(LS_KEYS.ACC_SPACIOUS_LAYOUT) as DisplayDensity) || "default";
       this.#theme = localStorage.getItem(LS_KEYS.UI_THEME) || "system";
-      this.#accountingWorkbookId = localStorage.getItem(LS_KEYS.GS_AW_ID) || PUBLIC_GS_AW_ID || "";
-      this.#residentRecordsId = localStorage.getItem(LS_KEYS.GS_RR_ID) || PUBLIC_GS_RR_ID || "";
-      this.#sharedRecordsId = localStorage.getItem(LS_KEYS.GS_SR_ID) || PUBLIC_GS_SR_ID || "";
       this.#clockFormat = (localStorage.getItem(LS_KEYS.UI_CLOCK_FORMAT) as "12h" | "24h") || "12h";
       this.#calendarView =
         (localStorage.getItem(LS_KEYS.UI_CALENDAR_VIEW) as "month" | "week" | "day" | "history") ||
@@ -179,36 +167,6 @@ class Settings {
     this.#currentTerm = v;
     if (browser) {
       localStorage.setItem(LS_KEYS.UI_CURRENT_TERM, v);
-    }
-  }
-
-  get accountingWorkbookId() {
-    return this.#accountingWorkbookId;
-  }
-  set accountingWorkbookId(v: string) {
-    this.#accountingWorkbookId = v;
-    if (browser) {
-      localStorage.setItem(LS_KEYS.GS_AW_ID, v);
-    }
-  }
-
-  get residentRecordsId() {
-    return this.#residentRecordsId;
-  }
-  set residentRecordsId(v: string) {
-    this.#residentRecordsId = v;
-    if (browser) {
-      localStorage.setItem(LS_KEYS.GS_RR_ID, v);
-    }
-  }
-
-  get sharedRecordsId() {
-    return this.#sharedRecordsId;
-  }
-  set sharedRecordsId(v: string) {
-    this.#sharedRecordsId = v;
-    if (browser) {
-      localStorage.setItem(LS_KEYS.GS_SR_ID, v);
     }
   }
 

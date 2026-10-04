@@ -122,7 +122,7 @@ export interface EmailTemplate<T> {
 }
 
 /* ==========================================
- * Google Sheets Definitive Column Indices
+ * Legacy Row Column Indices
  * ========================================== */
 
 export const JOURNAL_COL = {

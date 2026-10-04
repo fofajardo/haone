@@ -1,12 +1,13 @@
-import { getFirebaseToken, getSheetsClient } from "$api/services/auth-service";
-import {
-  fetchGoogleAPI,
-  getSheetValues,
-  updateSheetValue
-} from "$api/services/server-sheets-service";
+import { getFirebaseToken } from "$api/services/auth-service";
+import { fetchGoogleAPI } from "$api/services/server-google-service";
 import { GOOGLE_SERVICE_ACCOUNT_JSON, VAPID_PRIVATE_KEY } from "$env/static/private";
-import { PUBLIC_BRANDING, PUBLIC_GS_SR_ID, PUBLIC_VAPID_PUBLIC_KEY } from "$env/static/public";
-import { ANNOUNCEMENT_COL, AnnouncementStatus, LAUNDRY_COL } from "$lib/types";
+import {
+  PUBLIC_BRANDING,
+  PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  PUBLIC_SUPABASE_URL,
+  PUBLIC_VAPID_PUBLIC_KEY
+} from "$env/static/public";
+import { AnnouncementStatus } from "$lib/types";
 import branding from "$srcPrivate/branding.json";
 import {
   buildPushPayload,
@@ -14,6 +15,7 @@ import {
   type PushSubscription,
   type VapidKeys
 } from "@block65/webcrypto-web-push";
+import { createClient } from "@supabase/supabase-js";
 import dayjs from "dayjs";
 
 const brandingProfile = (branding as any)[PUBLIC_BRANDING];
@@ -196,31 +198,34 @@ export async function notifyAllResidents(
 export async function runAnnouncementNotifications(ids?: string[]): Promise<number> {
   let totalSent = 0;
   try {
-    const client = await getSheetsClient();
+    const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
 
-    // Fetch all announcements
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "announcements!A:M");
-    if (!rows || rows.length <= 1) {
+    let query = supabase.from("announcements").select("*");
+    if (ids && ids.length > 0) {
+      query = query.in("id", ids);
+    }
+
+    const { data: rows, error: annErr } = await query;
+    if (annErr) {
+      console.error("Failed to fetch announcements for notification:", annErr);
+      return 0;
+    }
+    if (!rows || rows.length === 0) {
       return 0;
     }
 
     const now = dayjs();
-    console.log(`[Announcement Task] Processing ${rows.length - 1} rows. Filter IDs:`, ids);
+    console.log(`[Announcement Task] Processing ${rows.length} rows. Filter IDs:`, ids);
 
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const id = row[ANNOUNCEMENT_COL.ID];
-      const title = row[ANNOUNCEMENT_COL.TITLE];
-      const slug = row[ANNOUNCEMENT_COL.SLUG];
-      const start = row[ANNOUNCEMENT_COL.START_DATE]
-        ? dayjs(row[ANNOUNCEMENT_COL.START_DATE])
-        : null;
-      const expiry = row[ANNOUNCEMENT_COL.EXPIRY_DATE]
-        ? dayjs(row[ANNOUNCEMENT_COL.EXPIRY_DATE])
-        : null;
-      const isIndefinite = row[ANNOUNCEMENT_COL.IS_INDEFINITE] === "TRUE";
-      const broadcastCount = parseInt(row[ANNOUNCEMENT_COL.BROADCAST_COUNT]) || 0;
-      const isUnlisted = row[ANNOUNCEMENT_COL.IS_UNLISTED] === "TRUE";
+    for (const row of rows) {
+      const id = row.id;
+      const title = row.title || "";
+      const slug = row.slug || id;
+      const start = row.start_date ? dayjs(row.start_date) : null;
+      const expiry = row.expiry_date ? dayjs(row.expiry_date) : null;
+      const isIndefinite = row.is_indefinite === true;
+      const broadcastCount = row.broadcast_count || 0;
+      const isUnlisted = row.is_unlisted === true;
 
       let status = AnnouncementStatus.EXPIRED;
       if (start && start.isAfter(now)) {
@@ -241,7 +246,7 @@ export async function runAnnouncementNotifications(ids?: string[]): Promise<numb
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
-        const content = row[ANNOUNCEMENT_COL.CONTENT] || "";
+        const content = row.content || "";
         const textContent = content.replace(/<[^>]*>?/gm, "").substring(0, 60) + "…";
 
         console.log(
@@ -257,13 +262,12 @@ export async function runAnnouncementNotifications(ids?: string[]): Promise<numb
         console.log(`[Push] Found: ${foundCount}, Sent: ${sentCount}`);
         totalSent += sentCount;
 
-        // Increment broadcast count in Google Sheets only if at least one notification was sent
+        // Increment broadcast count in Supabase only if at least one notification was sent
         if (sentCount > 0) {
-          // Row index in sheet is i + 1
-          const range = `announcements!M${i + 1}`;
-          await updateSheetValue(client, PUBLIC_GS_SR_ID, range, [
-            [(broadcastCount + 1).toString()]
-          ]);
+          await supabase
+            .from("announcements")
+            .update({ broadcast_count: broadcastCount + 1 })
+            .eq("id", id);
         }
       }
     }
@@ -279,24 +283,30 @@ export async function runAnnouncementNotifications(ids?: string[]): Promise<numb
  */
 export async function runLaundryReminders() {
   try {
-    const client = await getSheetsClient();
-    // Fetch all laundry reservations
-    const rows = await getSheetValues(client, PUBLIC_GS_SR_ID, "laundry!A:K");
-    if (!rows || rows.length <= 1) {
-      return;
-    }
-
+    const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
     const now = new Date();
     const todayStr = now.toISOString().split("T")[0];
 
-    // Process rows
-    for (const row of rows.slice(1)) {
-      const status = row[LAUNDRY_COL.STATUS];
-      const date = row[LAUNDRY_COL.DATE];
-      const timeStartStr = row[LAUNDRY_COL.TIME_START];
-      const residentId = row[LAUNDRY_COL.RESIDENT_ID];
+    const { data: rows, error: laundryErr } = await supabase
+      .from("laundry")
+      .select("*")
+      .eq("status", "ACTIVE")
+      .eq("date", todayStr);
 
-      if (status !== "ACTIVE" || date !== todayStr) {
+    if (laundryErr) {
+      console.error("Failed to fetch laundry slots for reminder:", laundryErr);
+      return;
+    }
+    if (!rows || rows.length === 0) {
+      return;
+    }
+
+    // Process rows
+    for (const row of rows) {
+      const timeStartStr = row.time_start;
+      const residentId = row.resident_id;
+
+      if (!timeStartStr || !residentId) {
         continue;
       }
 

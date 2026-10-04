@@ -119,7 +119,7 @@
       formData.college = "";
       formData.program = "";
 
-      if (status.isRegistered) {
+      if (status.hasExistingAccounts) {
         isSubmitting = true;
         step = 4; // Go directly to the evaluation step to avoid spamming
         try {
@@ -478,7 +478,7 @@
               icon={ChevronRight}
               iconPosition="right"
             >
-              {selectedOption === "4" && status.isRegistered ? "Submit" : "Next"}
+              {selectedOption === "4" && status.hasExistingAccounts ? "Submit" : "Next"}
             </Button>
           </div>
         </div>

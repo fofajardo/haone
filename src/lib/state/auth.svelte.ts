@@ -102,12 +102,7 @@ class AuthState {
     this.credentialJwt = credentialJwt;
     this.user = user;
 
-    // A new session means a different identity; drop cached sheet/server data
-    // so the previous user's data is never served.
     if (browser) {
-      import("$api/services/common").then(({ invalidateCache }) => {
-        invalidateCache();
-      });
       import("$utils/api-client").then(({ invalidateServerCache }) => {
         invalidateServerCache();
       });
@@ -135,8 +130,7 @@ class AuthState {
     this.isRemembered = false;
 
     if (browser) {
-      import("$api/services/common").then(({ supabase, invalidateCache }) => {
-        invalidateCache();
+      import("$api/services/common").then(({ supabase }) => {
         if (supabase) {
           supabase.auth.signOut();
         }

@@ -1,6 +1,6 @@
 import { authenticateResident } from "$api/services/auth-service";
 import { saveImageToFirestore } from "$api/services/firestore-service";
-import { serverError } from "$api/services/server-sheets-service";
+import { serverError } from "$api/services/server-google-service";
 import { json } from "@sveltejs/kit";
 
 export async function POST({ request, url: reqUrl }) {

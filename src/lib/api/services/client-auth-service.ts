@@ -19,11 +19,7 @@ export async function signIn(
 
   const residentScopes = ["openid", "profile", "email"];
 
-  const adminScopes = [
-    ...residentScopes,
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/spreadsheets"
-  ];
+  const adminScopes = [...residentScopes, "https://www.googleapis.com/auth/gmail.send"];
 
   const scopes = (type === "admin" ? adminScopes : residentScopes).join(" ");
 

@@ -23,7 +23,7 @@ export function parseDateWeight(dateStr: any): number {
       const str = String(dateStr).trim();
       const parts = str.split(/[\/\-]/);
       if (parts.length === 3) {
-        // Assume M/D/YYYY (common in sheets)
+        // Assume M/D/YYYY
         const m = parseInt(parts[0]);
         const day = parseInt(parts[1]);
         let y = parseInt(parts[2]);

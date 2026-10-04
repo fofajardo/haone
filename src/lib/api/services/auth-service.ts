@@ -1,7 +1,8 @@
-import { fetchSheetsData } from "$api/services/server-sheets-service";
-import { GOOGLE_SERVICE_ACCOUNT_JSON, JWT_SECRET } from "$env/static/private";
-import type { CredentialPayload } from "$lib/types";
-import { ACCOUNT_COL, OFFICER_COL } from "$lib/types";
+import { GOOGLE_SERVICE_ACCOUNT_JSON, JWT_SECRET, SUPABASE_SECRET_KEY } from "$env/static/private";
+import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
+import type { CredentialPayload, UserRecord } from "$lib/types";
+import { OfficerStatus, UserTag } from "$lib/types";
+import { createClient } from "@supabase/supabase-js";
 import { json } from "@sveltejs/kit";
 import { base64url, jwtVerify, SignJWT } from "jose";
 
@@ -73,17 +74,6 @@ export async function getServiceAccountToken(email: string, privateKey: string, 
 
   const data = await resp.json();
   return data.access_token;
-}
-
-/**
- * Creates an authorized Google Sheets client (token) using the service account.
- */
-export async function getSheetsClient() {
-  const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
-  const token = await getServiceAccountToken(keys.client_email, keys.private_key, [
-    "https://www.googleapis.com/auth/spreadsheets"
-  ]);
-  return token;
 }
 
 /**
@@ -178,13 +168,26 @@ export async function authenticateAdmin(request: Request) {
   }
 
   try {
-    const token = await getSheetsClient();
-    const [directory] = await fetchSheetsData(token, ["directory!A:H"]);
+    if (!auth.email) {
+      return {
+        error: json({ error: "Forbidden: Admin access required (Officer only)" }, { status: 403 })
+      };
+    }
 
-    // Check if user email is in the directory sheet
-    const officer = directory.find(
-      (r: any) => (r[OFFICER_COL.EMAIL] || "").toLowerCase() === auth.email
-    );
+    const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+    const { data: officer, error: officerErr } = await supabase
+      .from("officers")
+      .select("id, status")
+      .ilike("email", auth.email)
+      .eq("status", OfficerStatus.ACTIVE)
+      .maybeSingle();
+
+    if (officerErr) {
+      console.error("Failed to query officers table for admin auth:", officerErr);
+      return {
+        error: json({ error: "Admin check failed", message: officerErr.message }, { status: 500 })
+      };
+    }
 
     if (!officer) {
       return {
@@ -200,35 +203,49 @@ export async function authenticateAdmin(request: Request) {
   }
 }
 
-/**
- * Pure helper function to resolve resident account type from accounts sheet rows.
- */
-export function resolveResidentAccountType(
-  accRows: any[][],
-  activeTerm: string,
-  residentId: string
-): string | null {
-  const account = accRows.find((r: any) => {
-    return (
-      (r[ACCOUNT_COL.PERIOD] || "").trim() === activeTerm &&
-      (r[ACCOUNT_COL.RESIDENT_ID] || "").trim() === residentId
-    );
-  });
-  if (account) {
-    const rawType = (account[ACCOUNT_COL.TYPE] || "").trim().toUpperCase();
-    return rawType || null;
+export async function lookupUser(
+  email: string
+): Promise<{ user: UserRecord | null; isStudent: boolean }> {
+  const supabase = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY);
+  const { data: dbUser } = await supabase
+    .from("users")
+    .select("*")
+    .ilike("email", email)
+    .maybeSingle();
+
+  if (dbUser) {
+    const tags = Array.isArray(dbUser.tags) ? dbUser.tags : [];
+    const user: UserRecord = {
+      id: dbUser.id,
+      email: dbUser.email,
+      lastName: dbUser.last_name || "",
+      firstName: dbUser.first_name || "",
+      middleName: dbUser.middle_name || "",
+      suffix: dbUser.suffix || "",
+      overrideName: dbUser.override_name || "",
+      displayName: dbUser.display_name || "",
+      displayNameFormal: dbUser.display_name_fl || "",
+      studentNo: dbUser.student_no || "",
+      secondaryContact: dbUser.secondary_contact || "",
+      college: dbUser.college || "",
+      program: dbUser.degree_program || ""
+    };
+    return {
+      user,
+      isStudent: tags.includes(UserTag.STUDENT)
+    };
   }
-  return null;
+
+  return { user: null, isStudent: false };
 }
 
 export const authService = {
   sign,
   getServiceAccountToken,
-  getSheetsClient,
   getFirebaseToken,
   createCredentialJwt,
   verifyCredentialJwt,
   authenticateResident,
   authenticateAdmin,
-  resolveResidentAccountType
+  lookupUser
 };

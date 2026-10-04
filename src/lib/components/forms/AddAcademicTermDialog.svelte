@@ -32,7 +32,7 @@
     <Dialog.Header>
       <Dialog.Title>Add New Academic Term</Dialog.Title>
       <Dialog.Description>
-        This will create a new semester code and append it to the constants sheet.
+        This will create a new semester code and save it to the database.
       </Dialog.Description>
     </Dialog.Header>
 

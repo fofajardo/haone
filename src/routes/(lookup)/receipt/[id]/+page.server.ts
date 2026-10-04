@@ -1,9 +1,7 @@
-import { getSheetsClient } from "$api/services/auth-service";
-import { getSheetValues } from "$api/services/server-sheets-service";
-import { PUBLIC_GS_AW_ID, PUBLIC_GS_RR_ID } from "$env/static/public";
+import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 import type { ReceiptData, ReceiptItem } from "$lib/types";
-import { JOURNAL_COL, USER_COL } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
+import { createClient } from "@supabase/supabase-js";
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
@@ -27,57 +25,58 @@ export const actions: Actions = {
     }
 
     try {
-      const client = await getSheetsClient();
-      const [jorRows, userRows] = await Promise.all([
-        getSheetValues(client, PUBLIC_GS_AW_ID, "journal_general!A:V"),
-        PUBLIC_GS_RR_ID ? getSheetValues(client, PUBLIC_GS_RR_ID, "users!A:P") : Promise.resolve([])
-      ]);
-      const row = jorRows.slice(1).find((r: any) => r[JOURNAL_COL.ID] === id);
+      const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+
+      const { data: row, error: rowErr } = await supabase
+        .from("journal")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (rowErr) {
+        console.error("Journal lookup failed:", rowErr);
+        return fail(500, { error: "Internal verification error" });
+      }
 
       if (!row) {
         return fail(404, { error: "Transaction record not found" });
       }
 
-      const userMap = new Map<string, string[]>();
-      userRows.slice(1).forEach((u: any) => {
-        const uId = (u[USER_COL.ID] || "").trim();
-        const uEmail = (u[USER_COL.EMAIL] || "").trim().toLowerCase();
-        if (uId) {
-          userMap.set(uId, u);
-        }
-        if (uEmail) {
-          userMap.set(uEmail, u);
-        }
-      });
+      const userIds = [row.account_id, row.creator_id].filter(Boolean);
+      let accountUser: any = null;
+      let creatorUser: any = null;
 
-      const creatorId = (row[JOURNAL_COL.CREATOR_ID] || "").trim();
-      const creatorRaw = (row[JOURNAL_COL.CREATOR] || "").trim();
-      const creatorUser =
-        (creatorId ? userMap.get(creatorId) : undefined) ||
-        (creatorRaw ? userMap.get(creatorRaw.toLowerCase()) : undefined);
+      if (userIds.length > 0) {
+        const { data: users, error: usersErr } = await supabase
+          .from("users")
+          .select("*")
+          .in("id", userIds);
+
+        if (usersErr) {
+          console.error("User lookup failed:", usersErr);
+          return fail(500, { error: "Internal verification error" });
+        }
+
+        accountUser = (users || []).find((u) => u.id === row.account_id) || null;
+        creatorUser = (users || []).find((u) => u.id === row.creator_id) || null;
+      }
+
       const receivedBy = creatorUser
-        ? (creatorUser[USER_COL.DISPLAY_NAME] || "").trim()
-        : row[JOURNAL_COL.CREATOR_NAME] || "N/A";
+        ? creatorUser.display_name || creatorUser.display_name_fl || "N/A"
+        : "N/A";
 
-      const accountId = (row[JOURNAL_COL.ACCOUNT_ID] || "").trim();
-      const accountRaw = (row[JOURNAL_COL.ACCOUNT] || "").trim();
-      const accountUser =
-        (accountId ? userMap.get(accountId) : undefined) ||
-        (accountRaw ? userMap.get(accountRaw.toLowerCase()) : undefined);
       const receivedFrom = accountUser
-        ? (accountUser[USER_COL.DISPLAY_NAME] || "").trim()
-        : row[JOURNAL_COL.NAME] || "N/A";
-      const correctStNo = accountUser
-        ? (accountUser[USER_COL.STUDENT_NO] || "").trim()
-        : (row[JOURNAL_COL.STNO] || "").toString().trim();
+        ? accountUser.display_name || accountUser.display_name_fl || "N/A"
+        : "N/A";
+
+      const correctStNo = accountUser ? (accountUser.student_no || "").toString().trim() : "";
 
       if (stno === correctStNo) {
-        // Build receipt data to return directly
-        const prRefNo = row[JOURNAL_COL.PR_REFNO];
+        const prRefNo = row.pr_ref_no || "";
         const items: ReceiptItem[] = [];
-        const water = parseCSVAmount(row[JOURNAL_COL.WATER]);
-        const assoc = parseCSVAmount(row[JOURNAL_COL.ASSOC]);
-        const misc = parseCSVAmount(row[JOURNAL_COL.MISC]);
+        const water = parseCSVAmount(row.water);
+        const assoc = parseCSVAmount(row.assoc);
+        const misc = parseCSVAmount(row.misc);
 
         if (water !== 0) {
           items.push({ name: "Water Fee", amount: water });
@@ -90,16 +89,16 @@ export const actions: Actions = {
         }
 
         const receiptData: ReceiptData = {
-          dateIssued: row[JOURNAL_COL.PR_DATE_ISSUED] || new Date().toISOString().split("T")[0],
-          paymentDate: row[JOURNAL_COL.DATE],
-          processor: row[JOURNAL_COL.MOP],
-          referenceNumber: row[JOURNAL_COL.MOP_REFNO] || "N/A",
-          period: row[JOURNAL_COL.PERIOD],
+          dateIssued: row.pr_date_issued || new Date().toISOString().split("T")[0],
+          paymentDate: row.date,
+          processor: row.mop || "",
+          referenceNumber: row.mop_ref_no || "N/A",
+          period: row.period || "",
           seriesNumber: prRefNo,
           receivedFrom,
           receivedBy,
-          notes: row[JOURNAL_COL.NOTES],
-          transactionType: row[JOURNAL_COL.TYPE],
+          notes: row.notes || "",
+          transactionType: row.type || "",
           branding: "default",
           stno: correctStNo || "",
           items
