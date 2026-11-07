@@ -23,6 +23,7 @@
 
   const status = page.status;
   const error = page.error as { message: string; stack?: string };
+  const errorDetails = error?.stack ?? error?.message;
 
   const errorTitles: Record<number, string> = {
     404: "These aren't the droids you're looking for",
@@ -62,7 +63,10 @@
   }
 
   function copyToClipboard() {
-    const info = `Status: ${status}\nMessage: ${error?.message}\nStack: ${error?.stack}`;
+    let info = `Status: ${status}\nMessage: ${error?.message}`;
+    if (error?.stack) {
+      info += `\nStack: ${errorDetails}`;
+    }
     navigator.clipboard.writeText(info);
     toast.success("Error details copied to clipboard");
   }
@@ -85,7 +89,7 @@
     </div>
   </div>
 
-  {#if error?.stack}
+  {#if errorDetails}
     <div class="space-y-2">
       <button
         onclick={() => (showDetails = !showDetails)}
@@ -104,7 +108,7 @@
           class="overflow-hidden rounded-md border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground"
         >
           <div class="max-h-50 overflow-auto font-mono whitespace-pre">
-            {error.stack}
+            {errorDetails}
           </div>
           <Button
             variant="ghost"
