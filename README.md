@@ -69,6 +69,6 @@ For custom configuration structure, private repository setup, and deployment ins
 
 1. Ensure [Docker](https://www.docker.com/) is installed.
 
-2. Run `pnpm supabase start` under the `/supabase` directory.
+2. Copy `seed_sample.sql` and rename the copy to `seed.sql`. Then update the seed data to use your own email address associated with a Google Account. Replace each occurrence of `<REPLACE THIS WITH EMAIL>`. Do not commit these changes.
 
-Update the seed data to use your own email address associated with a Google Account, and make sure you don't commit these changes. Replace the lines marked with `<REPLACE THIS WITH EMAIL>`.
+3. Run `pnpm supabase start` under the `/supabase` directory.
