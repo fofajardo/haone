@@ -232,10 +232,7 @@
                 class="inline-flex items-center gap-1 rounded-md bg-blue-500/10 px-2 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400"
               >
                 <Clock class="h-3 w-3" />
-                {formatTimeRange(
-                  `${upcomingUserReservation.timeStart}-${upcomingUserReservation.timeEnd}`,
-                  settings.clockFormat
-                )}
+                {formatTimeRange(upcomingUserReservation.timeStart, settings.clockFormat)}
               </span>
             {/if}
           {/snippet}
