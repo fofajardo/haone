@@ -354,7 +354,7 @@ export const residentService: ResidentServiceInterface = {
       : "";
 
     return {
-      isRegistered: !!currentUser,
+      isRegistered: !!(currentUser?.first_name && currentUser?.last_name),
       hasExistingAccounts: userAccounts.length > 0,
       hasActiveAccount: !!targetAccount,
       waitingForConfirmation: !!(currEntryData && !isEvaluated),
