@@ -455,12 +455,10 @@ export const residentService: ResidentServiceInterface = {
     if (!supabase) {
       return [];
     }
-    if (auth.isResident) {
-      return [];
-    }
     const sb = supabase;
+    const viewName = auth.isResident ? "resident_directory" : "users_view";
     const data = await fetchAllSupabaseRows(() =>
-      sb.from("users_view").select("*").order("id", { ascending: true })
+      sb.from(viewName).select("*").order("id", { ascending: true })
     );
     return data.map(mapDbUserToUserRecord);
   },
