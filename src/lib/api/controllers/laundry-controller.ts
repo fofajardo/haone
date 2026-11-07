@@ -139,7 +139,7 @@ export async function fetchLaundryReservations(
 ): Promise<{ reservations: LaundryRecord[]; currentResidentId: string }> {
   await checkFeatureEnabled();
   const currentResidentId = await getSignedInUserId();
-  const res = await laundryService.fetchReservations(currentResidentId, undefined, bypassCache);
+  const res = await laundryService.fetchReservations(undefined, undefined, bypassCache);
   const list = Array.isArray(res) ? res : res.items;
   return {
     reservations: list,

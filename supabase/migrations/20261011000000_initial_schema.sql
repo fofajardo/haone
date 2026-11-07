@@ -641,10 +641,7 @@ CREATE POLICY journal_write ON journal FOR ALL TO authenticated
 -- Residents: book, view and cancel their own bookings.
 -- Officers: full access except delete (there is intentionally no delete policy).
 CREATE POLICY laundry_select ON laundry FOR SELECT TO authenticated
-  USING (
-    (SELECT is_officer())
-    OR (resident_id = (SELECT current_user_id()) AND (SELECT can_access_laundry()))
-  );
+  USING ((SELECT is_officer()) OR (SELECT can_access_laundry()));
 CREATE POLICY laundry_insert ON laundry FOR INSERT TO authenticated
   WITH CHECK (
     (SELECT is_officer())
