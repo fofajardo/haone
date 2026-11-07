@@ -260,56 +260,95 @@ CREATE TABLE fridge_items (
 -- ============================================================
 -- 2. Views
 -- ============================================================
--- These views run with owner privileges by design, bypassing RLS on users.
--- They expose only the columns residents are permitted to see.
+-- These views run with invoker privileges; SECURITY DEFINER helper functions
+-- below expose only the columns and rows residents are permitted to see.
 
 -- Names, email and tags for all residents (excludes notes, address,
 -- secondary_contact, student_no and auth_uids).
-CREATE OR REPLACE VIEW resident_directory WITH (security_invoker = false) AS
-SELECT
-  u.id,
-  u.email,
-  u.last_name,
-  u.first_name,
-  u.middle_name,
-  u.suffix,
-  u.override_name,
-  CASE
-    WHEN u.override_name IS NOT NULL AND TRIM(u.override_name) <> '' THEN TRIM(u.override_name)
-    ELSE TRIM(CONCAT(
-      CASE WHEN u.last_name IS NOT NULL AND TRIM(u.last_name) <> '' THEN CONCAT(TRIM(u.last_name), ', ') ELSE '' END,
-      TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.suffix), '')))
-    ))
-  END AS display_name,
-  CASE
-    WHEN u.override_name IS NOT NULL AND TRIM(u.override_name) <> '' THEN TRIM(u.override_name)
-    ELSE TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''), NULLIF(TRIM(u.suffix), '')))
-  END AS display_name_fl,
-  u.tags
-FROM users u;
+CREATE OR REPLACE FUNCTION get_resident_directory()
+RETURNS TABLE (
+  id UUID,
+  email TEXT,
+  last_name TEXT,
+  first_name TEXT,
+  middle_name TEXT,
+  suffix TEXT,
+  override_name TEXT,
+  display_name TEXT,
+  display_name_fl TEXT,
+  tags TEXT[]
+)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT
+    u.id,
+    u.email,
+    u.last_name,
+    u.first_name,
+    u.middle_name,
+    u.suffix,
+    u.override_name,
+    CASE
+      WHEN u.override_name IS NOT NULL AND TRIM(u.override_name) <> '' THEN TRIM(u.override_name)
+      ELSE TRIM(CONCAT(
+        CASE WHEN u.last_name IS NOT NULL AND TRIM(u.last_name) <> '' THEN CONCAT(TRIM(u.last_name), ', ') ELSE '' END,
+        TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.suffix), '')))
+      ))
+    END AS display_name,
+    CASE
+      WHEN u.override_name IS NOT NULL AND TRIM(u.override_name) <> '' THEN TRIM(u.override_name)
+      ELSE TRIM(CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), ''), NULLIF(TRIM(u.suffix), '')))
+    END AS display_name_fl,
+    u.tags
+  FROM public.users u
+  WHERE auth.role() = 'authenticated';
+$$;
+
+CREATE OR REPLACE VIEW resident_directory WITH (security_invoker = true) AS
+SELECT * FROM get_resident_directory();
 
 -- Achievements of residents whose list is public (default when no settings row
 -- exists). A resident's own records are read from achievement_records.
-CREATE OR REPLACE VIEW public_achievements WITH (security_invoker = false) AS
-SELECT
-  r.id,
-  r.account_id AS resident_id,
-  d.display_name,
-  d.display_name_fl,
-  r.date,
-  r.term,
-  r.achievement_id,
-  a.name,
-  a.description,
-  a.icon,
-  a.extra_url,
-  a.points,
-  r.created_at
-FROM achievement_records r
-JOIN achievements a ON a.id = r.achievement_id
-JOIN resident_directory d ON d.id = r.account_id
-LEFT JOIN user_settings s ON s.resident_id = r.account_id
-WHERE COALESCE(s.is_public_achievement_list, TRUE);
+CREATE OR REPLACE FUNCTION get_public_achievements()
+RETURNS TABLE (
+  id UUID,
+  resident_id UUID,
+  display_name TEXT,
+  display_name_fl TEXT,
+  date TEXT,
+  term TEXT,
+  achievement_id TEXT,
+  name TEXT,
+  description TEXT,
+  icon TEXT,
+  extra_url TEXT,
+  points NUMERIC,
+  created_at TIMESTAMPTZ
+)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT
+    r.id,
+    r.account_id AS resident_id,
+    d.display_name,
+    d.display_name_fl,
+    r.date,
+    r.term,
+    r.achievement_id,
+    a.name,
+    a.description,
+    a.icon,
+    a.extra_url,
+    a.points,
+    r.created_at
+  FROM public.achievement_records r
+  JOIN public.achievements a ON a.id = r.achievement_id
+  JOIN public.get_resident_directory() d ON d.id = r.account_id
+  LEFT JOIN public.user_settings s ON s.resident_id = r.account_id
+  WHERE auth.role() = 'authenticated'
+    AND COALESCE(s.is_public_achievement_list, TRUE);
+$$;
+
+CREATE OR REPLACE VIEW public_achievements WITH (security_invoker = true) AS
+SELECT * FROM get_public_achievements();
 
 -- Fridge items with the owner's name. Runs as the invoker so fridge_items RLS applies.
 CREATE OR REPLACE VIEW fridge_items_view WITH (security_invoker = true) AS
@@ -566,6 +605,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authentic
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 REVOKE DELETE ON laundry FROM authenticated;
 REVOKE INSERT, UPDATE, DELETE ON users_view, resident_directory, public_achievements, fridge_items_view FROM authenticated;
+REVOKE ALL ON users_view, resident_directory, public_achievements, fridge_items_view FROM anon;
+REVOKE EXECUTE ON FUNCTION get_resident_directory(), get_public_achievements() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION get_resident_directory(), get_public_achievements() TO authenticated;
 
 -- ── users ──────────────────────────────────────────────────
 CREATE POLICY users_select ON users FOR SELECT TO authenticated
