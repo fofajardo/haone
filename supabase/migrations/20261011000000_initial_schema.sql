@@ -121,9 +121,9 @@ CREATE TABLE laundry (
   cancel_reason TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   cancelled_at TIMESTAMPTZ,                  -- Set by trigger
-  CONSTRAINT laundry_status_chk CHECK (status IN ('ACTIVE', 'CANCELLED')),   -- TODO: confirm allowed values
-  CONSTRAINT laundry_cancel_consistency_chk CHECK ((status = 'CANCELLED') = (cancelled_at IS NOT NULL)),
-  CONSTRAINT laundry_cancel_reason_chk CHECK (cancel_reason IS NULL OR status = 'CANCELLED')
+  CONSTRAINT laundry_status_chk CHECK (status IN ('ACTIVE', 'COMPLETED', 'CANCELLED_BY_ADMIN', 'CANCELLED_BY_USER')),
+  CONSTRAINT laundry_cancel_consistency_chk CHECK ((status IN ('CANCELLED_BY_ADMIN', 'CANCELLED_BY_USER')) = (cancelled_at IS NOT NULL)),
+  CONSTRAINT laundry_cancel_reason_chk CHECK (cancel_reason IS NULL OR status IN ('CANCELLED_BY_ADMIN', 'CANCELLED_BY_USER'))
 );
 
 -- ── payment_requests ───────────────────────────────────────
@@ -535,15 +535,15 @@ DECLARE
 BEGIN
   IF TG_OP = 'UPDATE' AND v_client THEN
     IF OLD.status <> 'ACTIVE'
-       OR NEW.status <> 'CANCELLED'
+       OR NEW.status <> 'CANCELLED_BY_USER'
        OR (to_jsonb(NEW) - 'status' - 'cancel_reason' - 'cancelled_at')
           IS DISTINCT FROM (to_jsonb(OLD) - 'status' - 'cancel_reason' - 'cancelled_at') THEN
       RAISE EXCEPTION 'Residents may only cancel their own active laundry bookings' USING ERRCODE = '42501';
     END IF;
   END IF;
 
-  IF NEW.status = 'CANCELLED' THEN
-    IF TG_OP = 'INSERT' OR OLD.status <> 'CANCELLED' THEN
+  IF NEW.status IN ('CANCELLED_BY_USER', 'CANCELLED_BY_ADMIN') THEN
+    IF TG_OP = 'INSERT' OR OLD.status NOT IN ('CANCELLED_BY_USER', 'CANCELLED_BY_ADMIN') THEN
       NEW.cancelled_at := CASE WHEN v_client THEN NOW() ELSE COALESCE(NEW.cancelled_at, NOW()) END;
     END IF;
   ELSE
@@ -660,7 +660,7 @@ CREATE POLICY laundry_update ON laundry FOR UPDATE TO authenticated
   )
   WITH CHECK (
     (SELECT is_officer())
-    OR (resident_id = (SELECT current_user_id()) AND status = 'CANCELLED')
+    OR (resident_id = (SELECT current_user_id()) AND status = 'CANCELLED_BY_USER')
   );
 
 -- ── payment_requests ───────────────────────────────────────
