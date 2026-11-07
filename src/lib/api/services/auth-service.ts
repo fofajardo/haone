@@ -208,7 +208,7 @@ export async function lookupUser(
 ): Promise<{ user: UserRecord | null; isStudent: boolean }> {
   const supabase = createClient(PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY);
   const { data: dbUser } = await supabase
-    .from("users")
+    .from("users_view")
     .select("*")
     .ilike("email", email)
     .maybeSingle();
