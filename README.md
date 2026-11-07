@@ -64,3 +64,11 @@ HAOne is a residence hall association management system designed to handle day-t
    ```
 
 For custom configuration structure, private repository setup, and deployment instructions, see [`src-private-example/`](./src-private-example).
+
+#### Local Supabase Environment
+
+1. Ensure [Docker](https://www.docker.com/) is installed.
+
+2. Run `pnpm supabase start` under the `/supabase` directory.
+
+Update the seed data to use your own email address associated with a Google Account, and make sure you don't commit these changes. Replace the lines marked with `<REPLACE THIS WITH EMAIL>`.
