@@ -243,7 +243,10 @@ export const residentService: ResidentServiceInterface = {
       handleSupabaseError(userErr);
     }
 
-    const consts = await constantsService.fetchConstants();
+    const [consts, academicTerms] = await Promise.all([
+      constantsService.fetchConstants(),
+      constantsService.fetchTerms()
+    ]);
     const getConst = (k: string) => consts.find((c) => c.key === k)?.value || "";
     const activeTerm = getConst("TERM_CURR");
     const targetTerm = term || activeTerm;
@@ -360,6 +363,7 @@ export const residentService: ResidentServiceInterface = {
       waitingForConfirmation: !!(currEntryData && !isEvaluated),
       activeTerm: targetTerm,
       systemActiveTerm: activeTerm,
+      hasAcademicTerms: academicTerms.length > 0,
       allTerms: allTerms.sort().reverse(),
       mopTypes,
       profile: currentUser
@@ -544,7 +548,15 @@ export const residentService: ResidentServiceInterface = {
       throw new Error("Only @up.edu.ph email addresses are allowed for student accounts.");
     }
 
-    const activeTerm = (await constantsService.fetchConstantByKey("TERM_CURR")) || data.term || "";
+    const [academicTerms, activeTerm] = await Promise.all([
+      constantsService.fetchTerms(),
+      constantsService.fetchConstantByKey("TERM_CURR") ?? ""
+    ]);
+    if (academicTerms.length === 0 || !activeTerm) {
+      throw new Error(
+        "Onboarding is currently unavailable because no active academic term is configured."
+      );
+    }
 
     const { data: userRows, error: userErr } = await supabase
       .from("users_view")

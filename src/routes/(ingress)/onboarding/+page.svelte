@@ -2,31 +2,13 @@
   import OnboardingForm from "./OnboardingForm.svelte";
   import { residentState } from "$state/resident-state.svelte";
   import { brandingState } from "$state/branding.svelte";
-  import { auth } from "$state/auth.svelte";
   import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { pageState } from "$state/page-info.svelte";
   import { LoaderCircleIcon } from "@lucide/svelte";
 
-  let isChecking = $state(true);
-
-  onMount(async () => {
+  onMount(() => {
     pageState.title = "Onboarding";
-    if (!auth.accessToken) {
-      goto("/sign-in");
-      return;
-    }
-
-    if (!residentState.status) {
-      await residentState.refresh();
-    }
-
-    if (!residentState.needsOnboarding && !residentState.forceOnboarding) {
-      goto("/resident");
-      return;
-    }
-
-    isChecking = false;
   });
 
   async function handleSuccess() {
@@ -40,7 +22,7 @@
   }
 </script>
 
-{#if isChecking || !residentState.status}
+{#if !residentState.status}
   <div class="flex items-center justify-center py-12">
     <LoaderCircleIcon class="h-6 w-6 animate-spin text-muted-foreground" />
   </div>

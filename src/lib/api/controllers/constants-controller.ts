@@ -29,14 +29,7 @@ export async function fetchMopTypes(
 export async function fetchTerms(
   bypassCache = false
 ): Promise<{ value: string; label: string; description: string }[]> {
-  const constants = await constantsService.fetchConstants(bypassCache);
-  return constants
-    .filter((c) => c.key.startsWith("TERM_") && c.key !== "TERM_CURR")
-    .map((c) => ({
-      value: c.value,
-      label: c.value,
-      description: c.description
-    }));
+  return constantsService.fetchTerms(bypassCache);
 }
 
 export async function addConstant(key: string, value: string, description = ""): Promise<void> {

@@ -73,6 +73,8 @@ export interface ResidentStatus {
   activeTerm: string;
   /** System active term */
   systemActiveTerm: string;
+  /** Whether academic terms are configured in constants */
+  hasAcademicTerms?: boolean;
   /** An array of all available terms */
   allTerms: string[];
   /** An array of all MOP types */

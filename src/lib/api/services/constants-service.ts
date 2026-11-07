@@ -4,6 +4,10 @@ import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabas
 export interface ConstantsServiceInterface {
   fetchConstants(bypassCache?: boolean): Promise<ConstantRecord[]>;
 
+  fetchTerms(
+    bypassCache?: boolean
+  ): Promise<{ value: string; label: string; description: string }[]>;
+
   fetchConstantByKey(key: string, bypassCache?: boolean): Promise<string | null>;
 
   addConstant(key: string, value: string, description?: string): Promise<void>;
@@ -28,6 +32,31 @@ export const constantsService: ConstantsServiceInterface = {
       description: c.description || "",
       raw: [c.key, c.value, c.description || ""]
     }));
+  },
+
+  async fetchTerms(
+    _bypassCache?: boolean
+  ): Promise<{ value: string; label: string; description: string }[]> {
+    if (!supabase) {
+      return [];
+    }
+    const sb = supabase;
+    const data = await fetchAllSupabaseRows(() =>
+      sb
+        .from("constants")
+        .select("*")
+        .like("key", "TERM_%")
+        .neq("key", "TERM_CURR")
+        .neq("key", "TERM_RESERVED")
+        .order("key", { ascending: true })
+    );
+    return data
+      .filter((c: any) => Boolean((c.value || "").trim()))
+      .map((c: any) => ({
+        value: c.value,
+        label: c.value,
+        description: c.description || ""
+      }));
   },
 
   async fetchConstantByKey(key: string, _bypassCache?: boolean): Promise<string | null> {
