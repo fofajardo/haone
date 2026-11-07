@@ -39,6 +39,64 @@ export interface SyncPreviewAction {
   payload: any;
 }
 
+// Translate account type to user tag.
+// XXX: keep this in sync with types.ts. This should probably be put
+// somewhere else to avoid duplication.
+export function getAccountTypeTag(accountType: string, residentName: string): UserTag {
+  switch (accountType) {
+    case AccountType.STUDENT:
+      return UserTag.STUDENT;
+    case AccountType.TRANSIENT:
+      return UserTag.GUEST;
+    case AccountType.BOOTCAMP:
+      return UserTag.BOOTCAMP;
+    case AccountType.ALUMNUS:
+      return UserTag.ALUMNUS;
+    case AccountType.FACULTY:
+      return UserTag.FACULTY;
+    case AccountType.STAFF:
+      return UserTag.STAFF;
+    case AccountType.REPS:
+      return UserTag.REPS;
+    default:
+      throw new Error(`Unknown account type: ${accountType} for ${residentName}`);
+  }
+}
+
+function createSyncAction(
+  curr: CurrRecord,
+  residentName: string,
+  params: {
+    type: SyncPreviewAction["type"];
+    details: string;
+    payload: any;
+    email?: string;
+    studentNo?: string;
+    warning?: string;
+    from?: string;
+    to?: string;
+  }
+): SyncPreviewAction {
+  return {
+    type: params.type,
+    residentName,
+    email: params.email ?? curr.email,
+    studentNo: params.studentNo ?? curr.studentNo,
+    college: curr.college,
+    program: curr.program,
+    room: curr.room,
+    bed: curr.bed,
+    checkInDate: curr.checkInDate,
+    accountType: curr.accountType || AccountType.STUDENT,
+    currIndex: curr.rowIndex,
+    details: params.details,
+    warning: params.warning,
+    from: params.from,
+    to: params.to,
+    payload: params.payload
+  };
+}
+
 export async function fetchCurrSheet(bypassCache = false): Promise<CurrRecord[]> {
   return roomsService.fetchCurrRecords(bypassCache);
 }
@@ -86,10 +144,10 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
     if (!curr.studentNo && !curr.email) continue;
 
     let user = userMapByStNo.get(curr.studentNo) || userMapByEmail.get(curr.email);
-    let userId = user?.id;
-    let residentName = user
-      ? `${user.lastName.toUpperCase()}, ${user.firstName.toUpperCase()}`
-      : `${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`;
+    let residentName =
+      user && user.firstName.trim() !== "" && user.lastName.trim() !== ""
+        ? `${user.lastName.toUpperCase()}, ${user.firstName.toUpperCase()}`
+        : `${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`;
 
     const isEmptyRoomBed =
       !curr.room ||
@@ -129,107 +187,55 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
         plannedUsersByStNo.set(curr.studentNo, userId);
         plannedUsersByEmail.set(curr.email, userId);
 
-        // Translate account type to user tag.
-        // XXX: keep this in sync with types.ts. This should probably be put
-        // somewhere else to avoid duplication.
-        let accountTypeTag = UserTag.STUDENT;
-        switch (curr.accountType) {
-          case AccountType.STUDENT:
-            accountTypeTag = UserTag.STUDENT;
-            break;
-          case AccountType.TRANSIENT:
-            accountTypeTag = UserTag.GUEST;
-            break;
-          case AccountType.BOOTCAMP:
-            accountTypeTag = UserTag.BOOTCAMP;
-            break;
-          case AccountType.ALUMNUS:
-            accountTypeTag = UserTag.ALUMNUS;
-            break;
-          case AccountType.FACULTY:
-            accountTypeTag = UserTag.FACULTY;
-            break;
-          case AccountType.STAFF:
-            accountTypeTag = UserTag.STAFF;
-            break;
-          case AccountType.REPS:
-            accountTypeTag = UserTag.REPS;
-            break;
-          default:
-            throw new Error(`Unknown account type: ${curr.accountType} for ${residentName}`);
-        }
+        const accountTypeTag = getAccountTypeTag(curr.accountType, residentName);
 
-        actions.push({
-          type: "CREATE_USER",
-          residentName,
-          email: curr.email,
-          studentNo: curr.studentNo,
-          college: curr.college,
-          program: curr.program,
-          room: curr.room,
-          bed: curr.bed,
-          checkInDate: curr.checkInDate,
-          accountType: curr.accountType || AccountType.STUDENT,
-          currIndex: curr.rowIndex,
-          details: `Create profile for ${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`,
-          payload: {
-            id: userId,
-            email: curr.email,
-            studentNo: curr.studentNo,
-            college: curr.college,
-            program: curr.program,
-            firstName: curr.firstName.toUpperCase(),
-            lastName: curr.lastName.toUpperCase(),
-            tags: accountTypeTag,
-            suffix: curr.suffix || "",
-            overrideName: curr.overrideName || ""
-          }
-        });
+        actions.push(
+          createSyncAction(curr, residentName, {
+            type: "CREATE_USER",
+            details: `Create profile for ${curr.lastName.toUpperCase()}, ${curr.firstName.toUpperCase()}`,
+            payload: {
+              id: userId,
+              email: curr.email,
+              studentNo: curr.studentNo,
+              college: curr.college,
+              program: curr.program,
+              firstName: curr.firstName.toUpperCase(),
+              lastName: curr.lastName.toUpperCase(),
+              tags: accountTypeTag,
+              suffix: curr.suffix || "",
+              overrideName: curr.overrideName || ""
+            }
+          })
+        );
       }
 
       if (isEmptyRoomBed) {
-        actions.push({
-          type: "EVALUATE_ONLY",
-          residentName,
-          email: curr.email,
-          studentNo: curr.studentNo,
-          college: curr.college,
-          program: curr.program,
-          room: curr.room,
-          bed: curr.bed,
-          checkInDate: curr.checkInDate,
-          accountType: curr.accountType || AccountType.STUDENT,
-          currIndex: curr.rowIndex,
-          details: `Complete registration (No Room/Bed Assigned)`,
-          to: "No Room/Bed Assigned",
-          payload: null
-        });
+        actions.push(
+          createSyncAction(curr, residentName, {
+            type: "EVALUATE_ONLY",
+            details: `Complete registration (No Room/Bed Assigned)`,
+            to: "No Room/Bed Assigned",
+            payload: null
+          })
+        );
       } else {
         // Always create account for new user found in CURR
-        actions.push({
-          type: "CREATE_ACCOUNT",
-          residentName,
-          email: curr.email,
-          studentNo: curr.studentNo,
-          college: curr.college,
-          program: curr.program,
-          room: curr.room,
-          bed: curr.bed,
-          checkInDate: curr.checkInDate,
-          accountType: curr.accountType || AccountType.STUDENT,
-          currIndex: curr.rowIndex,
-          details: `Assign to`,
-          to: `${curr.room}-${curr.bed}`,
-          warning,
-          payload: {
-            residentId: userId,
-            period: currentTerm,
-            room: curr.room,
-            bed: curr.bed,
-            checkInDate: curr.checkInDate,
-            accountType: curr.accountType || AccountType.STUDENT
-          }
-        });
+        actions.push(
+          createSyncAction(curr, residentName, {
+            type: "CREATE_ACCOUNT",
+            details: `Assign to`,
+            to: `${curr.room}-${curr.bed}`,
+            warning,
+            payload: {
+              residentId: userId,
+              period: currentTerm,
+              room: curr.room,
+              bed: curr.bed,
+              checkInDate: curr.checkInDate,
+              accountType: curr.accountType || AccountType.STUDENT
+            }
+          })
+        );
       }
     } else {
       // User exists, check for updates or bed assignments
@@ -245,36 +251,59 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
       const lastCollege = colleges[colleges.length - 1] || "";
       const lastProgram = programs[programs.length - 1] || "";
 
+      const currFirstName = (curr.firstName || "").trim().toUpperCase();
+      const currLastName = (curr.lastName || "").trim().toUpperCase();
+      const currStudentNo = (curr.studentNo || "").trim();
+
+      const needsFirstName = !(user.firstName || "").trim() && Boolean(currFirstName);
+      const needsLastName = !(user.lastName || "").trim() && Boolean(currLastName);
+      const needsStudentNo = !(user.studentNo || "").trim() && Boolean(currStudentNo);
+      const needsTags = !(user.tags || "").trim() && Boolean(curr.accountType);
+
       const needsUpdate =
+        needsFirstName ||
+        needsLastName ||
+        needsStudentNo ||
+        needsTags ||
         curr.college !== lastCollege ||
         curr.program !== lastProgram ||
         (curr.suffix !== undefined && curr.suffix !== (user.suffix || "")) ||
         (curr.overrideName !== undefined && curr.overrideName !== (user.overrideName || ""));
       if (needsUpdate) {
-        const newColleges = curr.college !== lastCollege ? [...colleges, curr.college] : colleges;
-        const newPrograms = curr.program !== lastProgram ? [...programs, curr.program] : programs;
+        const newColleges =
+          curr.college && curr.college !== lastCollege ? [...colleges, curr.college] : colleges;
+        const newPrograms =
+          curr.program && curr.program !== lastProgram ? [...programs, curr.program] : programs;
 
-        actions.push({
-          type: "UPDATE_USER",
-          residentName,
-          email: user.email,
-          studentNo: user.studentNo,
-          college: curr.college,
-          program: curr.program,
-          room: curr.room,
-          bed: curr.bed,
-          checkInDate: curr.checkInDate,
-          accountType: curr.accountType || AccountType.STUDENT,
-          currIndex: curr.rowIndex,
-          details: `Update profile`,
-          payload: {
-            id: user.id,
-            college: newColleges.join(","),
-            program: newPrograms.join(":"),
-            suffix: curr.suffix || "",
-            overrideName: curr.overrideName || ""
-          }
-        });
+        const updatePayload: Record<string, any> = {
+          id: user.id,
+          college: newColleges.join(","),
+          program: newPrograms.join(":"),
+          suffix: curr.suffix || "",
+          overrideName: curr.overrideName || ""
+        };
+        if (needsFirstName) {
+          updatePayload.firstName = currFirstName;
+        }
+        if (needsLastName) {
+          updatePayload.lastName = currLastName;
+        }
+        if (needsStudentNo) {
+          updatePayload.studentNo = currStudentNo;
+        }
+        if (needsTags) {
+          updatePayload.tags = getAccountTypeTag(curr.accountType, residentName);
+        }
+
+        actions.push(
+          createSyncAction(curr, residentName, {
+            type: "UPDATE_USER",
+            email: user.email,
+            studentNo: user.studentNo || currStudentNo,
+            details: `Update profile`,
+            payload: updatePayload
+          })
+        );
       }
 
       // Check account update
@@ -286,76 +315,58 @@ export async function getSyncPreview(currentTerm: string): Promise<SyncPreviewAc
               ? `${existingAcc.room}-${existingAcc.bed}`
               : "Unassigned";
 
-          actions.push({
-            type: "UPDATE_ACCOUNT",
-            residentName,
-            email: user.email,
-            studentNo: user.studentNo,
-            college: curr.college,
-            program: curr.program,
-            room: curr.room,
-            bed: curr.bed,
-            checkInDate: curr.checkInDate,
-            accountType: curr.accountType || AccountType.STUDENT,
-            currIndex: curr.rowIndex,
-            details: `Change bed`,
-            from: oldLoc,
-            to: `${curr.room}-${curr.bed}`,
-            warning,
-            payload: {
-              accountId: existingAcc.id,
-              room: curr.room,
-              bed: curr.bed,
-              checkInDate: curr.checkInDate
-            }
-          });
+          actions.push(
+            createSyncAction(curr, residentName, {
+              type: "UPDATE_ACCOUNT",
+              email: user.email,
+              studentNo: user.studentNo || currStudentNo,
+              details: `Change bed`,
+              from: oldLoc,
+              to: `${curr.room}-${curr.bed}`,
+              warning,
+              payload: {
+                accountId: existingAcc.id,
+                room: curr.room,
+                bed: curr.bed,
+                checkInDate: curr.checkInDate
+              }
+            })
+          );
         }
       } else {
         if (isEmptyRoomBed) {
           const hasUserAction = actions.some((a) => a.currIndex === curr.rowIndex);
           if (!hasUserAction) {
-            actions.push({
-              type: "EVALUATE_ONLY",
-              residentName,
-              email: user.email,
-              studentNo: user.studentNo,
-              college: curr.college,
-              program: curr.program,
-              room: curr.room,
-              bed: curr.bed,
-              checkInDate: curr.checkInDate,
-              accountType: curr.accountType || AccountType.STUDENT,
-              currIndex: curr.rowIndex,
-              details: `Complete registration (No Room/Bed Assigned)`,
-              to: "No Room/Bed Assigned",
-              payload: null
-            });
+            actions.push(
+              createSyncAction(curr, residentName, {
+                type: "EVALUATE_ONLY",
+                email: user.email,
+                studentNo: user.studentNo || currStudentNo,
+                details: `Complete registration (No Room/Bed Assigned)`,
+                to: "No Room/Bed Assigned",
+                payload: null
+              })
+            );
           }
         } else {
-          actions.push({
-            type: "CREATE_ACCOUNT",
-            residentName,
-            email: user.email,
-            studentNo: user.studentNo,
-            college: curr.college,
-            program: curr.program,
-            room: curr.room,
-            bed: curr.bed,
-            checkInDate: curr.checkInDate,
-            accountType: curr.accountType || AccountType.STUDENT,
-            currIndex: curr.rowIndex,
-            details: `New assignment`,
-            to: `${curr.room}-${curr.bed}`,
-            warning,
-            payload: {
-              residentId: user.id,
-              period: currentTerm,
-              room: curr.room,
-              bed: curr.bed,
-              checkInDate: curr.checkInDate,
-              accountType: curr.accountType || AccountType.STUDENT
-            }
-          });
+          actions.push(
+            createSyncAction(curr, residentName, {
+              type: "CREATE_ACCOUNT",
+              email: user.email,
+              studentNo: user.studentNo || currStudentNo,
+              details: `New assignment`,
+              to: `${curr.room}-${curr.bed}`,
+              warning,
+              payload: {
+                residentId: user.id,
+                period: currentTerm,
+                room: curr.room,
+                bed: curr.bed,
+                checkInDate: curr.checkInDate,
+                accountType: curr.accountType || AccountType.STUDENT
+              }
+            })
+          );
         }
       }
     }
