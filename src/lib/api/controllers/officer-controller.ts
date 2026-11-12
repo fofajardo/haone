@@ -6,8 +6,9 @@ export async function fetchOfficers(bypassCache = false): Promise<OfficerRecord[
 }
 
 export async function addOfficer(
-  data: Omit<OfficerRecord, "raw" | "id" | "status"> & {
+  data: Omit<OfficerRecord, "raw" | "id" | "status" | "email"> & {
     id?: string;
+    email?: string;
     status?: OfficerStatus | string;
   }
 ) {
@@ -40,10 +41,10 @@ export async function transitionOfficerPosition(id: string, newPosition: string)
   await updateOfficer(id, { status: OfficerStatus.CHANGED_POSITION });
 
   await addOfficer({
+    residentId: current.residentId,
     position: newPosition,
     name: current.name,
     nickname: current.nickname,
-    email: current.email,
     fbLink: current.fbLink,
     term: current.term,
     committee: current.committee,

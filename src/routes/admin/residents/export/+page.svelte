@@ -279,16 +279,12 @@
 
       const officerEntries = activeOfficers
         .filter((o) => {
-          const res = allAccounts.find(
-            (a) => (a.email || "").toLowerCase() === (o.email || "").toLowerCase()
-          );
+          const res = allAccounts.find((a) => a.residentId === o.residentId);
           return matchesUnitFilter(res?.room || "");
         })
         .map((o) => {
-          const res = allAccounts.find(
-            (a) => (a.email || "").toLowerCase() === (o.email || "").toLowerCase()
-          );
-          const nameToUse = getNameToUse(res?.residentId || "", o.name);
+          const res = allAccounts.find((a) => a.residentId === o.residentId);
+          const nameToUse = getNameToUse(o.residentId, o.name);
           return {
             email: o.email,
             period: o.term,

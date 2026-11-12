@@ -111,10 +111,10 @@
     isSaving = true;
     try {
       await addOfficer({
+        residentId: resident.residentId,
         position: newOfficerData.position,
         name: resident.name,
         nickname: newOfficerData.nickname,
-        email: resident.email,
         fbLink: newOfficerData.fbLink,
         term: settings.currentTerm,
         committee: newOfficerData.committee,

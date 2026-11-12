@@ -120,19 +120,11 @@
       accounts = accountData;
       allResidents = allRes;
 
-      userOfficers = allOfficers.filter(
-        (o) =>
-          //o.residentId === userId || // FIXME: officer records do not yet store proper UUIDs
-          user?.email && o.email?.toLowerCase() === user.email.toLowerCase()
-      );
+      userOfficers = allOfficers.filter((o) => o.residentId === userId);
 
       const journalList = Array.isArray(entries) ? entries : entries.items;
       history = journalList
-        .filter(
-          (r) =>
-            (user?.email && r.account.trim().toLowerCase() === user.email.toLowerCase()) ||
-            (user?.studentNo && r.stno.trim() === user.studentNo)
-        )
+        .filter((r) => r.accountId === userId)
         .filter((r) => !settings.currentTerm || r.period === settings.currentTerm)
         .map((journal) => ({
           ...journal,

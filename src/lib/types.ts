@@ -470,6 +470,8 @@ export interface AnnouncementRecord {
 }
 
 export interface OfficerRecord {
+  id: string;
+  residentId: string;
   position: string;
   name: string;
   nickname: string;
@@ -478,9 +480,8 @@ export interface OfficerRecord {
   term: string;
   committee: string;
   birthday: string;
-  id: string;
   status: OfficerStatus | string;
-  raw: string[];
+  raw?: any;
 }
 
 export interface AchievementRecord {

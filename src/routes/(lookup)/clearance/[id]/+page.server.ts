@@ -76,19 +76,17 @@ export const actions: Actions = {
             signatory =
               issuerUser.display_name_fl || issuerUser.display_name || "HOUSE COUNCIL OFFICER";
 
-            const issuerEmail = (issuerUser.email || "").toLowerCase().trim();
-            if (issuerEmail) {
-              const { data: officer } = await supabase
-                .from("officers")
-                .select("*")
-                .ilike("email", issuerEmail)
-                .eq("term", period)
-                .eq("status", OfficerStatus.ACTIVE)
-                .maybeSingle();
+            const { data: officer } = await supabase
+              .from("officers")
+              .select("*")
+              .eq("resident_id", issuerUser.id)
+              .eq("term", period)
+              .eq("status", OfficerStatus.ACTIVE)
+              .limit(1)
+              .maybeSingle();
 
-              if (officer && officer.position) {
-                signatoryTitle = officer.position;
-              }
+            if (officer && officer.position) {
+              signatoryTitle = officer.position;
             }
           }
         }

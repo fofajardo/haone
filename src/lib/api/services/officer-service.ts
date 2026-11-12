@@ -1,7 +1,7 @@
 import type { OfficerRecord } from "$lib/types";
 import { OfficerStatus } from "$lib/types";
 import { auth } from "$state/auth.svelte";
-import { parseDbDate } from "$utils/parsers";
+import { isUuid, parseDbDate } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 
 export interface OfficerServiceInterface {
@@ -14,13 +14,14 @@ export interface OfficerServiceInterface {
   deleteOfficer(id: string): Promise<void>;
 }
 
-function mapRow(row: any): OfficerRecord {
+function mapRow(row: any, user?: any): OfficerRecord {
   return {
     id: row.id,
+    residentId: row.resident_id || "",
     position: row.position || "",
-    name: row.name || "",
+    name: row.name || user?.display_name || "",
     nickname: row.nickname || "",
-    email: row.email || "",
+    email: user?.email || "",
     fbLink: row.fb_link || "",
     term: row.term || "",
     committee: row.committee || "",
@@ -46,7 +47,7 @@ export const officerService: OfficerServiceInterface = {
 
       const { data, error } = await supabase
         .from("officers")
-        .select("id, position, name, nickname, term, committee, status, created_at")
+        .select("id, resident_id, position, name, nickname, term, committee, status, created_at")
         .eq("status", OfficerStatus.ACTIVE)
         .eq("term", activeTerm)
         .order("created_at", { ascending: true })
@@ -65,26 +66,44 @@ export const officerService: OfficerServiceInterface = {
     }
 
     const sb = supabase;
-    const data = await fetchAllSupabaseRows(() =>
-      sb
-        .from("officers")
-        .select("*")
-        .order("created_at", { ascending: true })
-        .order("id", { ascending: true })
-    );
-    return data.filter((row: any) => (row.email || "").trim() !== "").map(mapRow);
+    const [data, usersRes] = await Promise.all([
+      fetchAllSupabaseRows(() =>
+        sb
+          .from("officers")
+          .select("*")
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+      ),
+      sb.from("users_view").select("id, email, display_name")
+    ]);
+
+    if (usersRes.error) {
+      handleSupabaseError(usersRes.error);
+    }
+
+    const userMap = new Map<string, any>();
+    (usersRes.data || []).forEach((u: any) => {
+      if (u.id) {
+        userMap.set(u.id, u);
+      }
+    });
+
+    return data
+      .filter((row: any) => row.resident_id)
+      .map((row: any) => mapRow(row, userMap.get(row.resident_id)));
   },
 
   async addOfficer(data: Partial<OfficerRecord>): Promise<void> {
     if (!supabase) {
       return;
     }
+
     const { error } = await supabase.from("officers").insert({
       id: data.id || crypto.randomUUID(),
+      resident_id: data.residentId,
       position: data.position,
       name: data.name,
       nickname: data.nickname,
-      email: data.email,
       fb_link: data.fbLink,
       term: data.term,
       committee: data.committee,
@@ -101,6 +120,9 @@ export const officerService: OfficerServiceInterface = {
       return;
     }
     const payload: Record<string, any> = {};
+    if (data.residentId !== undefined && isUuid(data.residentId)) {
+      payload.resident_id = data.residentId;
+    }
     if (data.position !== undefined) {
       payload.position = data.position;
     }
@@ -109,9 +131,6 @@ export const officerService: OfficerServiceInterface = {
     }
     if (data.nickname !== undefined) {
       payload.nickname = data.nickname;
-    }
-    if (data.email !== undefined) {
-      payload.email = data.email;
     }
     if (data.fbLink !== undefined) {
       payload.fb_link = data.fbLink;

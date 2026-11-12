@@ -25,16 +25,16 @@ ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO officers (
   id,
+  resident_id,
   position,
   name,
   nickname,
-  email,
   status
 ) VALUES (
   'b0000000-0000-0000-0000-000000000001',
+  'a0000000-0000-0000-0000-000000000001',
   'President',
   'Juan Cruz',
   'Juan',
-  '<REPLACE THIS WITH EMAIL>',
   'ACTIVE'
 ) ON CONFLICT (id) DO NOTHING;

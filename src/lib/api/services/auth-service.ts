@@ -168,7 +168,7 @@ export async function authenticateAdmin(request: Request) {
   }
 
   try {
-    if (!auth.email) {
+    if (!auth.residentId) {
       return {
         error: json({ error: "Forbidden: Admin access required (Officer only)" }, { status: 403 })
       };
@@ -178,8 +178,9 @@ export async function authenticateAdmin(request: Request) {
     const { data: officer, error: officerErr } = await supabase
       .from("officers")
       .select("id, status")
-      .ilike("email", auth.email)
+      .eq("resident_id", auth.residentId)
       .eq("status", OfficerStatus.ACTIVE)
+      .limit(1)
       .maybeSingle();
 
     if (officerErr) {
