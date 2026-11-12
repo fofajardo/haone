@@ -5,8 +5,9 @@ import type {
   PaymentRequestRecord
 } from "$lib/types";
 import { PaymentRequestStatus } from "$lib/types";
-import { isUuid, parseDbDate } from "$utils/parsers";
+import { isUuid } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
+import { buildJournalInsertPayload, syncAcknowledgmentReceipt } from "./journal-service";
 
 export interface PaymentRequestServiceInterface {
   fetchPaymentRequests(
@@ -166,35 +167,32 @@ export const paymentRequestService: PaymentRequestServiceInterface = {
     }
     assertSupabaseFound(approved, "Payment record not found or is no longer pending");
 
-    const { error: jError } = await supabase.from("journal").insert({
-      id: crypto.randomUUID(),
-      date: journalData.date,
-      creator_id:
-        journalData.creatorId && isUuid(journalData.creatorId) ? journalData.creatorId : null,
-      account_id:
-        journalData.accountId && isUuid(journalData.accountId) ? journalData.accountId : null,
-      water: journalData.water ?? 0,
-      assoc: journalData.assoc ?? 0,
-      misc: journalData.misc ?? 0,
-      mop: journalData.mop,
-      period: journalData.period,
-      type: journalData.type,
-      notes: journalData.notes,
-      notes_private: journalData.notesPrivate,
-      mop_ref_no: journalData.mopRefNo,
-      pr_date_issued: parseDbDate(journalData.prDateIssued),
-      pr_ref_no: journalData.prRefNo,
-      was_audited: journalData.wasAudited ?? false,
-      receipt_url: journalData.receiptUrl
-    });
+    const { groupRow, itemRows } = buildJournalInsertPayload(
+      journalData,
+      journalData.creatorId && isUuid(journalData.creatorId) ? journalData.creatorId : null,
+      journalData.accountId && isUuid(journalData.accountId) ? journalData.accountId : null
+    );
 
+    const { error: gError } = await supabase.from("journal_groups").insert(groupRow);
+    if (gError) {
+      await supabase
+        .from("payment_requests")
+        .update({ status: PaymentRequestStatus.PENDING })
+        .eq("id", paymentId);
+      handleSupabaseError(gError);
+    }
+
+    const { error: jError } = await supabase.from("journal").insert(itemRows);
     if (jError) {
+      await supabase.from("journal_groups").delete().eq("id", groupRow.id);
       await supabase
         .from("payment_requests")
         .update({ status: PaymentRequestStatus.PENDING })
         .eq("id", paymentId);
       handleSupabaseError(jError);
     }
+
+    await syncAcknowledgmentReceipt(groupRow.id, journalData);
   },
 
   async declinePaymentRequest(paymentId: string, reason: string): Promise<void> {

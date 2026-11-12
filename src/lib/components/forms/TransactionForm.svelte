@@ -38,10 +38,13 @@
   import { Badge } from "$ui/badge";
   import { fetchResidents } from "$api/controllers/resident-controller";
   import {
-    JOURNAL_COL as JOR,
+    JOURNAL_ACCOUNT_KIND_CONFIG,
+    JOURNAL_ACCOUNT_KINDS,
+    JournalAccountKind,
     TransactionType,
     TRANSACTION_TYPE_OPTIONS,
     TRANSACTION_TYPE_FUNDS_ONLY,
+    getJournalAccountKindValue,
     type ResidentRecord,
     type JournalRecord,
     TRANSACTION_TYPE_WITH_RECEIPT,
@@ -54,7 +57,7 @@
     mode: "add" | "edit";
     initialData?: JournalRecord | null;
     isSubmitting: boolean;
-    onSave: (row: any[]) => Promise<void>;
+    onSave: (entry: Partial<JournalRecord> | Partial<JournalRecord>[]) => Promise<void>;
     hideHeader?: boolean;
     onStateChange?: (data: any) => void;
   }
@@ -81,7 +84,6 @@
   let hasConfirmedTerm = $state(false);
 
   // Form State
-  // FIXME: also using legacy fields.
   let formData = $state({
     date: new Date().toISOString().split("T")[0],
     creatorName: auth.displayNameLastFirst || "",
@@ -90,9 +92,10 @@
     accountName: "",
     accountStNo: "",
     accountId: "",
-    waterFee: "0",
-    assocFee: "0",
-    miscFee: "0",
+    fees: Object.fromEntries(JOURNAL_ACCOUNT_KINDS.map((k) => [k, "0"])) as Record<
+      JournalAccountKind,
+      string
+    >,
     mop: "CASH",
     mopTo: "CASH",
     period: settings.currentTerm || "",
@@ -157,28 +160,16 @@
         const currentTerm = formData.period || settings.currentTerm;
         const journal = Array.isArray(entries) ? entries : entries.items;
 
-        // 1. Filter out j.type === "EOS" to match financial report page filtering
         const termJournal = journal.filter((j) => {
           return j.period === currentTerm && j.type !== "EOS" && j.type !== "EOS_UNSETTLED";
         });
 
-        // 2. Data Processing (exact map from financial-report-pdf.ts)
-        const processedJournal = termJournal.map((j) => {
-          const isWaived = j.type.toUpperCase().includes("WAIVED");
-          const amount = j.water + j.assoc + j.misc;
-          const incoming = !isWaived && amount > 0 ? amount : 0;
-          const outgoing = !isWaived && amount < 0 ? Math.abs(amount) : 0;
-          return {
-            ...j,
-            isWaived,
-            incoming,
-            outgoing
-          };
-        });
-
-        // 3. Filter by MOP (exact match from financial-report-pdf.ts)
         const targetMop = formData.mop.trim().toUpperCase();
-        const filtered = processedJournal.filter((j) => {
+        const nonWaivedFiltered = termJournal.filter((j) => {
+          const isWaived = j.type.toUpperCase().includes("WAIVED");
+          if (isWaived) {
+            return false;
+          }
           const rawMop = (j.mop || "").trim().toUpperCase();
           if (rawMop === "N/A") {
             return false;
@@ -187,29 +178,13 @@
           return key === targetMop;
         });
 
-        // 4. Compute water, assoc, misc sums (exclude waived and N/A)
-        const nonWaivedFiltered = filtered.filter((j) => {
-          return !j.isWaived;
-        });
-
-        const waterSum = nonWaivedFiltered.reduce((sum, j) => {
-          return sum + j.water;
-        }, 0);
-        const assocSum = nonWaivedFiltered.reduce((sum, j) => {
-          return sum + j.assoc;
-        }, 0);
-        const miscSum = nonWaivedFiltered.reduce((sum, j) => {
-          return sum + j.misc;
-        }, 0);
-
-        const waterBal = Math.round(waterSum * 100) / 100;
-        const assocBal = Math.round(assocSum * 100) / 100;
-        const miscBal = Math.round(miscSum * 100) / 100;
-
-        // Populate fields with negated balances
-        formData.waterFee = (-waterBal).toString();
-        formData.assocFee = (-assocBal).toString();
-        formData.miscFee = (-miscBal).toString();
+        for (const kind of JOURNAL_ACCOUNT_KINDS) {
+          const kindSum = nonWaivedFiltered.reduce((sum, j) => {
+            return sum + getJournalAccountKindValue(j, kind);
+          }, 0);
+          const kindBal = Math.round(kindSum * 100) / 100;
+          formData.fees[kind] = (-kindBal).toString();
+        }
       });
     }
   });
@@ -223,31 +198,28 @@
     );
   });
 
-  const waterLimit = $derived.by(() => {
-    if (!isCollection || !selectedResident) return 0;
-    const base = selectedResident.waterBal;
-    const original = mode === "edit" && initialData ? initialData.water : 0;
+  function getKindLimit(kind: JournalAccountKind): number {
+    const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+    if (!isCollection || !selectedResident || !cfg.balanceField) {
+      return 0;
+    }
+    const base = selectedResident[cfg.balanceField] || 0;
+    const original =
+      mode === "edit" && initialData ? getJournalAccountKindValue(initialData, kind) : 0;
     return base + original;
-  });
+  }
 
-  const assocLimit = $derived.by(() => {
-    if (!isCollection || !selectedResident) return 0;
-    const base = selectedResident.assocBal;
-    const original = mode === "edit" && initialData ? initialData.assoc : 0;
-    return base + original;
-  });
-
-  const currentWaterBal = $derived.by(() => {
-    if (!isCollection || !selectedResident) return selectedResident?.waterBal || 0;
-    const fee = Number(formData.waterFee) || 0;
-    return waterLimit - fee;
-  });
-
-  const currentAssocBal = $derived.by(() => {
-    if (!isCollection || !selectedResident) return selectedResident?.assocBal || 0;
-    const fee = Number(formData.assocFee) || 0;
-    return assocLimit - fee;
-  });
+  function getCurrentKindBal(kind: JournalAccountKind): number {
+    const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+    if (!cfg.balanceField) {
+      return 0;
+    }
+    if (!isCollection || !selectedResident) {
+      return selectedResident ? selectedResident[cfg.balanceField] || 0 : 0;
+    }
+    const fee = Number(formData.fees[kind]) || 0;
+    return getKindLimit(kind) - fee;
+  }
 
   const isFundsOnly = $derived(
     TRANSACTION_TYPE_FUNDS_ONLY.includes(formData.type as TransactionType)
@@ -348,6 +320,13 @@
 
       if (initialData) {
         const mopRefInfo = parseRef(initialData.mopRefNo);
+        const initialFees = Object.fromEntries(
+          JOURNAL_ACCOUNT_KINDS.map((kind) => [
+            kind,
+            getJournalAccountKindValue(initialData, kind).toString()
+          ])
+        ) as Record<JournalAccountKind, string>;
+
         formData = {
           date: initialData.date,
           creatorName: initialData.creatorName,
@@ -356,9 +335,7 @@
           accountName: initialData.name,
           accountStNo: initialData.stno,
           accountId: initialData.accountId || "",
-          waterFee: initialData.water.toString(),
-          assocFee: initialData.assoc.toString(),
-          miscFee: initialData.misc.toString(),
+          fees: initialFees,
           mop: initialData.mop,
           mopTo: (initialData as any).mopTo || "CASH",
           period: initialData.period,
@@ -369,9 +346,9 @@
           notesPrivate: initialData.notesPrivate,
           mopRefNo: mopRefInfo.reference || initialData.mopRefNo,
           instapayInvoice: mopRefInfo.invoice || "",
-          receiptUrl: initialData.receiptUrl || "",
-          prDateIssued: initialData.prDateIssued,
-          prRefNo: initialData.prRefNo
+          receiptUrl: initialData.receipt?.receiptUrl || "",
+          prDateIssued: initialData.receipt?.dateIssued || "",
+          prRefNo: initialData.receipt?.id || ""
         };
         creatorSearch = initialData.creatorName || initialData.creator;
         accountSearch = initialData.name || initialData.account;
@@ -385,10 +362,15 @@
           ) || null;
 
         if (selectedResident) {
-          const limitW = selectedResident.waterBal + (mode === "edit" ? initialData.water : 0);
-          const limitA = selectedResident.assocBal + (mode === "edit" ? initialData.assoc : 0);
-          if (initialData.water > limitW + 0.01 || initialData.assoc > limitA + 0.01) {
-            allowOverpayment = true;
+          for (const kind of JOURNAL_ACCOUNT_KINDS) {
+            const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+            if (cfg.balanceField) {
+              const val = getJournalAccountKindValue(initialData, kind);
+              const limit = selectedResident[cfg.balanceField] + (mode === "edit" ? val : 0);
+              if (val > limit + 0.01) {
+                allowOverpayment = true;
+              }
+            }
           }
           if (!formData.accountId) {
             formData.accountId = selectedResident.residentId || selectedResident.id;
@@ -487,11 +469,12 @@
       return;
     }
 
-    const water = parseFloat(formData.waterFee) || 0;
-    const assoc = parseFloat(formData.assocFee) || 0;
-    const misc = parseFloat(formData.miscFee) || 0;
+    const parsedFees = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
+      accountKind: kind,
+      value: parseFloat(formData.fees[kind]) || 0
+    }));
 
-    if (water === 0 && assoc === 0 && misc === 0) {
+    if (parsedFees.every((item) => item.value === 0)) {
       error = "Transaction must have at least one non-zero amount.";
       return;
     }
@@ -501,19 +484,23 @@
       formData.type === TransactionType.TRANSFER_FROM ||
       formData.type === TransactionType.TRANSFER_TO;
 
-    if (!isTransfer && misc > 0 && !formData.notes.trim()) {
+    const miscVal =
+      parsedFees.find((item) => item.accountKind === JournalAccountKind.MISC)?.value || 0;
+    if (!isTransfer && miscVal > 0 && !formData.notes.trim()) {
       error = "Public remarks are required for miscellaneous payments.";
       return;
     }
 
     if (isCollection && !allowOverpayment) {
-      if (water > waterLimit + 0.01) {
-        error = `Water payment exceeds remaining balance limit (${formatAmount(waterLimit)}).`;
-        return;
-      }
-      if (assoc > assocLimit + 0.01) {
-        error = `Association payment exceeds remaining balance limit (${formatAmount(assocLimit)}).`;
-        return;
+      for (const item of parsedFees) {
+        const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[item.accountKind];
+        if (cfg.balanceField) {
+          const limit = getKindLimit(item.accountKind);
+          if (item.value > limit + 0.01) {
+            error = `${cfg.shortLabel} payment exceeds remaining balance limit (${formatAmount(limit)}).`;
+            return;
+          }
+        }
       }
     }
 
@@ -525,69 +512,58 @@
     error = null;
 
     try {
+      const mopRefNo = formData.instapayInvoice
+        ? `${formData.mopRefNo};${formData.instapayInvoice}`
+        : formData.mopRefNo;
+
       if (formData.type === TransactionType.FUND_TRANSFER) {
-        // From Row: Negative amount, MOP From
-        const fromRow = new Array(22).fill("");
-        fromRow[JOR.DATE] = formData.date;
-        fromRow[JOR.CREATOR] = "";
-        fromRow[JOR.ACCOUNT] = "";
-        fromRow[JOR.WATER] = water !== 0 ? `-${Math.abs(water)}` : "0";
-        fromRow[JOR.ASSOC] = assoc !== 0 ? `-${Math.abs(assoc)}` : "0";
-        fromRow[JOR.MISC] = misc !== 0 ? `-${Math.abs(misc)}` : "0";
-        fromRow[JOR.MOP] = formData.mop;
-        fromRow[JOR.PERIOD] = formData.period;
-        fromRow[JOR.TYPE] = TransactionType.TRANSFER_FROM;
-        fromRow[JOR.NOTES] = formData.notes;
-        fromRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
-        fromRow[JOR.MOP_REFNO] = formData.instapayInvoice
-          ? `${formData.mopRefNo};${formData.instapayInvoice}`
-          : formData.mopRefNo;
-        fromRow[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
-        fromRow[JOR.PR_REFNO] = "N/A";
-        fromRow[JOR.CREATOR_NAME] = "";
-        fromRow[JOR.NAME] = "";
-        fromRow[JOR.STNO] = "";
-        fromRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
-        fromRow[JOR.WAS_AUDITED] = mode === "edit" && initialData?.wasAudited ? "TRUE" : "FALSE";
-        fromRow[JOR.ID] = mode === "edit" && initialData ? initialData.id : crypto.randomUUID();
-        fromRow[JOR.CREATOR_ID] = formData.creatorId || "";
-        fromRow[JOR.ACCOUNT_ID] = formData.accountId || "";
+        const fromId = mode === "edit" && initialData ? initialData.id : crypto.randomUUID();
+        const fromItems = parsedFees
+          .filter((item) => item.value !== 0)
+          .map((item) => ({ accountKind: item.accountKind, value: -Math.abs(item.value) }));
+        const toId = crypto.randomUUID();
+        const toItems = parsedFees
+          .filter((item) => item.value !== 0)
+          .map((item) => ({ accountKind: item.accountKind, value: Math.abs(item.value) }));
 
-        // To Row: Positive amount, MOP To
-        const toRow = new Array(22).fill("");
-        toRow[JOR.DATE] = formData.date;
-        toRow[JOR.CREATOR] = "";
-        toRow[JOR.ACCOUNT] = "";
-        toRow[JOR.WATER] = water !== 0 ? `${Math.abs(water)}` : "0";
-        toRow[JOR.ASSOC] = assoc !== 0 ? `${Math.abs(assoc)}` : "0";
-        toRow[JOR.MISC] = misc !== 0 ? `${Math.abs(misc)}` : "0";
-        toRow[JOR.MOP] = formData.mopTo;
-        toRow[JOR.PERIOD] = formData.period;
-        toRow[JOR.TYPE] = TransactionType.TRANSFER_TO;
-        toRow[JOR.NOTES] = formData.notes;
-        toRow[JOR.NOTES_PRIVATE] = formData.notesPrivate;
-        toRow[JOR.MOP_REFNO] = formData.instapayInvoice
-          ? `${formData.mopRefNo};${formData.instapayInvoice}`
-          : formData.mopRefNo;
-        toRow[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
-        toRow[JOR.PR_REFNO] = "N/A";
-        toRow[JOR.CREATOR_NAME] = "";
-        toRow[JOR.NAME] = "";
-        toRow[JOR.STNO] = "";
-        toRow[JOR.RECEIPT_URL] = formData.receiptUrl || "";
-        toRow[JOR.WAS_AUDITED] = "FALSE";
-        toRow[JOR.ID] = crypto.randomUUID();
-        toRow[JOR.CREATOR_ID] = formData.creatorId || "";
-        toRow[JOR.ACCOUNT_ID] = formData.accountId || "";
+        const fromEntry: Partial<JournalRecord> = {
+          id: fromId,
+          date: formData.date,
+          mop: formData.mop,
+          period: formData.period,
+          type: TransactionType.TRANSFER_FROM,
+          notes: formData.notes,
+          notesPrivate: formData.notesPrivate,
+          mopRefNo,
+          receipt: null,
+          wasAudited: mode === "edit" && initialData?.wasAudited ? true : false,
+          creatorId: formData.creatorId || "",
+          accountId: formData.accountId || "",
+          items: fromItems,
+          amount: fromItems.reduce((sum, item) => sum + item.value, 0)
+        };
 
-        await onSave([fromRow, toRow]);
+        const toEntry: Partial<JournalRecord> = {
+          id: toId,
+          date: formData.date,
+          mop: formData.mopTo,
+          period: formData.period,
+          type: TransactionType.TRANSFER_TO,
+          notes: formData.notes,
+          notesPrivate: formData.notesPrivate,
+          mopRefNo,
+          receipt: null,
+          wasAudited: false,
+          creatorId: formData.creatorId || "",
+          accountId: formData.accountId || "",
+          items: toItems,
+          amount: toItems.reduce((sum, item) => sum + item.value, 0)
+        };
+
+        await onSave([fromEntry, toEntry]);
         return;
       }
 
-      const row = new Array(22).fill("");
-      row[JOR.DATE] = formData.date;
-      row[JOR.CREATOR] = "";
-      row[JOR.ACCOUNT] = "";
       const negativeTypes: string[] = [
         TransactionType.REFUND,
         TransactionType.REFUND_COLLECTION,
@@ -600,42 +576,26 @@
       ];
       const isNegative = negativeTypes.includes(formData.type);
 
-      row[JOR.WATER] =
-        isNegative && parseFloat(formData.waterFee) !== 0
-          ? `-${Math.abs(parseFloat(formData.waterFee))}`
-          : formData.waterFee || "0";
-      row[JOR.ASSOC] =
-        isNegative && parseFloat(formData.assocFee) !== 0
-          ? `-${Math.abs(parseFloat(formData.assocFee))}`
-          : formData.assocFee || "0";
-      row[JOR.MISC] =
-        formData.type === TransactionType.WAIVED
-          ? "0"
-          : isNegative && parseFloat(formData.miscFee) !== 0
-            ? `-${Math.abs(parseFloat(formData.miscFee))}`
-            : formData.miscFee || "0";
-      row[JOR.MOP] =
-        formData.type === TransactionType.WAIVED || formData.type === TransactionType.DISCREPANCY
-          ? ""
-          : formData.mop;
-      row[JOR.PERIOD] = formData.period;
+      const items = parsedFees
+        .map((item) => {
+          const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[item.accountKind];
+          if (formData.type === TransactionType.WAIVED && !cfg.canWaive) {
+            return { accountKind: item.accountKind, value: 0 };
+          }
+          if (item.value === 0) {
+            return { accountKind: item.accountKind, value: 0 };
+          }
+          return {
+            accountKind: item.accountKind,
+            value: isNegative ? -Math.abs(item.value) : item.value
+          };
+        })
+        .filter((item) => item.value !== 0);
+
       const mappedType: TransactionType =
         (TRANSACTION_TYPE_OPTIONS.find((t) => t.value === formData.type)
           ?.value as TransactionType) || formData.type;
-      row[JOR.TYPE] = mappedType;
-      row[JOR.NOTES] = formData.notes;
-      row[JOR.NOTES_PRIVATE] = formData.notesPrivate;
-      row[JOR.MOP_REFNO] =
-        formData.type === TransactionType.WAIVED || formData.type === TransactionType.DISCREPANCY
-          ? ""
-          : formData.instapayInvoice
-            ? `${formData.mopRefNo};${formData.instapayInvoice}`
-            : formData.mopRefNo;
-      row[JOR.PR_DATE_ISSUED] = formData.prDateIssued;
 
-      // PR_REFNO logic based on TYPE and Account
-
-      let prRef = formData.prRefNo;
       const isFunds = formData.accountId === SYSTEM_IDS.FUNDS;
       const isRefund =
         mappedType === TransactionType.REFUND || mappedType === TransactionType.REFUND_COLLECTION;
@@ -644,58 +604,70 @@
         TRANSACTION_TYPE_WITH_RECEIPT.includes(mappedType) ||
         ((TRANSACTION_TYPE_MAYBE_WITH_RECEIPT.includes(mappedType) || isRefund) && !isFunds);
 
-      if (!needsPr) {
-        prRef = "N/A";
-      }
+      const entryId = mode === "edit" && initialData ? initialData.id : crypto.randomUUID();
+      const entryMop =
+        formData.type === TransactionType.WAIVED || formData.type === TransactionType.DISCREPANCY
+          ? ""
+          : formData.mop;
+      const entryMopRef =
+        formData.type === TransactionType.WAIVED || formData.type === TransactionType.DISCREPANCY
+          ? ""
+          : mopRefNo;
 
-      row[JOR.PR_REFNO] = prRef || "";
-      row[JOR.CREATOR_NAME] = "";
-      row[JOR.NAME] = "";
-      row[JOR.STNO] = "";
-      row[JOR.RECEIPT_URL] = formData.receiptUrl || "";
-
-      if (mode === "edit") {
-        row[JOR.WAS_AUDITED] = initialData?.wasAudited ? "TRUE" : "FALSE";
-        row[JOR.ID] = initialData?.id;
-      } else {
-        row[JOR.WAS_AUDITED] = "FALSE";
-        row[JOR.ID] = crypto.randomUUID();
-      }
-      row[JOR.CREATOR_ID] = formData.creatorId || "";
-      row[JOR.ACCOUNT_ID] = formData.accountId || "";
+      const mainEntry: Partial<JournalRecord> = {
+        id: entryId,
+        date: formData.date,
+        mop: entryMop,
+        period: formData.period,
+        type: mappedType,
+        notes: formData.notes,
+        notesPrivate: formData.notesPrivate,
+        mopRefNo: entryMopRef,
+        receipt: needsPr
+          ? {
+              id: formData.prRefNo || initialData?.receipt?.id || crypto.randomUUID(),
+              groupId: entryId,
+              dateIssued: formData.prDateIssued || null,
+              receiptUrl: formData.receiptUrl || null
+            }
+          : null,
+        wasAudited: mode === "edit" && initialData?.wasAudited ? true : false,
+        creatorId: formData.creatorId || "",
+        accountId: formData.accountId || "",
+        items,
+        amount: items.reduce((sum, item) => sum + item.value, 0)
+      };
 
       if (mode === "add" && isEos && carryoverTerm) {
-        const carryoverRow = new Array(22).fill("");
-        carryoverRow[JOR.DATE] = formData.date;
-        carryoverRow[JOR.CREATOR] = "";
-        carryoverRow[JOR.ACCOUNT] = "";
-        carryoverRow[JOR.WATER] = water !== 0 ? (-water).toString() : "0";
-        carryoverRow[JOR.ASSOC] = assoc !== 0 ? (-assoc).toString() : "0";
-        carryoverRow[JOR.MISC] = misc !== 0 ? (-misc).toString() : "0";
-        carryoverRow[JOR.MOP] = formData.mop;
-        carryoverRow[JOR.PERIOD] = carryoverTerm;
+        const carryoverId = crypto.randomUUID();
+        const carryoverItems = parsedFees
+          .filter((item) => item.value !== 0)
+          .map((item) => ({ accountKind: item.accountKind, value: -item.value }));
         const mappedCarryoverType =
           TRANSACTION_TYPE_OPTIONS.find((t) => {
             return t.value === TransactionType.CARRYOVER;
           })?.value || TransactionType.CARRYOVER;
-        carryoverRow[JOR.TYPE] = mappedCarryoverType;
-        carryoverRow[JOR.NOTES] = "";
-        carryoverRow[JOR.NOTES_PRIVATE] = "";
-        carryoverRow[JOR.MOP_REFNO] = row[JOR.MOP_REFNO];
-        carryoverRow[JOR.PR_DATE_ISSUED] = "";
-        carryoverRow[JOR.PR_REFNO] = "N/A";
-        carryoverRow[JOR.CREATOR_NAME] = "";
-        carryoverRow[JOR.NAME] = "";
-        carryoverRow[JOR.STNO] = "";
-        carryoverRow[JOR.RECEIPT_URL] = "";
-        carryoverRow[JOR.WAS_AUDITED] = "FALSE";
-        carryoverRow[JOR.ID] = crypto.randomUUID();
-        carryoverRow[JOR.CREATOR_ID] = formData.creatorId || "";
-        carryoverRow[JOR.ACCOUNT_ID] = formData.accountId || "";
 
-        await onSave([row, carryoverRow]);
+        const carryoverEntry: Partial<JournalRecord> = {
+          id: carryoverId,
+          date: formData.date,
+          mop: formData.mop,
+          period: carryoverTerm,
+          type: mappedCarryoverType,
+          notes: "",
+          notesPrivate: "",
+          mopRefNo: entryMopRef,
+          receipt: null,
+          wasAudited: false,
+          creatorId: formData.creatorId || "",
+          accountId: formData.accountId || "",
+          items: carryoverItems,
+          amount: carryoverItems.reduce((sum, item) => sum + item.value, 0)
+        };
+
+        await onSave([mainEntry, carryoverEntry]);
       } else {
-        await onSave(row);
+        await onSave(mainEntry);
       }
     } catch (e: any) {
       error = `Submission failed: ${e.message}`;
@@ -885,133 +857,71 @@
               <Wallet class="h-3.5 w-3.5" /> Payment Details
             </Label>
             <div class="space-y-4">
-              <!-- Water Fee Row -->
-              <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
-                <div class="space-y-1.5">
-                  <Label>Water Fee</Label>
-                  <div class="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      bind:value={formData.waterFee}
-                      max={isCollection && !allowOverpayment ? waterLimit : undefined}
-                      disabled={!formData.accountId || isSubmitting || isEos}
-                      class="text-right font-mono"
-                    />
-                    {#if isCollection && selectedResident}
-                      <Tooltip.Root>
-                        <Tooltip.Trigger>
-                          {#snippet child({ props })}
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              class="h-9 w-9 shrink-0"
-                              {...props}
-                              onclick={() => (formData.waterFee = waterLimit.toString())}
-                              disabled={waterLimit <= 0 || isSubmitting}
-                            >
-                              <ArrowLeftToLine class="h-4 w-4" />
-                            </Button>
-                          {/snippet}
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>
-                          <p class="text-xs font-bold">Set to Maximum</p>
-                        </Tooltip.Content>
-                      </Tooltip.Root>
-                    {/if}
-                  </div>
-                </div>
-                {#if isCollection && selectedResident}
-                  <div class="space-y-1.5">
-                    <Label>Remaining Water Balance</Label>
-                    <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
-                      {#if currentWaterBal < 0}
-                        <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
-                      {:else}
-                        <span></span>
-                      {/if}
-                      <div
-                        class="font-mono text-sm font-bold {currentWaterBal > 0
-                          ? 'text-destructive'
-                          : 'text-primary'}"
-                      >
-                        {formatAccounting(currentWaterBal)}
+              {#each JOURNAL_ACCOUNT_KINDS as kind (kind)}
+                {@const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind]}
+                {#if formData.type !== TransactionType.WAIVED || cfg.canWaive}
+                  {@const hasBalanceLimit = isCollection && selectedResident && !!cfg.balanceField}
+                  {@const kindLimit = getKindLimit(kind)}
+                  {@const currentKindBal = getCurrentKindBal(kind)}
+                  <div class="grid gap-4 {hasBalanceLimit ? 'md:grid-cols-2' : ''}">
+                    <div class="space-y-1.5">
+                      <Label>{cfg.label}</Label>
+                      <div class="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          bind:value={formData.fees[kind]}
+                          max={hasBalanceLimit && !allowOverpayment ? kindLimit : undefined}
+                          disabled={!formData.accountId || isSubmitting || isEos}
+                          class="text-right font-mono"
+                        />
+                        {#if hasBalanceLimit}
+                          <Tooltip.Root>
+                            <Tooltip.Trigger>
+                              {#snippet child({ props })}
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  class="h-9 w-9 shrink-0"
+                                  {...props}
+                                  onclick={() => (formData.fees[kind] = kindLimit.toString())}
+                                  disabled={kindLimit <= 0 || isSubmitting}
+                                >
+                                  <ArrowLeftToLine class="h-4 w-4" />
+                                </Button>
+                              {/snippet}
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>
+                              <p class="text-xs font-bold">Set to Maximum</p>
+                            </Tooltip.Content>
+                          </Tooltip.Root>
+                        {/if}
                       </div>
                     </div>
-                  </div>
-                {/if}
-              </div>
-
-              <!-- Association Fee Row -->
-              <div class="grid gap-4 {isCollection && selectedResident ? 'md:grid-cols-2' : ''}">
-                <div class="space-y-1.5">
-                  <Label>Association Fee</Label>
-                  <div class="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      bind:value={formData.assocFee}
-                      max={isCollection && !allowOverpayment ? assocLimit : undefined}
-                      disabled={!formData.accountId || isSubmitting || isEos}
-                      class="text-right font-mono"
-                    />
-                    {#if isCollection && selectedResident}
-                      <Tooltip.Root>
-                        <Tooltip.Trigger>
-                          {#snippet child({ props })}
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              class="h-9 w-9 shrink-0"
-                              {...props}
-                              onclick={() => (formData.assocFee = assocLimit.toString())}
-                              disabled={assocLimit <= 0 || isSubmitting}
-                            >
-                              <ArrowLeftToLine class="h-4 w-4" />
-                            </Button>
-                          {/snippet}
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>
-                          <p class="text-xs font-bold">Set to Maximum</p>
-                        </Tooltip.Content>
-                      </Tooltip.Root>
+                    {#if hasBalanceLimit}
+                      <div class="space-y-1.5">
+                        <Label>Remaining {cfg.shortLabel} Balance</Label>
+                        <div
+                          class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3"
+                        >
+                          {#if currentKindBal < 0}
+                            <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
+                          {:else}
+                            <span></span>
+                          {/if}
+                          <div
+                            class="font-mono text-sm font-bold {currentKindBal > 0
+                              ? 'text-destructive'
+                              : 'text-primary'}"
+                          >
+                            {formatAccounting(currentKindBal)}
+                          </div>
+                        </div>
+                      </div>
                     {/if}
                   </div>
-                </div>
-                {#if isCollection && selectedResident}
-                  <div class="space-y-1.5">
-                    <Label>Remaining Association Balance</Label>
-                    <div class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3">
-                      {#if currentAssocBal < 0}
-                        <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
-                      {:else}
-                        <span></span>
-                      {/if}
-                      <div
-                        class="font-mono text-sm font-bold {currentAssocBal > 0
-                          ? 'text-destructive'
-                          : 'text-primary'}"
-                      >
-                        {formatAccounting(currentAssocBal)}
-                      </div>
-                    </div>
-                  </div>
                 {/if}
-              </div>
-
-              {#if formData.type !== TransactionType.WAIVED}
-                <!-- Misc Fee Row -->
-                <div class="space-y-1.5">
-                  <Label>Misc</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    bind:value={formData.miscFee}
-                    disabled={!formData.accountId || isSubmitting || isEos}
-                    class="text-right font-mono"
-                  />
-                </div>
-              {/if}
+              {/each}
 
               {#if isCollection && selectedResident && selectedResident.email !== "_funds"}
                 <div
@@ -1021,7 +931,7 @@
                   <div class="grid gap-0.5">
                     <Label for="allowOverpayment" class="cursor-pointer">Allow Overpayment</Label>
                     <p class="text-xs leading-tight text-muted-foreground">
-                      Override balance validation for water and association fees.
+                      Override balance validation for fees.
                     </p>
                   </div>
                 </div>

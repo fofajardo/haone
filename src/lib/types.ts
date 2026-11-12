@@ -353,37 +353,51 @@ export interface ResidentRecord {
   raw: string[];
 }
 
-export interface JournalRecord {
+export interface AcknowledgmentReceiptRecord {
+  id: string;
+  groupId: string;
+  dateIssued?: string | null;
+  receiptUrl?: string | null;
+}
+
+export interface JournalItemRecord {
+  id?: string;
+  groupId?: string;
+  accountKind: JournalAccountKind;
+  value: number;
+}
+
+export type JournalItem = JournalItemRecord;
+
+export interface JournalGroupRecord {
+  id: string;
   date: string;
-  creator: string; // EMAIL
-  account: string; // EMAIL
-  water: number;
-  assoc: number;
-  misc: number;
-  amount: number;
+  creatorId?: string;
+  accountId?: string;
   mop: string;
   period: string;
   type: string;
   notes: string;
   notesPrivate: string;
   mopRefNo: string;
-  prDateIssued: string;
-  prRefNo: string;
-  creatorName: string;
-  name: string; // ACCOUNT_NAME
-  stno: string;
   wasAudited: boolean;
-  receiptUrl: string;
-  id: string;
-  creatorId?: string;
-  accountId?: string;
-  raw: string[];
+  items: JournalItemRecord[];
+  receipt?: AcknowledgmentReceiptRecord | null;
+  creator: string;
+  account: string;
+  creatorName: string;
+  name: string;
+  stno: string;
+  amount: number;
+  raw?: any;
   dateWeight?: number;
   ledgerIndex?: number;
   runningBalance?: number;
   incoming?: number;
   outgoing?: number;
 }
+
+export type JournalRecord = JournalGroupRecord;
 
 export interface UserRecord {
   email: string;
@@ -730,6 +744,134 @@ export enum LaundryStatus {
   COMPLETED = "COMPLETED",
   CANCELLED_BY_ADMIN = "CANCELLED_BY_ADMIN",
   CANCELLED_BY_USER = "CANCELLED_BY_USER"
+}
+
+export enum JournalAccountKind {
+  WATER = 1,
+  ASSOC = 2,
+  MISC = 3
+}
+
+export interface JournalAccountKindConfig {
+  kind: JournalAccountKind;
+  key: "WATER" | "ASSOC" | "MISC";
+  label: string;
+  shortLabel: string;
+  color: string;
+  canWaive: boolean;
+  balanceField?: "waterBal" | "assocBal";
+  baseField?: "waterBase" | "assocBase";
+  paidField?: "waterPaid" | "assocPaid";
+  waivedField?: "waterWaived" | "assocWaived";
+  paymentRequestField: "waterFee" | "assocFee" | "misc";
+}
+
+export const JOURNAL_ACCOUNT_KIND_CONFIG: Record<JournalAccountKind, JournalAccountKindConfig> = {
+  [JournalAccountKind.WATER]: {
+    kind: JournalAccountKind.WATER,
+    key: "WATER",
+    label: "Water Fee",
+    shortLabel: "Water",
+    color: "#06b6d4",
+    canWaive: true,
+    balanceField: "waterBal",
+    baseField: "waterBase",
+    paidField: "waterPaid",
+    waivedField: "waterWaived",
+    paymentRequestField: "waterFee"
+  },
+  [JournalAccountKind.ASSOC]: {
+    kind: JournalAccountKind.ASSOC,
+    key: "ASSOC",
+    label: "Association Fee",
+    shortLabel: "Association",
+    color: "#3b82f6",
+    canWaive: true,
+    balanceField: "assocBal",
+    baseField: "assocBase",
+    paidField: "assocPaid",
+    waivedField: "assocWaived",
+    paymentRequestField: "assocFee"
+  },
+  [JournalAccountKind.MISC]: {
+    kind: JournalAccountKind.MISC,
+    key: "MISC",
+    label: "Miscellaneous",
+    shortLabel: "Misc",
+    color: "#f59e0b",
+    canWaive: false,
+    paymentRequestField: "misc"
+  }
+};
+
+export const JOURNAL_ACCOUNT_KINDS: JournalAccountKind[] = [
+  JournalAccountKind.WATER,
+  JournalAccountKind.ASSOC,
+  JournalAccountKind.MISC
+];
+
+export const JOURNAL_ACCOUNT_KIND_LABELS: Record<JournalAccountKind, string> = {
+  [JournalAccountKind.WATER]: JOURNAL_ACCOUNT_KIND_CONFIG[JournalAccountKind.WATER].label,
+  [JournalAccountKind.ASSOC]: JOURNAL_ACCOUNT_KIND_CONFIG[JournalAccountKind.ASSOC].label,
+  [JournalAccountKind.MISC]: JOURNAL_ACCOUNT_KIND_CONFIG[JournalAccountKind.MISC].label
+};
+
+export function getJournalAccountKindValue(
+  record: { items?: JournalItemRecord[]; accountKind?: JournalAccountKind; value?: number },
+  kind: JournalAccountKind
+): number {
+  if (record.items && record.items.length > 0) {
+    return record.items
+      .filter((item) => item.accountKind === kind)
+      .reduce((sum, item) => sum + item.value, 0);
+  }
+  if (record.accountKind === kind) {
+    return record.value || 0;
+  }
+  return 0;
+}
+
+export function getJournalActiveItems(
+  record:
+    | { items?: JournalItemRecord[]; accountKind?: JournalAccountKind; value?: number }
+    | Pick<PaymentRequestRecord, "waterFee" | "assocFee" | "misc">
+): { kind: JournalAccountKind; name: string; amount: number }[] {
+  if ("waterFee" in record || "assocFee" in record) {
+    const pr = record as Pick<PaymentRequestRecord, "waterFee" | "assocFee" | "misc">;
+    return JOURNAL_ACCOUNT_KINDS.map((kind) => {
+      const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+      return {
+        kind,
+        name: cfg.label,
+        amount: pr[cfg.paymentRequestField] || 0
+      };
+    }).filter((item) => item.amount !== 0);
+  }
+  const jr = record as {
+    items?: JournalItemRecord[];
+    accountKind?: JournalAccountKind;
+    value?: number;
+  };
+  return JOURNAL_ACCOUNT_KINDS.map((kind) => ({
+    kind,
+    name: JOURNAL_ACCOUNT_KIND_LABELS[kind],
+    amount: getJournalAccountKindValue(jr, kind)
+  })).filter((item) => item.amount !== 0);
+}
+
+export function getJournalReceiptHref(record: Pick<JournalGroupRecord, "id" | "receipt">): string {
+  const receipt = record.receipt;
+  if (!receipt) {
+    return "";
+  }
+  const customUrl = (receipt.receiptUrl || "").trim();
+  if (customUrl && customUrl !== "N/A" && customUrl !== "#N/A") {
+    return customUrl;
+  }
+  if (receipt.dateIssued && receipt.id) {
+    return `/receipt/${receipt.id}`;
+  }
+  return "";
 }
 
 export enum AnnouncementStatus {

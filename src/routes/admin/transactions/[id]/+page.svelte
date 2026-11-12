@@ -33,7 +33,7 @@
 
   const id = $derived(page.params.id);
 
-  import { type JournalRecord } from "$lib/types";
+  import { getJournalActiveItems, type JournalRecord } from "$lib/types";
   import { fetchResidents } from "$api/controllers/resident-controller";
   import { toast } from "svelte-sonner";
   import Banner from "$components/content/Banner.svelte";
@@ -157,15 +157,7 @@
     loadTransaction();
   });
 
-  const fees = $derived(
-    transaction
-      ? [
-          { name: "Water Fee", amount: transaction.water },
-          { name: "Association Fee", amount: transaction.assoc },
-          { name: "Miscellaneous", amount: transaction.misc }
-        ].filter((f) => f.amount !== 0)
-      : []
-  );
+  const fees = $derived(transaction ? getJournalActiveItems(transaction) : []);
 
   const total = $derived(fees.reduce((sum: number, f: { amount: number }) => sum + f.amount, 0));
   const mopInfo = $derived(transaction ? parseRef(transaction.mopRefNo) : null);
@@ -208,7 +200,7 @@
         ? [
             {
               label: "Edit",
-              variant: transaction?.receiptUrl ? "secondary" : "default",
+              variant: transaction?.receipt?.receiptUrl ? "secondary" : "default",
               href: `/admin/transactions/${id}/edit`,
               disabled: isDeleting,
               icon: Pencil
@@ -229,11 +221,11 @@
             }
           ]
         : []),
-      ...(transaction && transaction.receiptUrl
+      ...(transaction && transaction.receipt?.receiptUrl
         ? [
             {
               label: "View Receipt",
-              href: transaction.receiptUrl,
+              href: transaction.receipt.receiptUrl,
               target: "_blank",
               icon: ExternalLink
             }
@@ -460,7 +452,7 @@
                   >Series Number</Label
                 >
                 <p class="font-mono text-sm leading-none font-bold text-primary">
-                  {transaction.prRefNo || "—"}
+                  {transaction.receipt?.id || "—"}
                 </p>
               </div>
               {#if mopInfo}

@@ -21,7 +21,14 @@
     approvePaymentRequest
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
-  import { PaymentRequestStatus, JOURNAL_COL as JOR, TransactionType } from "$lib/types";
+  import {
+    JOURNAL_ACCOUNT_KIND_CONFIG,
+    JOURNAL_ACCOUNT_KINDS,
+    JournalAccountKind,
+    PaymentRequestStatus,
+    TransactionType,
+    type JournalRecord
+  } from "$lib/types";
   import { settings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { formatAmount, formatDate } from "$utils/formatters";
@@ -61,13 +68,15 @@
       filtered.forEach((p) => {
         const resident = r.find((res) => res.residentId === p.residentId);
         const user = u.find((usr) => usr.id === p.residentId);
+        const items = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
+          accountKind: kind,
+          value: p[JOURNAL_ACCOUNT_KIND_CONFIG[kind].paymentRequestField] || 0
+        })).filter((item) => item.value !== 0);
+
         stagedForms[p.id] = {
           date: p.date,
           creator: "", // deprecated
           account: "", // deprecated
-          water: p.waterFee,
-          assoc: p.assocFee,
-          misc: p.misc,
           mop: p.mop,
           period: settings.activeTerm,
           type:
@@ -77,19 +86,18 @@
           notes: p.notes || "",
           notesPrivate: "",
           mopRefNo: "",
-          prDateIssued: "",
-          prRefNo: "",
+          receipt: null,
           creatorName: auth.displayNameLastFirst || "",
           name: resident?.name || user?.displayName || "",
           stno: resident?.stno || user?.studentNo || "",
           wasAudited: false,
-          receiptUrl: "",
           id: "",
+          items,
           creatorId: auth.userId,
           accountId: p.residentId || user?.id || resident?.residentId || "",
-          amount: p.waterFee + p.assocFee + p.misc,
+          amount: items.reduce((sum, item) => sum + item.value, 0),
           raw: []
-        };
+        } satisfies JournalRecord;
       });
 
       payments = filtered;
@@ -138,27 +146,14 @@
     }
   }
 
-  async function handleSaveReview(row: any[]) {
-    if (!currentPayment) return;
+  async function handleSaveReview(entry: Partial<JournalRecord> | Partial<JournalRecord>[]) {
+    if (!currentPayment) {
+      return;
+    }
     isProcessing = true;
     try {
-      await approvePaymentRequest(currentPayment.id, {
-        date: row[0] || "",
-        water: parseFloat(row[3] || "0"),
-        assoc: parseFloat(row[4] || "0"),
-        misc: parseFloat(row[5] || "0"),
-        mop: row[6] || "",
-        period: row[7] || "",
-        type: row[8] || "",
-        notes: row[9] || "",
-        notesPrivate: row[10] || "",
-        mopRefNo: row[11] || "",
-        prDateIssued: row[12] || "",
-        prRefNo: row[13] || "",
-        receiptUrl: row[18] || "",
-        creatorId: row[20] || "",
-        accountId: row[21] || ""
-      });
+      const target = Array.isArray(entry) ? entry[0] : entry;
+      await approvePaymentRequest(currentPayment.id, target);
       await deleteUploadedImage(currentPayment.proofLink, auth.accessToken!);
 
       toast.success("Transaction added and payment request approved");
@@ -181,24 +176,28 @@
   }
 
   function handleStateChange(formData: any) {
-    if (!currentPayment) return;
+    if (!currentPayment) {
+      return;
+    }
+    const items = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
+      accountKind: kind,
+      value: parseFloat(formData.fees?.[kind]) || 0
+    })).filter((item) => item.value !== 0);
+
     stagedForms[currentPayment.id] = {
       ...stagedForms[currentPayment.id],
       date: formData.date,
       creatorId: formData.creatorId || stagedForms[currentPayment.id]?.creatorId,
       accountId: formData.accountId || stagedForms[currentPayment.id]?.accountId,
       account: formData.accountEmail,
-      water: parseFloat(formData.waterFee) || 0,
-      assoc: parseFloat(formData.assocFee) || 0,
-      misc: parseFloat(formData.miscFee) || 0,
+      items,
+      amount: items.reduce((sum, item) => sum + item.value, 0),
       mop: formData.mop,
       period: formData.period,
       type: formData.type,
       notes: formData.notes,
       notesPrivate: formData.notesPrivate,
       mopRefNo: formData.mopRefNo,
-      prDateIssued: formData.prDateIssued,
-      prRefNo: formData.prRefNo,
       name: formData.accountName,
       stno: formData.accountStNo
     };

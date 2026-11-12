@@ -22,7 +22,15 @@
   import { formatAccounting } from "$utils/formatters";
   import { translateMop, translateTransactionType } from "$utils/translators";
   import { getJournalDateRange } from "$utils/parsers";
-  import type { JournalRecord, ResidentRecord } from "$lib/types";
+  import {
+    JOURNAL_ACCOUNT_KIND_CONFIG,
+    JOURNAL_ACCOUNT_KIND_LABELS,
+    JOURNAL_ACCOUNT_KINDS,
+    getJournalAccountKindValue,
+    type JournalAccountKind,
+    type JournalRecord,
+    type ResidentRecord
+  } from "$lib/types";
   import * as Table from "$ui/table";
   import * as Tabs from "$ui/tabs";
   import {
@@ -135,18 +143,18 @@
     });
   });
 
-  // Balance trend line graph: running totals over time for Water, Assoc, and Misc
+  // Balance trend line graph: running totals over time for each account kind
   let balanceTrendData = $derived.by(() => {
-    let runningWater = 0;
-    let runningAssoc = 0;
-    let runningMisc = 0;
+    const runningByKind = Object.fromEntries(
+      JOURNAL_ACCOUNT_KINDS.map((kind) => [kind, 0])
+    ) as Record<JournalAccountKind, number>;
 
     const points = processedJournal.map((j, idx) => {
       const isWaived = j.type?.toUpperCase().includes("WAIVED");
       if (!isWaived) {
-        runningWater += j.water;
-        runningAssoc += j.assoc;
-        runningMisc += j.misc;
+        for (const kind of JOURNAL_ACCOUNT_KINDS) {
+          runningByKind[kind] += getJournalAccountKindValue(j, kind);
+        }
       }
 
       let dateFormatted = j.date;
@@ -164,7 +172,13 @@
         }
       }
 
-      const total = runningWater + runningAssoc + runningMisc;
+      const total = JOURNAL_ACCOUNT_KINDS.reduce((sum, kind) => sum + runningByKind[kind], 0);
+      const kindValues = Object.fromEntries(
+        JOURNAL_ACCOUNT_KINDS.map((kind) => [
+          JOURNAL_ACCOUNT_KIND_CONFIG[kind].key,
+          Math.round(runningByKind[kind] * 100) / 100
+        ])
+      );
 
       return {
         id: j.id || `pt-${idx}`,
@@ -172,9 +186,7 @@
         date: dateFormatted,
         rawDate: j.date,
         balance: Math.round(total * 100) / 100,
-        water: Math.round(runningWater * 100) / 100,
-        assoc: Math.round(runningAssoc * 100) / 100,
-        misc: Math.round(runningMisc * 100) / 100
+        ...kindValues
       };
     });
 
@@ -183,9 +195,11 @@
 
   const balanceTrendSeries = [
     { key: "balance", label: "Net Balance", color: "#10b981" },
-    { key: "water", label: "Water Fee", color: "#06b6d4" },
-    { key: "assoc", label: "Association Fee", color: "#3b82f6" },
-    { key: "misc", label: "Miscellaneous", color: "#f59e0b" }
+    ...JOURNAL_ACCOUNT_KINDS.map((kind) => ({
+      key: JOURNAL_ACCOUNT_KIND_CONFIG[kind].key,
+      label: JOURNAL_ACCOUNT_KIND_LABELS[kind],
+      color: JOURNAL_ACCOUNT_KIND_CONFIG[kind].color
+    }))
   ];
 
   // Settlement status of residents for the term
@@ -398,100 +412,39 @@
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    <!-- WATER FEE Group -->
-                    <Table.Row class="font-bold">
-                      <Table.Cell>WATER FEE</Table.Cell>
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(fundSummary.feeSummary.WATER.incoming)}</Table.Cell
-                      >
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(fundSummary.feeSummary.WATER.outgoing)}</Table.Cell
-                      >
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(
-                          fundSummary.feeSummary.WATER.incoming -
-                            fundSummary.feeSummary.WATER.outgoing
-                        )}</Table.Cell
-                      >
-                    </Table.Row>
-                    {#each Object.entries(fundSummary.feeTypeMopSummary.WATER) as [mop, data]}
-                      <Table.Row>
-                        <Table.Cell class="pl-6 uppercase"
-                          >{availableMops.find((m) => m.value === mop)?.label ||
-                            translateMop(mop)}</Table.Cell
-                        >
-                        <Table.Cell class="text-right">{formatAccounting(data.incoming)}</Table.Cell
-                        >
-                        <Table.Cell class="text-right">{formatAccounting(data.outgoing)}</Table.Cell
+                    {#each JOURNAL_ACCOUNT_KINDS as kind (kind)}
+                      <Table.Row class="font-bold">
+                        <Table.Cell>{JOURNAL_ACCOUNT_KIND_LABELS[kind].toUpperCase()}</Table.Cell>
+                        <Table.Cell class="text-right"
+                          >{formatAccounting(fundSummary.feeSummary[kind].incoming)}</Table.Cell
                         >
                         <Table.Cell class="text-right"
-                          >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
-                        >
-                      </Table.Row>
-                    {/each}
-
-                    <!-- ASSOCIATION FEE Group -->
-                    <Table.Row class="font-bold">
-                      <Table.Cell>ASSOCIATION FEE</Table.Cell>
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(fundSummary.feeSummary.ASSOC.incoming)}</Table.Cell
-                      >
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(fundSummary.feeSummary.ASSOC.outgoing)}</Table.Cell
-                      >
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(
-                          fundSummary.feeSummary.ASSOC.incoming -
-                            fundSummary.feeSummary.ASSOC.outgoing
-                        )}</Table.Cell
-                      >
-                    </Table.Row>
-                    {#each Object.entries(fundSummary.feeTypeMopSummary.ASSOC) as [mop, data]}
-                      <Table.Row>
-                        <Table.Cell class="pl-6 uppercase"
-                          >{availableMops.find((m) => m.value === mop)?.label ||
-                            translateMop(mop)}</Table.Cell
-                        >
-                        <Table.Cell class="text-right">{formatAccounting(data.incoming)}</Table.Cell
-                        >
-                        <Table.Cell class="text-right">{formatAccounting(data.outgoing)}</Table.Cell
+                          >{formatAccounting(fundSummary.feeSummary[kind].outgoing)}</Table.Cell
                         >
                         <Table.Cell class="text-right"
-                          >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
+                          >{formatAccounting(
+                            fundSummary.feeSummary[kind].incoming -
+                              fundSummary.feeSummary[kind].outgoing
+                          )}</Table.Cell
                         >
                       </Table.Row>
-                    {/each}
-
-                    <!-- MISCELLANEOUS Group -->
-                    <Table.Row class="font-bold">
-                      <Table.Cell>MISCELLANEOUS</Table.Cell>
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(fundSummary.feeSummary.MISC.incoming)}</Table.Cell
-                      >
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(fundSummary.feeSummary.MISC.outgoing)}</Table.Cell
-                      >
-                      <Table.Cell class="text-right"
-                        >{formatAccounting(
-                          fundSummary.feeSummary.MISC.incoming -
-                            fundSummary.feeSummary.MISC.outgoing
-                        )}</Table.Cell
-                      >
-                    </Table.Row>
-                    {#each Object.entries(fundSummary.feeTypeMopSummary.MISC) as [mop, data]}
-                      <Table.Row>
-                        <Table.Cell class="pl-6 uppercase"
-                          >{availableMops.find((m) => m.value === mop)?.label ||
-                            translateMop(mop)}</Table.Cell
-                        >
-                        <Table.Cell class="text-right">{formatAccounting(data.incoming)}</Table.Cell
-                        >
-                        <Table.Cell class="text-right">{formatAccounting(data.outgoing)}</Table.Cell
-                        >
-                        <Table.Cell class="text-right"
-                          >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
-                        >
-                      </Table.Row>
+                      {#each Object.entries(fundSummary.feeTypeMopSummary[kind]) as [mop, data]}
+                        <Table.Row>
+                          <Table.Cell class="pl-6 uppercase"
+                            >{availableMops.find((m) => m.value === mop)?.label ||
+                              translateMop(mop)}</Table.Cell
+                          >
+                          <Table.Cell class="text-right"
+                            >{formatAccounting(data.incoming)}</Table.Cell
+                          >
+                          <Table.Cell class="text-right"
+                            >{formatAccounting(data.outgoing)}</Table.Cell
+                          >
+                          <Table.Cell class="text-right"
+                            >{formatAccounting(data.incoming - data.outgoing)}</Table.Cell
+                          >
+                        </Table.Row>
+                      {/each}
                     {/each}
 
                     <!-- ENDING BALANCE final row -->

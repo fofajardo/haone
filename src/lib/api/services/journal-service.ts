@@ -1,4 +1,10 @@
-import type { JournalRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
+import {
+  JournalAccountKind,
+  type JournalItem,
+  type JournalRecord,
+  type PaginatedResponse,
+  type PaginationOptions
+} from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { parseCSVAmount } from "$utils/math";
 import { getLocalDateString, isUuid, parseDbDate } from "$utils/parsers";
@@ -43,6 +49,111 @@ function applyFilters(query: any, filters?: JournalFilters) {
   return query;
 }
 
+export function buildJournalInsertPayload(
+  data: Partial<JournalRecord>,
+  creatorId: string | null,
+  accountId: string | null
+): { groupRow: Record<string, any>; itemRows: Record<string, any>[] } {
+  const groupId = data.id && isUuid(data.id) ? data.id : crypto.randomUUID();
+  const groupRow = {
+    id: groupId,
+    date: parseDbDate(data.date) || getLocalDateString(),
+    creator_id: creatorId && isUuid(creatorId) ? creatorId : null,
+    account_id: accountId && isUuid(accountId) ? accountId : null,
+    mop: data.mop,
+    period: data.period,
+    type: data.type,
+    notes: data.notes,
+    notes_private: data.notesPrivate,
+    mop_ref_no: data.mopRefNo,
+    was_audited: data.wasAudited ?? false
+  };
+
+  const active = (data.items || []).filter((item) => item.value !== 0);
+  const itemsToInsert =
+    active.length > 0 ? active : [{ accountKind: JournalAccountKind.WATER, value: 0 }];
+  const itemRows = itemsToInsert.map((item) => ({
+    id: item.id && isUuid(item.id) ? item.id : crypto.randomUUID(),
+    group_id: groupId,
+    account_kind: item.accountKind,
+    value: item.value
+  }));
+  return { groupRow, itemRows };
+}
+
+export async function syncAcknowledgmentReceipt(
+  groupId: string,
+  data: Partial<JournalRecord>
+): Promise<void> {
+  if (!supabase || !groupId || !isUuid(groupId)) {
+    return;
+  }
+
+  if (data.receipt === undefined) {
+    return;
+  }
+
+  if (data.receipt === null) {
+    const { error: delErr } = await supabase
+      .from("acknowledgment_receipts")
+      .delete()
+      .eq("group_id", groupId);
+    if (delErr) {
+      handleSupabaseError(delErr);
+    }
+    return;
+  }
+
+  const rawRefNo = (data.receipt.id ?? "").trim();
+  const rawDateIssued = parseDbDate(data.receipt.dateIssued || undefined);
+  const rawReceiptUrl = (data.receipt.receiptUrl ?? "").trim();
+  const storedReceiptUrl =
+    rawReceiptUrl && !rawReceiptUrl.includes("/receipt/") ? rawReceiptUrl : null;
+
+  const { data: existing, error: findErr } = await supabase
+    .from("acknowledgment_receipts")
+    .select("*")
+    .eq("group_id", groupId)
+    .maybeSingle();
+
+  if (findErr) {
+    handleSupabaseError(findErr);
+  }
+
+  if (existing) {
+    const updPayload: Record<string, any> = {};
+    if (isUuid(rawRefNo)) {
+      updPayload.id = rawRefNo;
+    }
+    if (data.receipt.dateIssued !== undefined) {
+      updPayload.date_issued = rawDateIssued;
+    }
+    if (data.receipt.receiptUrl !== undefined) {
+      updPayload.receipt_url = storedReceiptUrl;
+    }
+    if (Object.keys(updPayload).length > 0) {
+      const { error: uErr } = await supabase
+        .from("acknowledgment_receipts")
+        .update(updPayload)
+        .eq("group_id", groupId);
+      if (uErr) {
+        handleSupabaseError(uErr);
+      }
+    }
+  } else {
+    const receiptId = isUuid(rawRefNo) ? rawRefNo : crypto.randomUUID();
+    const { error: iErr } = await supabase.from("acknowledgment_receipts").insert({
+      id: receiptId,
+      group_id: groupId,
+      date_issued: rawDateIssued,
+      receipt_url: storedReceiptUrl
+    });
+    if (iErr) {
+      handleSupabaseError(iErr);
+    }
+  }
+}
+
 export const journalService: JournalServiceInterface = {
   async fetchJournalEntries(
     filters?: JournalFilters,
@@ -56,32 +167,23 @@ export const journalService: JournalServiceInterface = {
 
     const isPaginated = !!(options?.page && options?.pageSize);
 
-    let data: any[] = [];
-    let count = 0;
-
-    if (isPaginated) {
-      let query = applyFilters(supabase.from("journal").select("*", { count: "exact" }), filters)
-        .order("created_at", { ascending: true })
-        .order("id", { ascending: true });
-      const start = (options!.page! - 1) * options!.pageSize!;
-      const end = start + options!.pageSize!;
-      const { data: rows, count: total, error } = await query.range(start, end);
-      if (error) {
-        handleSupabaseError(error);
-      }
-      data = rows || [];
-      count = total || 0;
-    } else {
-      data = await fetchAllSupabaseRows(() =>
-        applyFilters(sb.from("journal").select("*"), filters)
+    const [groups, itemRows, usersRes, receipts] = await Promise.all([
+      fetchAllSupabaseRows(() =>
+        applyFilters(sb.from("journal_groups").select("*"), filters)
           .order("created_at", { ascending: true })
           .order("id", { ascending: true })
-      );
-    }
+      ),
+      fetchAllSupabaseRows(() =>
+        sb
+          .from("journal")
+          .select("*")
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+      ),
+      supabase.from("users_view").select("id, email, display_name, student_no"),
+      fetchAllSupabaseRows(() => sb.from("acknowledgment_receipts").select("*"))
+    ]);
 
-    const usersRes = await supabase
-      .from("users_view")
-      .select("id, email, display_name, student_no");
     if (usersRes.error) {
       handleSupabaseError(usersRes.error);
     }
@@ -96,48 +198,92 @@ export const journalService: JournalServiceInterface = {
       }
     });
 
-    const items: JournalRecord[] = data.map((row: any) => {
-      const accountId = (row.account_id || "").toLowerCase().trim();
-      const creatorId = (row.creator_id || "").toLowerCase().trim();
+    const receiptMap = new Map<string, any>();
+    (receipts || []).forEach((r: any) => {
+      if (r.group_id) {
+        receiptMap.set(r.group_id, r);
+      }
+    });
+
+    const itemsByGroup = new Map<string, JournalItem[]>();
+    for (const row of itemRows) {
+      const groupKey = row.group_id || row.id;
+      const val = parseCSVAmount(row.value);
+      const kind = Number(row.account_kind) as JournalAccountKind;
+      const list = itemsByGroup.get(groupKey) || [];
+      const existingItem = list.find((item) => item.accountKind === kind);
+      if (existingItem) {
+        existingItem.value += val;
+      } else {
+        list.push({ id: row.id, groupId: groupKey, accountKind: kind, value: val });
+      }
+      itemsByGroup.set(groupKey, list);
+    }
+
+    const allItems: JournalRecord[] = [];
+
+    for (const group of groups) {
+      const groupKey = group.id;
+      const items = itemsByGroup.get(groupKey) || [];
+      const amount = items.reduce((sum, item) => sum + item.value, 0);
+
+      const accountId = (group.account_id || "").toLowerCase().trim();
+      const creatorId = (group.creator_id || "").toLowerCase().trim();
       const accountUser = userMap.get(accountId);
       const creatorUser = userMap.get(creatorId);
+      const receiptRow = receiptMap.get(groupKey);
 
-      return {
-        id: row.id,
-        date: row.date,
+      const dateIssued = receiptRow?.date_issued || "";
+      const rawReceiptUrl = (receiptRow?.receipt_url || "").trim();
+      const receiptUrl =
+        rawReceiptUrl || (receiptRow && dateIssued ? `/receipt/${receiptRow.id}` : "");
+      const receipt = receiptRow
+        ? {
+            id: receiptRow.id,
+            groupId: groupKey,
+            dateIssued,
+            receiptUrl
+          }
+        : null;
+
+      allItems.push({
+        id: groupKey,
+        items,
+        receipt,
+        date: group.date,
         creator: creatorUser?.email || "",
         account: accountUser?.email || "",
-        water: parseCSVAmount(row.water),
-        assoc: parseCSVAmount(row.assoc),
-        misc: parseCSVAmount(row.misc),
-        amount: parseCSVAmount(row.water) + parseCSVAmount(row.assoc) + parseCSVAmount(row.misc),
-        mop: row.mop || "",
-        period: row.period || "",
-        type: row.type || "",
-        notes: row.notes || "",
-        notesPrivate: row.notes_private || "",
-        mopRefNo: row.mop_ref_no || "",
-        prDateIssued: row.pr_date_issued || "",
-        prRefNo: row.pr_ref_no || "",
+        amount,
+        mop: group.mop || "",
+        period: group.period || "",
+        type: group.type || "",
+        notes: group.notes || "",
+        notesPrivate: group.notes_private || "",
+        mopRefNo: group.mop_ref_no || "",
         creatorName: creatorUser?.display_name || "",
         name: accountUser?.display_name || "",
         stno: accountUser?.student_no || "",
-        wasAudited: row.was_audited || false,
-        receiptUrl: row.receipt_url || "",
-        creatorId: row.creator_id || undefined,
-        accountId: row.account_id || undefined,
-        raw: row
-      };
-    });
+        wasAudited: group.was_audited || false,
+        creatorId: group.creator_id || undefined,
+        accountId: group.account_id || undefined,
+        raw: group
+      });
+    }
 
     if (auth.isResident) {
-      for (const item of items) {
+      for (const item of allItems) {
         item.notesPrivate = "";
-        item.receiptUrl = "";
+        if (item.receipt) {
+          item.receipt.receiptUrl = "";
+        }
       }
     }
 
     if (isPaginated) {
+      const count = allItems.length;
+      const start = (options!.page! - 1) * options!.pageSize!;
+      const end = start + options!.pageSize!;
+      const items = allItems.slice(start, end);
       return {
         items,
         totalCount: count,
@@ -147,7 +293,7 @@ export const journalService: JournalServiceInterface = {
       };
     }
 
-    return items;
+    return allItems;
   },
 
   async addJournalEntry(data: Partial<JournalRecord>): Promise<void> {
@@ -187,34 +333,55 @@ export const journalService: JournalServiceInterface = {
       }
     }
 
-    const { error } = await supabase.from("journal").insert({
-      id: data.id || crypto.randomUUID(),
-      date: parseDbDate(data.date) || getLocalDateString(),
-      creator_id: creatorId && isUuid(creatorId) ? creatorId : null,
-      account_id: accountId && isUuid(accountId) ? accountId : null,
-      water: data.water ?? 0,
-      assoc: data.assoc ?? 0,
-      misc: data.misc ?? 0,
-      mop: data.mop,
-      period: data.period,
-      type: data.type,
-      notes: data.notes,
-      notes_private: data.notesPrivate,
-      mop_ref_no: data.mopRefNo,
-      pr_date_issued: parseDbDate(data.prDateIssued),
-      pr_ref_no: data.prRefNo,
-      was_audited: data.wasAudited ?? false,
-      receipt_url: data.receiptUrl
-    });
-    if (error) {
-      handleSupabaseError(error);
+    const { groupRow, itemRows } = buildJournalInsertPayload(
+      data,
+      creatorId || null,
+      accountId || null
+    );
+
+    const { error: groupErr } = await supabase.from("journal_groups").insert(groupRow);
+    if (groupErr) {
+      handleSupabaseError(groupErr);
     }
+
+    const { error: itemErr } = await supabase.from("journal").insert(itemRows);
+    if (itemErr) {
+      await supabase.from("journal_groups").delete().eq("id", groupRow.id);
+      handleSupabaseError(itemErr);
+    }
+
+    await syncAcknowledgmentReceipt(groupRow.id, data);
   },
 
   async updateJournalEntry(id: string, data: Partial<JournalRecord>): Promise<void> {
     if (!supabase) {
       return;
     }
+
+    let targetGroupId = id;
+    const { data: groupCheck, error: gFindErr } = await supabase
+      .from("journal_groups")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+    if (gFindErr) {
+      handleSupabaseError(gFindErr);
+    }
+
+    if (!groupCheck) {
+      const { data: itemCheck, error: iFindErr } = await supabase
+        .from("journal")
+        .select("group_id")
+        .eq("id", id)
+        .maybeSingle();
+      if (iFindErr) {
+        handleSupabaseError(iFindErr);
+      }
+      assertSupabaseFound(itemCheck ? [itemCheck] : [], "Journal entry not found");
+      targetGroupId = itemCheck!.group_id;
+    }
+
+    await syncAcknowledgmentReceipt(targetGroupId, data);
 
     const payload: Record<string, any> = {};
     if (data.date !== undefined) {
@@ -256,15 +423,6 @@ export const journalService: JournalServiceInterface = {
       }
       payload.account_id = aId && isUuid(aId) ? aId : null;
     }
-    if (data.water !== undefined) {
-      payload.water = data.water;
-    }
-    if (data.assoc !== undefined) {
-      payload.assoc = data.assoc;
-    }
-    if (data.misc !== undefined) {
-      payload.misc = data.misc;
-    }
     if (data.mop !== undefined) {
       payload.mop = data.mop;
     }
@@ -283,35 +441,92 @@ export const journalService: JournalServiceInterface = {
     if (data.mopRefNo !== undefined) {
       payload.mop_ref_no = data.mopRefNo;
     }
-    if (data.prDateIssued !== undefined) {
-      payload.pr_date_issued = parseDbDate(data.prDateIssued);
-    }
-    if (data.prRefNo !== undefined) {
-      payload.pr_ref_no = data.prRefNo;
-    }
     if (data.wasAudited !== undefined) {
       payload.was_audited = data.wasAudited;
     }
-    if (data.receiptUrl !== undefined) {
-      payload.receipt_url = data.receiptUrl;
+
+    if (Object.keys(payload).length > 0) {
+      const { error: updErr } = await supabase
+        .from("journal_groups")
+        .update(payload)
+        .eq("id", targetGroupId);
+      if (updErr) {
+        handleSupabaseError(updErr);
+      }
     }
 
-    const { data: updated, error } = await supabase
-      .from("journal")
-      .update(payload)
-      .eq("id", id)
-      .select("id");
-    if (error) {
-      handleSupabaseError(error);
+    const hasFeeUpdates = data.items !== undefined;
+    if (!hasFeeUpdates) {
+      return;
     }
-    assertSupabaseFound(updated, "Journal entry not found");
+
+    const { data: existingRows, error: rowsErr } = await supabase
+      .from("journal")
+      .select("*")
+      .eq("group_id", targetGroupId);
+    if (rowsErr) {
+      handleSupabaseError(rowsErr);
+    }
+
+    const rawDesired = (data.items || []).filter((item) => item.value !== 0);
+    const desired =
+      rawDesired.length > 0
+        ? rawDesired.map((item) => ({ kind: item.accountKind, val: item.value }))
+        : [{ kind: JournalAccountKind.WATER, val: 0 }];
+
+    const desiredKinds = new Set(desired.map((d) => d.kind));
+    const existingByKind = new Map<number, any>();
+    for (const r of existingRows || []) {
+      existingByKind.set(Number(r.account_kind), r);
+    }
+
+    const idsToDelete = (existingRows || [])
+      .filter((r) => !desiredKinds.has(Number(r.account_kind) as JournalAccountKind))
+      .map((r) => r.id);
+
+    for (const item of desired) {
+      const match = existingByKind.get(item.kind);
+      if (match) {
+        const { error: uErr } = await supabase
+          .from("journal")
+          .update({
+            account_kind: item.kind,
+            value: item.val
+          })
+          .eq("id", match.id);
+        if (uErr) {
+          handleSupabaseError(uErr);
+        }
+      } else {
+        const { error: iErr } = await supabase.from("journal").insert({
+          id: crypto.randomUUID(),
+          group_id: targetGroupId,
+          account_kind: item.kind,
+          value: item.val
+        });
+        if (iErr) {
+          handleSupabaseError(iErr);
+        }
+      }
+    }
+
+    if (idsToDelete.length > 0) {
+      const { error: dErr } = await supabase.from("journal").delete().in("id", idsToDelete);
+      if (dErr) {
+        handleSupabaseError(dErr);
+      }
+    }
   },
 
   async deleteJournalEntry(id: string): Promise<void> {
     if (!supabase) {
       return;
     }
-    const { data, error } = await supabase.from("journal").delete().eq("id", id).select("id");
+    const { data, error } = await supabase
+      .from("journal_groups")
+      .delete()
+      .eq("id", id)
+      .select("id");
     if (error) {
       handleSupabaseError(error);
     }
@@ -327,7 +542,7 @@ export const journalService: JournalServiceInterface = {
       return;
     }
     const { error } = await supabase
-      .from("journal")
+      .from("journal_groups")
       .update({ was_audited: true })
       .in("id", validIds);
     if (error) {

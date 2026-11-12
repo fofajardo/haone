@@ -184,12 +184,7 @@
       // Stats from Journal
       const journalData = journals;
       const pending = journalData.filter((r) => {
-        return (
-          r.period === settings.currentTerm &&
-          (!r.prDateIssued || r.prDateIssued === "#N/A") &&
-          r.prRefNo !== "N/A" &&
-          r.prRefNo !== "#N/A"
-        );
+        return r.period === settings.currentTerm && !!r.receipt && !r.receipt.dateIssued;
       });
 
       stats.pendingSettlements = pending.length;

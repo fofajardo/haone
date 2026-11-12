@@ -8,6 +8,9 @@ import {
 import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
 import {
   AccountType,
+  JOURNAL_ACCOUNT_KIND_CONFIG,
+  JOURNAL_ACCOUNT_KINDS,
+  JournalAccountKind,
   TRANSACTION_TYPE_CONFIG,
   TransactionType,
   UserTag,
@@ -527,20 +530,21 @@ export async function manualDelistResident(
         const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
 
         let remainingToWaive = resRecord.bal;
-        let waterWaiveAmt = 0;
-        let assocWaiveAmt = 0;
-        let miscWaiveAmt = 0;
+        const waiveItems: { accountKind: JournalAccountKind; value: number }[] = [];
 
-        if (resRecord.waterBal > 0) {
-          waterWaiveAmt = Math.min(resRecord.waterBal, remainingToWaive);
-          remainingToWaive -= waterWaiveAmt;
-        }
-        if (remainingToWaive > 0 && resRecord.assocBal > 0) {
-          assocWaiveAmt = Math.min(resRecord.assocBal, remainingToWaive);
-          remainingToWaive -= assocWaiveAmt;
-        }
-        if (remainingToWaive > 0) {
-          miscWaiveAmt = remainingToWaive;
+        for (const kind of JOURNAL_ACCOUNT_KINDS) {
+          const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+          if (cfg.balanceField) {
+            const bal = resRecord[cfg.balanceField] || 0;
+            if (remainingToWaive > 0 && bal > 0) {
+              const waiveAmt = Math.min(bal, remainingToWaive);
+              waiveItems.push({ accountKind: kind, value: waiveAmt });
+              remainingToWaive -= waiveAmt;
+            }
+          } else if (remainingToWaive > 0) {
+            waiveItems.push({ accountKind: kind, value: remainingToWaive });
+            remainingToWaive = 0;
+          }
         }
 
         const dateStr = new Date()
@@ -561,29 +565,34 @@ export async function manualDelistResident(
           noteLabel = `TRANSFERRED TO ANOTHER RESIDENCE HALL (${dateStr})`;
         }
 
-        // FIXME: this looks broken since it's still using the legacy email as ID behavior.
+        const groupId = crypto.randomUUID();
+
         await addJournalEntries([
           {
+            id: groupId,
             date: getLocalDateString(),
             creator: auth.user?.email || "",
             account: resRecord.email,
-            water: waterWaiveAmt,
-            assoc: assocWaiveAmt,
-            misc: miscWaiveAmt,
+            creatorId: auth.userId,
+            accountId: resRecord.residentId,
+            items: waiveItems,
+            amount: waiveItems.reduce((sum, item) => sum + item.value, 0),
             mop: "",
             period: term,
             type: pmtWaived,
             notes: noteLabel,
             notesPrivate: "",
             mopRefNo: "",
-            prDateIssued: "",
-            prRefNo: "",
+            receipt: {
+              id: crypto.randomUUID(),
+              groupId,
+              dateIssued: null,
+              receiptUrl: null
+            },
             creatorName: auth.displayNameLastFirst,
             name: resRecord.name,
             stno: resRecord.stno,
-            wasAudited: false,
-            receiptUrl: "",
-            id: crypto.randomUUID()
+            wasAudited: false
           }
         ]);
       }

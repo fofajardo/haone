@@ -30,11 +30,25 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: "Transaction not found or unauthorized" }, { status: 404 });
     }
 
-    // Find the journal row with this pr_ref_no and matching account_id
+    const { data: receipt, error: recErr } = await supabase
+      .from("acknowledgment_receipts")
+      .select("id, group_id")
+      .eq("id", pr_refno)
+      .maybeSingle();
+
+    if (recErr) {
+      console.error("Receipt claim lookup error:", recErr);
+      return json({ error: "Internal server error" }, { status: 500 });
+    }
+
+    if (!receipt) {
+      return json({ error: "Transaction not found or unauthorized" }, { status: 404 });
+    }
+
     const { data: row, error: jorErr } = await supabase
-      .from("journal")
+      .from("journal_groups")
       .select("id")
-      .eq("pr_ref_no", pr_refno)
+      .eq("id", receipt.group_id)
       .eq("account_id", user.id)
       .maybeSingle();
 
@@ -47,7 +61,7 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ error: "Transaction not found or unauthorized" }, { status: 404 });
     }
 
-    return json({ id: row.id });
+    return json({ id: receipt.id });
   } catch (e: any) {
     console.error("Receipt claim failed:", e);
     return json({ error: "Internal server error" }, { status: 500 });

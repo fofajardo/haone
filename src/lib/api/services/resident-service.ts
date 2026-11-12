@@ -1,5 +1,11 @@
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import { AccountType, TRANSACTION_TYPE_CONFIG, TransactionType } from "$lib/types";
+import {
+  AccountType,
+  JOURNAL_ACCOUNT_KIND_CONFIG,
+  JOURNAL_ACCOUNT_KINDS,
+  TRANSACTION_TYPE_CONFIG,
+  TransactionType
+} from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { parseCSVAmount } from "$utils/math";
 import { parseDateWeight, parseDbDate, parseDbUuid } from "$utils/parsers";
@@ -103,7 +109,7 @@ export const residentService: ResidentServiceInterface = {
     }
     const sb = supabase;
 
-    const [accData, usersData, journalList, consts] = await Promise.all([
+    const [accData, usersData, journalGroups, journalItems, consts] = await Promise.all([
       fetchAllSupabaseRows(() => {
         let query = sb.from("accounts").select("*");
         if (term && !auth.isResident) {
@@ -116,6 +122,13 @@ export const residentService: ResidentServiceInterface = {
       ),
       fetchAllSupabaseRows(() =>
         sb
+          .from("journal_groups")
+          .select("*")
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+      ),
+      fetchAllSupabaseRows(() =>
+        sb
           .from("journal")
           .select("*")
           .order("created_at", { ascending: true })
@@ -123,6 +136,26 @@ export const residentService: ResidentServiceInterface = {
       ),
       constantsService.fetchConstants()
     ]);
+
+    const groupMap = new Map<string, any>();
+    journalGroups.forEach((g: any) => {
+      groupMap.set(g.id, g);
+    });
+    const journalList = journalItems
+      .map((item: any) => {
+        const g = groupMap.get(item.group_id);
+        if (!g) {
+          return null;
+        }
+        return {
+          ...g,
+          id: item.id,
+          group_id: item.group_id,
+          account_kind: item.account_kind,
+          value: item.value
+        };
+      })
+      .filter(Boolean);
 
     let currentUserId: string | null = null;
     if (auth.isResident && auth.user) {
@@ -157,28 +190,32 @@ export const residentService: ResidentServiceInterface = {
           return (resId && accId === resId) || (u.id && accId === u.id.toLowerCase());
         });
 
-        const waterPaid = filtered
-          .filter((j: any) => !isWaivedEntry(j.type || ""))
-          .reduce((sum: number, j: any) => sum + parseCSVAmount(j.water), 0);
-        const waterWaived = filtered
-          .filter((j: any) => isWaivedEntry(j.type || ""))
-          .reduce((sum: number, j: any) => sum + parseCSVAmount(j.water), 0);
+        const financials: Record<string, number> = {};
+        let totalBase = 0;
+        let paid = 0;
+        let waived = 0;
 
-        const assocPaid = filtered
-          .filter((j: any) => !isWaivedEntry(j.type || ""))
-          .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
-        const assocWaived = filtered
-          .filter((j: any) => isWaivedEntry(j.type || ""))
-          .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
+        for (const kind of JOURNAL_ACCOUNT_KINDS) {
+          const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+          if (cfg.baseField && cfg.paidField && cfg.waivedField && cfg.balanceField) {
+            const kindPaid = filtered
+              .filter((j: any) => Number(j.account_kind) === kind && !isWaivedEntry(j.type || ""))
+              .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
+            const kindWaived = filtered
+              .filter((j: any) => Number(j.account_kind) === kind && isWaivedEntry(j.type || ""))
+              .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
+            const kindBase = parseCSVAmount(getConst(`FEES_${period}_${cfg.key}`));
 
-        const waterBase = parseCSVAmount(getConst(`FEES_${period}_WATER`));
-        const assocBase = parseCSVAmount(getConst(`FEES_${period}_ASSOC`));
+            financials[cfg.baseField] = kindBase;
+            financials[cfg.paidField] = kindPaid;
+            financials[cfg.waivedField] = kindWaived;
+            financials[cfg.balanceField] = kindBase - kindPaid - kindWaived;
 
-        const waterBal = waterBase - waterPaid - waterWaived;
-        const assocBal = assocBase - assocPaid - assocWaived;
-        const totalBase = waterBase + assocBase;
-        const paid = waterPaid + assocPaid;
-        const waived = waterWaived + assocWaived;
+            totalBase += kindBase;
+            paid += kindPaid;
+            waived += kindWaived;
+          }
+        }
         const bal = totalBase - paid - waived;
 
         return {
@@ -197,14 +234,7 @@ export const residentService: ResidentServiceInterface = {
           email: u.email || "",
           name: u.display_name || "",
           stno: u.student_no || "",
-          waterBase,
-          waterPaid,
-          waterWaived,
-          waterBal,
-          assocBase,
-          assocPaid,
-          assocWaived,
-          assocBal,
+          ...(financials as any),
           totalBase,
           paid,
           waived,
@@ -251,30 +281,43 @@ export const residentService: ResidentServiceInterface = {
     const activeTerm = getConst("TERM_CURR");
     const targetTerm = term || activeTerm;
 
-    const [accRes, journalList, currRes, termAccRes] = await Promise.all([
-      userRow
-        ? supabase.from("accounts").select("*").eq("resident_id", userRow.id)
-        : Promise.resolve({ data: [], error: null }),
-      userRow?.id
-        ? fetchAllSupabaseRows(() =>
-            sb
-              .from("journal")
-              .select("*")
-              .eq("account_id", userRow.id)
-              .order("created_at", { ascending: true })
-              .order("id", { ascending: true })
-          )
-        : Promise.resolve([]),
-      supabase
-        .from("registrations")
-        .select("*")
-        .ilike("email", email)
-        .eq("term", activeTerm)
-        .order("timestamp", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase.from("accounts").select("resident_id, room, bed, period").eq("period", targetTerm)
-    ]);
+    const [accRes, journalGroups, journalItems, currRes, termAccRes, receiptsList] =
+      await Promise.all([
+        userRow
+          ? supabase.from("accounts").select("*").eq("resident_id", userRow.id)
+          : Promise.resolve({ data: [], error: null }),
+        userRow?.id
+          ? fetchAllSupabaseRows(() =>
+              sb
+                .from("journal_groups")
+                .select("*")
+                .eq("account_id", userRow.id)
+                .order("created_at", { ascending: true })
+                .order("id", { ascending: true })
+            )
+          : Promise.resolve([]),
+        userRow?.id
+          ? fetchAllSupabaseRows(() =>
+              sb
+                .from("journal")
+                .select("*")
+                .order("created_at", { ascending: true })
+                .order("id", { ascending: true })
+            )
+          : Promise.resolve([]),
+        supabase
+          .from("registrations")
+          .select("*")
+          .ilike("email", email)
+          .eq("term", activeTerm)
+          .order("timestamp", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase.from("accounts").select("resident_id, room, bed, period").eq("period", targetTerm),
+        userRow?.id
+          ? fetchAllSupabaseRows(() => sb.from("acknowledgment_receipts").select("*"))
+          : Promise.resolve([])
+      ]);
     if (accRes.error) {
       handleSupabaseError(accRes.error);
     }
@@ -289,20 +332,73 @@ export const residentService: ResidentServiceInterface = {
     const userAccounts: any[] = accRes.data || [];
     const currEntryData = currRes.data;
 
-    const transactions = journalList
-      .filter((j: any) => !term || j.period === term)
-      .map((j: any) => ({
-        id: j.id,
+    const statusGroupMap = new Map<string, any>();
+    (journalGroups || []).forEach((g: any) => {
+      statusGroupMap.set(g.id, g);
+    });
+    const journalList = (journalItems || [])
+      .map((item: any) => {
+        const g = statusGroupMap.get(item.group_id);
+        if (!g) {
+          return null;
+        }
+        return {
+          ...g,
+          id: item.id,
+          group_id: item.group_id,
+          account_kind: item.account_kind,
+          value: item.value
+        };
+      })
+      .filter(Boolean);
+
+    const receiptMap = new Map<string, any>();
+    (receiptsList || []).forEach((r: any) => {
+      if (r.group_id) {
+        receiptMap.set(r.group_id, r);
+      }
+    });
+
+    const groupedTransactions = new Map<string, any>();
+    for (const j of journalList) {
+      if (term && j.period !== term) {
+        continue;
+      }
+      const groupKey = j.group_id || j.id;
+      const val = parseCSVAmount(j.value);
+      const existing = groupedTransactions.get(groupKey);
+      if (existing) {
+        existing.amount += val;
+        continue;
+      }
+      const receiptRow = receiptMap.get(groupKey);
+      const dateIssued = receiptRow?.date_issued || "";
+      const rawReceiptUrl = (receiptRow?.receipt_url || "").trim();
+      const receiptUrl =
+        rawReceiptUrl || (receiptRow && dateIssued ? `/receipt/${receiptRow.id}` : "");
+      const receipt = receiptRow
+        ? {
+            id: receiptRow.id,
+            groupId: groupKey,
+            dateIssued,
+            receiptUrl
+          }
+        : null;
+
+      groupedTransactions.set(groupKey, {
+        id: groupKey,
         date: j.date,
         type: j.type || "",
-        amount: parseCSVAmount(j.water) + parseCSVAmount(j.assoc) + parseCSVAmount(j.misc),
+        amount: val,
         period: j.period || "",
         mop: j.mop || "",
         notes: j.notes || "",
         creator: j.creator_id || j.creator_email || "",
-        prRefNo: j.pr_ref_no || "",
+        receipt,
         runningBalance: 0
-      }));
+      });
+    }
+    const transactions = Array.from(groupedTransactions.values());
 
     let globalBalance = 0;
     const sortedTransactions = [...transactions].sort(
@@ -318,24 +414,32 @@ export const residentService: ResidentServiceInterface = {
     const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
     const termJournals = journalList.filter((j: any) => j.period === targetTerm);
 
-    const waterPaid = termJournals
-      .filter((j: any) => j.type !== pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.water), 0);
-    const waterWaived = termJournals
-      .filter((j: any) => j.type === pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.water), 0);
-    const assocPaid = termJournals
-      .filter((j: any) => j.type !== pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
-    const assocWaived = termJournals
-      .filter((j: any) => j.type === pmtWaived)
-      .reduce((sum: number, j: any) => sum + parseCSVAmount(j.assoc), 0);
+    const financials: Record<string, number> = {};
+    let totalBase = 0;
+    let paid = 0;
+    let waived = 0;
 
-    const waterBase = parseCSVAmount(getConst(`FEES_${targetTerm}_WATER`));
-    const assocBase = parseCSVAmount(getConst(`FEES_${targetTerm}_ASSOC`));
-    const totalBase = waterBase + assocBase;
-    const paid = waterPaid + assocPaid;
-    const waived = waterWaived + assocWaived;
+    for (const kind of JOURNAL_ACCOUNT_KINDS) {
+      const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+      if (cfg.baseField && cfg.paidField && cfg.waivedField && cfg.balanceField) {
+        const kindPaid = termJournals
+          .filter((j: any) => Number(j.account_kind) === kind && j.type !== pmtWaived)
+          .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
+        const kindWaived = termJournals
+          .filter((j: any) => Number(j.account_kind) === kind && j.type === pmtWaived)
+          .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
+        const kindBase = parseCSVAmount(getConst(`FEES_${targetTerm}_${cfg.key}`));
+
+        financials[cfg.baseField] = kindBase;
+        financials[cfg.paidField] = kindPaid;
+        financials[cfg.waivedField] = kindWaived;
+        financials[cfg.balanceField] = kindBase - kindPaid - kindWaived;
+
+        totalBase += kindBase;
+        paid += kindPaid;
+        waived += kindWaived;
+      }
+    }
     const bal = totalBase - paid - waived;
 
     const targetAccount = userAccounts.find((a: any) => a.period === targetTerm) || null;
@@ -391,14 +495,7 @@ export const residentService: ResidentServiceInterface = {
             checkInDate: targetAccount.check_in_date || "",
             name: currentUser?.display_name || "",
             stno: currentUser?.student_no || "",
-            waterBase,
-            waterPaid,
-            waterWaived,
-            waterBal: waterBase - waterPaid - waterWaived,
-            assocBase,
-            assocPaid,
-            assocWaived,
-            assocBal: assocBase - assocPaid - assocWaived,
+            ...(financials as any),
             totalBase,
             paid,
             waived,

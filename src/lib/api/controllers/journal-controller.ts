@@ -35,13 +35,16 @@ export async function batchAuditEntries(ids: string[]): Promise<void> {
 
 export async function updateJournalReceiptInfo(
   recordId: string,
-  prDateIssued: string,
-  prRefNo: string,
-  receiptUrl: string
+  dateIssued: string,
+  receiptId: string,
+  receiptUrl?: string
 ): Promise<void> {
   return journalService.updateJournalEntry(recordId, {
-    prDateIssued,
-    prRefNo,
-    receiptUrl
+    receipt: {
+      id: receiptId,
+      groupId: recordId,
+      dateIssued,
+      ...(receiptUrl !== undefined ? { receiptUrl } : {})
+    }
   });
 }

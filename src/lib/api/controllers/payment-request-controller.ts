@@ -1,5 +1,5 @@
 import { paymentRequestService } from "$api/services/payment-request-service";
-import type { PaymentRequestRecord } from "$lib/types";
+import type { JournalRecord, PaymentRequestRecord } from "$lib/types";
 import { getSignedInUserId } from "./resident-controller";
 
 export async function fetchPaymentRequests(bypassCache = false): Promise<{
@@ -36,41 +36,9 @@ export async function fetchAdminPaymentRequests(
 
 export async function approvePaymentRequest(
   paymentId: string,
-  journalData: {
-    date: string;
-    water: number;
-    assoc: number;
-    misc: number;
-    mop: string;
-    period: string;
-    type: string;
-    notes: string;
-    notesPrivate?: string;
-    mopRefNo: string;
-    prDateIssued?: string;
-    prRefNo?: string;
-    receiptUrl?: string;
-    creatorId?: string;
-    accountId?: string;
-  }
+  journalData: Partial<JournalRecord>
 ) {
-  await paymentRequestService.approvePaymentRequest(paymentId, {
-    date: journalData.date,
-    water: journalData.water,
-    assoc: journalData.assoc,
-    misc: journalData.misc,
-    mop: journalData.mop,
-    period: journalData.period,
-    type: journalData.type,
-    notes: journalData.notes,
-    notesPrivate: journalData.notesPrivate,
-    mopRefNo: journalData.mopRefNo,
-    prDateIssued: journalData.prDateIssued,
-    prRefNo: journalData.prRefNo,
-    receiptUrl: journalData.receiptUrl,
-    creatorId: journalData.creatorId,
-    accountId: journalData.accountId
-  });
+  await paymentRequestService.approvePaymentRequest(paymentId, journalData);
 }
 
 export async function declinePaymentRequest(paymentId: string, reason: string) {

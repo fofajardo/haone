@@ -1,6 +1,7 @@
 import {
   ACCOUNT_COL,
   JOURNAL_COL,
+  JournalAccountKind,
   USER_COL,
   type JournalRecord,
   type ResidentRecord,
@@ -131,14 +132,30 @@ export function mapRowToJournal(
     }
   }
 
+  const items: { accountKind: JournalAccountKind; value: number }[] = [];
+  if (water !== 0) {
+    items.push({ accountKind: JournalAccountKind.WATER, value: water });
+  }
+  if (assoc !== 0) {
+    items.push({ accountKind: JournalAccountKind.ASSOC, value: assoc });
+  }
+  if (misc !== 0) {
+    items.push({ accountKind: JournalAccountKind.MISC, value: misc });
+  }
+  const id = (row[JOURNAL_COL.ID] || "").trim();
+  const prDateIssued = (row[JOURNAL_COL.PR_DATE_ISSUED] || "").trim();
+  const prRefNo = (row[JOURNAL_COL.PR_REFNO] || "").trim();
+  const receiptUrl = (row[JOURNAL_COL.RECEIPT_URL] || "").trim();
+  const hasReceipt =
+    (prRefNo && prRefNo !== "N/A" && prRefNo !== "#N/A") ||
+    Boolean(prDateIssued) ||
+    Boolean(receiptUrl);
+
   return {
     raw: row,
     date: (row[JOURNAL_COL.DATE] || "").trim(),
     creator: creatorRaw,
     account: accountRaw,
-    water,
-    assoc,
-    misc,
     amount: water + assoc + misc,
     mop: (row[JOURNAL_COL.MOP] || "").trim(),
     period: (row[JOURNAL_COL.PERIOD] || "").trim(),
@@ -146,14 +163,20 @@ export function mapRowToJournal(
     notes: (row[JOURNAL_COL.NOTES] || "").trim(),
     notesPrivate: (row[JOURNAL_COL.NOTES_PRIVATE] || "").trim(),
     mopRefNo: (row[JOURNAL_COL.MOP_REFNO] || "").trim(),
-    prDateIssued: (row[JOURNAL_COL.PR_DATE_ISSUED] || "").trim(),
-    prRefNo: (row[JOURNAL_COL.PR_REFNO] || "").trim(),
+    receipt: hasReceipt
+      ? {
+          id: prRefNo,
+          groupId: id,
+          dateIssued: prDateIssued || null,
+          receiptUrl: receiptUrl || null
+        }
+      : null,
     creatorName,
     name,
     stno,
     wasAudited: (row[JOURNAL_COL.WAS_AUDITED] || "").toUpperCase() === "TRUE",
-    receiptUrl: (row[JOURNAL_COL.RECEIPT_URL] || "").trim(),
-    id: (row[JOURNAL_COL.ID] || "").trim(),
+    id,
+    items,
     creatorId,
     accountId,
     ledgerIndex: index

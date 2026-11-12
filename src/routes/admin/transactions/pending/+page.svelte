@@ -24,9 +24,7 @@
   import DataTable from "$ui/data-table/data-table.svelte";
   import AdminTransactionsTabs from "$components/tabs/AdminTransactionsTabs.svelte";
   import { columns } from "./columns";
-  import type { ReceiptData } from "$lib/types";
-
-  import { type JournalRecord } from "$lib/types";
+  import { getJournalActiveItems, type JournalRecord, type ReceiptData } from "$lib/types";
 
   let queue = $state<JournalRecord[]>([]);
   let selectedIndices = $state<Set<string>>(new Set());
@@ -67,12 +65,7 @@
           dateWeight: parseDateWeight(journal.date)
         }))
         .filter((r) => {
-          return (
-            r.period === settings.currentTerm &&
-            (!r.prDateIssued || r.prDateIssued === "#N/A") &&
-            r.prRefNo !== "N/A" &&
-            r.prRefNo !== "#N/A"
-          );
+          return r.period === settings.currentTerm && !!r.receipt && !r.receipt.dateIssued;
         });
     } catch (e: any) {
       error = e.message;
@@ -103,8 +96,8 @@
       const recipient = (record.account || "").trim();
       if (!recipient || !recipient.includes("@")) continue;
 
-      const prRefNo = record.prRefNo || crypto.randomUUID();
-      const dateIssued = record.prDateIssued || new Date().toISOString().split("T")[0];
+      const prRefNo = record.receipt?.id || crypto.randomUUID();
+      const dateIssued = record.receipt?.dateIssued || new Date().toISOString().split("T")[0];
 
       const receipt: ReceiptData = {
         dateIssued,
@@ -119,10 +112,13 @@
         transactionType: record.type,
         branding: brandingState.selectedKey,
         stno: record.stno.toString(),
-        items: getActiveItems(record)
+        items: getJournalActiveItems(record).map((item) => ({
+          name: item.name,
+          amount: item.amount
+        }))
       };
 
-      const url = `${window.location.origin}/receipt/${record.id}`;
+      const url = record.receipt?.receiptUrl || `${window.location.origin}/receipt/${prRefNo}`;
 
       stagedEmails.push({
         id: record.id.toString(),
@@ -139,7 +135,7 @@
         },
         branding: branding,
         onSuccess: async () => {
-          await updateJournalReceiptInfo(record.id, dateIssued, prRefNo, url);
+          await updateJournalReceiptInfo(record.id, dateIssued, prRefNo);
         }
       });
     }
@@ -147,14 +143,6 @@
     emailDispatcher.batchType = "ACKNOWLEDGMENT";
     emailDispatcher.pushBatch(stagedEmails);
     goto("/admin/email-dispatcher");
-  }
-
-  function getActiveItems(r: JournalRecord) {
-    return [
-      { name: "Water Fee", amount: r.water },
-      { name: "Association Fee", amount: r.assoc },
-      { name: "Miscellaneous", amount: r.misc }
-    ].filter((i) => i.amount !== 0);
   }
 </script>
 

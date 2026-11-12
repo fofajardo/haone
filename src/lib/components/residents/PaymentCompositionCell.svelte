@@ -1,42 +1,36 @@
 <script lang="ts">
   import { formatAccounting } from "$utils/formatters";
   import { translateTransactionType } from "$utils/translators";
-  import type { JournalRecord } from "$lib/types";
+  import { getJournalActiveItems, type JournalRecord, type PaymentRequestRecord } from "$lib/types";
 
   let {
     record,
     variant
   }: {
-    record: JournalRecord;
+    record: JournalRecord | PaymentRequestRecord;
     variant: "account" | "composition" | "mop" | "total";
   } = $props();
 
-  const activeItems = $derived(
-    [
-      { name: "Water Fee", amount: record.water },
-      { name: "Association Fee", amount: record.assoc },
-      { name: "Miscellaneous", amount: record.misc }
-    ].filter((i) => i.amount !== 0)
-  );
+  const activeItems = $derived(getJournalActiveItems(record));
 </script>
 
 <div class="flex flex-col">
   {#if variant === "account"}
     <div class="flex flex-col">
-      <span class="font-medium">{record.name}</span>
+      <span class="font-medium">{"name" in record ? record.name : ""}</span>
       <span class="text-muted-foreground">{translateTransactionType(record.type)}</span>
     </div>
   {:else if variant === "total"}
     <div class="text-right">
-      <span class="">{formatAccounting(record.amount)}</span>
+      <span class="">{formatAccounting("amount" in record ? record.amount : 0)}</span>
     </div>
   {:else if variant === "mop"}
     <div class="flex flex-col">
       <span class="">{record.mop}</span>
       <span class="text-muted-foreground"
-        >{record.mopRefNo === "N/A" || !record.mopRefNo
-          ? "No Reference Code"
-          : record.mopRefNo}</span
+        >{"mopRefNo" in record && record.mopRefNo && record.mopRefNo !== "N/A"
+          ? record.mopRefNo
+          : "No Reference Code"}</span
       >
     </div>
   {:else}

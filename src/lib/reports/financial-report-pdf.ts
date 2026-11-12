@@ -1,7 +1,15 @@
 import { fetchMopTypes } from "$api/controllers/constants-controller";
 import { fetchJournalEntries } from "$api/controllers/journal-controller";
 import { fetchResidents } from "$api/controllers/resident-controller";
-import { TransactionType, type JournalRecord, type ResidentRecord } from "$lib/types";
+import {
+  getJournalAccountKindValue,
+  JOURNAL_ACCOUNT_KIND_LABELS,
+  JOURNAL_ACCOUNT_KINDS,
+  JournalAccountKind,
+  TransactionType,
+  type JournalRecord,
+  type ResidentRecord
+} from "$lib/types";
 import { brandingState } from "$state/branding.svelte";
 import { formatAccounting } from "$utils/formatters";
 import { parseDateWeight } from "$utils/parsers";
@@ -72,7 +80,10 @@ export function computeFinancialReportData(
   let runningBalance = 0;
   const processedJournal = sortedJournal.map((j) => {
     const isWaived = j.type.toUpperCase().includes("WAIVED");
-    const amount = j.water + j.assoc + j.misc;
+    const amount = JOURNAL_ACCOUNT_KINDS.reduce(
+      (sum, kind) => sum + getJournalAccountKindValue(j, kind),
+      0
+    );
     const incoming = !isWaived && amount > 0 ? amount : 0;
     const outgoing = !isWaived && amount < 0 ? Math.abs(amount) : 0;
     if (!isWaived) {
@@ -94,28 +105,31 @@ export function computeFinancialReportData(
 
   processedJournal.forEach((j) => {
     const rawMop = (j.mop || "").trim().toUpperCase();
-    if (rawMop === "N/A") return;
+    if (rawMop === "N/A") {
+      return;
+    }
 
     // Map to normalized key if possible, else use raw
     const key = rawMop || "CASH";
-    if (!mopSummary[key]) mopSummary[key] = { incoming: 0, outgoing: 0 };
+    if (!mopSummary[key]) {
+      mopSummary[key] = { incoming: 0, outgoing: 0 };
+    }
     mopSummary[key].incoming += j.incoming;
     mopSummary[key].outgoing += j.outgoing;
   });
 
   // Summary by Fee Type
-  const feeSummary = {
-    WATER: { incoming: 0, outgoing: 0 },
-    ASSOC: { incoming: 0, outgoing: 0 },
-    MISC: { incoming: 0, outgoing: 0 }
-  };
+  const feeSummary = Object.fromEntries(
+    JOURNAL_ACCOUNT_KINDS.map((kind) => [kind, { incoming: 0, outgoing: 0 }])
+  ) as Record<JournalAccountKind, { incoming: number; outgoing: number }>;
 
   // Summary by Fee Type and MOP
-  const feeTypeMopSummary = {
-    WATER: {} as Record<string, { incoming: number; outgoing: number }>,
-    ASSOC: {} as Record<string, { incoming: number; outgoing: number }>,
-    MISC: {} as Record<string, { incoming: number; outgoing: number }>
-  };
+  const feeTypeMopSummary = Object.fromEntries(
+    JOURNAL_ACCOUNT_KINDS.map((kind) => [
+      kind,
+      {} as Record<string, { incoming: number; outgoing: number }>
+    ])
+  ) as Record<JournalAccountKind, Record<string, { incoming: number; outgoing: number }>>;
 
   processedJournal.forEach((j) => {
     const isWaived = j.type.toUpperCase().includes("WAIVED");
@@ -128,54 +142,20 @@ export function computeFinancialReportData(
     }
     const mopKey = rawMop || "CASH";
 
-    if (j.water !== 0) {
-      if (j.water > 0) {
-        feeSummary.WATER.incoming += j.water;
-        if (!feeTypeMopSummary.WATER[mopKey]) {
-          feeTypeMopSummary.WATER[mopKey] = { incoming: 0, outgoing: 0 };
+    for (const kind of JOURNAL_ACCOUNT_KINDS) {
+      const val = getJournalAccountKindValue(j, kind);
+      if (val !== 0) {
+        if (!feeTypeMopSummary[kind][mopKey]) {
+          feeTypeMopSummary[kind][mopKey] = { incoming: 0, outgoing: 0 };
         }
-        feeTypeMopSummary.WATER[mopKey].incoming += j.water;
-      } else {
-        const absVal = Math.abs(j.water);
-        feeSummary.WATER.outgoing += absVal;
-        if (!feeTypeMopSummary.WATER[mopKey]) {
-          feeTypeMopSummary.WATER[mopKey] = { incoming: 0, outgoing: 0 };
+        if (val > 0) {
+          feeSummary[kind].incoming += val;
+          feeTypeMopSummary[kind][mopKey].incoming += val;
+        } else {
+          const absVal = Math.abs(val);
+          feeSummary[kind].outgoing += absVal;
+          feeTypeMopSummary[kind][mopKey].outgoing += absVal;
         }
-        feeTypeMopSummary.WATER[mopKey].outgoing += absVal;
-      }
-    }
-
-    if (j.assoc !== 0) {
-      if (j.assoc > 0) {
-        feeSummary.ASSOC.incoming += j.assoc;
-        if (!feeTypeMopSummary.ASSOC[mopKey]) {
-          feeTypeMopSummary.ASSOC[mopKey] = { incoming: 0, outgoing: 0 };
-        }
-        feeTypeMopSummary.ASSOC[mopKey].incoming += j.assoc;
-      } else {
-        const absVal = Math.abs(j.assoc);
-        feeSummary.ASSOC.outgoing += absVal;
-        if (!feeTypeMopSummary.ASSOC[mopKey]) {
-          feeTypeMopSummary.ASSOC[mopKey] = { incoming: 0, outgoing: 0 };
-        }
-        feeTypeMopSummary.ASSOC[mopKey].outgoing += absVal;
-      }
-    }
-
-    if (j.misc !== 0) {
-      if (j.misc > 0) {
-        feeSummary.MISC.incoming += j.misc;
-        if (!feeTypeMopSummary.MISC[mopKey]) {
-          feeTypeMopSummary.MISC[mopKey] = { incoming: 0, outgoing: 0 };
-        }
-        feeTypeMopSummary.MISC[mopKey].incoming += j.misc;
-      } else {
-        const absVal = Math.abs(j.misc);
-        feeSummary.MISC.outgoing += absVal;
-        if (!feeTypeMopSummary.MISC[mopKey]) {
-          feeTypeMopSummary.MISC[mopKey] = { incoming: 0, outgoing: 0 };
-        }
-        feeTypeMopSummary.MISC[mopKey].outgoing += absVal;
       }
     }
   });
@@ -184,25 +164,29 @@ export function computeFinancialReportData(
   const waterColl = {
     target: accounts.reduce((s, r) => s + r.waterBase, 0),
     waived: accounts.reduce((s, r) => s + r.waterWaived, 0),
-    resident: processedJournal.reduce(
-      (s, j) => s + (j.type === TransactionType.COLLECTION && j.water > 0 ? j.water : 0),
-      0
-    ),
+    resident: processedJournal.reduce((s, j) => {
+      const w = getJournalAccountKindValue(j, JournalAccountKind.WATER);
+      return s + (j.type === TransactionType.COLLECTION && w > 0 ? w : 0);
+    }, 0),
     uho: processedJournal.reduce(
-      (s, j) => s + (j.type === TransactionType.COLLECTION_OTHERS ? j.water : 0),
+      (s, j) =>
+        s +
+        (j.type === TransactionType.COLLECTION_OTHERS
+          ? getJournalAccountKindValue(j, JournalAccountKind.WATER)
+          : 0),
       0
     ),
-    refunds: processedJournal.reduce(
-      (s, j) => s + (j.type === TransactionType.COLLECTION && j.water < 0 ? Math.abs(j.water) : 0),
-      0
-    ),
+    refunds: processedJournal.reduce((s, j) => {
+      const w = getJournalAccountKindValue(j, JournalAccountKind.WATER);
+      return s + (j.type === TransactionType.COLLECTION && w < 0 ? Math.abs(w) : 0);
+    }, 0),
     overdue: accounts.reduce((s, r) => s + (r.waterBal > 0 ? r.waterBal : 0), 0),
     aquaAltria: processedJournal.reduce(
-      (s, j) => s + (j.type === "WATER_AQUA_ALTRIA" ? Math.abs(j.water + j.assoc + j.misc) : 0),
+      (s, j) => s + (j.type === "WATER_AQUA_ALTRIA" ? Math.abs(j.amount) : 0),
       0
     ),
     paidToWater: processedJournal.reduce(
-      (s, j) => s + (j.type === "WATER" ? Math.abs(j.water + j.assoc + j.misc) : 0),
+      (s, j) => s + (j.type === "WATER" ? Math.abs(j.amount) : 0),
       0
     )
   };
@@ -210,14 +194,14 @@ export function computeFinancialReportData(
   const assocColl = {
     target: accounts.reduce((s, r) => s + r.assocBase, 0),
     waived: accounts.reduce((s, r) => s + r.assocWaived, 0),
-    resident: processedJournal.reduce(
-      (s, j) => s + (j.type === TransactionType.COLLECTION && j.assoc > 0 ? j.assoc : 0),
-      0
-    ),
-    refunds: processedJournal.reduce(
-      (s, j) => s + (j.type === TransactionType.COLLECTION && j.assoc < 0 ? Math.abs(j.assoc) : 0),
-      0
-    ),
+    resident: processedJournal.reduce((s, j) => {
+      const a = getJournalAccountKindValue(j, JournalAccountKind.ASSOC);
+      return s + (j.type === TransactionType.COLLECTION && a > 0 ? a : 0);
+    }, 0),
+    refunds: processedJournal.reduce((s, j) => {
+      const a = getJournalAccountKindValue(j, JournalAccountKind.ASSOC);
+      return s + (j.type === TransactionType.COLLECTION && a < 0 ? Math.abs(a) : 0);
+    }, 0),
     overdue: accounts.reduce((s, r) => s + (r.assocBal > 0 ? r.assocBal : 0), 0)
   };
 
@@ -353,117 +337,45 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
               { text: "OUTGOING", style: "tableHeader", alignment: "right" },
               { text: "BALANCE", style: "tableHeader", alignment: "right" }
             ] as TableCell[],
-            [
-              { text: "WATER FEE", bold: true, fontSize: 9 },
-              {
-                text: formatAccounting(feeSummary.WATER.incoming),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              },
-              {
-                text: formatAccounting(feeSummary.WATER.outgoing),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              },
-              {
-                text: formatAccounting(feeSummary.WATER.incoming - feeSummary.WATER.outgoing),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              }
-            ] as TableCell[],
-            ...Object.entries(feeTypeMopSummary.WATER).map(([mop, data]) => {
-              const mopConst = availableMops.find((m) => {
-                return m.value === mop;
-              });
-              const label = mopConst ? mopConst.label : translateMop(mop);
-              return [
-                { text: label.toUpperCase(), fontSize: 9, margin: [15, 0, 0, 0] },
-                { text: formatAccounting(data.incoming), alignment: "right", fontSize: 9 },
-                { text: formatAccounting(data.outgoing), alignment: "right", fontSize: 9 },
+            ...JOURNAL_ACCOUNT_KINDS.flatMap((kind) => [
+              [
+                { text: JOURNAL_ACCOUNT_KIND_LABELS[kind].toUpperCase(), bold: true, fontSize: 9 },
                 {
-                  text: formatAccounting(data.incoming - data.outgoing),
+                  text: formatAccounting(feeSummary[kind].incoming),
                   alignment: "right",
+                  bold: true,
+                  fontSize: 9
+                },
+                {
+                  text: formatAccounting(feeSummary[kind].outgoing),
+                  alignment: "right",
+                  bold: true,
+                  fontSize: 9
+                },
+                {
+                  text: formatAccounting(feeSummary[kind].incoming - feeSummary[kind].outgoing),
+                  alignment: "right",
+                  bold: true,
                   fontSize: 9
                 }
-              ] as TableCell[];
-            }),
-            [
-              { text: "ASSOCIATION FEE", bold: true, fontSize: 9 },
-              {
-                text: formatAccounting(feeSummary.ASSOC.incoming),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              },
-              {
-                text: formatAccounting(feeSummary.ASSOC.outgoing),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              },
-              {
-                text: formatAccounting(feeSummary.ASSOC.incoming - feeSummary.ASSOC.outgoing),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              }
-            ] as TableCell[],
-            ...Object.entries(feeTypeMopSummary.ASSOC).map(([mop, data]) => {
-              const mopConst = availableMops.find((m) => {
-                return m.value === mop;
-              });
-              const label = mopConst ? mopConst.label : translateMop(mop);
-              return [
-                { text: label.toUpperCase(), fontSize: 9, margin: [15, 0, 0, 0] },
-                { text: formatAccounting(data.incoming), alignment: "right", fontSize: 9 },
-                { text: formatAccounting(data.outgoing), alignment: "right", fontSize: 9 },
-                {
-                  text: formatAccounting(data.incoming - data.outgoing),
-                  alignment: "right",
-                  fontSize: 9
-                }
-              ] as TableCell[];
-            }),
-            [
-              { text: "MISCELLANEOUS", bold: true, fontSize: 9 },
-              {
-                text: formatAccounting(feeSummary.MISC.incoming),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              },
-              {
-                text: formatAccounting(feeSummary.MISC.outgoing),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              },
-              {
-                text: formatAccounting(feeSummary.MISC.incoming - feeSummary.MISC.outgoing),
-                alignment: "right",
-                bold: true,
-                fontSize: 9
-              }
-            ] as TableCell[],
-            ...Object.entries(feeTypeMopSummary.MISC).map(([mop, data]) => {
-              const mopConst = availableMops.find((m) => {
-                return m.value === mop;
-              });
-              const label = mopConst ? mopConst.label : translateMop(mop);
-              return [
-                { text: label.toUpperCase(), fontSize: 9, margin: [15, 0, 0, 0] },
-                { text: formatAccounting(data.incoming), alignment: "right", fontSize: 9 },
-                { text: formatAccounting(data.outgoing), alignment: "right", fontSize: 9 },
-                {
-                  text: formatAccounting(data.incoming - data.outgoing),
-                  alignment: "right",
-                  fontSize: 9
-                }
-              ] as TableCell[];
-            }),
+              ] as TableCell[],
+              ...Object.entries(feeTypeMopSummary[kind]).map(([mop, data]) => {
+                const mopConst = availableMops.find((m) => {
+                  return m.value === mop;
+                });
+                const label = mopConst ? mopConst.label : translateMop(mop);
+                return [
+                  { text: label.toUpperCase(), fontSize: 9, margin: [15, 0, 0, 0] },
+                  { text: formatAccounting(data.incoming), alignment: "right", fontSize: 9 },
+                  { text: formatAccounting(data.outgoing), alignment: "right", fontSize: 9 },
+                  {
+                    text: formatAccounting(data.incoming - data.outgoing),
+                    alignment: "right",
+                    fontSize: 9
+                  }
+                ] as TableCell[];
+              })
+            ]),
             [
               { text: "ENDING BALANCE", bold: true, fontSize: 9 },
               { text: "" },

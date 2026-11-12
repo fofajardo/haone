@@ -1,5 +1,11 @@
 import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
-import type { ReceiptData, ReceiptItem } from "$lib/types";
+import {
+  JOURNAL_ACCOUNT_KIND_LABELS,
+  JOURNAL_ACCOUNT_KINDS,
+  type JournalAccountKind,
+  type ReceiptData,
+  type ReceiptItem
+} from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
 import { createClient } from "@supabase/supabase-js";
 import { fail } from "@sveltejs/kit";
@@ -27,22 +33,57 @@ export const actions: Actions = {
     try {
       const supabase = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY);
 
-      const { data: row, error: rowErr } = await supabase
+      const { data: receiptRow, error: receiptErr } = await supabase
+        .from("acknowledgment_receipts")
+        .select("*")
+        .or(`id.eq.${id},group_id.eq.${id}`)
+        .limit(1)
+        .maybeSingle();
+
+      if (receiptErr) {
+        console.error("Receipt lookup failed:", receiptErr);
+        return fail(500, { error: "Internal verification error" });
+      }
+
+      const targetGroupId = receiptRow?.group_id || id;
+
+      const { data: groupRow, error: groupErr } = await supabase
+        .from("journal_groups")
+        .select("*")
+        .eq("id", targetGroupId)
+        .maybeSingle();
+
+      if (groupErr) {
+        console.error("Journal group lookup failed:", groupErr);
+        return fail(500, { error: "Internal verification error" });
+      }
+
+      if (!groupRow) {
+        return fail(404, { error: "Transaction record not found" });
+      }
+
+      const { data: groupRows, error: rowErr } = await supabase
         .from("journal")
         .select("*")
-        .eq("id", id)
-        .maybeSingle();
+        .eq("group_id", groupRow.id)
+        .order("account_kind", { ascending: true });
 
       if (rowErr) {
         console.error("Journal lookup failed:", rowErr);
         return fail(500, { error: "Internal verification error" });
       }
 
-      if (!row) {
-        return fail(404, { error: "Transaction record not found" });
+      let receipt = receiptRow;
+      if (!receipt) {
+        const { data: groupReceipt } = await supabase
+          .from("acknowledgment_receipts")
+          .select("*")
+          .eq("group_id", groupRow.id)
+          .maybeSingle();
+        receipt = groupReceipt;
       }
 
-      const userIds = [row.account_id, row.creator_id].filter(Boolean);
+      const userIds = [groupRow.account_id, groupRow.creator_id].filter(Boolean);
       let accountUser: any = null;
       let creatorUser: any = null;
 
@@ -57,8 +98,8 @@ export const actions: Actions = {
           return fail(500, { error: "Internal verification error" });
         }
 
-        accountUser = (users || []).find((u) => u.id === row.account_id) || null;
-        creatorUser = (users || []).find((u) => u.id === row.creator_id) || null;
+        accountUser = (users || []).find((u) => u.id === groupRow.account_id) || null;
+        creatorUser = (users || []).find((u) => u.id === groupRow.creator_id) || null;
       }
 
       const receivedBy = creatorUser
@@ -72,33 +113,31 @@ export const actions: Actions = {
       const correctStNo = accountUser ? (accountUser.student_no || "").toString().trim() : "";
 
       if (stno === correctStNo) {
-        const prRefNo = row.pr_ref_no || "";
-        const items: ReceiptItem[] = [];
-        const water = parseCSVAmount(row.water);
-        const assoc = parseCSVAmount(row.assoc);
-        const misc = parseCSVAmount(row.misc);
+        const prRefNo = receipt?.id || "";
+        const totalsByKind = new Map<JournalAccountKind, number>();
 
-        if (water !== 0) {
-          items.push({ name: "Water Fee", amount: water });
+        for (const r of groupRows || []) {
+          const val = parseCSVAmount(r.value);
+          const kind = Number(r.account_kind) as JournalAccountKind;
+          totalsByKind.set(kind, (totalsByKind.get(kind) || 0) + val);
         }
-        if (assoc !== 0) {
-          items.push({ name: "Association Fee", amount: assoc });
-        }
-        if (misc !== 0) {
-          items.push({ name: "Miscellaneous", amount: misc });
-        }
+
+        const items: ReceiptItem[] = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
+          name: JOURNAL_ACCOUNT_KIND_LABELS[kind],
+          amount: totalsByKind.get(kind) || 0
+        })).filter((item) => item.amount !== 0);
 
         const receiptData: ReceiptData = {
-          dateIssued: row.pr_date_issued || new Date().toISOString().split("T")[0],
-          paymentDate: row.date,
-          processor: row.mop || "",
-          referenceNumber: row.mop_ref_no || "N/A",
-          period: row.period || "",
+          dateIssued: receipt?.date_issued || new Date().toISOString().split("T")[0],
+          paymentDate: groupRow.date,
+          processor: groupRow.mop || "",
+          referenceNumber: groupRow.mop_ref_no || "N/A",
+          period: groupRow.period || "",
           seriesNumber: prRefNo,
           receivedFrom,
           receivedBy,
-          notes: row.notes || "",
-          transactionType: row.type || "",
+          notes: groupRow.notes || "",
+          transactionType: groupRow.type || "",
           branding: "default",
           stno: correctStNo || "",
           items

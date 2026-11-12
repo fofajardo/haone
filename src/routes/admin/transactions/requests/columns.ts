@@ -46,15 +46,9 @@ export const columns: ColumnDef<PaymentRequestRecord>[] = [
     id: "composition",
     header: "Composition",
     cell: ({ row }) => {
-      const r = row.original;
       return renderComponent(CompositionCell, {
         variant: "composition",
-        record: {
-          ...r,
-          water: r.waterFee,
-          assoc: r.assocFee,
-          misc: r.misc
-        } as any
+        record: row.original
       });
     }
   },

@@ -30,7 +30,7 @@ export type Transaction = Pick<
   | "mop"
   | "notes"
   | "creator"
-  | "prRefNo"
+  | "receipt"
   | "runningBalance"
 >;
 
