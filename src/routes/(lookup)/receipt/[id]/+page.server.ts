@@ -1,8 +1,8 @@
 import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 import {
-  JOURNAL_ACCOUNT_KIND_LABELS,
-  JOURNAL_ACCOUNT_KINDS,
-  type JournalAccountKind,
+  FEE_CODE_LABELS,
+  FEE_CODES,
+  type FeeCode,
   type ReceiptData,
   type ReceiptItem
 } from "$lib/types";
@@ -66,7 +66,7 @@ export const actions: Actions = {
         .from("journal")
         .select("*")
         .eq("group_id", groupRow.id)
-        .order("account_kind", { ascending: true });
+        .order("fee_code", { ascending: true });
 
       if (rowErr) {
         console.error("Journal lookup failed:", rowErr);
@@ -114,17 +114,17 @@ export const actions: Actions = {
 
       if (stno === correctStNo) {
         const prRefNo = receipt?.id || "";
-        const totalsByKind = new Map<JournalAccountKind, number>();
+        const totalsByCode = new Map<FeeCode, number>();
 
         for (const r of groupRows || []) {
           const val = parseCSVAmount(r.value);
-          const kind = Number(r.account_kind) as JournalAccountKind;
-          totalsByKind.set(kind, (totalsByKind.get(kind) || 0) + val);
+          const code = Number(r.fee_code) as FeeCode;
+          totalsByCode.set(code, (totalsByCode.get(code) || 0) + val);
         }
 
-        const items: ReceiptItem[] = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
-          name: JOURNAL_ACCOUNT_KIND_LABELS[kind],
-          amount: totalsByKind.get(kind) || 0
+        const items: ReceiptItem[] = FEE_CODES.map((code) => ({
+          name: FEE_CODE_LABELS[code],
+          amount: totalsByCode.get(code) || 0
         })).filter((item) => item.amount !== 0);
 
         const receiptData: ReceiptData = {

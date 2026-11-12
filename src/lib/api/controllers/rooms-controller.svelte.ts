@@ -8,9 +8,9 @@ import {
 import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
 import {
   AccountType,
-  JOURNAL_ACCOUNT_KIND_CONFIG,
-  JOURNAL_ACCOUNT_KINDS,
-  JournalAccountKind,
+  FEE_CODE_CONFIG,
+  FEE_CODES,
+  FeeCode,
   TRANSACTION_TYPE_CONFIG,
   TransactionType,
   UserTag,
@@ -530,19 +530,19 @@ export async function manualDelistResident(
         const pmtWaived = TRANSACTION_TYPE_CONFIG[TransactionType.WAIVED].val;
 
         let remainingToWaive = resRecord.bal;
-        const waiveItems: { accountKind: JournalAccountKind; value: number }[] = [];
+        const waiveItems: { feeCode: FeeCode; value: number }[] = [];
 
-        for (const kind of JOURNAL_ACCOUNT_KINDS) {
-          const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+        for (const code of FEE_CODES) {
+          const cfg = FEE_CODE_CONFIG[code];
           if (cfg.balanceField) {
             const bal = resRecord[cfg.balanceField] || 0;
             if (remainingToWaive > 0 && bal > 0) {
               const waiveAmt = Math.min(bal, remainingToWaive);
-              waiveItems.push({ accountKind: kind, value: waiveAmt });
+              waiveItems.push({ feeCode: code, value: waiveAmt });
               remainingToWaive -= waiveAmt;
             }
           } else if (remainingToWaive > 0) {
-            waiveItems.push({ accountKind: kind, value: remainingToWaive });
+            waiveItems.push({ feeCode: code, value: remainingToWaive });
             remainingToWaive = 0;
           }
         }

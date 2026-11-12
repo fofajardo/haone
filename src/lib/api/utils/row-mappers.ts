@@ -1,7 +1,7 @@
 import {
   ACCOUNT_COL,
+  FeeCode,
   JOURNAL_COL,
-  JournalAccountKind,
   USER_COL,
   type JournalRecord,
   type ResidentRecord,
@@ -132,15 +132,15 @@ export function mapRowToJournal(
     }
   }
 
-  const items: { accountKind: JournalAccountKind; value: number }[] = [];
+  const items: { feeCode: FeeCode; value: number }[] = [];
   if (water !== 0) {
-    items.push({ accountKind: JournalAccountKind.WATER, value: water });
+    items.push({ feeCode: FeeCode.WATER, value: water });
   }
   if (assoc !== 0) {
-    items.push({ accountKind: JournalAccountKind.ASSOC, value: assoc });
+    items.push({ feeCode: FeeCode.ASSOC, value: assoc });
   }
   if (misc !== 0) {
-    items.push({ accountKind: JournalAccountKind.MISC, value: misc });
+    items.push({ feeCode: FeeCode.MISC, value: misc });
   }
   const id = (row[JOURNAL_COL.ID] || "").trim();
   const prDateIssued = (row[JOURNAL_COL.PR_DATE_ISSUED] || "").trim();

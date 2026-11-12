@@ -363,7 +363,7 @@ export interface AcknowledgmentReceiptRecord {
 export interface JournalItemRecord {
   id?: string;
   groupId?: string;
-  accountKind: JournalAccountKind;
+  feeCode: FeeCode;
   value: number;
 }
 
@@ -747,14 +747,14 @@ export enum LaundryStatus {
   CANCELLED_BY_USER = "CANCELLED_BY_USER"
 }
 
-export enum JournalAccountKind {
+export enum FeeCode {
   WATER = 1,
   ASSOC = 2,
   MISC = 3
 }
 
-export interface JournalAccountKindConfig {
-  kind: JournalAccountKind;
+export interface FeeCodeConfig {
+  code: FeeCode;
   key: "WATER" | "ASSOC" | "MISC";
   label: string;
   shortLabel: string;
@@ -767,9 +767,9 @@ export interface JournalAccountKindConfig {
   paymentRequestField: "waterFee" | "assocFee" | "misc";
 }
 
-export const JOURNAL_ACCOUNT_KIND_CONFIG: Record<JournalAccountKind, JournalAccountKindConfig> = {
-  [JournalAccountKind.WATER]: {
-    kind: JournalAccountKind.WATER,
+export const FEE_CODE_CONFIG: Record<FeeCode, FeeCodeConfig> = {
+  [FeeCode.WATER]: {
+    code: FeeCode.WATER,
     key: "WATER",
     label: "Water Fee",
     shortLabel: "Water",
@@ -781,8 +781,8 @@ export const JOURNAL_ACCOUNT_KIND_CONFIG: Record<JournalAccountKind, JournalAcco
     waivedField: "waterWaived",
     paymentRequestField: "waterFee"
   },
-  [JournalAccountKind.ASSOC]: {
-    kind: JournalAccountKind.ASSOC,
+  [FeeCode.ASSOC]: {
+    code: FeeCode.ASSOC,
     key: "ASSOC",
     label: "Association Fee",
     shortLabel: "Association",
@@ -794,8 +794,8 @@ export const JOURNAL_ACCOUNT_KIND_CONFIG: Record<JournalAccountKind, JournalAcco
     waivedField: "assocWaived",
     paymentRequestField: "assocFee"
   },
-  [JournalAccountKind.MISC]: {
-    kind: JournalAccountKind.MISC,
+  [FeeCode.MISC]: {
+    code: FeeCode.MISC,
     key: "MISC",
     label: "Miscellaneous",
     shortLabel: "Misc",
@@ -805,28 +805,24 @@ export const JOURNAL_ACCOUNT_KIND_CONFIG: Record<JournalAccountKind, JournalAcco
   }
 };
 
-export const JOURNAL_ACCOUNT_KINDS: JournalAccountKind[] = [
-  JournalAccountKind.WATER,
-  JournalAccountKind.ASSOC,
-  JournalAccountKind.MISC
-];
+export const FEE_CODES: FeeCode[] = [FeeCode.WATER, FeeCode.ASSOC, FeeCode.MISC];
 
-export const JOURNAL_ACCOUNT_KIND_LABELS: Record<JournalAccountKind, string> = {
-  [JournalAccountKind.WATER]: JOURNAL_ACCOUNT_KIND_CONFIG[JournalAccountKind.WATER].label,
-  [JournalAccountKind.ASSOC]: JOURNAL_ACCOUNT_KIND_CONFIG[JournalAccountKind.ASSOC].label,
-  [JournalAccountKind.MISC]: JOURNAL_ACCOUNT_KIND_CONFIG[JournalAccountKind.MISC].label
+export const FEE_CODE_LABELS: Record<FeeCode, string> = {
+  [FeeCode.WATER]: FEE_CODE_CONFIG[FeeCode.WATER].label,
+  [FeeCode.ASSOC]: FEE_CODE_CONFIG[FeeCode.ASSOC].label,
+  [FeeCode.MISC]: FEE_CODE_CONFIG[FeeCode.MISC].label
 };
 
-export function getJournalAccountKindValue(
-  record: { items?: JournalItemRecord[]; accountKind?: JournalAccountKind; value?: number },
-  kind: JournalAccountKind
+export function getJournalFeeValue(
+  record: { items?: JournalItemRecord[]; feeCode?: FeeCode; value?: number },
+  code: FeeCode
 ): number {
   if (record.items && record.items.length > 0) {
     return record.items
-      .filter((item) => item.accountKind === kind)
+      .filter((item) => item.feeCode === code)
       .reduce((sum, item) => sum + item.value, 0);
   }
-  if (record.accountKind === kind) {
+  if (record.feeCode === code) {
     return record.value || 0;
   }
   return 0;
@@ -834,15 +830,15 @@ export function getJournalAccountKindValue(
 
 export function getJournalActiveItems(
   record:
-    | { items?: JournalItemRecord[]; accountKind?: JournalAccountKind; value?: number }
+    | { items?: JournalItemRecord[]; feeCode?: FeeCode; value?: number }
     | Pick<PaymentRequestRecord, "waterFee" | "assocFee" | "misc">
-): { kind: JournalAccountKind; name: string; amount: number }[] {
+): { code: FeeCode; name: string; amount: number }[] {
   if ("waterFee" in record || "assocFee" in record) {
     const pr = record as Pick<PaymentRequestRecord, "waterFee" | "assocFee" | "misc">;
-    return JOURNAL_ACCOUNT_KINDS.map((kind) => {
-      const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+    return FEE_CODES.map((code) => {
+      const cfg = FEE_CODE_CONFIG[code];
       return {
-        kind,
+        code,
         name: cfg.label,
         amount: pr[cfg.paymentRequestField] || 0
       };
@@ -850,13 +846,13 @@ export function getJournalActiveItems(
   }
   const jr = record as {
     items?: JournalItemRecord[];
-    accountKind?: JournalAccountKind;
+    feeCode?: FeeCode;
     value?: number;
   };
-  return JOURNAL_ACCOUNT_KINDS.map((kind) => ({
-    kind,
-    name: JOURNAL_ACCOUNT_KIND_LABELS[kind],
-    amount: getJournalAccountKindValue(jr, kind)
+  return FEE_CODES.map((code) => ({
+    code,
+    name: FEE_CODE_LABELS[code],
+    amount: getJournalFeeValue(jr, code)
   })).filter((item) => item.amount !== 0);
 }
 

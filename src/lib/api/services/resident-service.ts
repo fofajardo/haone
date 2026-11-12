@@ -1,8 +1,8 @@
 import type { ResidentRecord, UserRecord } from "$lib/types";
 import {
   AccountType,
-  JOURNAL_ACCOUNT_KIND_CONFIG,
-  JOURNAL_ACCOUNT_KINDS,
+  FEE_CODE_CONFIG,
+  FEE_CODES,
   TRANSACTION_TYPE_CONFIG,
   TransactionType
 } from "$lib/types";
@@ -151,7 +151,7 @@ export const residentService: ResidentServiceInterface = {
           ...g,
           id: item.id,
           group_id: item.group_id,
-          account_kind: item.account_kind,
+          fee_code: item.fee_code,
           value: item.value
         };
       })
@@ -195,25 +195,25 @@ export const residentService: ResidentServiceInterface = {
         let paid = 0;
         let waived = 0;
 
-        for (const kind of JOURNAL_ACCOUNT_KINDS) {
-          const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+        for (const code of FEE_CODES) {
+          const cfg = FEE_CODE_CONFIG[code];
           if (cfg.baseField && cfg.paidField && cfg.waivedField && cfg.balanceField) {
-            const kindPaid = filtered
-              .filter((j: any) => Number(j.account_kind) === kind && !isWaivedEntry(j.type || ""))
+            const feePaid = filtered
+              .filter((j: any) => Number(j.fee_code) === code && !isWaivedEntry(j.type || ""))
               .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-            const kindWaived = filtered
-              .filter((j: any) => Number(j.account_kind) === kind && isWaivedEntry(j.type || ""))
+            const feeWaived = filtered
+              .filter((j: any) => Number(j.fee_code) === code && isWaivedEntry(j.type || ""))
               .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-            const kindBase = parseCSVAmount(getConst(`FEES_${period}_${cfg.key}`));
+            const feeBase = parseCSVAmount(getConst(`FEES_${period}_${cfg.key}`));
 
-            financials[cfg.baseField] = kindBase;
-            financials[cfg.paidField] = kindPaid;
-            financials[cfg.waivedField] = kindWaived;
-            financials[cfg.balanceField] = kindBase - kindPaid - kindWaived;
+            financials[cfg.baseField] = feeBase;
+            financials[cfg.paidField] = feePaid;
+            financials[cfg.waivedField] = feeWaived;
+            financials[cfg.balanceField] = feeBase - feePaid - feeWaived;
 
-            totalBase += kindBase;
-            paid += kindPaid;
-            waived += kindWaived;
+            totalBase += feeBase;
+            paid += feePaid;
+            waived += feeWaived;
           }
         }
         const bal = totalBase - paid - waived;
@@ -346,7 +346,7 @@ export const residentService: ResidentServiceInterface = {
           ...g,
           id: item.id,
           group_id: item.group_id,
-          account_kind: item.account_kind,
+          fee_code: item.fee_code,
           value: item.value
         };
       })
@@ -419,25 +419,25 @@ export const residentService: ResidentServiceInterface = {
     let paid = 0;
     let waived = 0;
 
-    for (const kind of JOURNAL_ACCOUNT_KINDS) {
-      const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+    for (const code of FEE_CODES) {
+      const cfg = FEE_CODE_CONFIG[code];
       if (cfg.baseField && cfg.paidField && cfg.waivedField && cfg.balanceField) {
-        const kindPaid = termJournals
-          .filter((j: any) => Number(j.account_kind) === kind && j.type !== pmtWaived)
+        const feePaid = termJournals
+          .filter((j: any) => Number(j.fee_code) === code && j.type !== pmtWaived)
           .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-        const kindWaived = termJournals
-          .filter((j: any) => Number(j.account_kind) === kind && j.type === pmtWaived)
+        const feeWaived = termJournals
+          .filter((j: any) => Number(j.fee_code) === code && j.type === pmtWaived)
           .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-        const kindBase = parseCSVAmount(getConst(`FEES_${targetTerm}_${cfg.key}`));
+        const feeBase = parseCSVAmount(getConst(`FEES_${targetTerm}_${cfg.key}`));
 
-        financials[cfg.baseField] = kindBase;
-        financials[cfg.paidField] = kindPaid;
-        financials[cfg.waivedField] = kindWaived;
-        financials[cfg.balanceField] = kindBase - kindPaid - kindWaived;
+        financials[cfg.baseField] = feeBase;
+        financials[cfg.paidField] = feePaid;
+        financials[cfg.waivedField] = feeWaived;
+        financials[cfg.balanceField] = feeBase - feePaid - feeWaived;
 
-        totalBase += kindBase;
-        paid += kindPaid;
-        waived += kindWaived;
+        totalBase += feeBase;
+        paid += feePaid;
+        waived += feeWaived;
       }
     }
     const bal = totalBase - paid - waived;

@@ -38,13 +38,13 @@
   import { Badge } from "$ui/badge";
   import { fetchResidents } from "$api/controllers/resident-controller";
   import {
-    JOURNAL_ACCOUNT_KIND_CONFIG,
-    JOURNAL_ACCOUNT_KINDS,
-    JournalAccountKind,
+    FEE_CODE_CONFIG,
+    FEE_CODES,
+    FeeCode,
     TransactionType,
     TRANSACTION_TYPE_OPTIONS,
     TRANSACTION_TYPE_FUNDS_ONLY,
-    getJournalAccountKindValue,
+    getJournalFeeValue,
     type ResidentRecord,
     type JournalRecord,
     TRANSACTION_TYPE_WITH_RECEIPT,
@@ -92,10 +92,7 @@
     accountName: "",
     accountStNo: "",
     accountId: "",
-    fees: Object.fromEntries(JOURNAL_ACCOUNT_KINDS.map((k) => [k, "0"])) as Record<
-      JournalAccountKind,
-      string
-    >,
+    fees: Object.fromEntries(FEE_CODES.map((k) => [k, "0"])) as Record<FeeCode, string>,
     mop: "CASH",
     mopTo: "CASH",
     period: settings.currentTerm || "",
@@ -178,12 +175,12 @@
           return key === targetMop;
         });
 
-        for (const kind of JOURNAL_ACCOUNT_KINDS) {
-          const kindSum = nonWaivedFiltered.reduce((sum, j) => {
-            return sum + getJournalAccountKindValue(j, kind);
+        for (const code of FEE_CODES) {
+          const feeSum = nonWaivedFiltered.reduce((sum, j) => {
+            return sum + getJournalFeeValue(j, code);
           }, 0);
-          const kindBal = Math.round(kindSum * 100) / 100;
-          formData.fees[kind] = (-kindBal).toString();
+          const feeBal = Math.round(feeSum * 100) / 100;
+          formData.fees[code] = (-feeBal).toString();
         }
       });
     }
@@ -198,27 +195,26 @@
     );
   });
 
-  function getKindLimit(kind: JournalAccountKind): number {
-    const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+  function getFeeLimit(code: FeeCode): number {
+    const cfg = FEE_CODE_CONFIG[code];
     if (!isCollection || !selectedResident || !cfg.balanceField) {
       return 0;
     }
     const base = selectedResident[cfg.balanceField] || 0;
-    const original =
-      mode === "edit" && initialData ? getJournalAccountKindValue(initialData, kind) : 0;
+    const original = mode === "edit" && initialData ? getJournalFeeValue(initialData, code) : 0;
     return base + original;
   }
 
-  function getCurrentKindBal(kind: JournalAccountKind): number {
-    const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+  function getCurrentFeeBal(code: FeeCode): number {
+    const cfg = FEE_CODE_CONFIG[code];
     if (!cfg.balanceField) {
       return 0;
     }
     if (!isCollection || !selectedResident) {
       return selectedResident ? selectedResident[cfg.balanceField] || 0 : 0;
     }
-    const fee = Number(formData.fees[kind]) || 0;
-    return getKindLimit(kind) - fee;
+    const fee = Number(formData.fees[code]) || 0;
+    return getFeeLimit(code) - fee;
   }
 
   const isFundsOnly = $derived(
@@ -321,11 +317,8 @@
       if (initialData) {
         const mopRefInfo = parseRef(initialData.mopRefNo);
         const initialFees = Object.fromEntries(
-          JOURNAL_ACCOUNT_KINDS.map((kind) => [
-            kind,
-            getJournalAccountKindValue(initialData, kind).toString()
-          ])
-        ) as Record<JournalAccountKind, string>;
+          FEE_CODES.map((code) => [code, getJournalFeeValue(initialData, code).toString()])
+        ) as Record<FeeCode, string>;
 
         formData = {
           date: initialData.date,
@@ -362,10 +355,10 @@
           ) || null;
 
         if (selectedResident) {
-          for (const kind of JOURNAL_ACCOUNT_KINDS) {
-            const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind];
+          for (const code of FEE_CODES) {
+            const cfg = FEE_CODE_CONFIG[code];
             if (cfg.balanceField) {
-              const val = getJournalAccountKindValue(initialData, kind);
+              const val = getJournalFeeValue(initialData, code);
               const limit = selectedResident[cfg.balanceField] + (mode === "edit" ? val : 0);
               if (val > limit + 0.01) {
                 allowOverpayment = true;
@@ -469,9 +462,9 @@
       return;
     }
 
-    const parsedFees = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
-      accountKind: kind,
-      value: parseFloat(formData.fees[kind]) || 0
+    const parsedFees = FEE_CODES.map((code) => ({
+      feeCode: code,
+      value: parseFloat(formData.fees[code]) || 0
     }));
 
     if (parsedFees.every((item) => item.value === 0)) {
@@ -484,8 +477,7 @@
       formData.type === TransactionType.TRANSFER_FROM ||
       formData.type === TransactionType.TRANSFER_TO;
 
-    const miscVal =
-      parsedFees.find((item) => item.accountKind === JournalAccountKind.MISC)?.value || 0;
+    const miscVal = parsedFees.find((item) => item.feeCode === FeeCode.MISC)?.value || 0;
     if (!isTransfer && miscVal > 0 && !formData.notes.trim()) {
       error = "Public remarks are required for miscellaneous payments.";
       return;
@@ -493,9 +485,9 @@
 
     if (isCollection && !allowOverpayment) {
       for (const item of parsedFees) {
-        const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[item.accountKind];
+        const cfg = FEE_CODE_CONFIG[item.feeCode];
         if (cfg.balanceField) {
-          const limit = getKindLimit(item.accountKind);
+          const limit = getFeeLimit(item.feeCode);
           if (item.value > limit + 0.01) {
             error = `${cfg.shortLabel} payment exceeds remaining balance limit (${formatAmount(limit)}).`;
             return;
@@ -520,11 +512,11 @@
         const fromId = mode === "edit" && initialData ? initialData.id : crypto.randomUUID();
         const fromItems = parsedFees
           .filter((item) => item.value !== 0)
-          .map((item) => ({ accountKind: item.accountKind, value: -Math.abs(item.value) }));
+          .map((item) => ({ feeCode: item.feeCode, value: -Math.abs(item.value) }));
         const toId = crypto.randomUUID();
         const toItems = parsedFees
           .filter((item) => item.value !== 0)
-          .map((item) => ({ accountKind: item.accountKind, value: Math.abs(item.value) }));
+          .map((item) => ({ feeCode: item.feeCode, value: Math.abs(item.value) }));
 
         const fromEntry: Partial<JournalRecord> = {
           id: fromId,
@@ -578,15 +570,15 @@
 
       const items = parsedFees
         .map((item) => {
-          const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[item.accountKind];
+          const cfg = FEE_CODE_CONFIG[item.feeCode];
           if (formData.type === TransactionType.WAIVED && !cfg.canWaive) {
-            return { accountKind: item.accountKind, value: 0 };
+            return { feeCode: item.feeCode, value: 0 };
           }
           if (item.value === 0) {
-            return { accountKind: item.accountKind, value: 0 };
+            return { feeCode: item.feeCode, value: 0 };
           }
           return {
-            accountKind: item.accountKind,
+            feeCode: item.feeCode,
             value: isNegative ? -Math.abs(item.value) : item.value
           };
         })
@@ -642,7 +634,7 @@
         const carryoverId = crypto.randomUUID();
         const carryoverItems = parsedFees
           .filter((item) => item.value !== 0)
-          .map((item) => ({ accountKind: item.accountKind, value: -item.value }));
+          .map((item) => ({ feeCode: item.feeCode, value: -item.value }));
         const mappedCarryoverType =
           TRANSACTION_TYPE_OPTIONS.find((t) => {
             return t.value === TransactionType.CARRYOVER;
@@ -857,12 +849,12 @@
               <Wallet class="h-3.5 w-3.5" /> Payment Details
             </Label>
             <div class="space-y-4">
-              {#each JOURNAL_ACCOUNT_KINDS as kind (kind)}
-                {@const cfg = JOURNAL_ACCOUNT_KIND_CONFIG[kind]}
+              {#each FEE_CODES as code (code)}
+                {@const cfg = FEE_CODE_CONFIG[code]}
                 {#if formData.type !== TransactionType.WAIVED || cfg.canWaive}
                   {@const hasBalanceLimit = isCollection && selectedResident && !!cfg.balanceField}
-                  {@const kindLimit = getKindLimit(kind)}
-                  {@const currentKindBal = getCurrentKindBal(kind)}
+                  {@const feeLimit = getFeeLimit(code)}
+                  {@const currentFeeBal = getCurrentFeeBal(code)}
                   <div class="grid gap-4 {hasBalanceLimit ? 'md:grid-cols-2' : ''}">
                     <div class="space-y-1.5">
                       <Label>{cfg.label}</Label>
@@ -870,8 +862,8 @@
                         <Input
                           type="number"
                           step="0.01"
-                          bind:value={formData.fees[kind]}
-                          max={hasBalanceLimit && !allowOverpayment ? kindLimit : undefined}
+                          bind:value={formData.fees[code]}
+                          max={hasBalanceLimit && !allowOverpayment ? feeLimit : undefined}
                           disabled={!formData.accountId || isSubmitting || isEos}
                           class="text-right font-mono"
                         />
@@ -884,8 +876,8 @@
                                   size="icon"
                                   class="h-9 w-9 shrink-0"
                                   {...props}
-                                  onclick={() => (formData.fees[kind] = kindLimit.toString())}
-                                  disabled={kindLimit <= 0 || isSubmitting}
+                                  onclick={() => (formData.fees[code] = feeLimit.toString())}
+                                  disabled={feeLimit <= 0 || isSubmitting}
                                 >
                                   <ArrowLeftToLine class="h-4 w-4" />
                                 </Button>
@@ -904,17 +896,17 @@
                         <div
                           class="flex h-9 items-center justify-between rounded-md bg-muted/20 px-3"
                         >
-                          {#if currentKindBal < 0}
+                          {#if currentFeeBal < 0}
                             <Badge variant="destructive" class="font-bold">OVERPAID</Badge>
                           {:else}
                             <span></span>
                           {/if}
                           <div
-                            class="font-mono text-sm font-bold {currentKindBal > 0
+                            class="font-mono text-sm font-bold {currentFeeBal > 0
                               ? 'text-destructive'
                               : 'text-primary'}"
                           >
-                            {formatAccounting(currentKindBal)}
+                            {formatAccounting(currentFeeBal)}
                           </div>
                         </div>
                       </div>

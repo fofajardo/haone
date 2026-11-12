@@ -22,9 +22,9 @@
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
   import {
-    JOURNAL_ACCOUNT_KIND_CONFIG,
-    JOURNAL_ACCOUNT_KINDS,
-    JournalAccountKind,
+    FEE_CODE_CONFIG,
+    FEE_CODES,
+    FeeCode,
     PaymentRequestStatus,
     TransactionType,
     type JournalRecord
@@ -68,9 +68,9 @@
       filtered.forEach((p) => {
         const resident = r.find((res) => res.residentId === p.residentId);
         const user = u.find((usr) => usr.id === p.residentId);
-        const items = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
-          accountKind: kind,
-          value: p[JOURNAL_ACCOUNT_KIND_CONFIG[kind].paymentRequestField] || 0
+        const items = FEE_CODES.map((code) => ({
+          feeCode: code,
+          value: p[FEE_CODE_CONFIG[code].paymentRequestField] || 0
         })).filter((item) => item.value !== 0);
 
         stagedForms[p.id] = {
@@ -179,9 +179,9 @@
     if (!currentPayment) {
       return;
     }
-    const items = JOURNAL_ACCOUNT_KINDS.map((kind) => ({
-      accountKind: kind,
-      value: parseFloat(formData.fees?.[kind]) || 0
+    const items = FEE_CODES.map((code) => ({
+      feeCode: code,
+      value: parseFloat(formData.fees?.[code]) || 0
     })).filter((item) => item.value !== 0);
 
     stagedForms[currentPayment.id] = {

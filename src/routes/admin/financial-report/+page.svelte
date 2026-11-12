@@ -23,11 +23,11 @@
   import { translateMop, translateTransactionType } from "$utils/translators";
   import { getJournalDateRange } from "$utils/parsers";
   import {
-    JOURNAL_ACCOUNT_KIND_CONFIG,
-    JOURNAL_ACCOUNT_KIND_LABELS,
-    JOURNAL_ACCOUNT_KINDS,
-    getJournalAccountKindValue,
-    type JournalAccountKind,
+    FEE_CODE_CONFIG,
+    FEE_CODE_LABELS,
+    FEE_CODES,
+    getJournalFeeValue,
+    type FeeCode,
     type JournalRecord,
     type ResidentRecord
   } from "$lib/types";
@@ -143,17 +143,18 @@
     });
   });
 
-  // Balance trend line graph: running totals over time for each account kind
+  // Balance trend line graph: running totals over time for each fee code
   let balanceTrendData = $derived.by(() => {
-    const runningByKind = Object.fromEntries(
-      JOURNAL_ACCOUNT_KINDS.map((kind) => [kind, 0])
-    ) as Record<JournalAccountKind, number>;
+    const runningByCode = Object.fromEntries(FEE_CODES.map((code) => [code, 0])) as Record<
+      FeeCode,
+      number
+    >;
 
     const points = processedJournal.map((j, idx) => {
       const isWaived = j.type?.toUpperCase().includes("WAIVED");
       if (!isWaived) {
-        for (const kind of JOURNAL_ACCOUNT_KINDS) {
-          runningByKind[kind] += getJournalAccountKindValue(j, kind);
+        for (const code of FEE_CODES) {
+          runningByCode[code] += getJournalFeeValue(j, code);
         }
       }
 
@@ -172,11 +173,11 @@
         }
       }
 
-      const total = JOURNAL_ACCOUNT_KINDS.reduce((sum, kind) => sum + runningByKind[kind], 0);
-      const kindValues = Object.fromEntries(
-        JOURNAL_ACCOUNT_KINDS.map((kind) => [
-          JOURNAL_ACCOUNT_KIND_CONFIG[kind].key,
-          Math.round(runningByKind[kind] * 100) / 100
+      const total = FEE_CODES.reduce((sum, code) => sum + runningByCode[code], 0);
+      const feeValues = Object.fromEntries(
+        FEE_CODES.map((code) => [
+          FEE_CODE_CONFIG[code].key,
+          Math.round(runningByCode[code] * 100) / 100
         ])
       );
 
@@ -186,7 +187,7 @@
         date: dateFormatted,
         rawDate: j.date,
         balance: Math.round(total * 100) / 100,
-        ...kindValues
+        ...feeValues
       };
     });
 
@@ -195,10 +196,10 @@
 
   const balanceTrendSeries = [
     { key: "balance", label: "Net Balance", color: "#10b981" },
-    ...JOURNAL_ACCOUNT_KINDS.map((kind) => ({
-      key: JOURNAL_ACCOUNT_KIND_CONFIG[kind].key,
-      label: JOURNAL_ACCOUNT_KIND_LABELS[kind],
-      color: JOURNAL_ACCOUNT_KIND_CONFIG[kind].color
+    ...FEE_CODES.map((code) => ({
+      key: FEE_CODE_CONFIG[code].key,
+      label: FEE_CODE_LABELS[code],
+      color: FEE_CODE_CONFIG[code].color
     }))
   ];
 
@@ -412,23 +413,23 @@
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {#each JOURNAL_ACCOUNT_KINDS as kind (kind)}
+                    {#each FEE_CODES as code (code)}
                       <Table.Row class="font-bold">
-                        <Table.Cell>{JOURNAL_ACCOUNT_KIND_LABELS[kind].toUpperCase()}</Table.Cell>
+                        <Table.Cell>{FEE_CODE_LABELS[code].toUpperCase()}</Table.Cell>
                         <Table.Cell class="text-right"
-                          >{formatAccounting(fundSummary.feeSummary[kind].incoming)}</Table.Cell
+                          >{formatAccounting(fundSummary.feeSummary[code].incoming)}</Table.Cell
                         >
                         <Table.Cell class="text-right"
-                          >{formatAccounting(fundSummary.feeSummary[kind].outgoing)}</Table.Cell
+                          >{formatAccounting(fundSummary.feeSummary[code].outgoing)}</Table.Cell
                         >
                         <Table.Cell class="text-right"
                           >{formatAccounting(
-                            fundSummary.feeSummary[kind].incoming -
-                              fundSummary.feeSummary[kind].outgoing
+                            fundSummary.feeSummary[code].incoming -
+                              fundSummary.feeSummary[code].outgoing
                           )}</Table.Cell
                         >
                       </Table.Row>
-                      {#each Object.entries(fundSummary.feeTypeMopSummary[kind]) as [mop, data]}
+                      {#each Object.entries(fundSummary.feeTypeMopSummary[code]) as [mop, data]}
                         <Table.Row>
                           <Table.Cell class="pl-6 uppercase"
                             >{availableMops.find((m) => m.value === mop)?.label ||

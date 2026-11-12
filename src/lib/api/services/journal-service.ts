@@ -1,5 +1,5 @@
 import {
-  JournalAccountKind,
+  FeeCode,
   type JournalItem,
   type JournalRecord,
   type PaginatedResponse,
@@ -70,12 +70,11 @@ export function buildJournalInsertPayload(
   };
 
   const active = (data.items || []).filter((item) => item.value !== 0);
-  const itemsToInsert =
-    active.length > 0 ? active : [{ accountKind: JournalAccountKind.WATER, value: 0 }];
+  const itemsToInsert = active.length > 0 ? active : [{ feeCode: FeeCode.WATER, value: 0 }];
   const itemRows = itemsToInsert.map((item) => ({
     id: item.id && isUuid(item.id) ? item.id : crypto.randomUUID(),
     group_id: groupId,
-    account_kind: item.accountKind,
+    fee_code: item.feeCode,
     value: item.value
   }));
   return { groupRow, itemRows };
@@ -209,13 +208,13 @@ export const journalService: JournalServiceInterface = {
     for (const row of itemRows) {
       const groupKey = row.group_id || row.id;
       const val = parseCSVAmount(row.value);
-      const kind = Number(row.account_kind) as JournalAccountKind;
+      const code = Number(row.fee_code) as FeeCode;
       const list = itemsByGroup.get(groupKey) || [];
-      const existingItem = list.find((item) => item.accountKind === kind);
+      const existingItem = list.find((item) => item.feeCode === code);
       if (existingItem) {
         existingItem.value += val;
       } else {
-        list.push({ id: row.id, groupId: groupKey, accountKind: kind, value: val });
+        list.push({ id: row.id, groupId: groupKey, feeCode: code, value: val });
       }
       itemsByGroup.set(groupKey, list);
     }
@@ -471,26 +470,26 @@ export const journalService: JournalServiceInterface = {
     const rawDesired = (data.items || []).filter((item) => item.value !== 0);
     const desired =
       rawDesired.length > 0
-        ? rawDesired.map((item) => ({ kind: item.accountKind, val: item.value }))
-        : [{ kind: JournalAccountKind.WATER, val: 0 }];
+        ? rawDesired.map((item) => ({ code: item.feeCode, val: item.value }))
+        : [{ code: FeeCode.WATER, val: 0 }];
 
-    const desiredKinds = new Set(desired.map((d) => d.kind));
-    const existingByKind = new Map<number, any>();
+    const desiredCodes = new Set(desired.map((d) => d.code));
+    const existingByCode = new Map<number, any>();
     for (const r of existingRows || []) {
-      existingByKind.set(Number(r.account_kind), r);
+      existingByCode.set(Number(r.fee_code), r);
     }
 
     const idsToDelete = (existingRows || [])
-      .filter((r) => !desiredKinds.has(Number(r.account_kind) as JournalAccountKind))
+      .filter((r) => !desiredCodes.has(Number(r.fee_code) as FeeCode))
       .map((r) => r.id);
 
     for (const item of desired) {
-      const match = existingByKind.get(item.kind);
+      const match = existingByCode.get(item.code);
       if (match) {
         const { error: uErr } = await supabase
           .from("journal")
           .update({
-            account_kind: item.kind,
+            fee_code: item.code,
             value: item.val
           })
           .eq("id", match.id);
@@ -501,7 +500,7 @@ export const journalService: JournalServiceInterface = {
         const { error: iErr } = await supabase.from("journal").insert({
           id: crypto.randomUUID(),
           group_id: targetGroupId,
-          account_kind: item.kind,
+          fee_code: item.code,
           value: item.val
         });
         if (iErr) {

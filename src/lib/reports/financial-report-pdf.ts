@@ -2,10 +2,10 @@ import { fetchMopTypes } from "$api/controllers/constants-controller";
 import { fetchJournalEntries } from "$api/controllers/journal-controller";
 import { fetchResidents } from "$api/controllers/resident-controller";
 import {
-  getJournalAccountKindValue,
-  JOURNAL_ACCOUNT_KIND_LABELS,
-  JOURNAL_ACCOUNT_KINDS,
-  JournalAccountKind,
+  FEE_CODE_LABELS,
+  FEE_CODES,
+  FeeCode,
+  getJournalFeeValue,
   TransactionType,
   type JournalRecord,
   type ResidentRecord
@@ -80,10 +80,7 @@ export function computeFinancialReportData(
   let runningBalance = 0;
   const processedJournal = sortedJournal.map((j) => {
     const isWaived = j.type.toUpperCase().includes("WAIVED");
-    const amount = JOURNAL_ACCOUNT_KINDS.reduce(
-      (sum, kind) => sum + getJournalAccountKindValue(j, kind),
-      0
-    );
+    const amount = FEE_CODES.reduce((sum, code) => sum + getJournalFeeValue(j, code), 0);
     const incoming = !isWaived && amount > 0 ? amount : 0;
     const outgoing = !isWaived && amount < 0 ? Math.abs(amount) : 0;
     if (!isWaived) {
@@ -120,16 +117,13 @@ export function computeFinancialReportData(
 
   // Summary by Fee Type
   const feeSummary = Object.fromEntries(
-    JOURNAL_ACCOUNT_KINDS.map((kind) => [kind, { incoming: 0, outgoing: 0 }])
-  ) as Record<JournalAccountKind, { incoming: number; outgoing: number }>;
+    FEE_CODES.map((code) => [code, { incoming: 0, outgoing: 0 }])
+  ) as Record<FeeCode, { incoming: number; outgoing: number }>;
 
   // Summary by Fee Type and MOP
   const feeTypeMopSummary = Object.fromEntries(
-    JOURNAL_ACCOUNT_KINDS.map((kind) => [
-      kind,
-      {} as Record<string, { incoming: number; outgoing: number }>
-    ])
-  ) as Record<JournalAccountKind, Record<string, { incoming: number; outgoing: number }>>;
+    FEE_CODES.map((code) => [code, {} as Record<string, { incoming: number; outgoing: number }>])
+  ) as Record<FeeCode, Record<string, { incoming: number; outgoing: number }>>;
 
   processedJournal.forEach((j) => {
     const isWaived = j.type.toUpperCase().includes("WAIVED");
@@ -142,19 +136,19 @@ export function computeFinancialReportData(
     }
     const mopKey = rawMop || "CASH";
 
-    for (const kind of JOURNAL_ACCOUNT_KINDS) {
-      const val = getJournalAccountKindValue(j, kind);
+    for (const code of FEE_CODES) {
+      const val = getJournalFeeValue(j, code);
       if (val !== 0) {
-        if (!feeTypeMopSummary[kind][mopKey]) {
-          feeTypeMopSummary[kind][mopKey] = { incoming: 0, outgoing: 0 };
+        if (!feeTypeMopSummary[code][mopKey]) {
+          feeTypeMopSummary[code][mopKey] = { incoming: 0, outgoing: 0 };
         }
         if (val > 0) {
-          feeSummary[kind].incoming += val;
-          feeTypeMopSummary[kind][mopKey].incoming += val;
+          feeSummary[code].incoming += val;
+          feeTypeMopSummary[code][mopKey].incoming += val;
         } else {
           const absVal = Math.abs(val);
-          feeSummary[kind].outgoing += absVal;
-          feeTypeMopSummary[kind][mopKey].outgoing += absVal;
+          feeSummary[code].outgoing += absVal;
+          feeTypeMopSummary[code][mopKey].outgoing += absVal;
         }
       }
     }
@@ -165,19 +159,17 @@ export function computeFinancialReportData(
     target: accounts.reduce((s, r) => s + r.waterBase, 0),
     waived: accounts.reduce((s, r) => s + r.waterWaived, 0),
     resident: processedJournal.reduce((s, j) => {
-      const w = getJournalAccountKindValue(j, JournalAccountKind.WATER);
+      const w = getJournalFeeValue(j, FeeCode.WATER);
       return s + (j.type === TransactionType.COLLECTION && w > 0 ? w : 0);
     }, 0),
     uho: processedJournal.reduce(
       (s, j) =>
         s +
-        (j.type === TransactionType.COLLECTION_OTHERS
-          ? getJournalAccountKindValue(j, JournalAccountKind.WATER)
-          : 0),
+        (j.type === TransactionType.COLLECTION_OTHERS ? getJournalFeeValue(j, FeeCode.WATER) : 0),
       0
     ),
     refunds: processedJournal.reduce((s, j) => {
-      const w = getJournalAccountKindValue(j, JournalAccountKind.WATER);
+      const w = getJournalFeeValue(j, FeeCode.WATER);
       return s + (j.type === TransactionType.COLLECTION && w < 0 ? Math.abs(w) : 0);
     }, 0),
     overdue: accounts.reduce((s, r) => s + (r.waterBal > 0 ? r.waterBal : 0), 0),
@@ -195,11 +187,11 @@ export function computeFinancialReportData(
     target: accounts.reduce((s, r) => s + r.assocBase, 0),
     waived: accounts.reduce((s, r) => s + r.assocWaived, 0),
     resident: processedJournal.reduce((s, j) => {
-      const a = getJournalAccountKindValue(j, JournalAccountKind.ASSOC);
+      const a = getJournalFeeValue(j, FeeCode.ASSOC);
       return s + (j.type === TransactionType.COLLECTION && a > 0 ? a : 0);
     }, 0),
     refunds: processedJournal.reduce((s, j) => {
-      const a = getJournalAccountKindValue(j, JournalAccountKind.ASSOC);
+      const a = getJournalFeeValue(j, FeeCode.ASSOC);
       return s + (j.type === TransactionType.COLLECTION && a < 0 ? Math.abs(a) : 0);
     }, 0),
     overdue: accounts.reduce((s, r) => s + (r.assocBal > 0 ? r.assocBal : 0), 0)
@@ -337,29 +329,29 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
               { text: "OUTGOING", style: "tableHeader", alignment: "right" },
               { text: "BALANCE", style: "tableHeader", alignment: "right" }
             ] as TableCell[],
-            ...JOURNAL_ACCOUNT_KINDS.flatMap((kind) => [
+            ...FEE_CODES.flatMap((code) => [
               [
-                { text: JOURNAL_ACCOUNT_KIND_LABELS[kind].toUpperCase(), bold: true, fontSize: 9 },
+                { text: FEE_CODE_LABELS[code].toUpperCase(), bold: true, fontSize: 9 },
                 {
-                  text: formatAccounting(feeSummary[kind].incoming),
+                  text: formatAccounting(feeSummary[code].incoming),
                   alignment: "right",
                   bold: true,
                   fontSize: 9
                 },
                 {
-                  text: formatAccounting(feeSummary[kind].outgoing),
+                  text: formatAccounting(feeSummary[code].outgoing),
                   alignment: "right",
                   bold: true,
                   fontSize: 9
                 },
                 {
-                  text: formatAccounting(feeSummary[kind].incoming - feeSummary[kind].outgoing),
+                  text: formatAccounting(feeSummary[code].incoming - feeSummary[code].outgoing),
                   alignment: "right",
                   bold: true,
                   fontSize: 9
                 }
               ] as TableCell[],
-              ...Object.entries(feeTypeMopSummary[kind]).map(([mop, data]) => {
+              ...Object.entries(feeTypeMopSummary[code]).map(([mop, data]) => {
                 const mopConst = availableMops.find((m) => {
                   return m.value === mop;
                 });
