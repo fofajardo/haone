@@ -2,8 +2,6 @@ import { fetchMopTypes } from "$api/controllers/constants-controller";
 import { fetchJournalEntries } from "$api/controllers/journal-controller";
 import { fetchResidents } from "$api/controllers/resident-controller";
 import {
-  FEE_CODE_LABELS,
-  FEE_CODES,
   FeeCode,
   getJournalFeeValue,
   TransactionType,
@@ -11,6 +9,7 @@ import {
   type ResidentRecord
 } from "$lib/types";
 import { brandingState } from "$state/branding.svelte";
+import { feeCodesState } from "$state/fee-codes.svelte";
 import { formatAccounting } from "$utils/formatters";
 import { parseDateWeight } from "$utils/parsers";
 import { translateMop } from "$utils/translators";
@@ -80,7 +79,7 @@ export function computeFinancialReportData(
   let runningBalance = 0;
   const processedJournal = sortedJournal.map((j) => {
     const isWaived = j.type.toUpperCase().includes("WAIVED");
-    const amount = FEE_CODES.reduce((sum, code) => sum + getJournalFeeValue(j, code), 0);
+    const amount = feeCodesState.codes.reduce((sum, code) => sum + getJournalFeeValue(j, code), 0);
     const incoming = !isWaived && amount > 0 ? amount : 0;
     const outgoing = !isWaived && amount < 0 ? Math.abs(amount) : 0;
     if (!isWaived) {
@@ -117,12 +116,15 @@ export function computeFinancialReportData(
 
   // Summary by Fee Type
   const feeSummary = Object.fromEntries(
-    FEE_CODES.map((code) => [code, { incoming: 0, outgoing: 0 }])
+    feeCodesState.codes.map((code) => [code, { incoming: 0, outgoing: 0 }])
   ) as Record<FeeCode, { incoming: number; outgoing: number }>;
 
   // Summary by Fee Type and MOP
   const feeTypeMopSummary = Object.fromEntries(
-    FEE_CODES.map((code) => [code, {} as Record<string, { incoming: number; outgoing: number }>])
+    feeCodesState.codes.map((code) => [
+      code,
+      {} as Record<string, { incoming: number; outgoing: number }>
+    ])
   ) as Record<FeeCode, Record<string, { incoming: number; outgoing: number }>>;
 
   processedJournal.forEach((j) => {
@@ -136,7 +138,7 @@ export function computeFinancialReportData(
     }
     const mopKey = rawMop || "CASH";
 
-    for (const code of FEE_CODES) {
+    for (const code of feeCodesState.codes) {
       const val = getJournalFeeValue(j, code);
       if (val !== 0) {
         if (!feeTypeMopSummary[code][mopKey]) {
@@ -329,9 +331,9 @@ export async function exportFinancialReportPDF(options: FinancialReportOptions) 
               { text: "OUTGOING", style: "tableHeader", alignment: "right" },
               { text: "BALANCE", style: "tableHeader", alignment: "right" }
             ] as TableCell[],
-            ...FEE_CODES.flatMap((code) => [
+            ...feeCodesState.codes.flatMap((code) => [
               [
-                { text: FEE_CODE_LABELS[code].toUpperCase(), bold: true, fontSize: 9 },
+                { text: feeCodesState.labels[code].toUpperCase(), bold: true, fontSize: 9 },
                 {
                   text: formatAccounting(feeSummary[code].incoming),
                   alignment: "right",

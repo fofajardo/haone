@@ -23,7 +23,8 @@
     CirclePlus,
     X,
     CircleUserIcon,
-    LogOutIcon
+    LogOutIcon,
+    Tags
   } from "@lucide/svelte";
   import { Button } from "$ui/button";
   import { dev } from "$app/environment";
@@ -46,10 +47,10 @@
     { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
     { title: "Financial Report", url: "/admin/financial-report", icon: HandCoins },
     { title: "Transactions", url: "/admin/transactions", icon: RotateCcwClock },
+    { title: "Fees", url: "/admin/fees", icon: Tags },
     { title: "Residents", url: "/admin/residents", icon: Users },
     { title: "Users", url: "/admin/users", icon: Contact },
-    { title: "Demographics", url: "/admin/demographics", icon: ChartPie },
-    { title: "Academic Terms", url: "/admin/academic-terms", icon: GraduationCap }
+    { title: "Demographics", url: "/admin/demographics", icon: ChartPie }
   ];
 
   const adminServiceItems = $derived([

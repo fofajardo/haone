@@ -37,9 +37,8 @@
   import * as Tooltip from "$ui/tooltip";
   import { Badge } from "$ui/badge";
   import { fetchResidents } from "$api/controllers/resident-controller";
+  import { feeCodesState } from "$state/fee-codes.svelte";
   import {
-    FEE_CODE_CONFIG,
-    FEE_CODES,
     FeeCode,
     TransactionType,
     TRANSACTION_TYPE_OPTIONS,
@@ -92,7 +91,7 @@
     accountName: "",
     accountStNo: "",
     accountId: "",
-    fees: Object.fromEntries(FEE_CODES.map((k) => [k, "0"])) as Record<FeeCode, string>,
+    fees: Object.fromEntries(feeCodesState.codes.map((k) => [k, "0"])) as Record<FeeCode, string>,
     mop: "CASH",
     mopTo: "CASH",
     period: settings.currentTerm || "",
@@ -175,7 +174,7 @@
           return key === targetMop;
         });
 
-        for (const code of FEE_CODES) {
+        for (const code of feeCodesState.codes) {
           const feeSum = nonWaivedFiltered.reduce((sum, j) => {
             return sum + getJournalFeeValue(j, code);
           }, 0);
@@ -196,22 +195,22 @@
   });
 
   function getFeeLimit(code: FeeCode): number {
-    const cfg = FEE_CODE_CONFIG[code];
-    if (!isCollection || !selectedResident || !cfg.balanceField) {
+    const cfg = feeCodesState.byCode[code];
+    if (!isCollection || !selectedResident || !cfg?.isMandatory) {
       return 0;
     }
-    const base = selectedResident[cfg.balanceField] || 0;
+    const base = selectedResident.feeBalances?.[code]?.balance || 0;
     const original = mode === "edit" && initialData ? getJournalFeeValue(initialData, code) : 0;
     return base + original;
   }
 
   function getCurrentFeeBal(code: FeeCode): number {
-    const cfg = FEE_CODE_CONFIG[code];
-    if (!cfg.balanceField) {
+    const cfg = feeCodesState.byCode[code];
+    if (!cfg?.isMandatory) {
       return 0;
     }
     if (!isCollection || !selectedResident) {
-      return selectedResident ? selectedResident[cfg.balanceField] || 0 : 0;
+      return selectedResident ? selectedResident.feeBalances?.[code]?.balance || 0 : 0;
     }
     const fee = Number(formData.fees[code]) || 0;
     return getFeeLimit(code) - fee;
@@ -317,7 +316,10 @@
       if (initialData) {
         const mopRefInfo = parseRef(initialData.mopRefNo);
         const initialFees = Object.fromEntries(
-          FEE_CODES.map((code) => [code, getJournalFeeValue(initialData, code).toString()])
+          feeCodesState.codes.map((code) => [
+            code,
+            getJournalFeeValue(initialData, code).toString()
+          ])
         ) as Record<FeeCode, string>;
 
         formData = {
@@ -355,11 +357,12 @@
           ) || null;
 
         if (selectedResident) {
-          for (const code of FEE_CODES) {
-            const cfg = FEE_CODE_CONFIG[code];
-            if (cfg.balanceField) {
+          for (const code of feeCodesState.codes) {
+            const cfg = feeCodesState.byCode[code];
+            if (cfg.isMandatory) {
               const val = getJournalFeeValue(initialData, code);
-              const limit = selectedResident[cfg.balanceField] + (mode === "edit" ? val : 0);
+              const limit =
+                (selectedResident.feeBalances?.[code]?.balance || 0) + (mode === "edit" ? val : 0);
               if (val > limit + 0.01) {
                 allowOverpayment = true;
               }
@@ -462,7 +465,7 @@
       return;
     }
 
-    const parsedFees = FEE_CODES.map((code) => ({
+    const parsedFees = feeCodesState.codes.map((code) => ({
       feeCode: code,
       value: parseFloat(formData.fees[code]) || 0
     }));
@@ -485,8 +488,8 @@
 
     if (isCollection && !allowOverpayment) {
       for (const item of parsedFees) {
-        const cfg = FEE_CODE_CONFIG[item.feeCode];
-        if (cfg.balanceField) {
+        const cfg = feeCodesState.byCode[item.feeCode];
+        if (cfg.isMandatory) {
           const limit = getFeeLimit(item.feeCode);
           if (item.value > limit + 0.01) {
             error = `${cfg.shortLabel} payment exceeds remaining balance limit (${formatAmount(limit)}).`;
@@ -570,7 +573,7 @@
 
       const items = parsedFees
         .map((item) => {
-          const cfg = FEE_CODE_CONFIG[item.feeCode];
+          const cfg = feeCodesState.byCode[item.feeCode];
           if (formData.type === TransactionType.WAIVED && !cfg.canWaive) {
             return { feeCode: item.feeCode, value: 0 };
           }
@@ -849,10 +852,10 @@
               <Wallet class="h-3.5 w-3.5" /> Payment Details
             </Label>
             <div class="space-y-4">
-              {#each FEE_CODES as code (code)}
-                {@const cfg = FEE_CODE_CONFIG[code]}
+              {#each feeCodesState.codes as code (code)}
+                {@const cfg = feeCodesState.byCode[code]}
                 {#if formData.type !== TransactionType.WAIVED || cfg.canWaive}
-                  {@const hasBalanceLimit = isCollection && selectedResident && !!cfg.balanceField}
+                  {@const hasBalanceLimit = isCollection && selectedResident && !!cfg?.isMandatory}
                   {@const feeLimit = getFeeLimit(code)}
                   {@const currentFeeBal = getCurrentFeeBal(code)}
                   <div class="grid gap-4 {hasBalanceLimit ? 'md:grid-cols-2' : ''}">

@@ -8,8 +8,6 @@ import {
 import { roomsService, type AccountRow, type CurrRecord } from "$api/services/rooms-service";
 import {
   AccountType,
-  FEE_CODE_CONFIG,
-  FEE_CODES,
   FeeCode,
   TRANSACTION_TYPE_CONFIG,
   TransactionType,
@@ -17,6 +15,7 @@ import {
   type UserRecord
 } from "$lib/types";
 import { auth } from "$state/auth.svelte";
+import { feeCodesState } from "$state/fee-codes.svelte";
 import { roomsState } from "$state/rooms.svelte";
 import { getLocalDateString } from "$utils/parsers";
 
@@ -532,10 +531,10 @@ export async function manualDelistResident(
         let remainingToWaive = resRecord.bal;
         const waiveItems: { feeCode: FeeCode; value: number }[] = [];
 
-        for (const code of FEE_CODES) {
-          const cfg = FEE_CODE_CONFIG[code];
-          if (cfg.balanceField) {
-            const bal = resRecord[cfg.balanceField] || 0;
+        for (const code of feeCodesState.codes) {
+          const cfg = feeCodesState.byCode[code];
+          if (cfg.isMandatory) {
+            const bal = resRecord.feeBalances?.[code]?.balance || 0;
             if (remainingToWaive > 0 && bal > 0) {
               const waiveAmt = Math.min(bal, remainingToWaive);
               waiveItems.push({ feeCode: code, value: waiveAmt });

@@ -21,14 +21,8 @@
     approvePaymentRequest
   } from "$api/controllers/payment-request-controller";
   import { fetchResidents, fetchUsers } from "$api/controllers/resident-controller";
-  import {
-    FEE_CODE_CONFIG,
-    FEE_CODES,
-    FeeCode,
-    PaymentRequestStatus,
-    TransactionType,
-    type JournalRecord
-  } from "$lib/types";
+  import { feeCodesState } from "$state/fee-codes.svelte";
+  import { PaymentRequestStatus, TransactionType, type JournalRecord } from "$lib/types";
   import { settings } from "$state/settings.svelte";
   import { toast } from "svelte-sonner";
   import { formatAmount, formatDate } from "$utils/formatters";
@@ -68,10 +62,14 @@
       filtered.forEach((p) => {
         const resident = r.find((res) => res.residentId === p.residentId);
         const user = u.find((usr) => usr.id === p.residentId);
-        const items = FEE_CODES.map((code) => ({
-          feeCode: code,
-          value: p[FEE_CODE_CONFIG[code].paymentRequestField] || 0
-        })).filter((item) => item.value !== 0);
+        const items = feeCodesState.codes
+          .map((code) => ({
+            feeCode: code,
+            value: feeCodesState.byCode[code].paymentRequestField
+              ? p[feeCodesState.byCode[code].paymentRequestField!] || 0
+              : 0
+          }))
+          .filter((item) => item.value !== 0);
 
         stagedForms[p.id] = {
           date: p.date,
@@ -179,10 +177,12 @@
     if (!currentPayment) {
       return;
     }
-    const items = FEE_CODES.map((code) => ({
-      feeCode: code,
-      value: parseFloat(formData.fees?.[code]) || 0
-    })).filter((item) => item.value !== 0);
+    const items = feeCodesState.codes
+      .map((code) => ({
+        feeCode: code,
+        value: parseFloat(formData.fees?.[code]) || 0
+      }))
+      .filter((item) => item.value !== 0);
 
     stagedForms[currentPayment.id] = {
       ...stagedForms[currentPayment.id],

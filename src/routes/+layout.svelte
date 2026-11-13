@@ -5,6 +5,7 @@
   import "./layout.css";
   import favicon from "$assets/favicon.svg";
 
+  import { feeCodesState } from "$state/fee-codes.svelte";
   import { onMount } from "svelte";
   import { auth } from "$state/auth.svelte";
   import { settings } from "$state/settings.svelte";
@@ -16,6 +17,7 @@
   let { children } = $props();
 
   onMount(async () => {
+    feeCodesState.load();
     // Service Worker Registration
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch((err) => {

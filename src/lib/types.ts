@@ -754,64 +754,15 @@ export enum FeeCode {
 }
 
 export interface FeeCodeConfig {
-  code: FeeCode;
-  key: "WATER" | "ASSOC" | "MISC";
+  id: string;
   label: string;
   shortLabel: string;
   color: string;
   canWaive: boolean;
-  balanceField?: "waterBal" | "assocBal";
-  baseField?: "waterBase" | "assocBase";
-  paidField?: "waterPaid" | "assocPaid";
-  waivedField?: "waterWaived" | "assocWaived";
-  paymentRequestField: "waterFee" | "assocFee" | "misc";
+  isMandatory: boolean;
+  paymentRequestField?: "waterFee" | "assocFee" | "misc";
+  sortOrder: number;
 }
-
-export const FEE_CODE_CONFIG: Record<FeeCode, FeeCodeConfig> = {
-  [FeeCode.WATER]: {
-    code: FeeCode.WATER,
-    key: "WATER",
-    label: "Water Fee",
-    shortLabel: "Water",
-    color: "#06b6d4",
-    canWaive: true,
-    balanceField: "waterBal",
-    baseField: "waterBase",
-    paidField: "waterPaid",
-    waivedField: "waterWaived",
-    paymentRequestField: "waterFee"
-  },
-  [FeeCode.ASSOC]: {
-    code: FeeCode.ASSOC,
-    key: "ASSOC",
-    label: "Association Fee",
-    shortLabel: "Association",
-    color: "#3b82f6",
-    canWaive: true,
-    balanceField: "assocBal",
-    baseField: "assocBase",
-    paidField: "assocPaid",
-    waivedField: "assocWaived",
-    paymentRequestField: "assocFee"
-  },
-  [FeeCode.MISC]: {
-    code: FeeCode.MISC,
-    key: "MISC",
-    label: "Miscellaneous",
-    shortLabel: "Misc",
-    color: "#f59e0b",
-    canWaive: false,
-    paymentRequestField: "misc"
-  }
-};
-
-export const FEE_CODES: FeeCode[] = [FeeCode.WATER, FeeCode.ASSOC, FeeCode.MISC];
-
-export const FEE_CODE_LABELS: Record<FeeCode, string> = {
-  [FeeCode.WATER]: FEE_CODE_CONFIG[FeeCode.WATER].label,
-  [FeeCode.ASSOC]: FEE_CODE_CONFIG[FeeCode.ASSOC].label,
-  [FeeCode.MISC]: FEE_CODE_CONFIG[FeeCode.MISC].label
-};
 
 export function getJournalFeeValue(
   record: { items?: JournalItemRecord[]; feeCode?: FeeCode; value?: number },
@@ -831,29 +782,32 @@ export function getJournalFeeValue(
 export function getJournalActiveItems(
   record:
     | { items?: JournalItemRecord[]; feeCode?: FeeCode; value?: number }
-    | Pick<PaymentRequestRecord, "waterFee" | "assocFee" | "misc">
+    | Pick<PaymentRequestRecord, "waterFee" | "assocFee" | "misc">,
+  configs: FeeCodeConfig[] = []
 ): { code: FeeCode; name: string; amount: number }[] {
   if ("waterFee" in record || "assocFee" in record) {
     const pr = record as Pick<PaymentRequestRecord, "waterFee" | "assocFee" | "misc">;
-    return FEE_CODES.map((code) => {
-      const cfg = FEE_CODE_CONFIG[code];
-      return {
-        code,
+    return configs
+      .filter((cfg) => Boolean(cfg.paymentRequestField))
+      .map((cfg) => ({
+        code: cfg.code,
         name: cfg.label,
-        amount: pr[cfg.paymentRequestField] || 0
-      };
-    }).filter((item) => item.amount !== 0);
+        amount: pr[cfg.paymentRequestField!] || 0
+      }))
+      .filter((item) => item.amount !== 0);
   }
   const jr = record as {
     items?: JournalItemRecord[];
     feeCode?: FeeCode;
     value?: number;
   };
-  return FEE_CODES.map((code) => ({
-    code,
-    name: FEE_CODE_LABELS[code],
-    amount: getJournalFeeValue(jr, code)
-  })).filter((item) => item.amount !== 0);
+  return configs
+    .map((cfg) => ({
+      code: cfg.code,
+      name: cfg.label,
+      amount: getJournalFeeValue(jr, cfg.code)
+    }))
+    .filter((item) => item.amount !== 0);
 }
 
 export function getJournalReceiptHref(record: Pick<JournalGroupRecord, "id" | "receipt">): string {

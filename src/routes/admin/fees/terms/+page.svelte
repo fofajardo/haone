@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { onMount } from "svelte";
   import { settings } from "$state/settings.svelte";
   import {
@@ -12,14 +13,13 @@
   import { Button } from "$ui/button";
   import { Plus, GraduationCap, Coins, CircleCheck } from "@lucide/svelte";
   import ContentHeader from "$components/content/ContentHeader.svelte";
+  import AdminFeesTabs from "$components/tabs/AdminFeesTabs.svelte";
   import { Badge } from "$ui/badge";
   import LoadingView from "$components/content/LoadingView.svelte";
   import ErrorView from "$components/content/ErrorView.svelte";
   import EmptyView from "$components/content/EmptyView.svelte";
   import { globalDialog } from "$state/dialog.svelte";
   import { toast } from "svelte-sonner";
-  import AddAcademicTermDialog from "$components/forms/AddAcademicTermDialog.svelte";
-  import EditTermFeesDialog from "$components/forms/EditTermFeesDialog.svelte";
 
   let terms = $state<{ value: string; description: string }[]>([]);
   let allConstants = $state<{ key: string; value: string; rowIndex: number }[]>([]);
@@ -209,12 +209,16 @@
 
 <div class="mx-auto max-w-7xl space-y-3">
   <ContentHeader
-    title="Academic Terms"
+    title="Fees"
     isTopLevel={true}
     onRefresh={() => loadTerms(true)}
     isRefreshing={isLoading}
-    actions={[{ label: "Add", onclick: () => (showAddDialog = true), icon: Plus }]}
-  />
+    actions={[{ label: "Add", onclick: () => goto("/admin/fees/terms/new"), icon: Plus }]}
+  >
+    {#snippet tabs()}
+      <AdminFeesTabs active="terms" />
+    {/snippet}
+  </ContentHeader>
 
   <div class="space-y-4">
     {#if isLoading}
@@ -269,7 +273,7 @@
                 variant="ghost"
                 size="icon"
                 class="h-8 w-8 rounded-lg"
-                onclick={() => openFees({ value: term.value, label: translatePeriod(term.value) })}
+                onclick={() => goto(`/admin/fees/terms/${term.value}`)}
                 title="Edit Fees"
                 icon={Coins}
               />
@@ -280,23 +284,3 @@
     {/if}
   </div>
 </div>
-
-<AddAcademicTermDialog
-  bind:open={showAddDialog}
-  bind:newStartYear
-  bind:newTerm
-  {termOptions}
-  {errorMessage}
-  {isSaving}
-  onAdd={handleAdd}
-  onCancel={() => (showAddDialog = false)}
-/>
-
-<EditTermFeesDialog
-  bind:editingFeesFor
-  bind:feeData
-  {errorMessage}
-  {isSaving}
-  onSave={saveFees}
-  onCancel={() => (editingFeesFor = null)}
-/>

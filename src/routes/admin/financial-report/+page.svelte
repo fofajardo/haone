@@ -22,10 +22,8 @@
   import { formatAccounting } from "$utils/formatters";
   import { translateMop, translateTransactionType } from "$utils/translators";
   import { getJournalDateRange } from "$utils/parsers";
+  import { feeCodesState } from "$state/fee-codes.svelte";
   import {
-    FEE_CODE_CONFIG,
-    FEE_CODE_LABELS,
-    FEE_CODES,
     getJournalFeeValue,
     type FeeCode,
     type JournalRecord,
@@ -145,15 +143,14 @@
 
   // Balance trend line graph: running totals over time for each fee code
   let balanceTrendData = $derived.by(() => {
-    const runningByCode = Object.fromEntries(FEE_CODES.map((code) => [code, 0])) as Record<
-      FeeCode,
-      number
-    >;
+    const runningByCode = Object.fromEntries(
+      feeCodesState.codes.map((code) => [code, 0])
+    ) as Record<FeeCode, number>;
 
     const points = processedJournal.map((j, idx) => {
       const isWaived = j.type?.toUpperCase().includes("WAIVED");
       if (!isWaived) {
-        for (const code of FEE_CODES) {
+        for (const code of feeCodesState.codes) {
           runningByCode[code] += getJournalFeeValue(j, code);
         }
       }
@@ -173,10 +170,10 @@
         }
       }
 
-      const total = FEE_CODES.reduce((sum, code) => sum + runningByCode[code], 0);
+      const total = feeCodesState.codes.reduce((sum, code) => sum + runningByCode[code], 0);
       const feeValues = Object.fromEntries(
-        FEE_CODES.map((code) => [
-          FEE_CODE_CONFIG[code].key,
+        feeCodesState.codes.map((code) => [
+          feeCodesState.byCode[code].key,
           Math.round(runningByCode[code] * 100) / 100
         ])
       );
@@ -196,10 +193,10 @@
 
   const balanceTrendSeries = [
     { key: "balance", label: "Net Balance", color: "#10b981" },
-    ...FEE_CODES.map((code) => ({
-      key: FEE_CODE_CONFIG[code].key,
-      label: FEE_CODE_LABELS[code],
-      color: FEE_CODE_CONFIG[code].color
+    ...feeCodesState.codes.map((code) => ({
+      key: feeCodesState.byCode[code].key,
+      label: feeCodesState.labels[code],
+      color: feeCodesState.byCode[code].color
     }))
   ];
 
@@ -413,9 +410,9 @@
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {#each FEE_CODES as code (code)}
+                    {#each feeCodesState.codes as code (code)}
                       <Table.Row class="font-bold">
-                        <Table.Cell>{FEE_CODE_LABELS[code].toUpperCase()}</Table.Cell>
+                        <Table.Cell>{feeCodesState.labels[code].toUpperCase()}</Table.Cell>
                         <Table.Cell class="text-right"
                           >{formatAccounting(fundSummary.feeSummary[code].incoming)}</Table.Cell
                         >

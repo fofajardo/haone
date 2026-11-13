@@ -1,11 +1,6 @@
+import { feeCodeService } from "$api/services/fee-code-service";
 import type { ResidentRecord, UserRecord } from "$lib/types";
-import {
-  AccountType,
-  FEE_CODE_CONFIG,
-  FEE_CODES,
-  TRANSACTION_TYPE_CONFIG,
-  TransactionType
-} from "$lib/types";
+import { AccountType, TRANSACTION_TYPE_CONFIG, TransactionType } from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { parseCSVAmount } from "$utils/math";
 import { parseDateWeight, parseDbDate, parseDbUuid } from "$utils/parsers";
@@ -160,6 +155,7 @@ export const residentService = {
     const isWaivedEntry = (t: string) =>
       t === pmtWaived || (t && t.toUpperCase().includes("WAIVED"));
 
+    const feeConfigs = await feeCodeService.getFeeCodes();
     const result = targetAccounts
       .map((row: any) => {
         const u = userMap.get(row.resident_id) || {};
@@ -179,21 +175,28 @@ export const residentService = {
         let paid = 0;
         let waived = 0;
 
-        for (const code of FEE_CODES) {
-          const cfg = FEE_CODE_CONFIG[code];
-          if (cfg.baseField && cfg.paidField && cfg.waivedField && cfg.balanceField) {
+        const feeBalances: Record<
+          string,
+          { base: number; paid: number; waived: number; balance: number }
+        > = {};
+        for (const cfg of feeConfigs) {
+          if (cfg.isMandatory) {
             const feePaid = filtered
-              .filter((j: any) => Number(j.fee_code) === code && !isWaivedEntry(j.type || ""))
+              .filter((j: any) => String(j.fee_code) === cfg.id && !isWaivedEntry(j.type || ""))
               .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
             const feeWaived = filtered
-              .filter((j: any) => Number(j.fee_code) === code && isWaivedEntry(j.type || ""))
+              .filter((j: any) => String(j.fee_code) === cfg.id && isWaivedEntry(j.type || ""))
               .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-            const feeBase = parseCSVAmount(getConst(`FEES_${period}_${cfg.key}`));
+            const feeBase = parseCSVAmount(
+              getConst(`FEES_${period}_${cfg.shortLabel.toUpperCase()}`)
+            );
 
-            financials[cfg.baseField] = feeBase;
-            financials[cfg.paidField] = feePaid;
-            financials[cfg.waivedField] = feeWaived;
-            financials[cfg.balanceField] = feeBase - feePaid - feeWaived;
+            feeBalances[cfg.id] = {
+              base: feeBase,
+              paid: feePaid,
+              waived: feeWaived,
+              balance: feeBase - feePaid - feeWaived
+            };
 
             totalBase += feeBase;
             paid += feePaid;
@@ -403,21 +406,29 @@ export const residentService = {
     let paid = 0;
     let waived = 0;
 
-    for (const code of FEE_CODES) {
-      const cfg = FEE_CODE_CONFIG[code];
-      if (cfg.baseField && cfg.paidField && cfg.waivedField && cfg.balanceField) {
+    const feeConfigs = await feeCodeService.getFeeCodes();
+    const feeBalances: Record<
+      string,
+      { base: number; paid: number; waived: number; balance: number }
+    > = {};
+    for (const cfg of feeConfigs) {
+      if (cfg.isMandatory) {
         const feePaid = termJournals
-          .filter((j: any) => Number(j.fee_code) === code && j.type !== pmtWaived)
+          .filter((j: any) => String(j.fee_code) === cfg.id && j.type !== pmtWaived)
           .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
         const feeWaived = termJournals
-          .filter((j: any) => Number(j.fee_code) === code && j.type === pmtWaived)
+          .filter((j: any) => String(j.fee_code) === cfg.id && j.type === pmtWaived)
           .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-        const feeBase = parseCSVAmount(getConst(`FEES_${targetTerm}_${cfg.key}`));
+        const feeBase = parseCSVAmount(
+          getConst(`FEES_${targetTerm}_${cfg.shortLabel.toUpperCase()}`)
+        );
 
-        financials[cfg.baseField] = feeBase;
-        financials[cfg.paidField] = feePaid;
-        financials[cfg.waivedField] = feeWaived;
-        financials[cfg.balanceField] = feeBase - feePaid - feeWaived;
+        feeBalances[cfg.id] = {
+          base: feeBase,
+          paid: feePaid,
+          waived: feeWaived,
+          balance: feeBase - feePaid - feeWaived
+        };
 
         totalBase += feeBase;
         paid += feePaid;

@@ -1,11 +1,5 @@
 import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
-import {
-  FEE_CODE_LABELS,
-  FEE_CODES,
-  type FeeCode,
-  type ReceiptData,
-  type ReceiptItem
-} from "$lib/types";
+import { type FeeCode, type ReceiptData, type ReceiptItem } from "$lib/types";
 import { parseCSVAmount } from "$utils/math";
 import { createClient } from "@supabase/supabase-js";
 import { fail } from "@sveltejs/kit";
@@ -122,10 +116,17 @@ export const actions: Actions = {
           totalsByCode.set(code, (totalsByCode.get(code) || 0) + val);
         }
 
-        const items: ReceiptItem[] = FEE_CODES.map((code) => ({
-          name: FEE_CODE_LABELS[code],
-          amount: totalsByCode.get(code) || 0
-        })).filter((item) => item.amount !== 0);
+        const { data: feeCodeRows } = await supabase
+          .from("fee_codes")
+          .select("code, label")
+          .order("sort_order", { ascending: true });
+
+        const items: ReceiptItem[] = (feeCodeRows || [])
+          .map((fc: any) => ({
+            name: fc.label,
+            amount: totalsByCode.get(Number(fc.code) as FeeCode) || 0
+          }))
+          .filter((item) => item.amount !== 0);
 
         const receiptData: ReceiptData = {
           dateIssued: receipt?.date_issued || new Date().toISOString().split("T")[0],
