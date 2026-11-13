@@ -3,6 +3,7 @@ import { OfficerStatus } from "$lib/types";
 import { auth } from "$state/auth.svelte";
 import { isUuid, parseDbDate } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
+import { termService } from "./term-service";
 
 function mapRow(row: any, user?: any): OfficerRecord {
   return {
@@ -28,12 +29,8 @@ export const officerService = {
     }
 
     if (auth.isResident) {
-      const { data: constData } = await supabase
-        .from("constants")
-        .select("value")
-        .eq("key", "TERM_CURR")
-        .maybeSingle();
-      const activeTerm = constData?.value || "";
+      const active = await termService.getActiveTerm();
+      const activeTerm = active ? String(active.termId) : "";
 
       const { data, error } = await supabase
         .from("officers")

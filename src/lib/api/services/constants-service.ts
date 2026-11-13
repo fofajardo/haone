@@ -1,5 +1,6 @@
 import type { ConstantRecord } from "$lib/types";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
+import { termService } from "./term-service";
 
 export const constantsService = {
   async fetchConstants(_bypassCache?: boolean): Promise<ConstantRecord[]> {
@@ -24,23 +25,12 @@ export const constantsService = {
     if (!supabase) {
       return [];
     }
-    const sb = supabase;
-    const data = await fetchAllSupabaseRows(() =>
-      sb
-        .from("constants")
-        .select("*")
-        .like("key", "TERM_%")
-        .neq("key", "TERM_CURR")
-        .neq("key", "TERM_RESERVED")
-        .order("key", { ascending: true })
-    );
-    return data
-      .filter((c: any) => Boolean((c.value || "").trim()))
-      .map((c: any) => ({
-        value: c.value,
-        label: c.value,
-        description: c.description || ""
-      }));
+    const terms = await termService.getTerms();
+    return terms.map((t) => ({
+      value: String(t.termId),
+      label: `${t.ay} ${t.term}`,
+      description: `${t.ay} ${t.term}`
+    }));
   },
 
   async fetchConstantByKey(key: string, _bypassCache?: boolean): Promise<string | null> {

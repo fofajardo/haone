@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { fetchConstants, addConstant } from "$api/controllers/constants-controller";
+  import { termService, type TermRecord } from "$api/services/term-service";
   import ContentHeader from "$components/content/ContentHeader.svelte";
   import * as Card from "$ui/card";
   import { Input } from "$ui/input";
@@ -13,34 +13,43 @@
   let newStartYear = $state(new Date().getFullYear());
   let newTerm = $state("1S");
   let isSaving = $state(false);
-  let allConstants = $state<{ key: string; value: string }[]>([]);
+  let existingTerms = $state<TermRecord[]>([]);
 
   const termOptions = [
-    { value: "1S", label: "1st Semester" },
-    { value: "2S", label: "2nd Semester" },
-    { value: "MY", label: "Midyear Term" }
+    { value: "1S", label: "First Semester" },
+    { value: "2S", label: "Second Semester" },
+    { value: "MY", label: "Mid-Year Term" }
   ];
 
   onMount(async () => {
-    const records = await fetchConstants();
-    allConstants = records.map((r) => ({ key: r.key, value: r.value }));
+    existingTerms = await termService.getTerms();
   });
 
   async function handleSave() {
-    const yy = String(newStartYear).slice(-2);
-    const zz = String(newStartYear + 1).slice(-2);
-    const value = `${yy}${zz}_${newTerm}`;
-    const key = `TERM_${value}`;
-    const description = `AY 20${yy}-20${zz} ${termOptions.find((t) => t.value === newTerm)?.label}`;
+    const ay = `${newStartYear}-${newStartYear + 1}`;
+    const termName =
+      newTerm === "MY"
+        ? `Mid-Year Term ${newStartYear + 1}`
+        : termOptions.find((t) => t.value === newTerm)?.label || "First Semester";
 
-    if (allConstants.some((c) => c.key === key)) {
+    if (existingTerms.some((t) => t.ay === ay && t.term === termName)) {
       toast.error("This academic term already exists.");
       return;
     }
 
+    const nextTermId = existingTerms.reduce((max, t) => Math.max(max, t.termId), 1000) + 1;
+
     isSaving = true;
     try {
-      await addConstant(key, value, description);
+      await termService.upsertTerm({
+        termId: nextTermId,
+        term: termName,
+        ay,
+        termType: "Semestral",
+        startDate: null,
+        endDate: null,
+        isActive: false
+      });
       toast.success("Academic term added.");
       goto("/admin/fees/terms");
     } catch (e: any) {

@@ -51,7 +51,8 @@
         };
       });
 
-      const termCurr = records.find((r) => r.key === "TERM_CURR")?.value || "";
+      const activeTermRecord = await fetchActiveTerm();
+      const termCurr = activeTermRecord ? String(activeTermRecord.termId) : "";
 
       if (!activeTerm && terms.length > 0) {
         settings.currentTerm = termCurr || terms[0].value;

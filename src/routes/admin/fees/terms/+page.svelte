@@ -6,8 +6,10 @@
     fetchConstants,
     addConstant,
     updateConstant,
-    fetchTerms
+    fetchTerms,
+    fetchActiveTerm
   } from "$api/controllers/constants-controller";
+  import { termService } from "$api/services/term-service";
   import { translatePeriod } from "$utils/translators";
   import { sortPeriods } from "$utils/sort";
   import { Button } from "$ui/button";
@@ -71,7 +73,8 @@
         };
       });
 
-      activeTermCode = allConstants.find((c) => c.key === "TERM_CURR")?.value || "";
+      const activeTerm = await fetchActiveTerm();
+      activeTermCode = activeTerm ? String(activeTerm.termId) : "";
     } catch (e) {
       console.error("Load failed", e);
       errorMessage = "Failed to load academic terms.";
@@ -171,12 +174,7 @@
   }
 
   async function setActive(value: string) {
-    const activeTermConstant = allConstants.find((c) => c.key === "TERM_CURR");
-    if (activeTermConstant) {
-      await updateConstant("TERM_CURR", value);
-    } else {
-      await addConstant("TERM_CURR", value, "Active Term");
-    }
+    await termService.setActiveTerm(Number(value));
     settings.currentTerm = value;
     settings.activeTerm = value;
     await loadTerms();

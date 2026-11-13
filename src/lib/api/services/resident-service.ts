@@ -6,6 +6,8 @@ import { parseCSVAmount } from "$utils/math";
 import { parseDateWeight, parseDbDate, parseDbUuid } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 import { constantsService } from "./constants-service";
+import { feeScheduleService } from "./fee-schedule-service";
+import { termService } from "./term-service";
 
 function mapDbUserToUserRecord(u: any): UserRecord {
   if (!u) {
@@ -187,9 +189,14 @@ export const residentService = {
             const feeWaived = filtered
               .filter((j: any) => String(j.fee_code) === cfg.id && isWaivedEntry(j.type || ""))
               .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-            const feeBase = parseCSVAmount(
-              getConst(`FEES_${period}_${cfg.shortLabel.toUpperCase()}`)
-            );
+            const { data: feeSchedRows } = await sb
+              .from("fee_schedule")
+              .select("term_id, fee_code_id, amount");
+            const feeSchedMap = new Map<string, number>();
+            for (const row of feeSchedRows || []) {
+              feeSchedMap.set(`${row.term_id}_${row.fee_code_id}`, Number(row.amount || 0));
+            }
+            const feeBase = feeSchedMap.get(`${period}_${cfg.id}`) ?? 0;
 
             feeBalances[cfg.id] = {
               base: feeBase,
@@ -260,13 +267,16 @@ export const residentService = {
       handleSupabaseError(userErr);
     }
 
-    const [consts, academicTerms] = await Promise.all([
-      constantsService.fetchConstants(),
+    const [activeTermObj, academicTerms] = await Promise.all([
+      termService.getActiveTerm(),
       constantsService.fetchTerms()
     ]);
-    const getConst = (k: string) => consts.find((c) => c.key === k)?.value || "";
-    const activeTerm = getConst("TERM_CURR");
+    const activeTerm = activeTermObj ? String(activeTermObj.termId) : "";
     const targetTerm = term || activeTerm;
+    const targetTermId = Number(targetTerm);
+    const feeSchedule = Number.isFinite(targetTermId)
+      ? await feeScheduleService.getScheduleForTerm(targetTermId)
+      : [];
 
     const [accRes, journalGroups, journalItems, currRes, termAccRes, receiptsList] =
       await Promise.all([
@@ -419,9 +429,7 @@ export const residentService = {
         const feeWaived = termJournals
           .filter((j: any) => String(j.fee_code) === cfg.id && j.type === pmtWaived)
           .reduce((sum: number, j: any) => sum + parseCSVAmount(j.value), 0);
-        const feeBase = parseCSVAmount(
-          getConst(`FEES_${targetTerm}_${cfg.shortLabel.toUpperCase()}`)
-        );
+        const feeBase = feeSchedule.find((f) => String(f.feeCodeId) === cfg.id)?.amount ?? 0;
 
         feeBalances[cfg.id] = {
           base: feeBase,
@@ -641,8 +649,8 @@ export const residentService = {
     }
 
     const [academicTerms, activeTerm] = await Promise.all([
-      constantsService.fetchTerms(),
-      constantsService.fetchConstantByKey("TERM_CURR") ?? ""
+      termService.getTerms(),
+      termService.getActiveTerm()
     ]);
     if (academicTerms.length === 0 || !activeTerm) {
       throw new Error(

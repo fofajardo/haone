@@ -10,8 +10,8 @@ import { computeDisplayNames, mapRowToJournal, mapRowToResident } from "../utils
 
 export { computeDisplayNames, mapRowToJournal, mapRowToResident, parseCSVAmount };
 
-import { constantsService } from "$api/services/constants-service";
 import { residentService } from "$api/services/resident-service";
+import { termService } from "$api/services/term-service";
 import { fetchFeatureFlagMulti } from "$api/utils/feature-flags";
 import { getCustomServices } from "$lib/services";
 
@@ -50,9 +50,9 @@ export async function fetchUsers(bypassCache = false): Promise<UserRecord[]> {
 /**
  * Fetches the current active term from constants.
  */
-export async function fetchActiveTerm(bypassCache = false): Promise<string> {
-  const val = await constantsService.fetchConstantByKey("TERM_CURR");
-  return val || "";
+export async function fetchActiveTerm(_bypassCache = false): Promise<string> {
+  const active = await termService.getActiveTerm();
+  return active ? String(active.termId) : "";
 }
 
 /**

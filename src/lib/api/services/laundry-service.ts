@@ -5,6 +5,7 @@ import { auth } from "$state/auth.svelte";
 import { formatTime } from "$utils/formatters";
 import { isUuid, parseDbUuid, parseTimeMinutes } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
+import { termService } from "./term-service";
 
 const INACTIVE_STATUSES = [LaundryStatus.CANCELLED_BY_ADMIN, LaundryStatus.CANCELLED_BY_USER];
 
@@ -109,12 +110,8 @@ export const laundryService = {
         throw new Error("Reservation not found or unauthorized");
       }
 
-      const { data: constData } = await supabase
-        .from("constants")
-        .select("value")
-        .eq("key", "TERM_CURR")
-        .maybeSingle();
-      const activeTerm = constData?.value || "";
+      const active = await termService.getActiveTerm();
+      const activeTerm = active ? String(active.termId) : "";
 
       const { data: account } = await supabase
         .from("accounts")

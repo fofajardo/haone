@@ -1,4 +1,5 @@
 import { constantsService } from "$api/services/constants-service";
+import { termService } from "$api/services/term-service";
 import { type ConstantRecord } from "$lib/types";
 
 export async function fetchConstants(bypassCache = false): Promise<ConstantRecord[]> {
@@ -10,8 +11,8 @@ export async function fetchConstantByKey(key: string): Promise<string | null> {
 }
 
 export async function fetchActiveTerm(bypassCache = false): Promise<string> {
-  const val = await constantsService.fetchConstantByKey("TERM_CURR");
-  return val || "";
+  const active = await termService.getActiveTerm();
+  return active ? String(active.termId) : "";
 }
 
 export async function fetchMopTypes(
@@ -29,7 +30,12 @@ export async function fetchMopTypes(
 export async function fetchTerms(
   bypassCache = false
 ): Promise<{ value: string; label: string; description: string }[]> {
-  return constantsService.fetchTerms(bypassCache);
+  const terms = await termService.getTerms();
+  return terms.map((t) => ({
+    value: String(t.termId),
+    label: `${t.ay} ${t.term}`,
+    description: `${t.ay} ${t.term}`
+  }));
 }
 
 export async function addConstant(key: string, value: string, description = ""): Promise<void> {

@@ -2,11 +2,7 @@
   import { onMount } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
-  import {
-    fetchConstants,
-    addConstant,
-    updateConstant
-  } from "$api/controllers/constants-controller";
+  import { feeScheduleService } from "$api/services/fee-schedule-service";
   import { feeCodesState } from "$state/fee-codes.svelte";
   import { translatePeriod } from "$utils/translators";
   import ContentHeader from "$components/content/ContentHeader.svelte";
@@ -19,11 +15,10 @@
   import { Calculator, Save } from "@lucide/svelte";
   import { toast } from "svelte-sonner";
 
-  const term = $derived(page.params.term ?? "");
-  const termLabel = $derived(translatePeriod(term) || term);
+  const termId = $derived(Number(page.params.term ?? 0));
+  const termLabel = $derived(translatePeriod(page.params.term ?? "") || String(termId));
   const mandatoryFees = $derived(feeCodesState.list.filter((c) => c.isMandatory));
 
-  let allConstants = $state<{ key: string; value: string; rowIndex: number }[]>([]);
   let regularValues = $state<Record<string, number>>({});
   let cpValues = $state<Record<string, number>>({});
   let isLoading = $state(true);
@@ -38,28 +33,18 @@
     isLoading = true;
     errorMessage = "";
     try {
-      const [records] = await Promise.all([
-        fetchConstants(bypassCache),
+      const [schedule] = await Promise.all([
+        feeScheduleService.getScheduleForTerm(termId),
         feeCodesState.load(bypassCache)
       ]);
-      allConstants = records.map((r, idx) => ({
-        key: r.key,
-        value: r.value,
-        rowIndex: idx
-      }));
 
-      const getVal = (suffix: string) => {
-        const key = `FEES_${term}_${suffix}`;
-        const found = allConstants.find((c) => c.key === key);
-        return found ? parseFloat(found.value) || 0 : 0;
-      };
-
+      const byFeeCode = new Map(schedule.map((s) => [s.feeCodeId, s]));
       const nextReg: Record<string, number> = {};
       const nextCp: Record<string, number> = {};
       for (const cfg of feeCodesState.list.filter((c) => c.isMandatory)) {
-        const suffix = cfg.shortLabel.toUpperCase();
-        nextReg[cfg.id] = getVal(suffix);
-        nextCp[cfg.id] = getVal(`${suffix}_CP`);
+        const existing = byFeeCode.get(cfg.id);
+        nextReg[cfg.id] = existing?.amount ?? 0;
+        nextCp[cfg.id] = existing?.collectionPeriods ?? 1;
       }
       regularValues = nextReg;
       cpValues = nextCp;
@@ -75,24 +60,13 @@
   async function handleSave() {
     isSaving = true;
     try {
-      const updates: { suffix: string; val: number }[] = [];
-      for (const cfg of mandatoryFees) {
-        const suffix = cfg.shortLabel.toUpperCase();
-        updates.push({ suffix, val: Number(regularValues[cfg.id]) || 0 });
-        updates.push({ suffix: `${suffix}_CP`, val: Number(cpValues[cfg.id]) || 0 });
-      }
-      updates.push({ suffix: "TOTAL", val: totalRegular });
+      const items = mandatoryFees.map((cfg) => ({
+        feeCodeId: cfg.id,
+        amount: Number(regularValues[cfg.id]) || 0,
+        collectionPeriods: Number(cpValues[cfg.id]) || 1
+      }));
 
-      for (const item of updates) {
-        const key = `FEES_${term}_${item.suffix}`;
-        const existing = allConstants.find((c) => c.key === key);
-        if (existing) {
-          await updateConstant(key, String(item.val), `${termLabel} ${item.suffix}`);
-        } else {
-          await addConstant(key, String(item.val), `${termLabel} ${item.suffix}`);
-        }
-      }
-
+      await feeScheduleService.upsertScheduleItems(termId, items);
       toast.success("Term fees updated.");
       await loadData(true);
     } catch (e: any) {

@@ -6,7 +6,7 @@
   import { settings } from "$state/settings.svelte";
   import { SYSTEM_IDS } from "$lib/constants";
   import { fetchJournalEntries } from "$api/controllers/journal-controller";
-  import { fetchConstants } from "$api/controllers/constants-controller";
+  import { fetchConstants, fetchTerms } from "$api/controllers/constants-controller";
   import { translatePeriod, translateMop } from "$utils/translators";
   import { parseRef } from "$utils/parsers";
   import { formatAmount, formatAccounting } from "$utils/formatters";
@@ -292,11 +292,8 @@
         new Map([...rawAccounts, fundsAccount].map((a) => [a.email, a])).values()
       );
 
-      const termValues = constants
-        .filter(
-          (r) => r.key.startsWith("TERM_") && r.key !== "TERM_CURR" && r.key !== "TERM_RESERVED"
-        )
-        .map((r) => r.value || r.key);
+      const termRecords = await fetchTerms();
+      const termValues = termRecords.map((t) => String(t.termId));
 
       academicTerms = sortPeriods(termValues).map((val) => ({
         value: val,
