@@ -9,22 +9,6 @@ import { isUuid } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 import { buildJournalInsertPayload, syncAcknowledgmentReceipt } from "./journal-service";
 
-export interface PaymentRequestServiceInterface {
-  fetchPaymentRequests(
-    residentId?: string,
-    options?: PaginationOptions,
-    bypassCache?: boolean
-  ): Promise<PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord>>;
-
-  addPaymentRequest(data: Partial<PaymentRequestRecord>): Promise<void>;
-
-  approvePaymentRequest(paymentId: string, journalData: Partial<JournalRecord>): Promise<void>;
-
-  declinePaymentRequest(paymentId: string, reason: string): Promise<void>;
-
-  cancelPaymentRequest(id: string): Promise<void>;
-}
-
 function emptyResult(
   options?: PaginationOptions
 ): PaymentRequestRecord[] | PaginatedResponse<PaymentRequestRecord> {
@@ -40,7 +24,7 @@ function emptyResult(
   return [];
 }
 
-export const paymentRequestService: PaymentRequestServiceInterface = {
+export const paymentRequestService = {
   async fetchPaymentRequests(
     residentId?: string,
     options?: PaginationOptions,

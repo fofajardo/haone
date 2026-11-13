@@ -1,24 +1,6 @@
 import type { AnnouncementRecord, PaginatedResponse, PaginationOptions } from "$lib/types";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 
-export interface AnnouncementServiceInterface {
-  fetchAnnouncements(
-    options?: PaginationOptions,
-    activeOnly?: boolean,
-    bypassCache?: boolean
-  ): Promise<AnnouncementRecord[] | PaginatedResponse<AnnouncementRecord>>;
-
-  fetchAnnouncementBySlug(slug: string, bypassCache?: boolean): Promise<AnnouncementRecord | null>;
-
-  addAnnouncement(data: Partial<AnnouncementRecord>): Promise<void>;
-
-  updateAnnouncement(id: string, data: Partial<AnnouncementRecord>): Promise<void>;
-
-  expireAnnouncement(id: string): Promise<void>;
-
-  deleteAnnouncement(id: string): Promise<void>;
-}
-
 function mapRow(row: any): AnnouncementRecord {
   return {
     id: row.id,
@@ -47,7 +29,7 @@ function applyActiveFilters(query: any) {
     .or(`is_indefinite.eq.true,expiry_date.is.null,expiry_date.gte.${now}`);
 }
 
-export const announcementService: AnnouncementServiceInterface = {
+export const announcementService = {
   async fetchAnnouncements(
     options?: PaginationOptions,
     activeOnly = false,

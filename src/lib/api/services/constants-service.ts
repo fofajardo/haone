@@ -1,23 +1,7 @@
 import type { ConstantRecord } from "$lib/types";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 
-export interface ConstantsServiceInterface {
-  fetchConstants(bypassCache?: boolean): Promise<ConstantRecord[]>;
-
-  fetchTerms(
-    bypassCache?: boolean
-  ): Promise<{ value: string; label: string; description: string }[]>;
-
-  fetchConstantByKey(key: string, bypassCache?: boolean): Promise<string | null>;
-
-  addConstant(key: string, value: string, description?: string): Promise<void>;
-
-  updateConstant(key: string, value: string): Promise<void>;
-
-  batchUpdateConstants(updates: { range: string; values: any[][] }[]): Promise<void>;
-}
-
-export const constantsService: ConstantsServiceInterface = {
+export const constantsService = {
   async fetchConstants(_bypassCache?: boolean): Promise<ConstantRecord[]> {
     if (!supabase) {
       return [];

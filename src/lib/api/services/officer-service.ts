@@ -4,16 +4,6 @@ import { auth } from "$state/auth.svelte";
 import { isUuid, parseDbDate } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 
-export interface OfficerServiceInterface {
-  fetchOfficers(bypassCache?: boolean): Promise<OfficerRecord[]>;
-
-  addOfficer(data: Partial<OfficerRecord>): Promise<void>;
-
-  updateOfficer(id: string, data: Partial<OfficerRecord>): Promise<void>;
-
-  deleteOfficer(id: string): Promise<void>;
-}
-
 function mapRow(row: any, user?: any): OfficerRecord {
   return {
     id: row.id,
@@ -31,7 +21,7 @@ function mapRow(row: any, user?: any): OfficerRecord {
   };
 }
 
-export const officerService: OfficerServiceInterface = {
+export const officerService = {
   async fetchOfficers(_bypassCache = false): Promise<OfficerRecord[]> {
     if (!supabase) {
       return [];

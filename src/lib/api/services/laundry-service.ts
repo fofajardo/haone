@@ -6,20 +6,6 @@ import { formatTime } from "$utils/formatters";
 import { isUuid, parseDbUuid, parseTimeMinutes } from "$utils/parsers";
 import { assertSupabaseFound, fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 
-export interface LaundryServiceInterface {
-  fetchReservations(
-    residentId?: string,
-    options?: PaginationOptions,
-    bypassCache?: boolean
-  ): Promise<LaundryRecord[] | PaginatedResponse<LaundryRecord>>;
-
-  addReservation(data: Partial<LaundryRecord>): Promise<void>;
-
-  addReservationsBatch(entries: Partial<LaundryRecord>[]): Promise<void>;
-
-  cancelReservation(id: string, reason: string): Promise<void>;
-}
-
 const INACTIVE_STATUSES = [LaundryStatus.CANCELLED_BY_ADMIN, LaundryStatus.CANCELLED_BY_USER];
 
 function emptyResult(
@@ -37,7 +23,7 @@ function emptyResult(
   return [];
 }
 
-export const laundryService: LaundryServiceInterface = {
+export const laundryService = {
   async fetchReservations(
     residentId?: string,
     options?: PaginationOptions,

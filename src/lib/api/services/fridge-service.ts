@@ -3,20 +3,6 @@ import { FridgeCompartment, FridgeItemStatus } from "$lib/types";
 import { isUuid, parseDbUuid } from "$utils/parsers";
 import { fetchAllSupabaseRows, handleSupabaseError, supabase } from "./common";
 
-export interface FridgeServiceInterface {
-  fetchFridgeItems(
-    residentId?: string,
-    options?: PaginationOptions,
-    bypassCache?: boolean
-  ): Promise<FridgeItemRecord[] | PaginatedResponse<FridgeItemRecord>>;
-
-  addFridgeItem(data: Partial<FridgeItemRecord>): Promise<void>;
-
-  updateFridgeItem(id: string, updates: Partial<FridgeItemRecord>): Promise<void>;
-
-  deleteFridgeItem(id: string, actionBy?: string): Promise<void>;
-}
-
 function emptyResult(
   options?: PaginationOptions
 ): FridgeItemRecord[] | PaginatedResponse<FridgeItemRecord> {
@@ -32,7 +18,7 @@ function emptyResult(
   return [];
 }
 
-export const fridgeService: FridgeServiceInterface = {
+export const fridgeService = {
   async fetchFridgeItems(
     residentId?: string,
     options?: PaginationOptions,

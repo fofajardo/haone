@@ -44,31 +44,6 @@ export interface AccountUpdate {
   checkInDate?: string;
 }
 
-export interface RoomsServiceInterface {
-  fetchCurrRecords(bypassCache?: boolean): Promise<CurrRecord[]>;
-  fetchAccounts(bypassCache?: boolean): Promise<AccountRow[]>;
-  updateAccounts(updates: AccountUpdate[]): Promise<void>;
-  appendAccounts(accounts: AccountRow[]): Promise<void>;
-  markCurrEvaluated(
-    entries: { email: string; term: string; rowId?: string | number }[]
-  ): Promise<void>;
-  declineCurrRecord(
-    email: string,
-    term: string,
-    reason: string,
-    rowId?: string | number
-  ): Promise<void>;
-  updateAccountRoomBed(
-    residentId: string,
-    period: string,
-    room: string,
-    bed: string
-  ): Promise<void>;
-  addAccount(account: AccountRow): Promise<void>;
-  deleteAccountRow(residentId: string, period: string): Promise<void>;
-  updateAccountBed(residentId: string, period: string, bed: string): Promise<void>;
-}
-
 function mapAccountRow(row: any): AccountRow {
   return {
     id: row.id || "",
@@ -86,7 +61,7 @@ function mapAccountRow(row: any): AccountRow {
   };
 }
 
-export const roomsService: RoomsServiceInterface = {
+export const roomsService = {
   async fetchCurrRecords(_bypassCache = false): Promise<CurrRecord[]> {
     if (!supabase) {
       return [];

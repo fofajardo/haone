@@ -17,22 +17,6 @@ export interface JournalFilters {
   accountId?: string;
 }
 
-export interface JournalServiceInterface {
-  fetchJournalEntries(
-    filters?: JournalFilters,
-    options?: PaginationOptions,
-    bypassCache?: boolean
-  ): Promise<JournalRecord[] | PaginatedResponse<JournalRecord>>;
-
-  addJournalEntry(data: Partial<JournalRecord>): Promise<void>;
-
-  updateJournalEntry(id: string, data: Partial<JournalRecord>): Promise<void>;
-
-  deleteJournalEntry(id: string): Promise<void>;
-
-  batchAuditEntries(ids: string[]): Promise<void>;
-}
-
 function applyFilters(query: any, filters?: JournalFilters) {
   if (filters?.term) {
     query = query.eq("period", filters.term);
@@ -153,7 +137,7 @@ export async function syncAcknowledgmentReceipt(
   }
 }
 
-export const journalService: JournalServiceInterface = {
+export const journalService = {
   async fetchJournalEntries(
     filters?: JournalFilters,
     options?: PaginationOptions,
