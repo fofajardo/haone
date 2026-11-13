@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from "$api/services/common";
+import { getSupabaseAdmin } from "$api/services/server-service";
 import { VAPID_PRIVATE_KEY } from "$env/static/private";
 import {
   PUBLIC_BRANDING,

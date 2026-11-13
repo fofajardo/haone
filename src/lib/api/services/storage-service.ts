@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from "$api/services/common";
+import { getSupabaseAdmin } from "$api/services/server-service";
 
 const STORAGE_BUCKET = "uploads";
 
