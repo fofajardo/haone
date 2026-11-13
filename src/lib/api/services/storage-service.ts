@@ -1,18 +1,12 @@
-import { SUPABASE_SECRET_KEY } from "$env/static/private";
-import { PUBLIC_SUPABASE_URL } from "$env/static/public";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseAdmin } from "$api/services/common";
 
 const STORAGE_BUCKET = "uploads";
-
-function getStorageClient() {
-  return createClient(PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY);
-}
 
 /**
  * Uploads an image file to Supabase Storage.
  */
 export async function uploadImageToStorage(id: string, data: ArrayBuffer, contentType: string) {
-  const supabase = getStorageClient();
+  const supabase = getSupabaseAdmin();
 
   const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(id, data, {
     contentType,
@@ -30,7 +24,7 @@ export async function uploadImageToStorage(id: string, data: ArrayBuffer, conten
  * Retrieves an image from Supabase Storage.
  */
 export async function getImageFromStorage(id: string) {
-  const supabase = getStorageClient();
+  const supabase = getSupabaseAdmin();
 
   const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(id);
 
@@ -51,7 +45,7 @@ export async function getImageFromStorage(id: string) {
  * Deletes an image from Supabase Storage.
  */
 export async function deleteImageFromStorage(id: string) {
-  const supabase = getStorageClient();
+  const supabase = getSupabaseAdmin();
 
   const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([id]);
 

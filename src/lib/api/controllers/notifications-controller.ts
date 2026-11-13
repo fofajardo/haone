@@ -1,6 +1,5 @@
-import { getFirebaseToken } from "$api/services/auth-service";
-import { fetchGoogleAPI } from "$api/services/server-google-service";
-import { GOOGLE_SERVICE_ACCOUNT_JSON, VAPID_PRIVATE_KEY } from "$env/static/private";
+import { getSupabaseAdmin } from "$api/services/common";
+import { VAPID_PRIVATE_KEY } from "$env/static/private";
 import {
   PUBLIC_BRANDING,
   PUBLIC_SUPABASE_PUBLISHABLE_KEY,
@@ -20,10 +19,6 @@ import dayjs from "dayjs";
 
 const brandingProfile = (branding as any)[PUBLIC_BRANDING];
 
-const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
-const PROJECT_ID = keys.project_id;
-const BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
-
 /**
  * Sends a push notification to a specific resident.
  */
@@ -39,40 +34,18 @@ export async function notifyResident(
   }
 
   try {
-    const token = await getFirebaseToken();
+    const supabase = getSupabaseAdmin();
+    const { data: subscriptions, error } = await supabase
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth")
+      .eq("resident_id", residentId);
 
-    // Query Firestore for subscriptions matching residentId
-    const query = {
-      structuredQuery: {
-        from: [{ collectionId: "push_subscriptions" }],
-        where: {
-          fieldFilter: {
-            field: { fieldPath: "residentId" },
-            op: "EQUAL",
-            value: { stringValue: residentId }
-          }
-        }
-      }
-    };
+    if (error) {
+      throw new Error(error.message);
+    }
 
-    const resp = await fetchGoogleAPI(`${BASE_URL}:runQuery`, token, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(query)
-    });
-
-    const results = await resp.json();
-
-    for (const result of results) {
-      if (!result.document) {
-        continue;
-      }
-
-      const docName = result.document.name;
-      const fields = result.document.fields;
-      const endpoint = fields.endpoint?.stringValue;
-      const p256dh = fields.p256dh?.stringValue;
-      const auth = fields.auth?.stringValue;
+    for (const sub of subscriptions || []) {
+      const { id, endpoint, p256dh, auth } = sub;
 
       if (!endpoint || !p256dh || !auth) {
         continue;
@@ -101,9 +74,7 @@ export async function notifyResident(
         if (!pushResp.ok) {
           if (pushResp.status === 404 || pushResp.status === 410) {
             console.warn(`[Push] Subscription expired for ${residentId}, deleting.`);
-            await fetchGoogleAPI(`https://firestore.googleapis.com/v1/${docName}`, token, {
-              method: "DELETE"
-            });
+            await supabase.from("push_subscriptions").delete().eq("id", id);
           }
         }
       } catch (err: any) {
@@ -128,23 +99,24 @@ export async function notifyAllResidents(
   }
 
   try {
-    const token = await getFirebaseToken();
-    const resp = await fetchGoogleAPI(`${BASE_URL}/push_subscriptions?pageSize=1000`, token);
-    const data = await resp.json();
+    const supabase = getSupabaseAdmin();
+    const { data: subscriptions, error } = await supabase
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth");
 
-    if (!data.documents) {
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
       return { sentCount: 0, foundCount: 0 };
     }
 
-    const foundCount = data.documents.length;
+    const foundCount = subscriptions.length;
     let sentCount = 0;
 
-    for (const doc of data.documents) {
-      const docName = doc.name;
-      const fields = doc.fields;
-      const endpoint = fields.endpoint?.stringValue;
-      const p256dh = fields.p256dh?.stringValue;
-      const auth = fields.auth?.stringValue;
+    for (const sub of subscriptions) {
+      const { id, endpoint, p256dh, auth } = sub;
 
       if (!endpoint || !p256dh || !auth) {
         continue;
@@ -176,9 +148,7 @@ export async function notifyAllResidents(
           const errorText = await pushResp.text();
           console.error(`[Push] Delivery failed (${pushResp.status}): ${errorText}`);
           if (pushResp.status === 404 || pushResp.status === 410) {
-            await fetchGoogleAPI(`https://firestore.googleapis.com/v1/${docName}`, token, {
-              method: "DELETE"
-            });
+            await supabase.from("push_subscriptions").delete().eq("id", id);
           }
         }
       } catch (err: any) {
