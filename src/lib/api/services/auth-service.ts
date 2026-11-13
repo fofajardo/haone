@@ -1,4 +1,4 @@
-import { GOOGLE_SERVICE_ACCOUNT_JSON, JWT_SECRET, SUPABASE_SECRET_KEY } from "$env/static/private";
+import { JWT_SECRET, SUPABASE_SECRET_KEY } from "$env/static/private";
 import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from "$env/static/public";
 import type { CredentialPayload, UserRecord } from "$lib/types";
 import { OfficerStatus, UserTag } from "$lib/types";
@@ -74,19 +74,6 @@ export async function getServiceAccountToken(email: string, privateKey: string, 
 
   const data = await resp.json();
   return data.access_token;
-}
-
-/**
- * Creates an authorized Firebase client (token) using the service account.
- */
-export async function getFirebaseToken() {
-  const keys = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
-  const token = await getServiceAccountToken(keys.client_email, keys.private_key, [
-    "https://www.googleapis.com/auth/datastore",
-    "https://www.googleapis.com/auth/cloud-platform",
-    "https://www.googleapis.com/auth/firebase"
-  ]);
-  return token;
 }
 
 /**
@@ -243,7 +230,6 @@ export async function lookupUser(
 export const authService = {
   sign,
   getServiceAccountToken,
-  getFirebaseToken,
   createCredentialJwt,
   verifyCredentialJwt,
   authenticateResident,
