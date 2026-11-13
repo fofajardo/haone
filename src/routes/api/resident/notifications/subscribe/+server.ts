@@ -1,6 +1,5 @@
 import { authenticateResident } from "$api/services/auth-service";
-import { serverError } from "$api/services/server-google-service";
-import { getSupabaseAdmin } from "$api/services/server-service";
+import { getSupabaseAdmin, serverError } from "$api/services/server-service";
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 

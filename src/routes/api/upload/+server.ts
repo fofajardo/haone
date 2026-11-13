@@ -1,5 +1,5 @@
 import { authenticateResident } from "$api/services/auth-service";
-import { serverError } from "$api/services/server-google-service";
+import { serverError } from "$api/services/server-service";
 import { uploadImageToStorage } from "$api/services/storage-service";
 import { json } from "@sveltejs/kit";
 
