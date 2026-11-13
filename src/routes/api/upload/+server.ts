@@ -1,11 +1,13 @@
 import { authenticateResident } from "$api/services/auth-service";
-import { saveImageToFirestore } from "$api/services/firestore-service";
 import { serverError } from "$api/services/server-google-service";
+import { uploadImageToStorage } from "$api/services/storage-service";
 import { json } from "@sveltejs/kit";
 
 export async function POST({ request, url: reqUrl }) {
   const auth = await authenticateResident(request);
-  if (auth.error) return auth.error;
+  if (auth.error) {
+    return auth.error;
+  }
 
   try {
     const formData = await request.formData();
@@ -15,24 +17,14 @@ export async function POST({ request, url: reqUrl }) {
       return json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Firestore document limit is 1MB.
-    // Base64 adds ~33% overhead, so we limit raw file to ~700KB.
-    if (file.size > 700 * 1024) {
-      return json({ error: "File too large for Firestore (max 700KB)" }, { status: 400 });
+    if (file.size > 5 * 1024 * 1024) {
+      return json({ error: "File too large (max 5MB)" }, { status: 400 });
     }
 
     const id = crypto.randomUUID();
-
     const arrayBuffer = await file.arrayBuffer();
-    const uint8 = new Uint8Array(arrayBuffer);
-    let binary = "";
-    for (let i = 0; i < uint8.byteLength; i++) {
-      binary += String.fromCharCode(uint8[i]);
-    }
-    const base64Data = btoa(binary);
-    const dataUri = `data:${file.type};base64,${base64Data}`;
 
-    await saveImageToFirestore(id, dataUri, file.type);
+    await uploadImageToStorage(id, arrayBuffer, file.type);
 
     const origin = reqUrl.origin;
     const publicUrl = `${origin}/api/image/${id}`;

@@ -78,7 +78,7 @@ export async function compressImage(file: File, maxSizeMB = 0.7): Promise<Blob |
 }
 
 /**
- * Deletes an uploaded image from Firestore via the proxy API.
+ * Deletes an uploaded image from Supabase Storage via the proxy API.
  */
 export async function deleteUploadedImage(url: string, accessToken: string) {
   if (!url || !url.includes("/api/image/")) {

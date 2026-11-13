@@ -340,7 +340,7 @@
               <FileText class="h-3.5 w-3.5" /> Additional Details
             </Label>
 
-            {#if settings.firebaseEnabled}
+            {#if settings.storageEnabled}
               <ImageUpload
                 label="Item Photo"
                 bind:value={formData.photoUrl}

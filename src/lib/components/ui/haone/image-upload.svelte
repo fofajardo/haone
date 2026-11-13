@@ -160,7 +160,7 @@
           }}
           disabled={disabled || isProcessing}
         />
-        {#if settings.firebaseEnabled}
+        {#if settings.storageEnabled}
           <InputGroup.Addon align="inline-end">
             <InputGroup.Button
               aria-label="Upload image"

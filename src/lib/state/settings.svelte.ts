@@ -1,6 +1,6 @@
 import { fetchUserSettings, updateUserSettings } from "$api/controllers/settings-controller";
 import { browser, dev } from "$app/environment";
-import { PUBLIC_APP_ENV, PUBLIC_APP_FIREBASE_ENABLED } from "$env/static/public";
+import { PUBLIC_APP_ENV, PUBLIC_APP_STORAGE_ENABLED } from "$env/static/public";
 import { LS_KEYS } from "$lib/constants";
 import { auth } from "$state/auth.svelte";
 
@@ -174,8 +174,8 @@ class Settings {
     return dev || PUBLIC_APP_ENV === "development";
   }
 
-  get firebaseEnabled() {
-    return PUBLIC_APP_FIREBASE_ENABLED === "true";
+  get storageEnabled() {
+    return PUBLIC_APP_STORAGE_ENABLED === "true";
   }
 
   #isSyncing = false;
